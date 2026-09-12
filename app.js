@@ -1744,8 +1744,8 @@ class="list-item"><div><strong>${esc(p.title||p.text)}</strong>${p.title?`<small
  <div class="grid grid-3"style="margin-bottom:16px;gap:12px">
  <div class="card card-compact"style="text-align:center">
  <h3 style="margin:0 0 6px"> Uhrzeit</h3>
- <strong class="live-clock-time"style="font-size:22px;display:block">${new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}</strong>
- <small class="live-clock-date"style="color:var(--muted)">${new Date().toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long"})}</small>
+ <div style="display:flex;justify-content:center">${analogClockSVG(64)}</div>
+ <small class="live-clock-date"style="color:var(--muted);display:block;margin-top:4px">${new Date().toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long"})}</small>
  </div>
  <div class="card card-compact">
  <h3 style="margin:0 0 8px"> Kalender</h3>
@@ -2052,6 +2052,12 @@ async function renderFachDetail(){
 window.renderFaecherUebersicht=renderFaecherUebersicht;
 
 // ---- Wochen-Detail: Auftrag/Ziele, Material, Team, Hilfe, Produkte, Lernstand
+function showWocheTab(tabId){
+ document.querySelectorAll(".wd-panel").forEach(el=>el.style.display=el.id===`wdPanel_${tabId}`?"block":"none");
+ document.querySelectorAll(".wd-tab").forEach(el=>el.classList.toggle("wd-tab-active",el.dataset.tab===tabId));
+}
+window.showWocheTab=showWocheTab;
+
 async function openWocheDetail(fach,wocheId){
  const woche=lehrplanWocheById(fach,wocheId);
  if(!woche){toast("Diese Woche wurde nicht gefunden.");return}
@@ -2063,6 +2069,18 @@ async function openWocheDetail(fach,wocheId){
  const alleErfuellt=ziele.length>0 && ziele.every(z=>fortschritt.zieleErfuellt?.[z.id]);
  const meinTeam=teams.find(t=>(t.mitgliederUids||[]).includes(currentUser.uid));
  const fachLbl=F11SB_FAECHER.find(f=>f.key===fach)?.label||fach;
+ const meinProdukt=produkte.some(p=>p.uid===currentUser.uid);
+
+ // Fortschritt: welche der vier Etappen ist erreicht?
+ const schritte=[
+ {label:"Ziele",done:alleErfuellt},
+ {label:"Produkt",done:meinProdukt},
+ {label:"Lernstand",done:!!lernstand},
+ {label:"Fertig",done:!!fortschritt.abgeschlossen}
+ ];
+ let aktivIdx=schritte.findIndex(s=>!s.done);
+ if(aktivIdx===-1)aktivIdx=schritte.length-1;
+ const startTab=["ziele","produkte","lernstand","lernstand"][Math.min(aktivIdx,3)];
 
  modal(`<button class="modal-close"onclick="closeModal()">×</button>
  <div class="kicker">${esc(fachLbl)} · ${esc(woche.lb)} · ${esc(fmtDateOnly(woche.start))}–${esc(fmtDateOnly(woche.end))}</div>
@@ -2071,8 +2089,21 @@ async function openWocheDetail(fach,wocheId){
  <p style="margin-top:10px;color:var(--muted)">${esc(woche.planung)}</p>
  ${woche.praxis?`<div class="card"style="background:var(--soft-blue);margin-top:10px;padding:10px 12px"><strong style="font-size:12px"> Praxistransfer</strong><small style="display:block;margin-top:4px">${esc(woche.praxis)}</small></div>`:""}
 
- <details class="noten-collapsible"open style="margin-top:16px">
- <summary> 1 · Auftrag & Ziele</summary>
+ <div class="wd-stepper">
+ ${schritte.map((s,i)=>`<div class="wd-step${s.done?" wd-step-done":""}${i===aktivIdx&&!s.done?" wd-step-aktiv":""}">
+ <div class="wd-step-dot">${s.done?"✓":i+1}</div><small>${esc(s.label)}</small>
+ </div>${i<schritte.length-1?`<div class="wd-step-line${schritte[i+1].done||s.done?" wd-step-line-done":""}"></div>`:""}`).join("")}
+ </div>
+
+ <div class="wd-tabs">
+ <button type="button"class="wd-tab"data-tab="ziele"onclick="showWocheTab('ziele')"> Ziele</button>
+ <button type="button"class="wd-tab"data-tab="material"onclick="showWocheTab('material')"> Material</button>
+ <button type="button"class="wd-tab"data-tab="team"onclick="showWocheTab('team')"> Team</button>
+ <button type="button"class="wd-tab"data-tab="produkte"onclick="showWocheTab('produkte')"> Produkte</button>
+ <button type="button"class="wd-tab"data-tab="lernstand"onclick="showWocheTab('lernstand')"> Lernstand</button>
+ </div>
+
+ <div class="wd-panel"id="wdPanel_ziele">
  ${isTeacher()?`<div class="form">
  <label>Titel des Auftrags<input id="auftragTitel"type="text"value="${esc(auftrag?.titel||"")}"placeholder="z. B. Fallanalyse Erziehungsstile"></label>
  <label>Ziele (eine Zeile je Ziel)<textarea id="auftragZiele"rows="4"placeholder="z. B. Ich kann die vier Erziehungsstile nach Baumrind unterscheiden">${esc((ziele.map(z=>z.text)).join("\n"))}</textarea></label>
@@ -2087,10 +2118,9 @@ async function openWocheDetail(fach,wocheId){
  <div class="form-actions"style="margin-top:12px">
  <button class="primary"${fortschritt.abgeschlossen?"disabled":""}onclick="markWocheAbgeschlossen('${fach}','${wocheId}')">${fortschritt.abgeschlossen?"✓ Woche abgeschlossen":alleErfuellt?"✓ Woche als abgeschlossen markieren":" Erst alle Ziele erfüllen"}</button>
  </div>`}
- </details>
+ </div>
 
- <details class="noten-collapsible"style="margin-top:10px">
- <summary> 2 · Material zur Bearbeitung</summary>
+ <div class="wd-panel"id="wdPanel_material">
  ${isTeacher()?`<div class="form"style="margin-bottom:12px">
  <div style="display:flex;gap:8px;flex-wrap:wrap">
  <select id="matKategorie">${MATERIAL_KATEGORIEN.map(k=>`<option value="${k.key}">${k.label}</option>`).join("")}</select>
@@ -2109,35 +2139,25 @@ async function openWocheDetail(fach,wocheId){
  <button class="secondary"onclick="closeModal();go('lernwerkzeuge')"> Karteikarten & Fokus-Timer</button>
  <button class="secondary"onclick="closeModal();go('ki-lernen')"> KI zum Lernen</button>
  </div>
- </details>
+ </div>
 
- <details class="noten-collapsible"style="margin-top:10px">
- <summary> 3 · Team/Gruppe${woche.typ==="projekt"?" (für dieses Projekt vorgesehen)":" (freiwillig)"}</summary>
+ <div class="wd-panel"id="wdPanel_team">
+ <p style="color:var(--muted);margin-top:0">Team/Gruppe${woche.typ==="projekt"?" – für dieses Projekt vorgesehen":" – freiwillig"}. Passende Mitstreiter:innen findest du auch über die Kompetenzwerkstatt.</p>
  <div class="list">${teams.map(t=>{const inTeam=(t.mitgliederUids||[]).includes(currentUser.uid);return`<div class="list-item"><div><strong>${esc(t.teamName)}</strong><small>${esc((t.mitgliederNamen||[]).join(", ")||"Noch niemand")}</small></div><div style="display:flex;gap:6px">${inTeam?`<button class="secondary"onclick="leaveLehrplanTeam('${t.id}','${fach}','${wocheId}')">Verlassen</button>`:`<button class="primary"onclick="joinLehrplanTeam('${t.id}','${fach}','${wocheId}')">Beitreten</button>`}${isTeacher()?`<button class="secondary"onclick="deleteLehrplanTeam('${t.id}','${fach}','${wocheId}')">Auflösen</button>`:""}</div></div>`}).join("")||`<div class="empty">Noch keine Teams gebildet.</div>`}</div>
  ${!meinTeam?`<div class="form-actions"style="margin-top:10px"><input id="neuTeamName"type="text"placeholder="Team-Name"style="flex:1"><button class="primary"onclick="createLehrplanTeam('${fach}','${wocheId}')">＋ Team gründen</button></div>`:""}
- </details>
-
- <details class="noten-collapsible"style="margin-top:10px">
- <summary> 4 · Hilfe anfragen</summary>
- <p style="color:var(--muted);margin-top:0">Frag im Forum die ganze Klasse oder schreib direkt einer Lehrkraft/Mitschüler:in eine Nachricht.</p>
- <div class="form-actions">
- <button class="secondary"onclick="closeModal();go('forum-board')"> Im Forum fragen</button>
- <button class="secondary"onclick="closeModal();go('forum-nachrichten')"> Persönliche Nachricht</button>
+ <div class="form-actions"style="margin-top:10px"><button class="secondary"onclick="closeModal();go('kompetenz')"> Zur Kompetenzwerkstatt</button></div>
  </div>
- </details>
 
- <details class="noten-collapsible"style="margin-top:10px">
- <summary> 5 · Produkte & Ergebnisse</summary>
+ <div class="wd-panel"id="wdPanel_produkte">
  <div class="list">${produkte.map(p=>`<div class="list-item"><div><strong>${esc(p.titel)}</strong><small>${esc(p.name)}${p.inhalt?" · "+esc(p.inhalt.slice(0,60)):""}</small></div>${(p.uid===currentUser.uid||isTeacher())?`<button class="secondary"onclick="deleteLehrplanProdukt('${p.id}','${fach}','${wocheId}')">Löschen</button>`:""}</div>`).join("")||`<div class="empty">Noch keine Produkte hochgeladen.</div>`}</div>
  <div class="form-actions"style="margin-top:10px;flex-wrap:wrap">
  <input id="produktTitel"type="text"placeholder="Titel des Produkts"style="flex:1;min-width:140px">
  <input id="produktInhalt"type="text"placeholder="Link oder kurze Beschreibung"style="flex:1;min-width:160px">
  <button class="primary"onclick="addLehrplanProdukt('${fach}','${wocheId}')">＋ Hochladen</button>
  </div>
- </details>
+ </div>
 
- <details class="noten-collapsible"style="margin-top:10px">
- <summary> 6 · Lernstandsüberprüfung</summary>
+ <div class="wd-panel"id="wdPanel_lernstand">
  <p style="color:var(--muted);margin-top:0">Halte kurz fest, was du gelernt/erarbeitet hast. Tipp: Lass es dir vorab von einer KI gegenchecken. Die Lehrkraft sieht deine Selbsteinschätzung über die Ampel.</p>
  <textarea id="lernstandAntwort"rows="3"placeholder="Was hast du erarbeitet/verstanden?">${esc(lernstand?.antwort||"")}</textarea>
  <div class="form-actions"style="margin-top:8px">
@@ -2148,10 +2168,16 @@ async function openWocheDetail(fach,wocheId){
  </select>
  <button class="primary"onclick="submitLehrplanLernstand('${fach}','${wocheId}')">${lernstand?"Aktualisieren":"Übermitteln"}</button>
  </div>
- </details>
+ </div>
 
- <div class="form-actions"style="margin-top:16px"><button class="secondary"onclick="closeModal()">Schließen</button></div>
+ <div class="wd-footer">
+ <button class="secondary"onclick="closeModal()">Schließen</button>
+ <span style="flex:1"></span>
+ <button class="secondary"onclick="closeModal();go('forum-board')">❓ Im Forum fragen</button>
+ <button class="primary"onclick="closeModal();go('forum-nachrichten')"> Lehrkraft fragen</button>
+ </div>
  `);
+ showWocheTab(startTab);
 }
 window.openWocheDetail=openWocheDetail;
 
@@ -4136,16 +4162,38 @@ let pomodoroSecondsLeft=25*60, pomodoroPhase="fokus", pomodoroRunning=false, pom
 let pomodoroWorkMin=25, pomodoroBreakMin=5;
 
 // ---- Uhr & Timer (frei einstellbar für Lehrkräfte und Schüler) ----------
+function analogClockSVG(size){
+ const s=size||90;
+ const marks=Array.from({length:12},(_,i)=>{
+ const angle=i*30*Math.PI/180;
+ const x1=50+42*Math.sin(angle),y1=50-42*Math.cos(angle);
+ const x2=50+(i%3===0?36:38)*Math.sin(angle),y2=50-(i%3===0?36:38)*Math.cos(angle);
+ return `<line x1="${x1.toFixed(1)}"y1="${y1.toFixed(1)}"x2="${x2.toFixed(1)}"y2="${y2.toFixed(1)}"stroke="#8a99a3"stroke-width="${i%3===0?2:1}"stroke-linecap="round"/>`;
+ }).join("");
+ return `<svg class="analog-clock"viewBox="0 0 100 100"width="${s}"height="${s}">
+ <circle cx="50"cy="50"r="47"fill="#fff"stroke="#d6e2ea"stroke-width="2"/>
+ ${marks}
+ <line class="clock-hand-h"x1="50"y1="50"x2="50"y2="28"stroke="#17384f"stroke-width="4"stroke-linecap="round"></line>
+ <line class="clock-hand-m"x1="50"y1="50"x2="50"y2="16"stroke="#17384f"stroke-width="3"stroke-linecap="round"></line>
+ <line class="clock-hand-s"x1="50"y1="50"x2="50"y2="12"stroke="#e8890c"stroke-width="1.5"stroke-linecap="round"></line>
+ <circle cx="50"cy="50"r="3.5"fill="#17384f"/>
+ </svg>`;
+}
 let __globalClockInterval=null;
 function ensureGlobalClock(){
  if(__globalClockInterval)return;
- __globalClockInterval=setInterval(()=>{
+ const tick=()=>{
  const now=new Date();
- const timeStr=now.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+ const h=now.getHours()%12,m=now.getMinutes(),s=now.getSeconds();
+ const hDeg=h*30+m*0.5, mDeg=m*6+s*0.1, sDeg=s*6;
+ document.querySelectorAll(".clock-hand-h").forEach(el=>el.setAttribute("transform",`rotate(${hDeg} 50 50)`));
+ document.querySelectorAll(".clock-hand-m").forEach(el=>el.setAttribute("transform",`rotate(${mDeg} 50 50)`));
+ document.querySelectorAll(".clock-hand-s").forEach(el=>el.setAttribute("transform",`rotate(${sDeg} 50 50)`));
  const dateStr=now.toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long"});
- document.querySelectorAll(".live-clock-time").forEach(el=>el.textContent=timeStr);
  document.querySelectorAll(".live-clock-date").forEach(el=>el.textContent=dateStr);
- },1000);
+ };
+ tick();
+ __globalClockInterval=setInterval(tick,1000);
 }
 let simpleTimerMinutes=10;
 let simpleTimerSecondsLeft=600;
@@ -4188,8 +4236,8 @@ function renderUhrTimer(){
  <div class="grid grid-2"style="gap:16px">
  <div class="card"style="text-align:center">
  <div class="kicker">AKTUELLE UHRZEIT</div>
- <div class="pomo-display live-clock-time"style="margin-top:10px">${new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}</div>
- <div class="pomo-phase live-clock-date">${new Date().toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long"})}</div>
+ <div style="display:flex;justify-content:center;margin-top:10px">${analogClockSVG(160)}</div>
+ <div class="pomo-phase live-clock-date"style="margin-top:8px">${new Date().toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long"})}</div>
  </div>
  <div class="card"style="text-align:center">
  <div class="kicker">TIMER</div>

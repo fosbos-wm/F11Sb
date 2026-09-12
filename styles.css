@@ -83,6 +83,9 @@ main#content{flex:1;min-width:0;padding:28px 34px 60px;max-width:1500px}
 .mini-kalender-today small{color:rgba(255,255,255,.8)}
 .mini-kalender-dot{display:block;width:5px;height:5px;border-radius:50%;background:#e8890c;margin:3px auto 0}
 .mini-kalender-today .mini-kalender-dot{background:#fff}
+.mini-kalender-dot-pink{background:#e0629e}
+.mini-kalender-ferien{background:#e3f5da!important}
+.mini-kalender-ferien.mini-kalender-today{background:var(--blue)!important}
 .card-compact h3{margin:0 0 8px;font-size:14px}
 .card-compact .list{gap:6px}
 .card-compact .list-item{padding:8px 10px}
@@ -255,3 +258,19 @@ main#content{flex:1;min-width:0;padding:28px 34px 60px;max-width:1500px}
 .noten-collapsible{margin-top:4px}
 @media(max-width:800px){.noten-collapsible+.noten-collapsible,.grid-2 .noten-collapsible{grid-column:auto}}
 @media(max-width:700px){.noten-table{font-size:12px}.noten-table input[type="number"]{width:50px}}
+
+/* ===== Wochen-Detail: Fortschritts-Stepper, Tabs, feste Frage-Leiste ===== */
+.wd-stepper{display:flex;align-items:center;margin:18px 0}
+.wd-step{display:flex;flex-direction:column;align-items:center;gap:4px;flex:0 0 auto}
+.wd-step-dot{width:30px;height:30px;border-radius:50%;background:#f0f3f5;border:2px solid #b8c4cc;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#8a99a3;transition:.2s}
+.wd-step small{font-size:10px;color:var(--muted);white-space:nowrap}
+.wd-step-done .wd-step-dot{background:#3fa66a;border-color:#3fa66a;color:#fff}
+.wd-step-aktiv .wd-step-dot{border-color:var(--blue);color:var(--blue);box-shadow:0 0 0 4px rgba(22,136,207,.2)}
+.wd-step-line{flex:1;height:3px;background:#e2eaf0;margin:0 4px;margin-bottom:16px;transition:.3s}
+.wd-step-line-done{background:#3fa66a}
+.wd-tabs{display:flex;gap:4px;overflow-x:auto;margin-top:8px;border-bottom:1px solid var(--line,#e2eaf0)}
+.wd-tab{flex:0 0 auto;padding:8px 12px;border:0;background:none;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;font-family:inherit}
+.wd-tab-active{color:var(--blue-dark);border-bottom-color:var(--blue)}
+.wd-panel{display:none;padding-top:14px}
+.wd-footer{position:sticky;bottom:-24px;margin:16px -24px -24px;padding:12px 24px;background:#fff;border-top:1px solid var(--line,#e2eaf0);display:flex;gap:8px;align-items:center;flex-wrap:wrap;z-index:5}
+@media(max-width:520px){.wd-footer{bottom:-18px;margin:16px -14px -18px;padding:10px 14px}.wd-step small{display:none}}
