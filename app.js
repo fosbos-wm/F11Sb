@@ -1135,13 +1135,13 @@ const F11SB_FAECHER=[
 // ============================================================
 // Praktikumsphasen 2026/27 (gilt fachübergreifend, aus dem B-Block-Plan).
 const PRAKTIKUMSPHASEN=[
- {id:"pr1",start:"2026-09-15",end:"2026-10-02",titel:"B-Block Start – Praktikum",bereich:"Erziehungsbereich"},
- {id:"pr2",start:"2026-10-26",end:"2026-11-20",titel:"Praktikumsphase",bereich:"Erziehungsbereich"},
- {id:"pr3",start:"2026-12-14",end:"2027-01-15",titel:"Praktikumsphase",bereich:"Erziehungsbereich"},
- {id:"pr4",start:"2027-02-15",end:"2027-03-05",titel:"Praktikumsphase",bereich:"Übergang"},
- {id:"pr5",start:"2027-04-12",end:"2027-04-30",titel:"Praktikumsphase Pflege",bereich:"Pflegebereich"},
- {id:"pr6",start:"2027-06-07",end:"2027-06-25",titel:"Praktikumsphase Pflege",bereich:"Pflegebereich"},
- {id:"pr7",start:"2027-07-19",end:"2027-07-30",titel:"Praktikumsphase Pflege",bereich:"Pflegebereich"}
+ {id:"pr1",start:"2026-09-15",end:"2026-10-02",titel:"B-Block Start – Praktikum",bereich:"Erziehungsbereich",icon:"🏫"},
+ {id:"pr2",start:"2026-10-26",end:"2026-11-20",titel:"Praktikumsphase",bereich:"Erziehungsbereich",icon:"🏫"},
+ {id:"pr3",start:"2026-12-14",end:"2027-01-15",titel:"Praktikumsphase",bereich:"Erziehungsbereich",icon:"🏫"},
+ {id:"pr4",start:"2027-02-15",end:"2027-03-05",titel:"Praktikumsphase",bereich:"Übergang",icon:"🔄"},
+ {id:"pr5",start:"2027-04-12",end:"2027-04-30",titel:"Praktikumsphase Pflege",bereich:"Pflegebereich",icon:"🏥"},
+ {id:"pr6",start:"2027-06-07",end:"2027-06-25",titel:"Praktikumsphase Pflege",bereich:"Pflegebereich",icon:"🏥"},
+ {id:"pr7",start:"2027-07-19",end:"2027-07-30",titel:"Praktikumsphase Pflege",bereich:"Pflegebereich",icon:"🏥"}
 ];
 
 // Aufträge je Praktikumsphase: von Lehrkräften gepflegt, überall live
@@ -2186,6 +2186,11 @@ async function renderFachDetail(){
  .lp-karte strong{display:block;font-size:13px;margin-top:2px}
  .lp-karte small{display:block;color:var(--muted);font-size:11px;margin-top:4px;line-height:1.4}
  .lp-typ-pill{margin-top:8px;display:inline-block;font-size:10px}
+ .lp-legende{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px;padding:10px 14px;background:#f7fafc;border-radius:10px;font-size:11px;color:var(--muted)}
+ .lp-legende-item{display:flex;align-items:center;gap:6px}
+ .lp-legende-dot{width:14px;height:14px;border-radius:50%;border:2px solid;display:inline-block;flex:0 0 auto}
+ .lp-legende-raute{border-radius:4px;transform:rotate(45deg);width:12px;height:12px;font-size:7px;display:flex;align-items:center;justify-content:center}
+ .lp-legende-raute i{transform:rotate(-45deg);font-style:normal}
  .lp-waypoint{position:relative;margin:26px 0}
  .lp-waypoint-punkt{position:absolute;left:-44px;top:0;width:40px;height:40px;border-radius:10px;background:var(--soft-blue);border:3px solid #4a90d9;display:flex;align-items:center;justify-content:center;font-size:17px;transform:rotate(45deg);z-index:2}
  .lp-waypoint-punkt span{transform:rotate(-45deg);display:block}
@@ -2194,6 +2199,12 @@ async function renderFachDetail(){
  .lp-waypoint-karte strong{display:block;font-size:12.5px}
  @media(max-width:600px){.lernpfad{padding-left:38px}.lp-punkt,.lp-waypoint-punkt{left:-38px;width:34px;height:34px}}
  </style>
+ <div class="lp-legende">
+ <span class="lp-legende-item"><span class="lp-legende-dot"style="background:var(--soft-green);border-color:#3fa66a"></span>Projekt</span>
+ <span class="lp-legende-item"><span class="lp-legende-dot"style="background:var(--soft-yellow,#fff8e2);border-color:#e0a324"></span>Einzelthema</span>
+ <span class="lp-legende-item"><span class="lp-legende-dot lp-legende-raute"style="background:var(--soft-blue);border-color:#4a90d9"><i>🏫</i></span>Praktikum · Erziehungsbereich</span>
+ <span class="lp-legende-item"><span class="lp-legende-dot lp-legende-raute"style="background:var(--soft-blue);border-color:#4a90d9"><i>🏥</i></span>Praktikum · Pflegebereich</span>
+ </div>
  <div class="lernpfad">
  <div class="lp-linie-hinter"></div>
  <div class="lp-linie-vorne"style="height:${fortschrittProzent}%"></div>
@@ -2201,7 +2212,7 @@ async function renderFachDetail(){
  if(item.kind==="praktikum"){
  const auftrag=praktikumsAuftraege[item.id];
  return`<div class="lp-waypoint">
- <div class="lp-waypoint-punkt"><span>🏥</span></div>
+ <div class="lp-waypoint-punkt"><span>${item.icon||"🏥"}</span></div>
  <div class="lp-waypoint-karte"onclick="openPraktikumsphaseAuftragForm('${item.id}')">
  <span class="lp-karte-date">${esc(fmtDateOnly(item.start))}–${esc(fmtDateOnly(item.end))}</span>
  <strong>${esc(item.titel)}</strong>
@@ -5393,7 +5404,10 @@ async function renderConversationView(){
  <button class="secondary"onclick="cancelMessageReply()"></button></div>`:""}
  <div class="comment-box"style="margin-top:10px;flex-direction:column;align-items:stretch;gap:8px">
  <textarea id="messageComposeText"rows="2"placeholder="Nachricht schreiben …"></textarea>
- <button class="primary"onclick="sendMessage()"style="align-self:flex-end">Senden</button>
+ <div style="display:flex;justify-content:space-between;align-items:center">
+ ${emojiPickerHTML("messageComposeText","emojiPickerMessage")}
+ <button class="primary"onclick="sendMessage()">Senden</button>
+ </div>
  </div>
  </div>${footer()}`;
 }
@@ -6934,7 +6948,7 @@ async function renderPraktikum(){
  const auftrag=praktikumsAuftraege[p.id];
  return`<button type="button"class="card"style="text-align:left;cursor:pointer;background:${status==="laufend"?"var(--soft-orange)":status==="vorbei"?"#f3f5f7":"var(--soft-blue)"}"onclick="openPraktikumsphaseAuftragForm('${p.id}')">
  ${status==="laufend"?`<span class="pill"style="background:#e8890c;color:#fff">läuft gerade</span>`:""}
- <strong style="display:block;margin-top:6px">${esc(p.titel)}</strong>
+ <strong style="display:block;margin-top:6px">${p.icon} ${esc(p.titel)}</strong>
  <small style="display:block;color:var(--muted);margin-top:4px">${esc(fmtDateOnly(p.start))}–${esc(fmtDateOnly(p.end))}</small>
  <small style="display:block;margin-top:6px">${auftrag?` ${esc(auftrag.titel)}`:isTeacher()?"Antippen, um einen Auftrag einzutragen":"Noch kein Auftrag eingetragen"}</small>
  </button>`;
@@ -9537,12 +9551,46 @@ async function addNews(){
  try{await addDoc(collection(db,"news"),{authorUid:currentUser.uid,authorName:profile?.displayName||currentUser?.email||"Lehrkraft",title,text,createdAt:serverTimestamp(),updatedAt:serverTimestamp()});closeModal();await render();toast("News veröffentlicht.")}catch(e){console.error(e);toast("News konnte nicht veröffentlicht werden.")}
 }
 
+// ---- Emoji-Picker (wiederverwendbar für Forum-Beiträge und Nachrichten) --
+const EMOJI_PICKER_LISTE=["😀","😂","🥰","😅","😉","🙂","😊","😍","🤔","😮","😢","😡","👍","👎","❤️","🔥","🎉","👏","🙏","💡","✅","❌","🤝","🚀","📚","🎓","😴","🥳","💪","👀"];
+function emojiPickerHTML(targetId,pickerId){
+ return `<div style="position:relative;display:inline-block">
+ <button type="button"class="secondary"onclick="toggleEmojiPicker('${pickerId}')"title="Emoji einfügen">😊</button>
+ <div id="${pickerId}"class="emoji-picker"hidden>
+ ${EMOJI_PICKER_LISTE.map(e=>`<button type="button"onclick="insertEmoji('${targetId}','${e}','${pickerId}')">${e}</button>`).join("")}
+ </div>
+ </div>`;
+}
+function toggleEmojiPicker(pickerId){
+ const el=$(pickerId);
+ if(!el)return;
+ document.querySelectorAll(".emoji-picker").forEach(p=>{if(p.id!==pickerId)p.hidden=true});
+ el.hidden=!el.hidden;
+}
+function insertEmoji(targetId,emoji,pickerId){
+ const field=$(targetId);
+ if(field){
+ const start=field.selectionStart??field.value.length;
+ const end=field.selectionEnd??field.value.length;
+ field.value=field.value.slice(0,start)+emoji+field.value.slice(end);
+ field.focus();
+ field.selectionStart=field.selectionEnd=start+emoji.length;
+ }
+ const picker=$(pickerId);
+ if(picker)picker.hidden=true;
+}
+window.toggleEmojiPicker=toggleEmojiPicker;window.insertEmoji=insertEmoji;
+document.addEventListener("click",e=>{
+ if(e.target.closest(".emoji-picker")||e.target.closest('[onclick^="toggleEmojiPicker"]'))return;
+ document.querySelectorAll(".emoji-picker").forEach(p=>p.hidden=true);
+});
+
 function openPostForm(defaultType="question"){
  modal(`<button class="modal-close"onclick="closeModal()">×</button><div class="kicker">CAMPUS-FORUM</div><h2>Beitrag
 schreiben</h2><div class="form"><label>Kategorie<select id="pType"><option value="question"
 ${defaultType==="question"?"selected":""}> Frage</option><option value="info" ${defaultType==="info"?"selected":""}>
 Info</option><option value="idea" ${defaultType==="idea"?"selected":""}> Idee</option><option value="project">
-Projekt</option><option value="practice"> Praxis</option></select></label><label>Beitrag<textarea id="pText"rows="5"placeholder="Was möchtest du teilen?"required></textarea></label><div class="form-actions"><button class="secondary"onclick="closeModal()">Abbrechen</button><button class="primary"onclick="addPost()">Veröffentlichen</button></div></div>`);
+Projekt</option><option value="practice"> Praxis</option></select></label><label>Beitrag<textarea id="pText"rows="5"placeholder="Was möchtest du teilen?"required></textarea></label><div style="margin-top:-8px;margin-bottom:10px">${emojiPickerHTML("pText","emojiPickerPost")}</div><div class="form-actions"><button class="secondary"onclick="closeModal()">Abbrechen</button><button class="primary"onclick="addPost()">Veröffentlichen</button></div></div>`);
 }
 async function addPost(){
  const text=$("pText").value.trim();if(!text){toast("Bitte Beitrag eingeben.");return}

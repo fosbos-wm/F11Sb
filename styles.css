@@ -274,3 +274,8 @@ main#content{flex:1;min-width:0;padding:28px 34px 60px;max-width:1500px}
 .wd-panel{display:none;padding-top:14px}
 .wd-footer{position:sticky;bottom:-24px;margin:16px -24px -24px;padding:12px 24px;background:#fff;border-top:1px solid var(--line,#e2eaf0);display:flex;gap:8px;align-items:center;flex-wrap:wrap;z-index:5}
 @media(max-width:520px){.wd-footer{bottom:-18px;margin:16px -14px -18px;padding:10px 14px}.wd-step small{display:none}}
+
+/* ===== Emoji-Picker (Forum & persönliche Nachrichten) ===== */
+.emoji-picker{position:absolute;top:100%;left:0;z-index:20;background:#fff;border:1px solid var(--line,#e2eaf0);border-radius:10px;box-shadow:0 8px 20px rgba(23,56,79,.15);padding:8px;display:grid;grid-template-columns:repeat(6,1fr);gap:2px;margin-top:4px;width:224px}
+.emoji-picker button{background:none;border:0;font-size:18px;padding:5px;border-radius:6px;cursor:pointer;line-height:1}
+.emoji-picker button:hover{background:#f0f3f5}
