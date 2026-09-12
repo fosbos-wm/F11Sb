@@ -11,6 +11,10 @@ const statusLabel={green:"Auf Kurs",yellow:"Klärungsbedarf",red:"Handlungsbedar
 const labels={question:"Frage",info:"Info",idea:"Idee",project:"Projekt",practice:"Praxis"};
 let currentUser=null, profile=null, unsubscribers=[];
 let activeBoardId=null;
+let activeFach=null;
+function openFach(fach){activeFach=fach;go("fach")}
+function closeFach(){activeFach=null;go("faecher")}
+window.openFach=openFach;window.closeFach=closeFach;
 
 function toast(t){const
 x=$("toast");x.textContent=t;x.classList.add("show");clearTimeout(window.tt);window.tt=setTimeout(()=>x.classList.remove("show"),
@@ -1116,6 +1120,310 @@ const F11SB_FAECHER=[
  {key:"chemie",label:"Chemie"}
 ];
 
+// ============================================================
+// LERNWERKSTATT · FÄCHER-ZEITSTRAHL
+// ============================================================
+// Praktikumsphasen 2026/27 (gilt fachübergreifend, aus dem B-Block-Plan).
+const PRAKTIKUMSPHASEN=[
+ {id:"pr1",start:"2026-09-15",end:"2026-10-02",titel:"B-Block Start – Praktikum",bereich:"Erziehungsbereich",beschreibung:"Beobachtungen sammeln, Einrichtung kennenlernen, erste Praxisfragen."},
+ {id:"pr2",start:"2026-10-26",end:"2026-11-20",titel:"Praktikumsphase",bereich:"Erziehungsbereich",beschreibung:"Projekte/Beobachtungsaufträge aus der Theorie umsetzen."},
+ {id:"pr3",start:"2026-12-14",end:"2027-01-15",titel:"Praktikumsphase",bereich:"Erziehungsbereich",beschreibung:"Vertiefung, Beobachtung, Projektprodukte."},
+ {id:"pr4",start:"2027-02-15",end:"2027-03-05",titel:"Praktikumsphase",bereich:"Übergang",beschreibung:"Wechsel/Übergang, ggf. Vorbereitung auf den Pflegebereich."},
+ {id:"pr5",start:"2027-04-12",end:"2027-04-30",titel:"Praktikumsphase Pflege",bereich:"Pflegebereich",beschreibung:"Krankenhaus, Seniorenheim, Pflegeeinrichtung, Demenz-WG."},
+ {id:"pr6",start:"2027-06-07",end:"2027-06-25",titel:"Praktikumsphase Pflege",bereich:"Pflegebereich",beschreibung:"Lernen, Motivation, Verhalten, Kommunikation beobachten."},
+ {id:"pr7",start:"2027-07-19",end:"2027-07-30",titel:"Praktikumsphase Pflege",bereich:"Pflegebereich",beschreibung:"Abschlussreflexion und Transfer."}
+];
+
+// Lehrplan-Zeitstrahl je Fach. "typ": "projekt" | "einzel". Aktuell mit
+// echten Inhalten für Pädagogik/Psychologie befüllt (Jahresverlaufsplanung
+// FOS 11 Sozialwesen, B-Block 2026/27); die übrigen Fächer sind als leere,
+// erweiterbare Struktur angelegt.
+const LEHRPLAN_WOCHEN={
+ paedagogik:[
+ {id:"pp01",start:"2026-10-05",end:"2026-10-09",lb:"LB 1",thema:"Grundlagen: Pädagogik und Psychologie",typ:"einzel",
+ planung:"2 Std.: Gegenstandsbereiche P/P; 2 Std.: Erziehung, Erleben und Verhalten unterscheiden; 2 Std.: Bedeutung für Sozialwesen + erste Praxisfragen.",
+ praxis:"Erziehungspraktikum: Begriffe an realen Situationen wiedererkennen; kurze Beobachtungsnotizen sammeln."},
+ {id:"pp02",start:"2026-10-12",end:"2026-10-16",lb:"LB 1",thema:"Wissenschaftlichkeit und Alltagspsychologie",typ:"einzel",
+ planung:"2 Std.: wissenschaftliche Aussagen vs. Alltagswissen; 2 Std.: Systematik, Überprüfbarkeit, Allgemeingültigkeit, Objektivität; 2 Std.: Aussagen prüfen und sichern.",
+ praxis:"Praxisbeobachtung mit Kriterienraster: Was ist Beobachtung, was ist Interpretation?"},
+ {id:"pp03",start:"2026-10-19",end:"2026-10-23",lb:"LB 1",thema:"Experiment als wissenschaftliche Methode",typ:"projekt",
+ planung:"2 Std.: Methode/Fragestellung; 2 Std.: Durchführung; 2 Std.: Auswertung, Kurzbericht und Präsentation.",
+ praxis:"Erziehungsbereich: kleines Beobachtungs-/Mini-Experiment zu Aufmerksamkeit, Erinnerung oder Lernverhalten; Datenschutz und Ethik beachten."},
+ {id:"pp04",start:"2026-11-23",end:"2026-11-27",lb:"LB 3",thema:"Erziehung: Begriff und Merkmale",typ:"einzel",
+ planung:"2 Std.: Begriff; 2 Std.: beabsichtigte Lernhilfe; 2 Std.: soziale Kommunikation/Interaktion + Abgrenzung zu Betreuung/Versorgung.",
+ praxis:"Erziehungspraktikum: reale Situationen anhand der Erziehungsmerkmale analysieren."},
+ {id:"pp05",start:"2026-11-30",end:"2026-12-04",lb:"LB 3",thema:"Erziehungsmaßnahmen und Erziehungsstile",typ:"projekt",
+ planung:"2 Std.: Erziehungsmaßnahmen; 2 Std.: Baumrind; 2 Std.: anonymisierter Praxisfall, Alternativen und Produkt.",
+ praxis:"Erziehungspraktikum: Fallvignette erstellen; pädagogisches Handeln und Alternativen begründen."},
+ {id:"pp06",start:"2026-12-07",end:"2026-12-11",lb:"LB 3",thema:"Mündigkeit nach Roth",typ:"einzel",
+ planung:"2 Std.: Mündigkeit; 2 Std.: Selbst-, Sach-, Sozialkompetenz; 2 Std.: kompetenzorientierte Erziehungsziele + Sicherung.",
+ praxis:"Erziehungsbereich: beobachten, welche Kompetenzen gefördert werden; Reflexion im Portfolio."},
+ {id:"pp07",start:"2027-01-18",end:"2027-01-22",lb:"LB 3",thema:"Erziehungsstile vertiefen und frühe Bildung",typ:"projekt",
+ planung:"2 Std.: Stile vertiefen; 2 Std.: BayBEP-Bildungs-/Erziehungsbereiche; 2 Std.: Praxisprodukt/Präsentation.",
+ praxis:"Erziehungspraktikum: Einrichtung analysieren – welche Bildungs-/Erziehungsziele werden sichtbar?"},
+ {id:"pp08",start:"2027-01-25",end:"2027-01-29",lb:"LB 3",thema:"Vernetzung: Erziehung, Wahrnehmung, Motivation",typ:"projekt",
+ planung:"2 Std.: Fall auswählen; 2 Std.: Wahrnehmung/Attribution/Motivation anwenden; 2 Std.: Handlungsempfehlung + Fallkonferenz.",
+ praxis:"Erziehungspraktikum: anonymisierter Praxisfall → Analyse → Handlungsempfehlung."},
+ {id:"pp09",start:"2027-02-01",end:"2027-02-05",lb:"LB 2",thema:"Wahrnehmung und Gedächtnis",typ:"einzel",
+ planung:"2 Std.: Wahrnehmungsprozess; 2 Std.: individuelle/soziale Einflussfaktoren; 2 Std.: Mehrspeichermodell + Lernstrategien.",
+ praxis:"Praxis: Beobachtungsfehler und Erinnerungsverzerrungen reflektieren."},
+ {id:"pp10",start:"2027-03-08",end:"2027-03-12",lb:"LB 2",thema:"Emotionen und Emotionsregulation",typ:"projekt",
+ planung:"2 Std.: Emotionen/Komponenten; 2 Std.: Regulationsstrategien; 2 Std.: Praxisfall, Projektprodukt und Reflexion.",
+ praxis:"Pflege-/Erziehungsbereich: emotionale Situationen beobachten; Regulationsmöglichkeiten professionell analysieren."},
+ {id:"pp11",start:"2027-03-15",end:"2027-03-19",lb:"LB 2",thema:"Motivation und Attribution nach Weiner",typ:"einzel",
+ planung:"2 Std.: Motivation; 2 Std.: Attribution internal/external, stabil/variabel; 2 Std.: Folgen für Emotion/Erfolgserwartung/Motivation.",
+ praxis:"Pflegepraxis: Aussagen zu Erfolg/Misserfolg analysieren und Attributionsmuster erkennen."},
+ {id:"pp12",start:"2027-04-05",end:"2027-04-09",lb:"LB 2",thema:"Lernen und Gedächtnis – Praxisprojekt",typ:"projekt",
+ planung:"2 Std.: Strategien vergleichen; 2 Std.: Lernsetting planen; 2 Std.: Lernhilfe/Infografik/Anleitung erstellen und reflektieren.",
+ praxis:"Pflegebereich: Lern-/Orientierungssituation analysieren; Barrieren und Ressourcen berücksichtigen."},
+ {id:"pp13",start:"2027-05-03",end:"2027-05-07",lb:"LB 4",thema:"Klassisches Konditionieren",typ:"einzel",
+ planung:"2 Std.: Pawlow; 2 Std.: Reiz/Reaktion und Konditionierung; 2 Std.: Generalisierung/höhere Ordnung + Anwendung.",
+ praxis:"Pflege: Routinen, Signale und situative Auslöser beobachten; keine personenbezogenen Diagnosen."},
+ {id:"pp14",start:"2027-05-10",end:"2027-05-14",lb:"LB 4",thema:"Operantes Konditionieren",typ:"projekt",
+ planung:"2 Std.: Thorndike/Skinner; 2 Std.: Verstärkung/Verstärkerarten; 2 Std.: Praxisfall + professionell-ethische Alternativen.",
+ praxis:"Pflege: Verstärkung in Anleitung/Alltagsbegleitung analysieren; Alternativen entwickeln."},
+ {id:"pp15",start:"2027-06-28",end:"2027-07-02",lb:"LB 4",thema:"Sozial-kognitive Lerntheorie nach Bandura",typ:"einzel",
+ planung:"2 Std.: Beobachtungslernen; 2 Std.: Aufmerksamkeit/Gedächtnis/Reproduktion/Motivation; 2 Std.: Selbstwirksamkeit + Transfer.",
+ praxis:"Pflege: Lernen am Modell in Anleitung, Team und Alltag beobachten."},
+ {id:"pp16",start:"2027-07-05",end:"2027-07-09",lb:"LB 4",thema:"Medien als Einflussfaktor auf Lernprozesse",typ:"einzel",
+ planung:"2 Std.: Medien und Lernen; 2 Std.: Chancen/Risiken; 2 Std.: lernförderliche digitale Angebote beurteilen.",
+ praxis:"Pflege: digitale Anleitung/Dokumentation/Informationsangebote untersuchen."},
+ {id:"pp17",start:"2027-07-12",end:"2027-07-16",lb:"LB 1–4",thema:"Abschlussprojekt: Theorie-Praxis-Vernetzung",typ:"projekt",
+ planung:"2 Std.: Praxisfall auswählen; 2 Std.: Erziehung/Wahrnehmung/Emotion/Motivation/Gedächtnis/Lernen vernetzen; 2 Std.: Produkt, Präsentation und Jahresreflexion.",
+ praxis:"Pflegeeinrichtung: anonymisierte Fallsituation → Theorieanalyse → Handlungsvorschlag → Präsentation; Vergleich mit dem Erziehungspraktikum."}
+ ],
+ deutsch:[],englisch:[],geschichte:[],mathematik:[],sozialwirtschaft:[],chemie:[]
+};
+function lehrplanWocheById(fach,wocheId){
+ return (LEHRPLAN_WOCHEN[fach]||[]).find(w=>w.id===wocheId)||null;
+}
+function combinedTimeline(fach){
+ const wochen=(LEHRPLAN_WOCHEN[fach]||[]).map(w=>({...w,kind:"woche"}));
+ const praktika=fach==="paedagogik"?PRAKTIKUMSPHASEN.map(p=>({...p,kind:"praktikum"})):[];
+ return [...wochen,...praktika].sort((a,b)=>a.start.localeCompare(b.start));
+}
+
+// ---- Motivierende Kurz-Verstärkung (intermittierend) ----
+// Bei kleinen Schritten erscheint die Nachricht bewusst nicht jedes Mal
+// (nach einem variablen Muster), bei großen Meilensteinen (Woche
+// komplett geschafft) immer – intermittierende Verstärkung wirkt
+// nachhaltiger als eine erwartbare Nachricht bei jedem Klick.
+const MOTIVATIONS_NACHRICHTEN=["Stark gemacht! ","Weiter so, das läuft richtig gut! ","Geschafft – ein Schritt weiter! ","Klasse Leistung! ","Dranbleiben lohnt sich! ","Das war ein guter Zug! ","Sauber erledigt! ","Nice, das sitzt! "];
+function showMotivationsToast(besonders){
+ if(!besonders && Math.random()>0.65)return;
+ const list=besonders?["Ganze Woche geschafft – richtig stark! ","Woche komplett abgeschlossen, weiter so! "]:MOTIVATIONS_NACHRICHTEN;
+ toast(list[Math.floor(Math.random()*list.length)]);
+}
+
+// ---- Auftrag/Ziele je Woche (Lehrkraft pflegt, Schüler:innen sehen) ------
+async function getLehrplanAuftrag(wocheId){
+ try{
+ const snap=await getDocs(query(collection(db,"lehrplanAuftraege"),where("wocheId","==",wocheId)));
+ if(snap.empty)return null;
+ return {id:snap.docs[0].id,...snap.docs[0].data()};
+ }catch(e){console.error("Auftrag laden:",e);return null}
+}
+async function saveLehrplanAuftrag(fach,wocheId){
+ if(!isTeacher()){toast("Nur Lehrkräfte können Aufträge eintragen.");return}
+ const titel=$("auftragTitel")?.value.trim();
+ const zieleText=$("auftragZiele")?.value||"";
+ if(!titel){toast("Bitte einen Titel eingeben.");return}
+ const ziele=zieleText.split("\n").map(z=>z.trim()).filter(Boolean).map((text,i)=>({id:`z${i}`,text}));
+ try{
+ const existing=await getLehrplanAuftrag(wocheId);
+ const payload={wocheId,fach,titel,ziele,updatedAt:serverTimestamp(),updatedBy:currentUser.uid};
+ if(existing)await updateDoc(doc(db,"lehrplanAuftraege",existing.id),payload);
+ else{payload.createdAt=serverTimestamp();await addDoc(collection(db,"lehrplanAuftraege"),payload)}
+ await openWocheDetail(fach,wocheId);
+ toast("Auftrag gespeichert.");
+ }catch(e){console.error("Auftrag speichern:",e);toast("Konnte nicht gespeichert werden.")}
+}
+async function deleteLehrplanAuftrag(id,fach,wocheId){
+ if(!confirm("Diesen Auftrag wirklich löschen?"))return;
+ try{await deleteDoc(doc(db,"lehrplanAuftraege",id));await openWocheDetail(fach,wocheId);toast("Auftrag gelöscht.")}
+ catch(e){console.error(e);toast("Konnte nicht gelöscht werden.")}
+}
+
+// ---- Material je Woche ----------------------------------------------
+const MATERIAL_KATEGORIEN=[
+ {key:"lernsituation",label:"Lernsituation"},{key:"lehrtext",label:"Lehrtext"},
+ {key:"praesentation",label:"Präsentation"},{key:"bild",label:"Bild"},
+ {key:"video",label:"Video"},{key:"audio",label:"Audio"},{key:"link",label:"Link"}
+];
+async function getLehrplanMaterialien(wocheId){
+ try{
+ const snap=await getDocs(query(collection(db,"lehrplanMaterialien"),where("wocheId","==",wocheId)));
+ return snap.docs.map(d=>({id:d.id,...d.data()}));
+ }catch(e){console.error("Material laden:",e);return []}
+}
+async function addLehrplanMaterial(fach,wocheId){
+ if(!isTeacher()){toast("Nur Lehrkräfte können Material einstellen.");return}
+ const kategorie=$("matKategorie")?.value;
+ const titel=$("matTitel")?.value.trim();
+ const url=$("matUrl")?.value.trim();
+ if(!titel){toast("Bitte einen Titel eingeben.");return}
+ try{
+ await addDoc(collection(db,"lehrplanMaterialien"),{wocheId,fach,kategorie,titel,url,createdBy:currentUser.uid,createdAt:serverTimestamp()});
+ await openWocheDetail(fach,wocheId);
+ toast("Material hinzugefügt.");
+ }catch(e){console.error("Material speichern:",e);toast("Konnte nicht gespeichert werden.")}
+}
+async function deleteLehrplanMaterial(id,fach,wocheId){
+ if(!confirm("Dieses Material wirklich löschen?"))return;
+ try{await deleteDoc(doc(db,"lehrplanMaterialien",id));await openWocheDetail(fach,wocheId);toast("Gelöscht.")}
+ catch(e){console.error(e);toast("Konnte nicht gelöscht werden.")}
+}
+function materialEmbedHTML(m){
+ const url=m.url||"";
+ if(m.kategorie==="video"){
+ if(/youtube\.com|youtu\.be/.test(url)){
+ const idMatch=url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{6,})/);
+ const vid=idMatch?idMatch[1]:"";
+ return vid?`<iframe width="100%"height="200"src="https://www.youtube.com/embed/${vid}"loading="lazy"style="border:0;border-radius:8px"allowfullscreen></iframe>`:`<a href="${url}"target="_blank"rel="noopener">${esc(m.titel)} ↗</a>`;
+ }
+ return `<video controls style="width:100%;border-radius:8px;max-height:240px"src="${url}"></video>`;
+ }
+ if(m.kategorie==="audio")return `<audio controls style="width:100%"src="${url}"></audio>`;
+ if(m.kategorie==="bild")return `<img src="${url}"alt="${esc(m.titel)}"style="max-width:100%;border-radius:8px">`;
+ return `<a href="${url}"target="_blank"rel="noopener"class="pill"> ${esc(m.titel)} öffnen ↗</a>`;
+}
+
+// ---- Teams/Gruppen je Woche -------------------------------------------
+async function getLehrplanTeams(wocheId){
+ try{
+ const snap=await getDocs(query(collection(db,"lehrplanTeams"),where("wocheId","==",wocheId)));
+ return snap.docs.map(d=>({id:d.id,...d.data()}));
+ }catch(e){console.error("Teams laden:",e);return []}
+}
+async function createLehrplanTeam(fach,wocheId){
+ const teamName=$("neuTeamName")?.value.trim();
+ if(!teamName){toast("Bitte einen Team-Namen eingeben.");return}
+ try{
+ await addDoc(collection(db,"lehrplanTeams"),{wocheId,fach,teamName,mitgliederUids:[currentUser.uid],mitgliederNamen:[profile?.displayName||"Ich"],createdBy:currentUser.uid,createdAt:serverTimestamp()});
+ await openWocheDetail(fach,wocheId);
+ toast("Team erstellt – du bist Mitglied!");
+ }catch(e){console.error(e);toast("Konnte nicht erstellt werden.")}
+}
+async function joinLehrplanTeam(teamId,fach,wocheId){
+ try{
+ const ref=doc(db,"lehrplanTeams",teamId);
+ const snap=await getDoc(ref);
+ if(!snap.exists())return;
+ const d=snap.data();
+ if((d.mitgliederUids||[]).includes(currentUser.uid)){toast("Du bist schon in diesem Team.");return}
+ await updateDoc(ref,{mitgliederUids:[...(d.mitgliederUids||[]),currentUser.uid],mitgliederNamen:[...(d.mitgliederNamen||[]),profile?.displayName||"Mitglied"]});
+ await openWocheDetail(fach,wocheId);
+ toast("Team beigetreten!");
+ }catch(e){console.error(e);toast("Konnte nicht beitreten.")}
+}
+async function leaveLehrplanTeam(teamId,fach,wocheId){
+ try{
+ const ref=doc(db,"lehrplanTeams",teamId);
+ const snap=await getDoc(ref);
+ if(!snap.exists())return;
+ const d=snap.data();
+ const uids=[...(d.mitgliederUids||[])],namen=[...(d.mitgliederNamen||[])];
+ const idx=uids.indexOf(currentUser.uid);
+ if(idx>-1){uids.splice(idx,1);namen.splice(idx,1)}
+ await updateDoc(ref,{mitgliederUids:uids,mitgliederNamen:namen});
+ await openWocheDetail(fach,wocheId);
+ toast("Team verlassen.");
+ }catch(e){console.error(e);toast("Konnte nicht verlassen werden.")}
+}
+async function deleteLehrplanTeam(teamId,fach,wocheId){
+ if(!confirm("Dieses Team wirklich auflösen?"))return;
+ try{await deleteDoc(doc(db,"lehrplanTeams",teamId));await openWocheDetail(fach,wocheId);toast("Team aufgelöst.")}
+ catch(e){console.error(e);toast("Konnte nicht gelöscht werden.")}
+}
+
+// ---- Produkte/Ergebnisse je Woche --------------------------------------
+async function getLehrplanProdukte(wocheId){
+ try{
+ const snap=await getDocs(query(collection(db,"lehrplanProdukte"),where("wocheId","==",wocheId)));
+ return snap.docs.map(d=>({id:d.id,...d.data()}));
+ }catch(e){console.error("Produkte laden:",e);return []}
+}
+async function addLehrplanProdukt(fach,wocheId){
+ const titel=$("produktTitel")?.value.trim();
+ const inhalt=$("produktInhalt")?.value.trim();
+ if(!titel){toast("Bitte einen Titel eingeben.");return}
+ try{
+ await addDoc(collection(db,"lehrplanProdukte"),{wocheId,fach,uid:currentUser.uid,name:profile?.displayName||"Campus-Mitglied",titel,inhalt,createdAt:serverTimestamp()});
+ await openWocheDetail(fach,wocheId);
+ showMotivationsToast();
+ }catch(e){console.error(e);toast("Konnte nicht hochgeladen werden.")}
+}
+async function deleteLehrplanProdukt(id,fach,wocheId){
+ if(!confirm("Dieses Produkt wirklich löschen?"))return;
+ try{await deleteDoc(doc(db,"lehrplanProdukte",id));await openWocheDetail(fach,wocheId);toast("Gelöscht.")}
+ catch(e){console.error(e);toast("Konnte nicht gelöscht werden.")}
+}
+
+// ---- Persönlicher Fortschritt (Ziele erfüllt, Häkchen am Zeitstrahl) ---
+async function getLehrplanFortschritt(wocheId){
+ if(!currentUser)return {zieleErfuellt:{},abgeschlossen:false};
+ try{
+ const snap=await getDoc(doc(db,"lehrplanFortschritt",`${currentUser.uid}_${wocheId}`));
+ if(!snap.exists())return {zieleErfuellt:{},abgeschlossen:false};
+ return snap.data();
+ }catch(e){console.error("Fortschritt laden:",e);return {zieleErfuellt:{},abgeschlossen:false}}
+}
+async function toggleZielErfuellt(fach,wocheId,zielId,erfuellt){
+ try{
+ const ref=doc(db,"lehrplanFortschritt",`${currentUser.uid}_${wocheId}`);
+ const snap=await getDoc(ref);
+ const data=snap.exists()?snap.data():{uid:currentUser.uid,wocheId,fach,zieleErfuellt:{},abgeschlossen:false};
+ data.zieleErfuellt=data.zieleErfuellt||{};
+ data.zieleErfuellt[zielId]=erfuellt;
+ data.updatedAt=serverTimestamp();
+ await setDoc(ref,data);
+ await openWocheDetail(fach,wocheId);
+ if(erfuellt)showMotivationsToast();
+ }catch(e){console.error("Ziel-Status:",e);toast("Konnte nicht gespeichert werden.")}
+}
+async function markWocheAbgeschlossen(fach,wocheId){
+ const auftrag=await getLehrplanAuftrag(wocheId);
+ const fortschritt=await getLehrplanFortschritt(wocheId);
+ const ziele=auftrag?.ziele||[];
+ const alleErfuellt=ziele.length>0 && ziele.every(z=>fortschritt.zieleErfuellt?.[z.id]);
+ if(!alleErfuellt){toast("Bitte zuerst alle Ziele als erfüllt markieren.");return}
+ try{
+ await setDoc(doc(db,"lehrplanFortschritt",`${currentUser.uid}_${wocheId}`),{...fortschritt,uid:currentUser.uid,wocheId,fach,abgeschlossen:true,updatedAt:serverTimestamp()});
+ await render();
+ showMotivationsToast(true);
+ }catch(e){console.error("Woche abschließen:",e);toast("Konnte nicht gespeichert werden.")}
+}
+
+// ---- Lernstandsüberprüfung je Woche (mit Ampel für Lehrkräfte) ---------
+async function getLehrplanLernstand(wocheId){
+ if(!currentUser)return null;
+ try{
+ const snap=await getDocs(query(collection(db,"lehrplanLernstand"),where("wocheId","==",wocheId),where("uid","==",currentUser.uid)));
+ if(snap.empty)return null;
+ return {id:snap.docs[0].id,...snap.docs[0].data()};
+ }catch(e){console.error(e);return null}
+}
+async function submitLehrplanLernstand(fach,wocheId){
+ const antwort=$("lernstandAntwort")?.value.trim();
+ const ampel=$("lernstandAmpel")?.value||"gruen";
+ if(!antwort){toast("Bitte kurz eintragen, was du gelernt/erarbeitet hast.");return}
+ try{
+ const existing=await getLehrplanLernstand(wocheId);
+ const payload={wocheId,fach,uid:currentUser.uid,name:profile?.displayName||"Campus-Mitglied",antwort,ampel,updatedAt:serverTimestamp()};
+ if(existing)await updateDoc(doc(db,"lehrplanLernstand",existing.id),payload);
+ else{payload.createdAt=serverTimestamp();await addDoc(collection(db,"lehrplanLernstand"),payload)}
+ await openWocheDetail(fach,wocheId);
+ showMotivationsToast();
+ }catch(e){console.error(e);toast("Konnte nicht übermittelt werden.")}
+}
+window.saveLehrplanAuftrag=saveLehrplanAuftrag;window.deleteLehrplanAuftrag=deleteLehrplanAuftrag;
+window.addLehrplanMaterial=addLehrplanMaterial;window.deleteLehrplanMaterial=deleteLehrplanMaterial;
+window.createLehrplanTeam=createLehrplanTeam;window.joinLehrplanTeam=joinLehrplanTeam;
+window.leaveLehrplanTeam=leaveLehrplanTeam;window.deleteLehrplanTeam=deleteLehrplanTeam;
+window.addLehrplanProdukt=addLehrplanProdukt;window.deleteLehrplanProdukt=deleteLehrplanProdukt;
+window.toggleZielErfuellt=toggleZielErfuellt;window.markWocheAbgeschlossen=markWocheAbgeschlossen;
+window.submitLehrplanLernstand=submitLehrplanLernstand;
+
 function webUntisUrl(){
  const today=new Date().toISOString().slice(0,10);
  return `https://fos-bos-weilheim.webuntis.com/WebUntis?school=fos-bos-weilheim#/basic/timetablePublic/class?date=${today}&entityId=1190`;
@@ -1365,9 +1673,33 @@ window.toggleWochenplanDone=toggleWochenplanDone;
 window.deleteWochenplanEntry=deleteWochenplanEntry;
 window.quickAddWochenplan=quickAddWochenplan;
 
+function aktuellePraktikumsphase(){
+ const today=new Date().toISOString().slice(0,10);
+ const laufend=PRAKTIKUMSPHASEN.find(p=>today>=p.start&&today<=p.end);
+ if(laufend)return {...laufend,status:"laufend"};
+ const kommend=PRAKTIKUMSPHASEN.filter(p=>p.start>today).sort((a,b)=>a.start.localeCompare(b.start))[0];
+ return kommend?{...kommend,status:"kommend"}:null;
+}
+async function miniKalenderHTML(){
+ let events=[];
+ try{events=(await getCollection("events","start",false)).map(e=>({...e,collection:"events"}))}catch(e){}
+ if(!events.length){try{events=(await getCollection("calendar","date",false)).map(e=>({...e,collection:"calendar"}))}catch(e){}}
+ const today=new Date();today.setHours(0,0,0,0);
+ const monday=new Date(today);monday.setDate(today.getDate()-((today.getDay()+6)%7));
+ const days=Array.from({length:7},(_,i)=>{const d=new Date(monday);d.setDate(monday.getDate()+i);return d});
+ const dateKey=d=>d.toISOString().slice(0,10);
+ const eventDates=new Set(events.map(e=>String(e.start||e.date||"").slice(0,10)));
+ const wt=["Mo","Di","Mi","Do","Fr","Sa","So"];
+ return `<a href="#kalender"class="mini-kalender">
+ ${days.map((d,i)=>{const key=dateKey(d);const isToday=key===dateKey(today);const hasEvent=eventDates.has(key);
+ return `<div class="mini-kalender-day${isToday?" mini-kalender-today":""}"><small>${wt[i]}</small><strong>${d.getDate()}</strong>${hasEvent?`<span class="mini-kalender-dot"></span>`:""}</div>`;}).join("")}
+ </a>`;
+}
 async function renderStart(){
  let tasks=[],projects=[],news=[],nextCalendar=null,birthdayInfo=null,wochenplan=[];
  try{[tasks,projects,news,nextCalendar,birthdayInfo,wochenplan]=await Promise.all([getCollection("tasks","deadline",false),getCollection("projects"),getCollection("news"),getUpcomingCampusCalendarEvent(),getUpcomingBirthdayInfo(),getMeineWochenplanung()])}catch(e){}
+ const miniKalender=await miniKalenderHTML();
+ const praktikumsphase=aktuellePraktikumsphase();
  const on=tasks.filter(x=>x.status==="green").length;
  const upcomingDate=nextCalendar?.start||nextCalendar?.date||nextCalendar?.startDate;
  const upcomingDateText=upcomingDate?.seconds?new Date(upcomingDate.seconds*1000).toLocaleDateString("de-DE"):String(upcomingDate||"").slice(0,10);
@@ -1388,6 +1720,23 @@ class="list-item"><div><strong>${esc(p.title||p.text)}</strong>${p.title?`<small
  :`<div class="list-item"><div><strong>${birthdayInfo.people.map(p=>{const c=personColor(p.uid);return`<span style="color:${c.text}">${esc(p.name)}</span>`}).join(" & ")}</strong><small>${esc(birthdayInfo.date.toLocaleDateString("de-DE",{day:"2-digit",month:"long"}))} · ${birthdayInfo.days===1?"morgen":`in ${birthdayInfo.days} Tagen`}</small></div><span class="pill"style="background:${personColor(birthdayInfo.people[0].uid).border};color:#fff">Nächste(r)</span></div>`
  }</div>
  </div>
+ <div class="grid grid-3"style="margin-bottom:16px;gap:12px">
+ <div class="card card-compact"style="text-align:center">
+ <h3 style="margin:0 0 6px"> Uhrzeit</h3>
+ <strong class="live-clock-time"style="font-size:22px;display:block">${new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}</strong>
+ <small class="live-clock-date"style="color:var(--muted)">${new Date().toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long"})}</small>
+ </div>
+ <div class="card card-compact">
+ <h3 style="margin:0 0 8px"> Kalender</h3>
+ ${miniKalender}
+ </div>
+ ${praktikumsphase?`<a class="card card-compact"href="#praktikum"style="background:var(--soft-orange);display:block;text-decoration:none;color:inherit">
+ <h3 style="margin:0 0 6px"> ${praktikumsphase.status==="laufend"?"Praktikum läuft gerade":"Nächstes Praktikum"}</h3>
+ <strong style="display:block">${esc(praktikumsphase.titel)}</strong>
+ <small style="display:block;margin-top:4px">${esc(fmtDateOnly(praktikumsphase.start))}–${esc(fmtDateOnly(praktikumsphase.end))} · ${esc(praktikumsphase.bereich)}</small>
+ </a>`:`<div class="card card-compact"style="background:var(--soft-orange)"><h3 style="margin:0">Praktikum</h3><small>Aktuell keine Phase hinterlegt.</small></div>`}
+ </div>
+ ${(()=>{ensureGlobalClock();return"";})()}
  <div class="card"style="margin-top:16px;margin-bottom:16px">
  <div class="kicker">STUNDENPLAN</div>
  <h2 style="margin-top:4px">Aktueller Stundenplan</h2>
@@ -1598,6 +1947,193 @@ function taskHTML(t){return`<div class="list-item"><div><strong>${esc(t.title)}<
 ${esc(t.ownerName||"")} · Deadline: ${esc(t.deadline||"—")} · Nächster Schritt: ${esc(t.next||"—")}</small></div><div
 class="traffic">${statusDot(t.status)}<span class="pill">${statusLabel[t.status]||"—"}</span></div></div>`}
 
+async function renderFaecherUebersicht(){
+ return`${pageHead("LEHRPLAN & LERNINHALTE","Fächer 11. Klasse","Wähle ein Fach, um den Lehrplan-Zeitstrahl mit Themen, Aufträgen und Material zu öffnen.","")}
+ <div class="grid grid-4">${F11SB_FAECHER.map(f=>{
+ const wochen=LEHRPLAN_WOCHEN[f.key]||[];
+ const c=personColor(f.key);
+ return`<button class="card tile"style="background:${c.bg};border-left:4px solid ${c.border};text-align:left"onclick="openFach('${f.key}')">
+ <strong style="font-size:15px;color:${c.text}">${f.label}</strong>
+ <small style="display:block;margin-top:6px">${wochen.length?`${wochen.length} Lehrplan-Wochen hinterlegt`:"Lehrplan-Zeitstrahl folgt"}</small>
+ </button>`;
+ }).join("")}</div>
+ ${footer()}`;
+}
+
+async function renderFachDetail(){
+ if(!activeFach)return await renderFaecherUebersicht();
+ const fach=F11SB_FAECHER.find(f=>f.key===activeFach);
+ const timeline=combinedTimeline(activeFach);
+ const wochenItems=timeline.filter(t=>t.kind==="woche");
+ const fortschritte=await Promise.all(wochenItems.map(async w=>({id:w.id,f:await getLehrplanFortschritt(w.id)})));
+ const fortschrittMap={};fortschritte.forEach(x=>fortschrittMap[x.id]=x.f);
+ const heute=new Date().toISOString().slice(0,10);
+ const erledigtCount=wochenItems.filter(w=>fortschrittMap[w.id]?.abgeschlossen).length;
+ const fortschrittProzent=wochenItems.length?Math.round(erledigtCount/wochenItems.length*100):0;
+ const naechsteIdx=timeline.findIndex(item=>item.kind==="woche"&&!fortschrittMap[item.id]?.abgeschlossen);
+
+ return`<button class="secondary"onclick="closeFach()">← Zurück zu den Fächern</button>
+ ${pageHead("LERNPFAD",fach?.label||"Fach",`Dein Weg durchs Schuljahr – ${erledigtCount} von ${wochenItems.length} Wochen geschafft.`,"")}
+ <style>
+ .lernpfad{position:relative;margin:20px 0 10px;padding-left:44px}
+ .lp-linie-hinter{position:absolute;left:20px;top:6px;bottom:6px;width:5px;background:#e2eaf0;border-radius:3px}
+ .lp-linie-vorne{position:absolute;left:20px;top:6px;width:5px;background:linear-gradient(180deg,#3fa66a,#5cc98a);border-radius:3px;transition:height .4s}
+ .lp-node{position:relative;margin-bottom:20px}
+ .lp-punkt{position:absolute;left:-44px;top:0;width:40px;height:40px;border-radius:50%;background:#fff;border:3px solid #b8c4cc;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;z-index:2;transition:.2s}
+ .lp-punkt.lp-done{background:#3fa66a;border-color:#3fa66a;color:#fff}
+ .lp-punkt.lp-projekt{border-color:#3fa66a;color:#3fa66a}
+ .lp-punkt.lp-einzel{border-color:#e0a324;color:#e0a324}
+ .lp-punkt.lp-aktuell{transform:scale(1.15);box-shadow:0 0 0 5px rgba(22,136,207,.25)}
+ .lp-karte{background:#fff;border:1px solid var(--line,#e2eaf0);border-radius:14px;padding:14px 16px;cursor:pointer;transition:.15s}
+ .lp-karte:hover{transform:translateX(4px);box-shadow:0 6px 16px rgba(23,56,79,.1)}
+ .lp-karte.lp-karte-projekt{background:var(--soft-green)}
+ .lp-karte.lp-karte-einzel{background:var(--soft-yellow,#fff8e2)}
+ .lp-karte-date{font-size:11px;color:var(--muted)}
+ .lp-karte strong{display:block;font-size:13px;margin-top:2px}
+ .lp-karte small{display:block;color:var(--muted);font-size:11px;margin-top:4px;line-height:1.4}
+ .lp-typ-pill{margin-top:8px;display:inline-block;font-size:10px}
+ .lp-waypoint{position:relative;margin:26px 0}
+ .lp-waypoint-punkt{position:absolute;left:-44px;top:0;width:40px;height:40px;border-radius:10px;background:var(--soft-blue);border:3px solid #4a90d9;display:flex;align-items:center;justify-content:center;font-size:17px;transform:rotate(45deg);z-index:2}
+ .lp-waypoint-punkt span{transform:rotate(-45deg);display:block}
+ .lp-waypoint-karte{background:var(--soft-blue);border-radius:12px;padding:10px 14px;font-size:12px}
+ .lp-waypoint-karte strong{display:block;font-size:12.5px}
+ @media(max-width:600px){.lernpfad{padding-left:38px}.lp-punkt,.lp-waypoint-punkt{left:-38px;width:34px;height:34px}}
+ </style>
+ <div class="lernpfad">
+ <div class="lp-linie-hinter"></div>
+ <div class="lp-linie-vorne"style="height:${fortschrittProzent}%"></div>
+ ${timeline.map((item,idx)=>{
+ if(item.kind==="praktikum"){
+ return`<div class="lp-waypoint">
+ <div class="lp-waypoint-punkt"><span>🏥</span></div>
+ <div class="lp-waypoint-karte">
+ <span class="lp-karte-date">${esc(fmtDateOnly(item.start))}–${esc(fmtDateOnly(item.end))}</span>
+ <strong>${esc(item.titel)}</strong>
+ <small>${esc(item.bereich)} · ${esc(item.beschreibung)}</small>
+ </div>
+ </div>`;
+ }
+ const fortschritt=fortschrittMap[item.id]||{abgeschlossen:false};
+ const aktuell=idx===naechsteIdx;
+ return`<div class="lp-node">
+ <div class="lp-punkt lp-${item.typ}${fortschritt.abgeschlossen?" lp-done":""}${aktuell?" lp-aktuell":""}">${fortschritt.abgeschlossen?"✓":item.typ==="projekt"?"":""}</div>
+ <div class="lp-karte lp-karte-${item.typ}"onclick="openWocheDetail('${activeFach}','${item.id}')">
+ <span class="lp-karte-date">${esc(item.lb)} · ${esc(fmtDateOnly(item.start))}–${esc(fmtDateOnly(item.end))}</span>
+ <strong>${esc(item.thema)}</strong>
+ <small>${esc(item.planung.slice(0,90))}${item.planung.length>90?"…":""}</small>
+ <span class="pill lp-typ-pill"style="background:${item.typ==="projekt"?"#3fa66a":"#e0a324"};color:#fff">${item.typ==="projekt"?" Projekt":" Einzelthema"}</span>
+ </div>
+ </div>`;
+ }).join("")||`<div class="empty"><strong>Für dieses Fach ist noch kein Lernpfad hinterlegt.</strong>Sobald die Jahresplanung vorliegt, erscheinen hier die einzelnen Stationen.</div>`}
+ </div>
+ ${footer()}`;
+}
+window.renderFaecherUebersicht=renderFaecherUebersicht;
+
+// ---- Wochen-Detail: Auftrag/Ziele, Material, Team, Hilfe, Produkte, Lernstand
+async function openWocheDetail(fach,wocheId){
+ const woche=lehrplanWocheById(fach,wocheId);
+ if(!woche){toast("Diese Woche wurde nicht gefunden.");return}
+ const [auftrag,materialien,teams,produkte,fortschritt,lernstand]=await Promise.all([
+ getLehrplanAuftrag(wocheId),getLehrplanMaterialien(wocheId),getLehrplanTeams(wocheId),
+ getLehrplanProdukte(wocheId),getLehrplanFortschritt(wocheId),getLehrplanLernstand(wocheId)
+ ]);
+ const ziele=auftrag?.ziele||[];
+ const alleErfuellt=ziele.length>0 && ziele.every(z=>fortschritt.zieleErfuellt?.[z.id]);
+ const meinTeam=teams.find(t=>(t.mitgliederUids||[]).includes(currentUser.uid));
+ const fachLbl=F11SB_FAECHER.find(f=>f.key===fach)?.label||fach;
+
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+ <div class="kicker">${esc(fachLbl)} · ${esc(woche.lb)} · ${esc(fmtDateOnly(woche.start))}–${esc(fmtDateOnly(woche.end))}</div>
+ <h2>${esc(woche.thema)}</h2>
+ <span class="pill"style="background:${woche.typ==="projekt"?"#3fa66a":"#e0a324"};color:#fff">${woche.typ==="projekt"?"Projektarbeit":"Selbstlern-/Eigenarbeit"}</span>
+ <p style="margin-top:10px;color:var(--muted)">${esc(woche.planung)}</p>
+ ${woche.praxis?`<div class="card"style="background:var(--soft-blue);margin-top:10px;padding:10px 12px"><strong style="font-size:12px"> Praxistransfer</strong><small style="display:block;margin-top:4px">${esc(woche.praxis)}</small></div>`:""}
+
+ <details class="noten-collapsible"open style="margin-top:16px">
+ <summary> 1 · Auftrag & Ziele</summary>
+ ${isTeacher()?`<div class="form">
+ <label>Titel des Auftrags<input id="auftragTitel"type="text"value="${esc(auftrag?.titel||"")}"placeholder="z. B. Fallanalyse Erziehungsstile"></label>
+ <label>Ziele (eine Zeile je Ziel)<textarea id="auftragZiele"rows="4"placeholder="z. B. Ich kann die vier Erziehungsstile nach Baumrind unterscheiden">${esc((ziele.map(z=>z.text)).join("\n"))}</textarea></label>
+ <div class="form-actions">
+ <button class="primary"onclick="saveLehrplanAuftrag('${fach}','${wocheId}')">Speichern</button>
+ ${auftrag?`<button class="secondary"onclick="deleteLehrplanAuftrag('${auftrag.id}','${fach}','${wocheId}')">Auftrag löschen</button>`:""}
+ </div>
+ </div>`
+ :!auftrag?`<div class="empty">Für diese Woche wurde noch kein Auftrag eingetragen.</div>`
+ :`<h3 style="margin:8px 0">${esc(auftrag.titel)}</h3>
+ <div class="list">${ziele.map(z=>`<div class="list-item"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;flex:1"><input type="checkbox"${fortschritt.zieleErfuellt?.[z.id]?"checked":""}onchange="toggleZielErfuellt('${fach}','${wocheId}','${z.id}',this.checked)"><span>${esc(z.text)}</span></label></div>`).join("")||`<div class="empty">Noch keine Ziele hinterlegt.</div>`}</div>
+ <div class="form-actions"style="margin-top:12px">
+ <button class="primary"${fortschritt.abgeschlossen?"disabled":""}onclick="markWocheAbgeschlossen('${fach}','${wocheId}')">${fortschritt.abgeschlossen?"✓ Woche abgeschlossen":alleErfuellt?"✓ Woche als abgeschlossen markieren":" Erst alle Ziele erfüllen"}</button>
+ </div>`}
+ </details>
+
+ <details class="noten-collapsible"style="margin-top:10px">
+ <summary> 2 · Material zur Bearbeitung</summary>
+ ${isTeacher()?`<div class="form"style="margin-bottom:12px">
+ <div style="display:flex;gap:8px;flex-wrap:wrap">
+ <select id="matKategorie">${MATERIAL_KATEGORIEN.map(k=>`<option value="${k.key}">${k.label}</option>`).join("")}</select>
+ <input id="matTitel"type="text"placeholder="Titel"style="flex:1;min-width:140px">
+ <input id="matUrl"type="url"placeholder="Link/URL"style="flex:1;min-width:160px">
+ <button class="primary"onclick="addLehrplanMaterial('${fach}','${wocheId}')">＋ Hinzufügen</button>
+ </div>
+ </div>`:""}
+ <div class="list">${materialien.map(m=>`<div class="list-item"style="flex-direction:column;align-items:stretch;gap:8px">
+ <div style="display:flex;justify-content:space-between;align-items:center"><strong>${esc(MATERIAL_KATEGORIEN.find(k=>k.key===m.kategorie)?.label||m.kategorie)}: ${esc(m.titel)}</strong>${isTeacher()?`<button class="secondary"onclick="deleteLehrplanMaterial('${m.id}','${fach}','${wocheId}')">Löschen</button>`:""}</div>
+ ${m.url?materialEmbedHTML(m):""}
+ </div>`).join("")||`<div class="empty">Noch kein Material eingestellt.</div>`}</div>
+ <div class="form-actions"style="margin-top:12px;flex-wrap:wrap">
+ <button class="secondary"onclick="closeModal();go('kompetenz')"> Kompetenzwerkstatt</button>
+ <button class="secondary"onclick="closeModal();go('kollaboration')"> Kollaborations-Tools</button>
+ <button class="secondary"onclick="closeModal();go('lernwerkzeuge')"> Karteikarten & Fokus-Timer</button>
+ <button class="secondary"onclick="closeModal();go('ki-lernen')"> KI zum Lernen</button>
+ </div>
+ </details>
+
+ <details class="noten-collapsible"style="margin-top:10px">
+ <summary> 3 · Team/Gruppe${woche.typ==="projekt"?" (für dieses Projekt vorgesehen)":" (freiwillig)"}</summary>
+ <div class="list">${teams.map(t=>{const inTeam=(t.mitgliederUids||[]).includes(currentUser.uid);return`<div class="list-item"><div><strong>${esc(t.teamName)}</strong><small>${esc((t.mitgliederNamen||[]).join(", ")||"Noch niemand")}</small></div><div style="display:flex;gap:6px">${inTeam?`<button class="secondary"onclick="leaveLehrplanTeam('${t.id}','${fach}','${wocheId}')">Verlassen</button>`:`<button class="primary"onclick="joinLehrplanTeam('${t.id}','${fach}','${wocheId}')">Beitreten</button>`}${isTeacher()?`<button class="secondary"onclick="deleteLehrplanTeam('${t.id}','${fach}','${wocheId}')">Auflösen</button>`:""}</div></div>`}).join("")||`<div class="empty">Noch keine Teams gebildet.</div>`}</div>
+ ${!meinTeam?`<div class="form-actions"style="margin-top:10px"><input id="neuTeamName"type="text"placeholder="Team-Name"style="flex:1"><button class="primary"onclick="createLehrplanTeam('${fach}','${wocheId}')">＋ Team gründen</button></div>`:""}
+ </details>
+
+ <details class="noten-collapsible"style="margin-top:10px">
+ <summary> 4 · Hilfe anfragen</summary>
+ <p style="color:var(--muted);margin-top:0">Frag im Forum die ganze Klasse oder schreib direkt einer Lehrkraft/Mitschüler:in eine Nachricht.</p>
+ <div class="form-actions">
+ <button class="secondary"onclick="closeModal();go('forum-board')"> Im Forum fragen</button>
+ <button class="secondary"onclick="closeModal();go('forum-nachrichten')"> Persönliche Nachricht</button>
+ </div>
+ </details>
+
+ <details class="noten-collapsible"style="margin-top:10px">
+ <summary> 5 · Produkte & Ergebnisse</summary>
+ <div class="list">${produkte.map(p=>`<div class="list-item"><div><strong>${esc(p.titel)}</strong><small>${esc(p.name)}${p.inhalt?" · "+esc(p.inhalt.slice(0,60)):""}</small></div>${(p.uid===currentUser.uid||isTeacher())?`<button class="secondary"onclick="deleteLehrplanProdukt('${p.id}','${fach}','${wocheId}')">Löschen</button>`:""}</div>`).join("")||`<div class="empty">Noch keine Produkte hochgeladen.</div>`}</div>
+ <div class="form-actions"style="margin-top:10px;flex-wrap:wrap">
+ <input id="produktTitel"type="text"placeholder="Titel des Produkts"style="flex:1;min-width:140px">
+ <input id="produktInhalt"type="text"placeholder="Link oder kurze Beschreibung"style="flex:1;min-width:160px">
+ <button class="primary"onclick="addLehrplanProdukt('${fach}','${wocheId}')">＋ Hochladen</button>
+ </div>
+ </details>
+
+ <details class="noten-collapsible"style="margin-top:10px">
+ <summary> 6 · Lernstandsüberprüfung</summary>
+ <p style="color:var(--muted);margin-top:0">Halte kurz fest, was du gelernt/erarbeitet hast. Tipp: Lass es dir vorab von einer KI gegenchecken. Die Lehrkraft sieht deine Selbsteinschätzung über die Ampel.</p>
+ <textarea id="lernstandAntwort"rows="3"placeholder="Was hast du erarbeitet/verstanden?">${esc(lernstand?.antwort||"")}</textarea>
+ <div class="form-actions"style="margin-top:8px">
+ <select id="lernstandAmpel">
+ <option value="gruen"${lernstand?.ampel==="gruen"?"selected":""}>🟢 Ich fühle mich sicher</option>
+ <option value="gelb"${lernstand?.ampel==="gelb"?"selected":""}>🟡 Teilweise sicher</option>
+ <option value="rot"${lernstand?.ampel==="rot"?"selected":""}>🔴 Ich brauche Hilfe</option>
+ </select>
+ <button class="primary"onclick="submitLehrplanLernstand('${fach}','${wocheId}')">${lernstand?"Aktualisieren":"Übermitteln"}</button>
+ </div>
+ </details>
+
+ <div class="form-actions"style="margin-top:16px"><button class="secondary"onclick="closeModal()">Schließen</button></div>
+ `);
+}
+window.openWocheDetail=openWocheDetail;
+
 async function renderLernwerkstatt(){
  const groups=[
  {title:"Dich selbst einschätzen",color:"var(--soft-blue)",items:[
@@ -1609,6 +2145,7 @@ async function renderLernwerkstatt(){
  {title:"Konkret lernen & üben",color:"var(--soft-green)",items:[
  [" ","Lernmethoden","Planung, Lernen, Zusammenarbeit und Reflexion.","methoden"],
  [" ","Lern-Werkzeuge","Karteikarten, Fokus-Timer und Glossar zum selbstständigen Lernen.","lernwerkzeuge"],
+ [" ","Uhr & Timer","Aktuelle Uhrzeit im Blick, plus frei einstellbarer Timer für alle.","uhr-timer"],
  [" ","Fachaufsatz-Training","Fachaufsatz Pädagogik/Psychologie Baustein für Baustein üben.","fachaufsatz"],
  [" ","Tools für Zusammenarbeit","Padlet, Wortwolke & Co. für Gruppenarbeit und Unterricht.","kollaboration"],
  [" ","Lernressourcen","TaskCard, KI, Videos, ByCS/mebis, Canva und LearningApps.","ressourcen"],
@@ -1621,6 +2158,11 @@ async function renderLernwerkstatt(){
  ]}
  ];
  return`${pageHead("SELBSTSTÄNDIG LERNEN","Lernwerkstatt","Der offene Lernraum für Lernaufträge, Methoden, Tools und KI.",`<button class="primary"onclick="openPostForm('idea')">＋ Lernimpuls</button>`)}
+ <div class="kicker"style="margin-bottom:10px">LEHRPLAN & LERNINHALTE</div>
+ <a class="card tile"href="#faecher"style="background:linear-gradient(135deg,var(--soft-blue),var(--soft-purple));min-height:110px;margin-bottom:22px">
+ <span class="emoji"></span><strong style="font-size:16px">Fächer 11. Klasse</strong>
+ <small>Lehrplan-Zeitstrahl je Fach: Themen, Aufträge, Material, Teams und Produkte – Schritt für Schritt durchs Schuljahr.</small>
+ </a>
  ${groups.map(g=>`<div class="kicker"style="margin:22px 0 10px">${g.title}</div><div class="grid grid-4">${g.items.map(x=>`<a class="card tile"style="background:${g.color}"href="#${x[3]}"><span class="emoji">${x[0]}</span>
 <strong>${x[1]}</strong><small>${x[2]}</small></a>`).join("")}</div>`).join("")}
  ${footer()}`;
@@ -3571,6 +4113,80 @@ async function downloadDeckPDF(deckId){
  ========================================================= */
 let pomodoroSecondsLeft=25*60, pomodoroPhase="fokus", pomodoroRunning=false, pomodoroInterval=null;
 let pomodoroWorkMin=25, pomodoroBreakMin=5;
+
+// ---- Uhr & Timer (frei einstellbar für Lehrkräfte und Schüler) ----------
+let __globalClockInterval=null;
+function ensureGlobalClock(){
+ if(__globalClockInterval)return;
+ __globalClockInterval=setInterval(()=>{
+ const now=new Date();
+ const timeStr=now.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+ const dateStr=now.toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long"});
+ document.querySelectorAll(".live-clock-time").forEach(el=>el.textContent=timeStr);
+ document.querySelectorAll(".live-clock-date").forEach(el=>el.textContent=dateStr);
+ },1000);
+}
+let simpleTimerMinutes=10;
+let simpleTimerSecondsLeft=600;
+let simpleTimerRunning=false;
+let simpleTimerInterval=null;
+function simpleTimerFormat(sec){const m=Math.floor(sec/60),s=sec%60;return`${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`}
+function startSimpleTimer(){
+ if(simpleTimerRunning)return;
+ if(simpleTimerSecondsLeft<=0){
+ const mins=Math.max(1,Math.min(180,parseInt($("simpleTimerInput")?.value,10)||10));
+ simpleTimerMinutes=mins;simpleTimerSecondsLeft=mins*60;
+ }
+ simpleTimerRunning=true;
+ const btn=$("simpleTimerStartBtn");if(btn)btn.textContent="Läuft …";
+ simpleTimerInterval=setInterval(()=>{
+ simpleTimerSecondsLeft--;
+ const disp=$("simpleTimerDisplay");if(disp)disp.textContent=simpleTimerFormat(simpleTimerSecondsLeft);
+ if(simpleTimerSecondsLeft<=0){
+ clearInterval(simpleTimerInterval);simpleTimerRunning=false;
+ toast(" Zeit ist um!");
+ const b=$("simpleTimerStartBtn");if(b)b.textContent="▶ Start";
+ }
+ },1000);
+}
+function pauseSimpleTimer(){
+ clearInterval(simpleTimerInterval);simpleTimerRunning=false;
+ const btn=$("simpleTimerStartBtn");if(btn)btn.textContent="▶ Weiter";
+}
+function resetSimpleTimer(){
+ clearInterval(simpleTimerInterval);simpleTimerRunning=false;
+ const mins=Math.max(1,Math.min(180,parseInt($("simpleTimerInput")?.value,10)||10));
+ simpleTimerMinutes=mins;simpleTimerSecondsLeft=mins*60;
+ const disp=$("simpleTimerDisplay");if(disp)disp.textContent=simpleTimerFormat(simpleTimerSecondsLeft);
+ const btn=$("simpleTimerStartBtn");if(btn)btn.textContent="▶ Start";
+}
+window.startSimpleTimer=startSimpleTimer;window.pauseSimpleTimer=pauseSimpleTimer;window.resetSimpleTimer=resetSimpleTimer;
+function renderUhrTimer(){
+ ensureGlobalClock();
+ return`${pageHead("SELBSTSTÄNDIG LERNEN","Uhr & Timer","Aktuelle Uhrzeit im Blick behalten oder einen frei einstellbaren Timer starten.",`<button class="secondary"onclick="go('lernwerkstatt')">← Lernwerkstatt</button>`)}
+ <div class="grid grid-2"style="gap:16px">
+ <div class="card"style="text-align:center">
+ <div class="kicker">AKTUELLE UHRZEIT</div>
+ <div class="pomo-display live-clock-time"style="margin-top:10px">${new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}</div>
+ <div class="pomo-phase live-clock-date">${new Date().toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long"})}</div>
+ </div>
+ <div class="card"style="text-align:center">
+ <div class="kicker">TIMER</div>
+ <div class="pomo-display"id="simpleTimerDisplay"style="margin-top:10px">${simpleTimerFormat(simpleTimerSecondsLeft)}</div>
+ <div class="pomo-actions">
+ <button class="primary"id="simpleTimerStartBtn"onclick="startSimpleTimer()">${simpleTimerRunning?"Läuft …":"▶ Start"}</button>
+ <button class="secondary"onclick="pauseSimpleTimer()">⏸ Pause</button>
+ <button class="secondary"onclick="resetSimpleTimer()">↺ Zurücksetzen</button>
+ </div>
+ <div class="pomo-settings">
+ <label>Minuten<input id="simpleTimerInput"type="number"min="1"max="180"value="${simpleTimerMinutes}"></label>
+ </div>
+ <small style="display:block;margin-top:10px;color:var(--muted)">Lehrkräfte und Schüler:innen können die Minuten frei einstellen – z. B. für Prüfungssimulationen, Gruppenarbeiten oder eigene Lernphasen.</small>
+ </div>
+ </div>
+ ${footer()}`;
+}
+window.renderUhrTimer=renderUhrTimer;
 
 function renderFokusTimer(){
  return`${pageHead("SELBSTSTÄNDIG LERNEN","Fokus-Timer","Pomodoro-Technik: fokussiert arbeiten, dann bewusst Pause machen.",`<button class="secondary"onclick="go('lernwerkzeuge')">← Lern-Werkzeuge</button>`)}
@@ -6038,6 +6654,18 @@ async function renderPraktikum(){
  @media(max-width:850px){.fpa-tools{grid-template-columns:1fr}.ki-grid{grid-template-columns:1fr}}
  </style>
 
+ <div class="kicker">PRAKTIKUMSPHASEN 2026/27</div>
+ <div class="grid grid-3"style="margin-top:8px;margin-bottom:22px">${PRAKTIKUMSPHASEN.map(p=>{
+ const heute=new Date().toISOString().slice(0,10);
+ const status=heute>=p.start&&heute<=p.end?"laufend":heute>p.end?"vorbei":"kommend";
+ return`<div class="card"style="background:${status==="laufend"?"var(--soft-orange)":status==="vorbei"?"#f3f5f7":"var(--soft-blue)"}">
+ ${status==="laufend"?`<span class="pill"style="background:#e8890c;color:#fff">läuft gerade</span>`:""}
+ <strong style="display:block;margin-top:6px">${esc(p.titel)}</strong>
+ <small style="display:block;color:var(--muted);margin-top:4px">${esc(fmtDateOnly(p.start))}–${esc(fmtDateOnly(p.end))}</small>
+ <small style="display:block;margin-top:6px">${esc(p.bereich)} · ${esc(p.beschreibung)}</small>
+ </div>`;
+ }).join("")}</div>
+
  <div class="kicker">BEREICH 1 · LEHRKRAFT → SCHÜLER</div>
  <div class="card fpa-main"style="margin-top:8px;background:var(--soft-blue)">
  <h2> Praxisaufträge</h2>
@@ -8230,6 +8858,7 @@ async function render(){
  const p=location.hash.replace("#","")||"start";
  const pages={
  start:renderStart,klassenteam:renderKlassenteam,kompass:renderKompass,lernwerkstatt:renderLernwerkstatt,"ki-lernen":renderKILernen,
+ faecher:renderFaecherUebersicht,fach:renderFachDetail,
  ressourcen:renderRessourcenRoute,lernpfad:renderLernpfadRoute,forum:renderForum,"forum-board":renderForumBoard,"forum-nachrichten":renderForumMessages,
  pinnwand:renderPinnwandUebersicht,"pinnwand-board":renderPinnwandBoard,
  kollaboration:renderKollaborationsTools,
@@ -8242,7 +8871,7 @@ async function render(){
  umfrage:renderUmfrageUebersicht,"umfrage-board":renderUmfrageBoard,
  zufallspicker:renderZufallspicker,
  lernwerkzeuge:renderLernWerkzeuge,
- karteikarten:renderKarteikartenUebersicht,"karteikarten-board":renderKarteikartenBoard,"fokus-timer":renderFokusTimer,
+ karteikarten:renderKarteikartenUebersicht,"karteikarten-board":renderKarteikartenBoard,"fokus-timer":renderFokusTimer,"uhr-timer":renderUhrTimer,
  glossar:renderGlossar,
  fachaufsatz:renderFachaufsatzUebersicht,"fachaufsatz-board":renderFachaufsatzBoard,
  projekte:renderProjekte,kompetenz:renderKompetenz,journal:renderLernjournalRoute,

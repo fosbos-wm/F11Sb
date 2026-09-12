@@ -75,6 +75,14 @@ main#content{flex:1;min-width:0;padding:28px 34px 60px;max-width:1500px}
 .card-compact{padding:12px 14px}
 .card-compact.stat{padding:10px 14px}
 .card-compact.stat b{font-size:19px}
+.mini-kalender{display:flex;gap:4px;text-decoration:none;color:inherit;margin-top:4px}
+.mini-kalender-day{flex:1;text-align:center;padding:8px 2px;border-radius:8px;background:#f7fafc;position:relative}
+.mini-kalender-day small{display:block;color:var(--muted);font-size:9px;text-transform:uppercase}
+.mini-kalender-day strong{display:block;font-size:15px;margin-top:2px}
+.mini-kalender-today{background:var(--blue);color:#fff}
+.mini-kalender-today small{color:rgba(255,255,255,.8)}
+.mini-kalender-dot{display:block;width:5px;height:5px;border-radius:50%;background:#e8890c;margin:3px auto 0}
+.mini-kalender-today .mini-kalender-dot{background:#fff}
 .card-compact h3{margin:0 0 8px;font-size:14px}
 .card-compact .list{gap:6px}
 .card-compact .list-item{padding:8px 10px}
