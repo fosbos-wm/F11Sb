@@ -9541,7 +9541,7 @@ value),status:$("fStatus").value,next:$("fNext").value.trim()||"Nächsten Schrit
 }
 function openNewsForm(){
  if(!isTeacher()){toast("Nur Lehrkräfte können News veröffentlichen.");return}
- modal(`<button class="modal-close"onclick="closeModal()">×</button><div class="kicker">CAMPUS-NEWS · LEHRKRAFT</div><h2>News veröffentlichen</h2><div class="form"><label>Überschrift<input id="newsTitle"placeholder="Kurze Überschrift"required></label><label>News<textarea id="newsText"rows="6"placeholder="Was sollen die Campus-Mitglieder wissen?"required></textarea></label><div class="form-actions"><button class="secondary"onclick="closeModal()">Abbrechen</button><button class="primary"onclick="addNews()">Veröffentlichen</button></div></div>`);
+ modal(`<button class="modal-close"onclick="closeModal()">×</button><div class="kicker">CAMPUS-NEWS · LEHRKRAFT</div><h2>News veröffentlichen</h2><div class="form"><label>Überschrift<input id="newsTitle"placeholder="Kurze Überschrift"required></label><label>News<textarea id="newsText"rows="6"placeholder="Was sollen die Campus-Mitglieder wissen?"required></textarea></label><div style="margin-top:-8px;margin-bottom:10px">${emojiPickerHTML("newsText","emojiPickerNews")}</div><div class="form-actions"><button class="secondary"onclick="closeModal()">Abbrechen</button><button class="primary"onclick="addNews()">Veröffentlichen</button></div></div>`);
 }
 
 async function addNews(){
