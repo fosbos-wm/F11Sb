@@ -910,6 +910,16 @@ const LANDKREIS_ORTE=[
  ["Großweil",843,709,"gap"],["Ohlstadt",786,732,"gap"],["Schwaigen",659,749,"gap"]
 ];
 let liveUnsubHeimat=null;
+let liveUnsubMiniKalender=null;
+function subscribeMiniKalenderLive(){
+ // Der Mini-Kalender auf der Startseite ist derselbe Campus-Kalender –
+ // ändert eine Lehrkraft dort etwas (events/calendar-Sammlung), wird die
+ // Startseite live nachgezogen, ohne dass neu navigiert werden muss.
+ const refresh=()=>{miniKalenderHTML().then(html=>{const el=$("miniKalenderWrap");if(el)el.innerHTML=html});};
+ const unsub1=onSnapshot(collection(db,"events"),refresh,e=>console.error("Mini-Kalender-Live-Update:",e));
+ const unsub2=onSnapshot(collection(db,"calendar"),refresh,e=>console.error("Mini-Kalender-Live-Update:",e));
+ liveUnsubMiniKalender=()=>{unsub1();unsub2()};
+}
 async function getHeimatEintraege(){
  if(!db)return [];
  try{
@@ -1739,7 +1749,7 @@ class="list-item"><div><strong>${esc(p.title||p.text)}</strong>${p.title?`<small
  </div>
  <div class="card card-compact">
  <h3 style="margin:0 0 8px"> Kalender</h3>
- ${miniKalender}
+ <div id="miniKalenderWrap">${miniKalender}</div>
  </div>
  ${praktikumsphase?`<a class="card card-compact"href="#praktikum"style="background:var(--soft-orange);display:block;text-decoration:none;color:inherit">
  <h3 style="margin:0 0 6px"> ${praktikumsphase.status==="laufend"?"Praktikum läuft gerade":"Nächstes Praktikum"}</h3>
@@ -5294,9 +5304,17 @@ function closePinnwandBoard(){activeBoardId=null;go("pinnwand")}
 
 function boardNoteHTML(p){
  const canDelete=p.authorUid===currentUser.uid||isTeacher();
+ let mediaHTML="";
+ if(p.url&&p.mediaType==="bild")mediaHTML=`<img src="${esc(p.url)}"alt=""class="pin-note-media"loading="lazy">`;
+ else if(p.url&&p.mediaType==="video"){
+ const ytMatch=p.url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{6,})/);
+ mediaHTML=ytMatch?`<iframe class="pin-note-media"src="https://www.youtube.com/embed/${ytMatch[1]}"loading="lazy"allowfullscreen></iframe>`:`<video class="pin-note-media"controls src="${esc(p.url)}"></video>`;
+ }
+ else if(p.url&&p.mediaType==="audio")mediaHTML=`<audio class="pin-note-media-audio"controls src="${esc(p.url)}"></audio>`;
  return`<div class="pin-note"style="background:${noteColorBg(p.color)}">
  <p class="pin-note-text">${esc(p.text)}</p>
- ${p.url?`<a class="pin-note-link"href="${esc(p.url)}"target="_blank"rel="noopener noreferrer"> Link öffnen</a>`:""}
+ ${mediaHTML}
+ ${p.url&&(!p.mediaType||p.mediaType==="link")?`<a class="pin-note-link"href="${esc(p.url)}"target="_blank"rel="noopener noreferrer"> Link öffnen</a>`:""}
  <div class="pin-note-meta"><small>${esc(p.authorName||"Campus-Mitglied")} · ${fmtDate(p.createdAt)}</small>
  <span>
  <button class="pin-note-delete"title="Melden"onclick="openReportForm('boardPosts','${p.id}','${esc((p.text||"").slice(0,80))}')"></button>
@@ -5332,6 +5350,10 @@ async function renderPinnwandBoard(){
  .pin-note{break-inside:avoid;-webkit-column-break-inside:avoid;margin:0 0 14px;padding:14px 14px 10px;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,.08);color:#2a2a2a}
  .pin-note-text{margin:0 0 8px;white-space:pre-wrap;word-break:break-word}
  .pin-note-link{display:inline-block;margin-bottom:8px;font-weight:700;color:inherit;text-decoration:underline}
+ .pin-note-media{display:block;width:100%;border-radius:8px;margin-bottom:8px;max-height:220px;object-fit:cover}
+ iframe.pin-note-media{height:160px;border:0}
+ video.pin-note-media{max-height:220px}
+ .pin-note-media-audio{width:100%;margin-bottom:8px}
  .pin-note-meta{display:flex;justify-content:space-between;align-items:center;gap:8px;opacity:.75}
  .pin-note-delete{background:none;border:none;cursor:pointer;font-size:14px;padding:2px 6px;opacity:.6}
  .pin-note-delete:hover{opacity:1}
@@ -5427,7 +5449,13 @@ function openBoardPostForm(){
  <h2>Neue Notiz</h2>
  <div class="form">
  <label>Text<textarea id="bpText"rows="4"maxlength="500"placeholder="Deine Idee, Frage oder dein Beitrag …"></textarea></label>
- <label>Link (optional)<input id="bpUrl"type="url"placeholder="https://…"></label>
+ <label>Medium (optional)<select id="bpMediaType"onchange="$('bpUrl').placeholder=this.value==='bild'?'Bild-URL (…jpg/png)':this.value==='video'?'Video-URL (auch YouTube)':this.value==='audio'?'Audio-URL (…mp3)':'https://…'">
+ <option value="link">Nur Link</option>
+ <option value="bild">Bild</option>
+ <option value="video">Video</option>
+ <option value="audio">Audio</option>
+ </select></label>
+ <label>Link/URL (optional)<input id="bpUrl"type="url"placeholder="https://…"></label>
  <label>Farbe</label>
  <div class="chips"id="bpColorPicker"style="margin:2px 0 10px">
  ${noteColors.map((c,i)=>`<span class="chip"data-color="${c.id}"style="background:${c.bg};cursor:pointer;color:#2a2a2a;${i===0?"outline:2px solid var(--brand,#1598d1)":""}"onclick="selectBoardNoteColor('${c.id}')">${c.id}</span>`).join("")}
@@ -5452,6 +5480,7 @@ async function addBoardPost(){
  if(!activeBoardId)return;
  const text=$("bpText")?.value.trim()||"";
  let url=$("bpUrl")?.value.trim()||"";
+ const mediaType=$("bpMediaType")?.value||"link";
  const color=$("bpColor")?.value||noteColors[0].id;
  if(!text){toast("Bitte einen Text für die Notiz eingeben.");return}
  if(url){
@@ -5461,7 +5490,7 @@ async function addBoardPost(){
  }
  try{
  await addDoc(collection(db,"boardPosts"),{
- boardId:activeBoardId,text,url,color,
+ boardId:activeBoardId,text,url,mediaType,color,
  authorUid:currentUser.uid,
  authorName:profile?.displayName||currentUser.email||"Campus-Mitglied",
  createdAt:serverTimestamp()
@@ -8865,6 +8894,7 @@ async function render(){
  if(!currentUser)return;
  if(liveUnsubscribe){liveUnsubscribe();liveUnsubscribe=null;}
  if(liveUnsubHeimat){liveUnsubHeimat();liveUnsubHeimat=null;}
+ if(liveUnsubMiniKalender){liveUnsubMiniKalender();liveUnsubMiniKalender=null;}
  const seq=++__campusRenderSeq;
  const p=location.hash.replace("#","")||"start";
  const pages={
@@ -8917,6 +8947,9 @@ async function render(){
  }
  if(p==="klassenteam"){
  subscribeHeimatkarteLive();
+ }
+ if(p==="start"){
+ subscribeMiniKalenderLive();
  }
  if(p==="ampel-board"&&activeAmpelId){
  subscribeAmpelLive(activeAmpelId);
