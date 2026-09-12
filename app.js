@@ -1684,16 +1684,27 @@ async function miniKalenderHTML(){
  let events=[];
  try{events=(await getCollection("events","start",false)).map(e=>({...e,collection:"events"}))}catch(e){}
  if(!events.length){try{events=(await getCollection("calendar","date",false)).map(e=>({...e,collection:"calendar"}))}catch(e){}}
+ let birthdayEvents=[];
+ try{birthdayEvents=await getBirthdayEvents()}catch(e){}
+ // Dieselben Schulferien-Zeiträume wie im vollständigen Campus-Kalender.
+ const ferienZeitraeume=[
+ ["2026-08-03","2026-09-14"],["2026-11-02","2026-11-06"],["2026-12-24","2027-01-08"],
+ ["2027-02-08","2027-02-12"],["2027-03-22","2027-04-02"],["2027-05-18","2027-05-28"],["2027-08-02","2027-09-13"]
+ ];
+ const istFerien=key=>ferienZeitraeume.some(([von,bis])=>key>=von&&key<=bis);
  const today=new Date();today.setHours(0,0,0,0);
  const monday=new Date(today);monday.setDate(today.getDate()-((today.getDay()+6)%7));
  const days=Array.from({length:7},(_,i)=>{const d=new Date(monday);d.setDate(monday.getDate()+i);return d});
  const dateKey=d=>d.toISOString().slice(0,10);
  const eventDates=new Set(events.map(e=>String(e.start||e.date||"").slice(0,10)));
+ const birthdayDates=new Set(birthdayEvents.map(e=>String(e.start||"").slice(0,10)));
  const wt=["Mo","Di","Mi","Do","Fr","Sa","So"];
  return `<a href="#kalender"class="mini-kalender">
- ${days.map((d,i)=>{const key=dateKey(d);const isToday=key===dateKey(today);const hasEvent=eventDates.has(key);
- return `<div class="mini-kalender-day${isToday?" mini-kalender-today":""}"><small>${wt[i]}</small><strong>${d.getDate()}</strong>${hasEvent?`<span class="mini-kalender-dot"></span>`:""}</div>`;}).join("")}
- </a>`;
+ ${days.map((d,i)=>{const key=dateKey(d);const isToday=key===dateKey(today);
+ const ferien=istFerien(key),geburtstag=birthdayDates.has(key),termin=eventDates.has(key);
+ return `<div class="mini-kalender-day${isToday?" mini-kalender-today":""}${ferien?" mini-kalender-ferien":""}"><small>${wt[i]}</small><strong>${d.getDate()}</strong>${geburtstag?`<span class="mini-kalender-dot mini-kalender-dot-pink"></span>`:termin?`<span class="mini-kalender-dot"></span>`:""}</div>`;}).join("")}
+ </a>
+ <small style="display:block;margin-top:6px;color:var(--muted);font-size:10px">Zum vollständigen Campus-Kalender →</small>`;
 }
 async function renderStart(){
  let tasks=[],projects=[],news=[],nextCalendar=null,birthdayInfo=null,wochenplan=[];
