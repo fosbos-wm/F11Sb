@@ -502,14 +502,6 @@ service cloud.firestore {
       allow update: if isApproved() && (resource.data.uid == request.auth.uid || isTeacher());
       allow delete: if isApproved() && resource.data.uid == request.auth.uid;
     }
-    // Lernstandsüberprüfung je Woche: Schüler:in reicht ein, Lehrkraft sieht
-    // die Ampel-Einschätzung (angelehnt an das bestehende Ampelsystem).
-    match /lehrplanLernstand/{id} {
-      allow read: if isApproved() && (resource.data.uid == request.auth.uid || isTeacher());
-      allow create: if isApproved() && request.resource.data.uid == request.auth.uid;
-      allow update: if isTeacher() || (isApproved() && resource.data.uid == request.auth.uid);
-      allow delete: if isTeacher() || (isApproved() && resource.data.uid == request.auth.uid);
-    }
 
     match /essayEntries/{id} {
       allow read: if isApproved()

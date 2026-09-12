@@ -1404,35 +1404,12 @@ async function markWocheAbgeschlossen(fach,wocheId){
  }catch(e){console.error("Woche abschließen:",e);toast("Konnte nicht gespeichert werden.")}
 }
 
-// ---- Lernstandsüberprüfung je Woche (mit Ampel für Lehrkräfte) ---------
-async function getLehrplanLernstand(wocheId){
- if(!currentUser)return null;
- try{
- const snap=await getDocs(query(collection(db,"lehrplanLernstand"),where("wocheId","==",wocheId),where("uid","==",currentUser.uid)));
- if(snap.empty)return null;
- return {id:snap.docs[0].id,...snap.docs[0].data()};
- }catch(e){console.error(e);return null}
-}
-async function submitLehrplanLernstand(fach,wocheId){
- const antwort=$("lernstandAntwort")?.value.trim();
- const ampel=$("lernstandAmpel")?.value||"gruen";
- if(!antwort){toast("Bitte kurz eintragen, was du gelernt/erarbeitet hast.");return}
- try{
- const existing=await getLehrplanLernstand(wocheId);
- const payload={wocheId,fach,uid:currentUser.uid,name:profile?.displayName||"Campus-Mitglied",antwort,ampel,updatedAt:serverTimestamp()};
- if(existing)await updateDoc(doc(db,"lehrplanLernstand",existing.id),payload);
- else{payload.createdAt=serverTimestamp();await addDoc(collection(db,"lehrplanLernstand"),payload)}
- await openWocheDetail(fach,wocheId);
- showMotivationsToast();
- }catch(e){console.error(e);toast("Konnte nicht übermittelt werden.")}
-}
 window.saveLehrplanAuftrag=saveLehrplanAuftrag;window.deleteLehrplanAuftrag=deleteLehrplanAuftrag;
 window.addLehrplanMaterial=addLehrplanMaterial;window.deleteLehrplanMaterial=deleteLehrplanMaterial;
 window.createLehrplanTeam=createLehrplanTeam;window.joinLehrplanTeam=joinLehrplanTeam;
 window.leaveLehrplanTeam=leaveLehrplanTeam;window.deleteLehrplanTeam=deleteLehrplanTeam;
 window.addLehrplanProdukt=addLehrplanProdukt;window.deleteLehrplanProdukt=deleteLehrplanProdukt;
 window.toggleZielErfuellt=toggleZielErfuellt;window.markWocheAbgeschlossen=markWocheAbgeschlossen;
-window.submitLehrplanLernstand=submitLehrplanLernstand;
 
 function webUntisUrl(){
  const today=new Date().toISOString().slice(0,10);
@@ -1458,6 +1435,8 @@ async function getMeineNoten(){
  return {entries:d.entries||{}};
  }catch(e){console.error("Noten laden:",e);return {entries:{}}}
 }
+// FPA (fachpraktische Ausbildung) bleibt ein einfacher Notentopf – dafür gilt
+// eine eigene Regel (§8 FOBOSO), keine Schulaufgabe/sonstige-Leistungen-Logik.
 function notenListe(noten,fach,hj){
  return (noten.entries?.[fach]?.[hj])||[];
 }
@@ -1466,25 +1445,118 @@ function notenDurchschnitt(liste){
  const sum=liste.reduce((a,e)=>a+e.value,0);
  return Math.round(sum/liste.length);
 }
+// Rundung nach § 19 Abs. 6 FOBOSO: ab „,50" aufrunden, darunter abrunden;
+// Werte unter 1,00 werden immer auf 0 abgerundet.
+function foboso19Runden(wert){
+ if(wert===null||!Number.isFinite(wert))return null;
+ if(wert<1)return 0;
+ return Math.round(wert);
+}
+// Notenbezeichnung nach der Punktetabelle in § 19 FOBOSO.
+function fobosoNotenwort(punkte){
+ if(!Number.isFinite(punkte))return"";
+ if(punkte>=13)return"sehr gut";
+ if(punkte>=10)return"gut";
+ if(punkte>=7)return"befriedigend";
+ if(punkte>=4)return"ausreichend";
+ if(punkte>=1)return"mangelhaft";
+ return"ungenügend";
+}
+// Die 7 regulären Fächer: Schulaufgabe(n) + gewichteter Durchschnitt der
+// "sonstigen Leistungen" (schriftlich: Stegreif/Kurzarbeit + mündlich, als
+// EIN gemeinsamer Topf), beides zählt 1:1, danach gerundet (§21 Abs.1 FOBOSO).
+function schulaufgabenListe(noten,fach,hj){
+ return noten.entries?.[fach]?.[hj]?.schulaufgaben||[];
+}
+function sonstigeListe(noten,fach,hj){
+ return noten.entries?.[fach]?.[hj]?.sonstige||[];
+}
+function sonstigeSchnitt(liste){
+ if(!liste.length)return null;
+ const gewSumme=liste.reduce((a,e)=>a+(e.gewicht||1),0);
+ return liste.reduce((a,e)=>a+e.value*(e.gewicht||1),0)/gewSumme;
+}
+function berechneHalbjahresergebnis(noten,fach,hj){
+ const sa=schulaufgabenListe(noten,fach,hj);
+ const sonst=sonstigeListe(noten,fach,hj);
+ if(!sa.length||!sonst.length)return null;
+ const sSchnitt=sonstigeSchnitt(sonst);
+ const saSumme=sa.reduce((a,v)=>a+v,0);
+ const roh=(saSumme+sSchnitt)/(sa.length+1);
+ return foboso19Runden(roh);
+}
 function fachLabel(fach){
  if(fach==="fpa")return "Fachpraktische Ausbildung";
  return F11SB_FAECHER.find(f=>f.key===fach)?.label||fach;
 }
+async function updateNotenDoc(mutator){
+ const ref=doc(db,"noten",currentUser.uid);
+ const snap=await getDoc(ref);
+ const data=snap.exists()?snap.data():{uid:currentUser.uid,entries:{}};
+ data.entries=data.entries||{};
+ mutator(data);
+ data.uid=currentUser.uid;
+ data.updatedAt=serverTimestamp();
+ await setDoc(ref,data);
+}
+async function addSchulaufgabe(fach,hj,value){
+ const num=Math.max(0,Math.min(15,parseInt(value,10)));
+ if(!Number.isFinite(num)){toast("Bitte eine Zahl von 0 bis 15 eingeben.");return}
+ try{
+ await updateNotenDoc(data=>{
+ data.entries[fach]=data.entries[fach]||{};
+ data.entries[fach][hj]=data.entries[fach][hj]||{schulaufgaben:[],sonstige:[]};
+ data.entries[fach][hj].schulaufgaben=data.entries[fach][hj].schulaufgaben||[];
+ data.entries[fach][hj].schulaufgaben.push(num);
+ });
+ await openNotenDetail(fach,hj);
+ toast("Schulaufgabe hinzugefügt.");
+ }catch(e){console.error("Schulaufgabe speichern:",e);toast("Konnte nicht gespeichert werden.")}
+}
+async function deleteSchulaufgabe(fach,hj,index){
+ try{
+ await updateNotenDoc(data=>{
+ if(data.entries?.[fach]?.[hj]?.schulaufgaben)data.entries[fach][hj].schulaufgaben.splice(index,1);
+ });
+ await openNotenDetail(fach,hj);
+ toast("Entfernt.");
+ }catch(e){console.error("Schulaufgabe löschen:",e);toast("Konnte nicht entfernt werden.")}
+}
+async function addSonstigeLeistung(fach,hj,value,type,gewicht){
+ const num=Math.max(0,Math.min(15,parseInt(value,10)));
+ const g=Math.max(0.5,Math.min(5,parseFloat(gewicht)||1));
+ if(!Number.isFinite(num)){toast("Bitte eine Zahl von 0 bis 15 eingeben.");return}
+ try{
+ await updateNotenDoc(data=>{
+ data.entries[fach]=data.entries[fach]||{};
+ data.entries[fach][hj]=data.entries[fach][hj]||{schulaufgaben:[],sonstige:[]};
+ data.entries[fach][hj].sonstige=data.entries[fach][hj].sonstige||[];
+ data.entries[fach][hj].sonstige.push({id:`${Date.now()}_${Math.random().toString(36).slice(2,7)}`,value:num,type,gewicht:g});
+ });
+ await openNotenDetail(fach,hj);
+ toast("Note hinzugefügt.");
+ }catch(e){console.error("Sonstige Leistung speichern:",e);toast("Konnte nicht gespeichert werden.")}
+}
+async function deleteSonstigeLeistung(fach,hj,entryId){
+ try{
+ await updateNotenDoc(data=>{
+ if(data.entries?.[fach]?.[hj]?.sonstige)data.entries[fach][hj].sonstige=data.entries[fach][hj].sonstige.filter(e=>e.id!==entryId);
+ });
+ await openNotenDetail(fach,hj);
+ toast("Gelöscht.");
+ }catch(e){console.error("Sonstige Leistung löschen:",e);toast("Konnte nicht gelöscht werden.")}
+}
+// FPA behält die einfache Eintragsliste (kein Schulaufgabe/sonstige-Modell).
 async function addNotenEintrag(fach,hj,value,type){
  if(!isApproved()){toast("Nur freigeschaltete Nutzer können Noten eintragen.");return}
  const num=Math.max(0,Math.min(15,parseInt(value,10)));
  if(!Number.isFinite(num)){toast("Bitte eine Zahl von 0 bis 15 eingeben.");return}
  try{
- const ref=doc(db,"noten",currentUser.uid);
- const snap=await getDoc(ref);
- const data=snap.exists()?snap.data():{uid:currentUser.uid,entries:{}};
- data.entries=data.entries||{};
+ await updateNotenDoc(data=>{
  data.entries[fach]=data.entries[fach]||{};
  data.entries[fach][hj]=data.entries[fach][hj]||[];
  data.entries[fach][hj].push({id:`${Date.now()}_${Math.random().toString(36).slice(2,7)}`,value:num,type});
- data.uid=currentUser.uid;
- data.updatedAt=serverTimestamp();
- await setDoc(ref,data);
+ });
  await openNotenDetail(fach,hj);
  await render();
  toast("Note hinzugefügt.");
@@ -1492,15 +1564,9 @@ async function addNotenEintrag(fach,hj,value,type){
 }
 async function deleteNotenEintrag(fach,hj,entryId){
  try{
- const ref=doc(db,"noten",currentUser.uid);
- const snap=await getDoc(ref);
- if(!snap.exists())return;
- const data=snap.data();
- if(data.entries?.[fach]?.[hj]){
- data.entries[fach][hj]=data.entries[fach][hj].filter(e=>e.id!==entryId);
- }
- data.updatedAt=serverTimestamp();
- await setDoc(ref,data);
+ await updateNotenDoc(data=>{
+ if(data.entries?.[fach]?.[hj])data.entries[fach][hj]=data.entries[fach][hj].filter(e=>e.id!==entryId);
+ });
  await openNotenDetail(fach,hj);
  await render();
  toast("Note gelöscht.");
@@ -1508,20 +1574,54 @@ async function deleteNotenEintrag(fach,hj,entryId){
 }
 async function openNotenDetail(fach,hj){
  const noten=await getMeineNoten();
+ if(fach==="fpa"){
  const liste=notenListe(noten,fach,hj);
  const avg=notenDurchschnitt(liste);
  modal(`<button class="modal-close"onclick="closeModal()">×</button>
  <div class="kicker">MEINE NOTEN · ${hj==="hj1"?"1. HALBJAHR":"2. HALBJAHR"}</div>
  <h2>${esc(fachLabel(fach))}</h2>
- <p style="color:var(--muted)">Trag jede einzelne schriftliche oder mündliche Leistung ein – der Durchschnitt wird automatisch berechnet und für die Bestehens-Übersicht verwendet.</p>
+ <p style="color:var(--muted)">Die fachpraktische Ausbildung wird separat bewertet (§8 FOBOSO) – trag hier die einzelnen Bewertungen ein.</p>
  <div class="notice"style="margin-bottom:14px"><strong style="font-size:22px">${avg===null?"—":avg+" Punkte"}</strong><small style="display:block;color:var(--muted)">Durchschnitt aus ${liste.length} ${liste.length===1?"Eintrag":"Einträgen"}</small></div>
- <div class="list">${liste.map(e=>`<div class="list-item"><div><strong>${e.value} Punkte</strong><small>${e.type==="muendlich"?"Mündlich":"Schriftlich"}</small></div><button class="secondary"onclick="deleteNotenEintrag('${fach}','${hj}','${e.id}')">Löschen</button></div>`).join("")||`<div class="empty">Noch keine Note eingetragen.</div>`}</div>
+ <div class="list">${liste.map(e=>`<div class="list-item"><div><strong>${e.value} Punkte</strong></div><button class="secondary"onclick="deleteNotenEintrag('${fach}','${hj}','${e.id}')">Löschen</button></div>`).join("")||`<div class="empty">Noch keine Note eingetragen.</div>`}</div>
  <div class="form-actions"style="margin-top:14px;flex-wrap:wrap">
  <input id="notenNeuValue"type="number"min="0"max="15"placeholder="0–15"style="width:80px">
- <select id="notenNeuType"><option value="schriftlich">Schriftlich</option><option value="muendlich">Mündlich</option></select>
- <button class="primary"onclick="addNotenEintrag('${fach}','${hj}',$('notenNeuValue').value,$('notenNeuType').value)">＋ Hinzufügen</button>
+ <button class="primary"onclick="addNotenEintrag('${fach}','${hj}',$('notenNeuValue').value,'')">＋ Hinzufügen</button>
  </div>
  <div class="form-actions"style="margin-top:10px"><button class="secondary"onclick="closeModal()">Schließen</button></div>
+ `);
+ return;
+ }
+ const sa=schulaufgabenListe(noten,fach,hj);
+ const sonst=sonstigeListe(noten,fach,hj);
+ const sSchnitt=sonstigeSchnitt(sonst);
+ const ergebnis=berechneHalbjahresergebnis(noten,fach,hj);
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+ <div class="kicker">MEINE NOTEN · ${hj==="hj1"?"1. HALBJAHR":"2. HALBJAHR"}</div>
+ <h2>${esc(fachLabel(fach))}</h2>
+ <p style="color:var(--muted)">Nach § 21 Abs. 1 FOBOSO: Der (gewichtete) Durchschnitt der sonstigen Leistungen zählt genauso viel wie jede Schulaufgabe.</p>
+ <div class="notice"style="margin-bottom:14px">
+ <strong style="font-size:24px">${ergebnis===null?"—":`${ergebnis} Punkte`}</strong>${ergebnis!==null?` <span class="pill">${fobosoNotenwort(ergebnis)}</span>`:""}
+ <small style="display:block;color:var(--muted)">Halbjahresergebnis (gerundet)</small>
+ </div>
+
+ <h3 style="margin:14px 0 6px;font-size:14px"> Schulaufgabe(n)</h3>
+ <div class="list">${sa.map((v,i)=>`<div class="list-item"><strong>${v} Punkte</strong><button class="secondary"onclick="deleteSchulaufgabe('${fach}','${hj}',${i})">Löschen</button></div>`).join("")||`<div class="empty">Noch keine Schulaufgabe eingetragen.</div>`}</div>
+ <div class="form-actions"style="margin-top:8px">
+ <input id="saNeuValue"type="number"min="0"max="15"placeholder="0–15"style="width:80px">
+ <button class="primary"onclick="addSchulaufgabe('${fach}','${hj}',$('saNeuValue').value)">＋ Schulaufgabe</button>
+ </div>
+
+ <h3 style="margin:18px 0 4px;font-size:14px"> Sonstige Leistungen (schriftlich & mündlich, ein gemeinsamer Topf)</h3>
+ <p style="font-size:11px;color:var(--muted);margin:0 0 8px">Durchschnitt: ${sSchnitt===null?"—":sSchnitt.toFixed(2)+" Punkte"} aus ${sonst.length} ${sonst.length===1?"Eintrag":"Einträgen"} – zählt wie eine weitere Schulaufgabe.</p>
+ <div class="list">${sonst.map(e=>`<div class="list-item"><div><strong>${e.value} Punkte</strong><small>${e.type==="muendlich"?"Mündlich":"Stegreif/Kurzarbeit"}${e.gewicht&&e.gewicht!==1?` · Gewicht ${e.gewicht}`:""}</small></div><button class="secondary"onclick="deleteSonstigeLeistung('${fach}','${hj}','${e.id}')">Löschen</button></div>`).join("")||`<div class="empty">Noch keine Leistung eingetragen.</div>`}</div>
+ <div class="form-actions"style="margin-top:8px;flex-wrap:wrap">
+ <input id="sonstNeuValue"type="number"min="0"max="15"placeholder="0–15"style="width:70px">
+ <select id="sonstNeuType"><option value="schriftlich">Schriftlich (Stegreif/KA)</option><option value="muendlich">Mündlich</option></select>
+ <input id="sonstNeuGewicht"type="number"min="0.5"max="5"step="0.5"value="1"placeholder="Gewicht"style="width:75px"title="Gewichtung nach Umfang/Schwierigkeitsgrad">
+ <button class="primary"onclick="addSonstigeLeistung('${fach}','${hj}',$('sonstNeuValue').value,$('sonstNeuType').value,$('sonstNeuGewicht').value)">＋ Hinzufügen</button>
+ </div>
+
+ <div class="form-actions"style="margin-top:14px"><button class="secondary"onclick="closeModal()">Schließen</button></div>
  `);
 }
 async function resetMeineNoten(){
@@ -1533,6 +1633,8 @@ async function resetMeineNoten(){
  toast("Noten zurückgesetzt.");
  }catch(e){console.error("Noten zurücksetzen:",e);toast("Konnte nicht zurückgesetzt werden.")}
 }
+window.addSchulaufgabe=addSchulaufgabe;window.deleteSchulaufgabe=deleteSchulaufgabe;
+window.addSonstigeLeistung=addSonstigeLeistung;window.deleteSonstigeLeistung=deleteSonstigeLeistung;
 window.openNotenDetail=openNotenDetail;
 window.addNotenEintrag=addNotenEintrag;
 window.deleteNotenEintrag=deleteNotenEintrag;
@@ -1558,10 +1660,9 @@ function checkFoboso21(punkte){
  return{passed:false,rule:null};
 }
 function berechneBestehen(noten){
- const avgFor=(fach,hj)=>notenDurchschnitt(notenListe(noten,fach,hj));
- const faecherHJ1=F11SB_FAECHER.map(f=>avgFor(f.key,"hj1"));
- const faecherHJ2=F11SB_FAECHER.map(f=>avgFor(f.key,"hj2"));
- const fpaHj1=avgFor("fpa","hj1"),fpaHj2=avgFor("fpa","hj2");
+ const faecherHJ1=F11SB_FAECHER.map(f=>berechneHalbjahresergebnis(noten,f.key,"hj1"));
+ const faecherHJ2=F11SB_FAECHER.map(f=>berechneHalbjahresergebnis(noten,f.key,"hj2"));
+ const fpaHj1=notenDurchschnitt(notenListe(noten,"fpa","hj1")),fpaHj2=notenDurchschnitt(notenListe(noten,"fpa","hj2"));
  const vollHJ1=faecherHJ1.every(p=>Number.isFinite(p))&&Number.isFinite(fpaHj1);
  const vollJahr=vollHJ1&&faecherHJ2.every(p=>Number.isFinite(p))&&Number.isFinite(fpaHj2);
 
@@ -1573,7 +1674,9 @@ function berechneBestehen(noten){
  }
  let jahr=null;
  if(vollJahr){
- const jahrespunkte=F11SB_FAECHER.map((f,i)=>Math.round((faecherHJ1[i]+faecherHJ2[i])/2));
+ // Jahrespunktzahl nach § 21 Abs. 2 FOBOSO: Durchschnitt der beiden
+ // (bereits gerundeten) Halbjahresergebnisse, danach erneut gerundet.
+ const jahrespunkte=F11SB_FAECHER.map((f,i)=>foboso19Runden((faecherHJ1[i]+faecherHJ2[i])/2));
  const fachCheck=checkFoboso21(jahrespunkte);
  const fpaOk=fpaHj1>=4&&fpaHj2>=4&&(fpaHj1+fpaHj2)>=10;
  jahr={passed:fachCheck.passed&&fpaOk,fachCheck,fpaOk,jahrespunkte};
@@ -1581,14 +1684,19 @@ function berechneBestehen(noten){
  return{probezeit,jahr,vollHJ1,vollJahr};
 }
 // Einfache Orientierung "was fehlt noch": für jedes noch unter 4 liegende
-// oder fehlende Fach wird angezeigt, welcher Durchschnittswert für die
-// einfachste Bestehens-Variante (Regel a: alle Fächer ≥4) fehlen würde.
+// oder fehlende Fach wird angezeigt, welcher Wert für die einfachste
+// Bestehens-Variante (Regel a: alle Fächer ≥4) fehlen würde.
 function wasFehltNochHJ1(noten){
  return F11SB_FAECHER.map(f=>{
- const p=notenDurchschnitt(notenListe(noten,f.key,"hj1"));
- if(!Number.isFinite(p))return{label:f.label,status:"fehlt",text:"Note fehlt noch"};
- if(p<4)return{label:f.label,status:"kritisch",text:`Aktuell ⌀ ${p} Punkte – für die einfache Variante (alle Fächer ≥4) fehlen noch ${4-p} Punkte`};
- return{label:f.label,status:"ok",text:`⌀ ${p} Punkte`};
+ const p=berechneHalbjahresergebnis(noten,f.key,"hj1");
+ if(!Number.isFinite(p)){
+ const hatSA=schulaufgabenListe(noten,f.key,"hj1").length>0;
+ const hatSonst=sonstigeListe(noten,f.key,"hj1").length>0;
+ const fehlt=!hatSA&&!hatSonst?"Schulaufgabe und sonstige Leistungen fehlen noch":!hatSA?"Schulaufgabe fehlt noch":"Sonstige Leistungen fehlen noch";
+ return{label:f.label,status:"fehlt",text:fehlt};
+ }
+ if(p<4)return{label:f.label,status:"kritisch",text:`Aktuell ${p} Punkte – für die einfache Variante (alle Fächer ≥4) fehlen noch ${4-p} Punkte`};
+ return{label:f.label,status:"ok",text:`${p} Punkte`};
  });
 }
 
@@ -1803,9 +1911,10 @@ async function getRecentForumActivityCount(days){
 function printNotenPDF(noten,bestehen){
  const win=window.open("","_blank","width=800,height=800");
  if(!win){toast("Das PDF-Fenster wurde vom Browser blockiert. Bitte Pop-ups erlauben.");return}
- const fmt=(fach,hj)=>{const l=notenListe(noten,fach,hj);const a=notenDurchschnitt(l);return a===null?"—":`${a} (${l.length} ${l.length===1?"Note":"Noten"})`};
+ const fmt=(fach,hj)=>{const erg=berechneHalbjahresergebnis(noten,fach,hj);const sa=schulaufgabenListe(noten,fach,hj).length,so=sonstigeListe(noten,fach,hj).length;return erg===null?"—":`${erg} Punkte (${sa} SA, ${so} sonst.)`};
+ const fmtFpa=hj=>{const l=notenListe(noten,"fpa",hj);const a=notenDurchschnitt(l);return a===null?"—":`${a} (${l.length} ${l.length===1?"Note":"Noten"})`};
  const rows=F11SB_FAECHER.map(f=>`<tr><td>${escPDF(f.label)}</td><td>${fmt(f.key,"hj1")}</td><td>${fmt(f.key,"hj2")}</td></tr>`).join("");
- const fpaRow=`<tr><td><em>Fachpraktische Ausbildung</em></td><td>${fmt("fpa","hj1")}</td><td>${fmt("fpa","hj2")}</td></tr>`;
+ const fpaRow=`<tr><td><em>Fachpraktische Ausbildung</em></td><td>${fmtFpa("hj1")}</td><td>${fmtFpa("hj2")}</td></tr>`;
  const statusText=(label,r)=>!r?`${label}: noch nicht alle Noten eingetragen.`:`${label}: ${r.passed?"nach aktueller Punktlage bestanden":"nach aktueller Punktlage nicht bestanden"}.`;
  win.document.write(`<!doctype html><html lang="de"><head><meta charset="utf-8"><title>Meine Noten – F11Sb</title>
  <style>
@@ -1899,7 +2008,7 @@ async function renderKompass(){
  <div class="kicker"style="margin:22px 0 8px">PERSÖNLICH · NUR FÜR DICH SICHTBAR</div>
  <div class="card">
  <h2 style="margin-top:0"> Meine Noten</h2>
- <p style="color:var(--muted)">Trag beliebig viele schriftliche und mündliche Einzelnoten pro Fach ein – der Durchschnitt wird automatisch berechnet. Diese Ansicht sieht ausschließlich du selbst, nicht einmal Lehrkräfte.</p>
+ <p style="color:var(--muted)">Für jedes Fach: Schulaufgabe(n) und sonstige Leistungen (schriftlich + mündlich) getrennt eintragen – das Halbjahresergebnis wird automatisch nach § 21 Abs. 1 FOBOSO berechnet. Diese Ansicht sieht ausschließlich du selbst, nicht einmal Lehrkräfte.</p>
 
  <details class="noten-collapsible"open>
  <summary> Noten eintragen/bearbeiten</summary>
@@ -1907,11 +2016,13 @@ async function renderKompass(){
  <thead><tr><th>Fach</th><th>HJ1</th><th>HJ2</th></tr></thead>
  <tbody>
  ${F11SB_FAECHER.map(f=>{
- const l1=notenListe(noten,f.key,"hj1"),a1=notenDurchschnitt(l1);
- const l2=notenListe(noten,f.key,"hj2"),a2=notenDurchschnitt(l2);
+ const erg1=berechneHalbjahresergebnis(noten,f.key,"hj1");
+ const erg2=berechneHalbjahresergebnis(noten,f.key,"hj2");
+ const n1=schulaufgabenListe(noten,f.key,"hj1").length+sonstigeListe(noten,f.key,"hj1").length;
+ const n2=schulaufgabenListe(noten,f.key,"hj2").length+sonstigeListe(noten,f.key,"hj2").length;
  return`<tr><td>${f.label}</td>
- <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('${f.key}','hj1')">${a1===null?"＋ Note":`${a1} Pkt (${l1.length})`}</button></td>
- <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('${f.key}','hj2')">${a2===null?"＋ Note":`${a2} Pkt (${l2.length})`}</button></td>
+ <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('${f.key}','hj1')">${erg1===null?"＋ Note":`${erg1} Pkt (${n1})`}</button></td>
+ <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('${f.key}','hj2')">${erg2===null?"＋ Note":`${erg2} Pkt (${n2})`}</button></td>
  </tr>`;
  }).join("")}
  ${(()=>{const l1=notenListe(noten,"fpa","hj1"),a1=notenDurchschnitt(l1),l2=notenListe(noten,"fpa","hj2"),a2=notenDurchschnitt(l2);
@@ -2061,10 +2172,18 @@ window.showWocheTab=showWocheTab;
 async function openWocheDetail(fach,wocheId){
  const woche=lehrplanWocheById(fach,wocheId);
  if(!woche){toast("Diese Woche wurde nicht gefunden.");return}
- const [auftrag,materialien,teams,produkte,fortschritt,lernstand]=await Promise.all([
+ const [auftrag,materialien,teams,produkte,fortschritt,lsTasks,lsAttempts]=await Promise.all([
  getLehrplanAuftrag(wocheId),getLehrplanMaterialien(wocheId),getLehrplanTeams(wocheId),
- getLehrplanProdukte(wocheId),getLehrplanFortschritt(wocheId),getLehrplanLernstand(wocheId)
+ getLehrplanProdukte(wocheId),getLehrplanFortschritt(wocheId),
+ getLernstandTasks().catch(()=>[]),getMyLernstandAttempts().catch(()=>[])
  ]);
+ // Verknüpfung mit der Lernstandsmessung: dieselben Aufgaben, gefiltert
+ // nach dem Lernbereich dieser Woche (z. B. "LB 3" → "lb3"). Kein eigener
+ // Datentopf – Ergebnisse und Versuche sind automatisch synchron, weil es
+ // exakt dieselbe Datenquelle wie unter Lernwerkstatt → Lernstandsmessung ist.
+ const wocheLbKeys=(woche.lb||"").match(/\d/g)?.map(n=>"lb"+n)||[];
+ const relevanteTasks=lsTasks.filter(t=>wocheLbKeys.includes(t.learningArea));
+ const lernstandBearbeitet=relevanteTasks.some(t=>lernstandAttemptCount(lsAttempts,t.id)>0);
  const ziele=auftrag?.ziele||[];
  const alleErfuellt=ziele.length>0 && ziele.every(z=>fortschritt.zieleErfuellt?.[z.id]);
  const meinTeam=teams.find(t=>(t.mitgliederUids||[]).includes(currentUser.uid));
@@ -2075,7 +2194,7 @@ async function openWocheDetail(fach,wocheId){
  const schritte=[
  {label:"Ziele",done:alleErfuellt},
  {label:"Produkt",done:meinProdukt},
- {label:"Lernstand",done:!!lernstand},
+ {label:"Lernstand",done:lernstandBearbeitet},
  {label:"Fertig",done:!!fortschritt.abgeschlossen}
  ];
  let aktivIdx=schritte.findIndex(s=>!s.done);
@@ -2158,16 +2277,17 @@ async function openWocheDetail(fach,wocheId){
  </div>
 
  <div class="wd-panel"id="wdPanel_lernstand">
- <p style="color:var(--muted);margin-top:0">Halte kurz fest, was du gelernt/erarbeitet hast. Tipp: Lass es dir vorab von einer KI gegenchecken. Die Lehrkraft sieht deine Selbsteinschätzung über die Ampel.</p>
- <textarea id="lernstandAntwort"rows="3"placeholder="Was hast du erarbeitet/verstanden?">${esc(lernstand?.antwort||"")}</textarea>
- <div class="form-actions"style="margin-top:8px">
- <select id="lernstandAmpel">
- <option value="gruen"${lernstand?.ampel==="gruen"?"selected":""}>🟢 Ich fühle mich sicher</option>
- <option value="gelb"${lernstand?.ampel==="gelb"?"selected":""}>🟡 Teilweise sicher</option>
- <option value="rot"${lernstand?.ampel==="rot"?"selected":""}>🔴 Ich brauche Hilfe</option>
- </select>
- <button class="primary"onclick="submitLehrplanLernstand('${fach}','${wocheId}')">${lernstand?"Aktualisieren":"Übermitteln"}</button>
- </div>
+ <p style="color:var(--muted);margin-top:0">Dieselben Kompetenzüberprüfungen wie unter „Lernstandsmessung" in der Lernwerkstatt, hier gefiltert nach ${esc(woche.lb)}. Die Lehrkraft sieht dein Ergebnis über das Ampelsystem.</p>
+ <div class="list">${relevanteTasks.map(t=>{
+ const latest=lernstandLatest(lsAttempts,t.id),count=lernstandAttemptCount(lsAttempts,t.id),max=lernstandMaxPoints(t.id);
+ return`<div class="list-item"><div><strong>${t.nr}. ${esc(t.title)}</strong><small>${count?`letzter Stand: ${latest.total}/${max} · Versuch ${latest.attempt}`:"noch nicht bearbeitet"}</small></div>
+ <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+ ${latest?`<span class="pill ${lernstandStatus(latest.total,max)}">${lernstandStatusText(latest.total,max)}</span>`:""}
+ ${count?`<button class="secondary"onclick="openLernstandResult('${t.id}')">🔓 Musterlösung</button>`:""}
+ <button class="primary"onclick="openLernstand('${t.id}')">${count?"Weiter/ansehen":"Starten"} →</button>
+ </div></div>`;
+ }).join("")||`<div class="empty">Für ${esc(woche.lb)} sind noch keine Lernstandsmessungen hinterlegt.</div>`}</div>
+ <div class="form-actions"style="margin-top:10px"><button class="secondary"onclick="closeModal();go('lernstand')"> Alle Lernstandsmessungen ansehen</button></div>
  </div>
 
  <div class="wd-footer">
@@ -8725,7 +8845,7 @@ async function renderLernstand(){
  <section class="card ls-intro-card"><span class="badge">BIS ZU 15 PUNKTE</span><h2>Einheitliches Bewertungsschema</h2><p>Jede Kompetenzaufgabe wird mit bis zu <strong>3 Punkten</strong> bewertet. Die meisten Themen umfassen fünf Aufgaben (max. 15 Punkte), einzelne Themen können mehr Aufgaben enthalten.</p><div class="list"><div class="list-item"><strong>ab 80 %</strong><span class="pill green">Auf Kurs</span></div><div class="list-item"><strong>53–79 %</strong><span class="pill yellow">Klärungsbedarf</span></div><div class="list-item"><strong>unter 53 %</strong><span class="pill red">Handlungsbedarf</span></div></div></section>
  </div>
  <div class="card"style="margin-bottom:16px"><div class="kicker">KOMPETENZENTWICKLUNG</div><h2>Entwicklung über das Schuljahr</h2><p>Jede abgegebene und bewertete Messung wird dem eigenen Profil zugeordnet. Die fünf Kompetenzdimensionen können dadurch über mehrere Themen hinweg verglichen werden.</p><div class="ls-competence-grid">${LERNSTAND_COMPETENCIES.map(c=>{const series=lernstandCompetenceSeries(ownAttempts,c.id);const last=series.length?series[series.length-1]:null;return`<div class="ls-comp-card"><strong>${esc(c.label)}</strong><small>${last===null?"Noch kein Ergebnis":last+"/3 Punkte zuletzt"}</small>${last===null?"":lernstandBar(last,3)}</div>`}).join("")}</div>${latest?`<div class="notice"style="margin-top:14px"><strong>Letzter Lernstand: ${latest.total}/${lernstandMaxPoints(latest.taskId)} · ${lernstandStatusText(latest.total,lernstandMaxPoints(latest.taskId))}</strong><p style="margin-bottom:0">Versuch ${latest.attempt} bei „${esc(latest.title||"Lernstandsmessung")}".</p></div>`:`<div class="notice"style="margin-top:14px"><strong>Noch keine Lernstandsmessung abgeschlossen.</strong><p style="margin-bottom:0">Starte nach dem nächsten Thema mit der passenden Kompetenzüberprüfung.</p></div>`}</div>
- <div class="ls-area-grid">${["lb1","lb2","lb3","lb4"].map(areaId=>`<section class="card ls-area"><div class="ls-area-head"><div><span class="badge">${LERNSTAND_AREAS[areaId].icon} LERNBEREICH</span><h2>${esc(LERNSTAND_AREAS[areaId].title)}</h2></div><span class="pill">${byArea[areaId].length} Messungen</span></div>${byArea[areaId].map(t=>{const a=lernstandLatest(ownAttempts,t.id);const count=lernstandAttemptCount(ownAttempts,t.id);const max=lernstandMaxPoints(t.id);return`<div class="ls-item"><div class="ls-item-main"><strong>${t.nr}. ${esc(t.title)}</strong><small>${count?`letzter Stand: ${a.total}/${max} · Versuch ${a.attempt}`:"noch nicht bearbeitet"}</small></div><div class="ls-item-actions">${a?`<span class="pill ${lernstandStatus(a.total,max)}">${lernstandStatusText(a.total,max)}</span>`:""}<button class="secondary"onclick="openLernstand('${t.id}')">${a?"Weiter / ansehen":"Starten"} →</button></div></div>`}).join("")}</section>`).join("")}</div>${footer()}`;
+ <div class="ls-area-grid">${["lb1","lb2","lb3","lb4"].map(areaId=>`<section class="card ls-area"><div class="ls-area-head"><div><span class="badge">${LERNSTAND_AREAS[areaId].icon} LERNBEREICH</span><h2>${esc(LERNSTAND_AREAS[areaId].title)}</h2></div><span class="pill">${byArea[areaId].length} Messungen</span></div>${byArea[areaId].map(t=>{const a=lernstandLatest(ownAttempts,t.id);const count=lernstandAttemptCount(ownAttempts,t.id);const max=lernstandMaxPoints(t.id);return`<div class="ls-item"><div class="ls-item-main"><strong>${t.nr}. ${esc(t.title)}</strong><small>${count?`letzter Stand: ${a.total}/${max} · Versuch ${a.attempt}`:"noch nicht bearbeitet"}</small></div><div class="ls-item-actions">${a?`<span class="pill ${lernstandStatus(a.total,max)}">${lernstandStatusText(a.total,max)}</span>`:""}${count?`<button class="secondary"onclick="openLernstandResult('${t.id}')">🔓 Musterlösung</button>`:""}<button class="secondary"onclick="openLernstand('${t.id}')">${a?"Weiter / ansehen":"Starten"} →</button></div></div>`}).join("")}</section>`).join("")}</div>${footer()}`;
 }
 
 // Rendert eine einzelne Kompetenzaufgabe im Bearbeitungsformular: K-Prim als
