@@ -1135,14 +1135,68 @@ const F11SB_FAECHER=[
 // ============================================================
 // Praktikumsphasen 2026/27 (gilt fachübergreifend, aus dem B-Block-Plan).
 const PRAKTIKUMSPHASEN=[
- {id:"pr1",start:"2026-09-15",end:"2026-10-02",titel:"B-Block Start – Praktikum",bereich:"Erziehungsbereich",beschreibung:"Beobachtungen sammeln, Einrichtung kennenlernen, erste Praxisfragen."},
- {id:"pr2",start:"2026-10-26",end:"2026-11-20",titel:"Praktikumsphase",bereich:"Erziehungsbereich",beschreibung:"Projekte/Beobachtungsaufträge aus der Theorie umsetzen."},
- {id:"pr3",start:"2026-12-14",end:"2027-01-15",titel:"Praktikumsphase",bereich:"Erziehungsbereich",beschreibung:"Vertiefung, Beobachtung, Projektprodukte."},
- {id:"pr4",start:"2027-02-15",end:"2027-03-05",titel:"Praktikumsphase",bereich:"Übergang",beschreibung:"Wechsel/Übergang, ggf. Vorbereitung auf den Pflegebereich."},
- {id:"pr5",start:"2027-04-12",end:"2027-04-30",titel:"Praktikumsphase Pflege",bereich:"Pflegebereich",beschreibung:"Krankenhaus, Seniorenheim, Pflegeeinrichtung, Demenz-WG."},
- {id:"pr6",start:"2027-06-07",end:"2027-06-25",titel:"Praktikumsphase Pflege",bereich:"Pflegebereich",beschreibung:"Lernen, Motivation, Verhalten, Kommunikation beobachten."},
- {id:"pr7",start:"2027-07-19",end:"2027-07-30",titel:"Praktikumsphase Pflege",bereich:"Pflegebereich",beschreibung:"Abschlussreflexion und Transfer."}
+ {id:"pr1",start:"2026-09-15",end:"2026-10-02",titel:"B-Block Start – Praktikum",bereich:"Erziehungsbereich"},
+ {id:"pr2",start:"2026-10-26",end:"2026-11-20",titel:"Praktikumsphase",bereich:"Erziehungsbereich"},
+ {id:"pr3",start:"2026-12-14",end:"2027-01-15",titel:"Praktikumsphase",bereich:"Erziehungsbereich"},
+ {id:"pr4",start:"2027-02-15",end:"2027-03-05",titel:"Praktikumsphase",bereich:"Übergang"},
+ {id:"pr5",start:"2027-04-12",end:"2027-04-30",titel:"Praktikumsphase Pflege",bereich:"Pflegebereich"},
+ {id:"pr6",start:"2027-06-07",end:"2027-06-25",titel:"Praktikumsphase Pflege",bereich:"Pflegebereich"},
+ {id:"pr7",start:"2027-07-19",end:"2027-07-30",titel:"Praktikumsphase Pflege",bereich:"Pflegebereich"}
 ];
+
+// Aufträge je Praktikumsphase: von Lehrkräften gepflegt, überall live
+// gespiegelt (Lernpfad-Wegpunkte, fpA-Übersicht, Startseite) – ein
+// Datentopf, keine Kopien.
+async function getPraktikumsAuftraege(){
+ try{
+ const snap=await getDocs(collection(db,"praktikumsAuftraege"));
+ const map={};
+ snap.docs.forEach(d=>{map[d.id]=d.data()});
+ return map;
+ }catch(e){console.error("Praktikumsaufträge laden:",e);return {}}
+}
+async function savePraktikumsphaseAuftrag(phaseId){
+ if(!isTeacher()){toast("Nur Lehrkräfte können Aufträge eintragen.");return}
+ const titel=$("praktAuftragTitel")?.value.trim();
+ const beschreibung=$("praktAuftragBeschreibung")?.value.trim();
+ if(!titel){toast("Bitte einen Titel eingeben.");return}
+ try{
+ await setDoc(doc(db,"praktikumsAuftraege",phaseId),{
+ phaseId,titel,beschreibung,updatedBy:currentUser.uid,updatedAt:serverTimestamp()
+ });
+ closeModal();await render();toast("Auftrag gespeichert.");
+ }catch(e){console.error("Praktikumsauftrag speichern:",e);toast("Konnte nicht gespeichert werden.")}
+}
+async function deletePraktikumsphaseAuftrag(phaseId){
+ if(!confirm("Diesen Praktikumsauftrag wirklich löschen?"))return;
+ try{await deleteDoc(doc(db,"praktikumsAuftraege",phaseId));closeModal();await render();toast("Auftrag gelöscht.")}
+ catch(e){console.error("Praktikumsauftrag löschen:",e);toast("Konnte nicht gelöscht werden.")}
+}
+async function openPraktikumsphaseAuftragForm(phaseId){
+ const phase=PRAKTIKUMSPHASEN.find(p=>p.id===phaseId);
+ if(!phase)return;
+ const alle=await getPraktikumsAuftraege();
+ const bestehend=alle[phaseId];
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+ <div class="kicker">PRAKTIKUMSPHASE · ${esc(fmtDateOnly(phase.start))}–${esc(fmtDateOnly(phase.end))}</div>
+ <h2>${esc(phase.titel)}</h2>
+ ${isTeacher()?`<div class="form">
+ <label>Titel des Auftrags<input id="praktAuftragTitel"type="text"value="${esc(bestehend?.titel||"")}"placeholder="z. B. Beobachtungsauftrag Erziehungsstile"></label>
+ <label>Beschreibung<textarea id="praktAuftragBeschreibung"rows="4"placeholder="Was sollen die Schüler:innen in dieser Praktikumsphase konkret tun?">${esc(bestehend?.beschreibung||"")}</textarea></label>
+ <div class="form-actions">
+ <button class="secondary"onclick="closeModal()">Abbrechen</button>
+ ${bestehend?`<button class="secondary"onclick="deletePraktikumsphaseAuftrag('${phaseId}')">Löschen</button>`:""}
+ <button class="primary"onclick="savePraktikumsphaseAuftrag('${phaseId}')">Speichern</button>
+ </div>
+ </div>`
+ :!bestehend?`<div class="empty">Für diese Praktikumsphase wurde noch kein Auftrag eingetragen.</div>`
+ :`<h3 style="margin:8px 0">${esc(bestehend.titel)}</h3><p style="color:var(--muted);white-space:pre-wrap">${esc(bestehend.beschreibung||"")}</p>
+ <div class="form-actions"style="margin-top:14px"><button class="secondary"onclick="closeModal()">Schließen</button></div>`}
+ `);
+}
+window.openPraktikumsphaseAuftragForm=openPraktikumsphaseAuftragForm;
+window.savePraktikumsphaseAuftrag=savePraktikumsphaseAuftrag;
+window.deletePraktikumsphaseAuftrag=deletePraktikumsphaseAuftrag;
 
 // Lehrplan-Zeitstrahl je Fach. "typ": "projekt" | "einzel". Aktuell mit
 // echten Inhalten für Pädagogik/Psychologie befüllt (Jahresverlaufsplanung
@@ -1829,6 +1883,8 @@ async function renderStart(){
  try{[tasks,projects,news,nextCalendar,birthdayInfo,wochenplan]=await Promise.all([getCollection("tasks","deadline",false),getCollection("projects"),getCollection("news"),getUpcomingCampusCalendarEvent(),getUpcomingBirthdayInfo(),getMeineWochenplanung()])}catch(e){}
  const miniKalender=await miniKalenderHTML();
  const praktikumsphase=aktuellePraktikumsphase();
+ const praktikumsAuftraegeMap=await getPraktikumsAuftraege().catch(()=>({}));
+ const aktuellerPraktikumsauftrag=(praktikumsphase?.status==="laufend")?praktikumsAuftraegeMap[praktikumsphase.id]:null;
  const on=tasks.filter(x=>x.status==="green").length;
  const upcomingDate=nextCalendar?.start||nextCalendar?.date||nextCalendar?.startDate;
  const upcomingDateText=upcomingDate?.seconds?new Date(upcomingDate.seconds*1000).toLocaleDateString("de-DE"):String(upcomingDate||"").slice(0,10);
@@ -1865,6 +1921,11 @@ class="list-item"><div><strong>${esc(p.title||p.text)}</strong>${p.title?`<small
  <small style="display:block;margin-top:4px">${esc(fmtDateOnly(praktikumsphase.start))}–${esc(fmtDateOnly(praktikumsphase.end))} · ${esc(praktikumsphase.bereich)}</small>
  </a>`:`<div class="card card-compact"style="background:var(--soft-orange)"><h3 style="margin:0">Praktikum</h3><small>Aktuell keine Phase hinterlegt.</small></div>`}
  </div>
+ ${aktuellerPraktikumsauftrag?`<a class="card"href="#praktikum"style="display:block;text-decoration:none;color:inherit;background:var(--soft-orange);margin-bottom:16px">
+ <span class="pill"style="background:#e8890c;color:#fff">fpA Auftrag</span>
+ <strong style="display:block;margin-top:8px;font-size:15px">${esc(aktuellerPraktikumsauftrag.titel)}</strong>
+ ${aktuellerPraktikumsauftrag.beschreibung?`<small style="display:block;margin-top:4px;color:var(--muted)">${esc(aktuellerPraktikumsauftrag.beschreibung.slice(0,140))}${aktuellerPraktikumsauftrag.beschreibung.length>140?"…":""}</small>`:""}
+ </a>`:""}
  ${(()=>{ensureGlobalClock();return"";})()}
  <div class="card"style="margin-top:16px;margin-bottom:16px">
  <div class="kicker">STUNDENPLAN</div>
@@ -2099,6 +2160,7 @@ async function renderFachDetail(){
  const wochenItems=timeline.filter(t=>t.kind==="woche");
  const fortschritte=await Promise.all(wochenItems.map(async w=>({id:w.id,f:await getLehrplanFortschritt(w.id)})));
  const fortschrittMap={};fortschritte.forEach(x=>fortschrittMap[x.id]=x.f);
+ const praktikumsAuftraege=await getPraktikumsAuftraege();
  const heute=new Date().toISOString().slice(0,10);
  const erledigtCount=wochenItems.filter(w=>fortschrittMap[w.id]?.abgeschlossen).length;
  const fortschrittProzent=wochenItems.length?Math.round(erledigtCount/wochenItems.length*100):0;
@@ -2127,7 +2189,8 @@ async function renderFachDetail(){
  .lp-waypoint{position:relative;margin:26px 0}
  .lp-waypoint-punkt{position:absolute;left:-44px;top:0;width:40px;height:40px;border-radius:10px;background:var(--soft-blue);border:3px solid #4a90d9;display:flex;align-items:center;justify-content:center;font-size:17px;transform:rotate(45deg);z-index:2}
  .lp-waypoint-punkt span{transform:rotate(-45deg);display:block}
- .lp-waypoint-karte{background:var(--soft-blue);border-radius:12px;padding:10px 14px;font-size:12px}
+ .lp-waypoint-karte{background:var(--soft-blue);border-radius:12px;padding:10px 14px;font-size:12px;cursor:pointer;transition:.15s}
+ .lp-waypoint-karte:hover{transform:translateX(4px)}
  .lp-waypoint-karte strong{display:block;font-size:12.5px}
  @media(max-width:600px){.lernpfad{padding-left:38px}.lp-punkt,.lp-waypoint-punkt{left:-38px;width:34px;height:34px}}
  </style>
@@ -2136,12 +2199,13 @@ async function renderFachDetail(){
  <div class="lp-linie-vorne"style="height:${fortschrittProzent}%"></div>
  ${timeline.map((item,idx)=>{
  if(item.kind==="praktikum"){
+ const auftrag=praktikumsAuftraege[item.id];
  return`<div class="lp-waypoint">
  <div class="lp-waypoint-punkt"><span>🏥</span></div>
- <div class="lp-waypoint-karte">
+ <div class="lp-waypoint-karte"onclick="openPraktikumsphaseAuftragForm('${item.id}')">
  <span class="lp-karte-date">${esc(fmtDateOnly(item.start))}–${esc(fmtDateOnly(item.end))}</span>
  <strong>${esc(item.titel)}</strong>
- <small>${esc(item.bereich)} · ${esc(item.beschreibung)}</small>
+ <small>${auftrag?` ${esc(auftrag.titel)}`:"Noch kein Auftrag eingetragen – antippen zum Eintragen"}</small>
  </div>
  </div>`;
  }
@@ -6836,6 +6900,7 @@ async function renderPraktikum(){
  try{results=await getCollection("kiResults","createdAt",true)}catch(e){console.error(e)}
 
  assignments=assignments.filter(p=>p.module==="fpa" && p.type==="teacherAssignment");
+ const praktikumsAuftraege=await getPraktikumsAuftraege();
 
  return`${pageHead("SCHULE ↔ PRAXIS","fpA","Praxisaufträge und eigenständige Werkzeuge für die fachpraktische Ausbildung.",
  isTeacher()?`<button class="primary"onclick="openPracticeForm()">＋ Praxisauftrag</button>`:"")}
@@ -6866,12 +6931,13 @@ async function renderPraktikum(){
  <div class="grid grid-3"style="margin-top:8px;margin-bottom:22px">${PRAKTIKUMSPHASEN.map(p=>{
  const heute=new Date().toISOString().slice(0,10);
  const status=heute>=p.start&&heute<=p.end?"laufend":heute>p.end?"vorbei":"kommend";
- return`<div class="card"style="background:${status==="laufend"?"var(--soft-orange)":status==="vorbei"?"#f3f5f7":"var(--soft-blue)"}">
+ const auftrag=praktikumsAuftraege[p.id];
+ return`<button type="button"class="card"style="text-align:left;cursor:pointer;background:${status==="laufend"?"var(--soft-orange)":status==="vorbei"?"#f3f5f7":"var(--soft-blue)"}"onclick="openPraktikumsphaseAuftragForm('${p.id}')">
  ${status==="laufend"?`<span class="pill"style="background:#e8890c;color:#fff">läuft gerade</span>`:""}
  <strong style="display:block;margin-top:6px">${esc(p.titel)}</strong>
  <small style="display:block;color:var(--muted);margin-top:4px">${esc(fmtDateOnly(p.start))}–${esc(fmtDateOnly(p.end))}</small>
- <small style="display:block;margin-top:6px">${esc(p.bereich)} · ${esc(p.beschreibung)}</small>
- </div>`;
+ <small style="display:block;margin-top:6px">${auftrag?` ${esc(auftrag.titel)}`:isTeacher()?"Antippen, um einen Auftrag einzutragen":"Noch kein Auftrag eingetragen"}</small>
+ </button>`;
  }).join("")}</div>
 
  <div class="kicker">BEREICH 1 · LEHRKRAFT → SCHÜLER</div>

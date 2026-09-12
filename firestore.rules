@@ -479,6 +479,12 @@ service cloud.firestore {
       allow read: if isApproved();
       allow create, update, delete: if isTeacher();
     }
+    // Aufträge je Praktikumsphase (z. B. Blockpraktikum): von Lehrkräften
+    // gepflegt, für alle sichtbar – live gespiegelt in fpA, Lernpfad und Startseite.
+    match /praktikumsAuftraege/{phaseId} {
+      allow read: if isApproved();
+      allow create, update, delete: if isTeacher();
+    }
     // Teams/Gruppen je Woche: Schüler:innen bilden sie selbst.
     match /lehrplanTeams/{id} {
       allow read: if isApproved();
