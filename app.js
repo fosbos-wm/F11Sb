@@ -1076,9 +1076,222 @@ async function renderKlassenteam(){
  ${footer()}`;
 }
 
+// ============================================================
+// STUNDENPLAN (WebUntis), NOTEN & WOCHENPLANUNG – F11Sb
+// ============================================================
+
+// Die 7 benoteten Fächer der F11Sb (Sozialwesen). Das Wahlpflichtfach
+// ist reiner Förderunterricht, wird nicht benotet und taucht daher hier
+// bewusst nicht auf.
+const F11SB_FAECHER=[
+ {key:"deutsch",label:"Deutsch"},
+ {key:"englisch",label:"Englisch"},
+ {key:"geschichte",label:"Geschichte"},
+ {key:"mathematik",label:"Mathematik"},
+ {key:"paedagogik",label:"Pädagogik/Psychologie"},
+ {key:"sozialwirtschaft",label:"Sozialwirtschaft und Recht"},
+ {key:"chemie",label:"Chemie"}
+];
+
+function webUntisUrl(){
+ const today=new Date().toISOString().slice(0,10);
+ return `https://fos-bos-weilheim.webuntis.com/WebUntis?school=fos-bos-weilheim#/basic/timetablePublic/class?date=${today}&entityId=1190`;
+}
+function webUntisEmbedHTML(heightPx){
+ const url=webUntisUrl();
+ return `<div class="untis-embed">
+ <iframe src="${url}"loading="lazy"style="width:100%;height:${heightPx}px;border:1px solid var(--line,#e2eaf0);border-radius:10px;background:#fff"title="Stundenplan F11Sb (WebUntis)"></iframe>
+ <div class="untis-fallback"><small>Wird der Stundenplan oben nicht angezeigt? Manche Schulnetzwerke blockieren die Einbettung.</small>
+ <a href="${url}"target="_blank"rel="noopener"class="pill"> Stundenplan in WebUntis öffnen ↗</a></div>
+ </div>`;
+}
+
+// ---- Noten (0–15 Punkte je Fach, getrennt nach Halbjahr) ------------------
+async function getMeineNoten(){
+ if(!db||!currentUser)return {subjects:{},fpa:{}};
+ try{
+ const snap=await getDoc(doc(db,"noten",currentUser.uid));
+ if(!snap.exists())return {subjects:{},fpa:{}};
+ const d=snap.data();
+ return {subjects:d.subjects||{},fpa:d.fpa||{}};
+ }catch(e){console.error("Noten laden:",e);return {subjects:{},fpa:{}}}
+}
+async function saveNotenFeld(fach,hj,value){
+ if(!isApproved()){toast("Nur freigeschaltete Nutzer können Noten eintragen.");return}
+ const num=value===""?null:Math.max(0,Math.min(15,parseInt(value,10)));
+ try{
+ const ref=doc(db,"noten",currentUser.uid);
+ const snap=await getDoc(ref);
+ const data=snap.exists()?snap.data():{uid:currentUser.uid,subjects:{},fpa:{}};
+ if(fach==="fpa"){
+ data.fpa=data.fpa||{};
+ if(num===null)delete data.fpa[hj];else data.fpa[hj]=num;
+ }else{
+ data.subjects=data.subjects||{};
+ data.subjects[fach]=data.subjects[fach]||{};
+ if(num===null)delete data.subjects[fach][hj];else data.subjects[fach][hj]=num;
+ }
+ data.uid=currentUser.uid;
+ data.updatedAt=serverTimestamp();
+ await setDoc(ref,data);
+ await render();
+ }catch(e){console.error("Note speichern:",e);toast("Note konnte nicht gespeichert werden.")}
+}
+async function resetMeineNoten(){
+ if(!confirm("Wirklich alle eigenen Noten zurücksetzen? Das kann nicht rückgängig gemacht werden."))return;
+ try{
+ await deleteDoc(doc(db,"noten",currentUser.uid));
+ await render();
+ toast("Noten zurückgesetzt.");
+ }catch(e){console.error("Noten zurücksetzen:",e);toast("Konnte nicht zurückgesetzt werden.")}
+}
+window.saveNotenFeld=saveNotenFeld;window.resetMeineNoten=resetMeineNoten;
+
+// ---- Bestehens-Rechner nach §8, §21 Abs. 3, §22 Abs. 1 Nr. 2 FOBOSO -------
+// Hinweis: Dies ist ausschließlich eine Orientierungshilfe (wie die
+// entsprechenden "ohne Gewähr"-Tools der Schulen selbst). Die tatsächliche
+// Entscheidung trifft die Klassenkonferenz/Schulleitung anhand einer
+// pädagogischen Gesamtwürdigung, nicht rein rechnerisch.
+function checkFoboso21(punkte){
+ const n=punkte.length;
+ if(!n)return{passed:null,rule:null};
+ const sum=punkte.reduce((a,b)=>a+b,0);
+ const zero=punkte.filter(p=>p===0).length;
+ const oneToThree=punkte.filter(p=>p>=1&&p<=3).length;
+ const atLeastFour=punkte.filter(p=>p>=4).length;
+ if(zero===0&&oneToThree===0)return{passed:true,rule:"a"};
+ if(zero===1&&oneToThree===0&&atLeastFour===n-1&&sum>=6*n)return{passed:true,rule:"d"};
+ if(zero===0&&oneToThree===1&&atLeastFour===n-1&&sum>=5*n)return{passed:true,rule:"b"};
+ if(zero===0&&oneToThree===2&&atLeastFour===n-2&&sum>=6*n)return{passed:true,rule:"c"};
+ return{passed:false,rule:null};
+}
+function berechneBestehen(noten){
+ const faecherHJ1=F11SB_FAECHER.map(f=>noten.subjects?.[f.key]?.hj1);
+ const faecherHJ2=F11SB_FAECHER.map(f=>noten.subjects?.[f.key]?.hj2);
+ const vollHJ1=faecherHJ1.every(p=>Number.isFinite(p))&&Number.isFinite(noten.fpa?.hj1);
+ const vollJahr=vollHJ1&&faecherHJ2.every(p=>Number.isFinite(p))&&Number.isFinite(noten.fpa?.hj2);
+
+ let probezeit=null;
+ if(vollHJ1){
+ const fachCheck=checkFoboso21(faecherHJ1);
+ const fpaOk=noten.fpa.hj1>=4;
+ probezeit={passed:fachCheck.passed&&fpaOk,fachCheck,fpaOk};
+ }
+ let jahr=null;
+ if(vollJahr){
+ const jahrespunkte=F11SB_FAECHER.map((f,i)=>Math.round((faecherHJ1[i]+faecherHJ2[i])/2));
+ const fachCheck=checkFoboso21(jahrespunkte);
+ const fpaOk=noten.fpa.hj1>=4&&noten.fpa.hj2>=4&&(noten.fpa.hj1+noten.fpa.hj2)>=10;
+ jahr={passed:fachCheck.passed&&fpaOk,fachCheck,fpaOk,jahrespunkte};
+ }
+ return{probezeit,jahr,vollHJ1,vollJahr};
+}
+// Einfache Orientierung "was fehlt noch": für jedes noch unter 4 liegende
+// oder fehlende Fach wird angezeigt, welcher Wert für die einfachste
+// Bestehens-Variante (Regel a: alle Fächer ≥4) fehlen würde.
+function wasFehltNochHJ1(noten){
+ return F11SB_FAECHER.map(f=>{
+ const p=noten.subjects?.[f.key]?.hj1;
+ if(!Number.isFinite(p))return{label:f.label,status:"fehlt",text:"Note fehlt noch"};
+ if(p<4)return{label:f.label,status:"kritisch",text:`Aktuell ${p} Punkte – für die einfache Variante (alle Fächer ≥4) fehlen noch ${4-p} Punkte`};
+ return{label:f.label,status:"ok",text:`${p} Punkte`};
+ });
+}
+
+// ---- Wochen-/Monatsplanung -------------------------------------------
+async function getMeineWochenplanung(){
+ if(!db||!currentUser)return [];
+ try{
+ const snap=await getDocs(query(collection(db,"wochenplanung"),where("uid","==",currentUser.uid)));
+ return snap.docs.map(d=>({id:d.id,...d.data()}))
+ .sort((a,b)=>(a.dueDate||"9999-99-99").localeCompare(b.dueDate||"9999-99-99"));
+ }catch(e){console.error("Wochenplanung laden:",e);return []}
+}
+function openWochenplanForm(existing){
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+ <div class="kicker">WOCHEN-/MONATSPLANUNG</div>
+ <h2>${existing?"Eintrag bearbeiten":"Neue Planung"}</h2>
+ <div class="form">
+ <label>Was steht an?<input id="wpTitle"type="text"maxlength="140"value="${esc(existing?.title||"")}"placeholder="z. B. Vokabeltest vorbereiten"></label>
+ <label>Fach (optional)<select id="wpSubject">
+ <option value="">Kein bestimmtes Fach</option>
+ ${F11SB_FAECHER.map(f=>`<option value="${f.key}"${existing?.subject===f.key?"selected":""}>${f.label}</option>`).join("")}
+ </select></label>
+ <label>Zeitraum<select id="wpScope">
+ <option value="woche"${(!existing||existing.scope==="woche")?"selected":""}>Diese Woche</option>
+ <option value="monat"${existing?.scope==="monat"?"selected":""}>Dieser Monat</option>
+ </select></label>
+ <label>Termin (optional)<input id="wpDate"type="date"value="${esc(existing?.dueDate||"")}"></label>
+ <label>Notiz (optional)<textarea id="wpNote"rows="2"maxlength="300">${esc(existing?.note||"")}</textarea></label>
+ <div class="form-actions">
+ <button class="secondary"onclick="closeModal()">Abbrechen</button>
+ ${existing?`<button class="secondary"onclick="deleteWochenplanEntry('${existing.id}')">Löschen</button>`:""}
+ <button class="primary"onclick="saveWochenplanEntry(${existing?`'${existing.id}'`:"null"})">Speichern</button>
+ </div>
+ </div>`);
+}
+async function saveWochenplanEntry(id){
+ if(!isApproved()){toast("Nur freigeschaltete Nutzer können planen.");return}
+ const title=$("wpTitle")?.value.trim();
+ if(!title){toast("Bitte eintragen, was ansteht.");return}
+ const payload={
+ uid:currentUser.uid,
+ title,
+ subject:$("wpSubject")?.value||"",
+ scope:$("wpScope")?.value||"woche",
+ dueDate:$("wpDate")?.value||"",
+ note:$("wpNote")?.value.trim()||"",
+ updatedAt:serverTimestamp()
+ };
+ try{
+ if(id){
+ await updateDoc(doc(db,"wochenplanung",id),payload);
+ }else{
+ payload.createdAt=serverTimestamp();
+ payload.done=false;
+ await addDoc(collection(db,"wochenplanung"),payload);
+ }
+ closeModal();
+ await render();
+ toast("Gespeichert.");
+ }catch(e){console.error("Wochenplanung speichern:",e);toast("Konnte nicht gespeichert werden.")}
+}
+async function toggleWochenplanDone(id,done){
+ try{await updateDoc(doc(db,"wochenplanung",id),{done:!done,updatedAt:serverTimestamp()});await render();}
+ catch(e){console.error("Wochenplanung ändern:",e);toast("Konnte nicht geändert werden.")}
+}
+async function deleteWochenplanEntry(id){
+ if(!confirm("Diesen Planungseintrag wirklich löschen?"))return;
+ try{
+ await deleteDoc(doc(db,"wochenplanung",id));
+ closeModal();
+ await render();
+ toast("Eintrag gelöscht.");
+ }catch(e){console.error("Wochenplanung löschen:",e);toast("Konnte nicht gelöscht werden.")}
+}
+async function quickAddWochenplan(){
+ const input=$("quickWpInput");
+ const title=input?.value.trim();
+ if(!title){toast("Bitte kurz eintragen, was ansteht.");return}
+ if(!isApproved()){toast("Nur freigeschaltete Nutzer können planen.");return}
+ try{
+ await addDoc(collection(db,"wochenplanung"),{
+ uid:currentUser.uid,title,subject:"",scope:"woche",dueDate:"",note:"",done:false,createdAt:serverTimestamp()
+ });
+ if(input)input.value="";
+ await render();
+ toast("Zur Wochenplanung hinzugefügt.");
+ }catch(e){console.error("Schnell-Eintrag:",e);toast("Konnte nicht gespeichert werden.")}
+}
+window.openWochenplanForm=openWochenplanForm;
+window.saveWochenplanEntry=saveWochenplanEntry;
+window.toggleWochenplanDone=toggleWochenplanDone;
+window.deleteWochenplanEntry=deleteWochenplanEntry;
+window.quickAddWochenplan=quickAddWochenplan;
+
 async function renderStart(){
- let tasks=[],projects=[],news=[],nextCalendar=null,birthdayInfo=null;
- try{[tasks,projects,news,nextCalendar,birthdayInfo]=await Promise.all([getCollection("tasks","deadline",false),getCollection("projects"),getCollection("news"),getUpcomingCampusCalendarEvent(),getUpcomingBirthdayInfo()])}catch(e){}
+ let tasks=[],projects=[],news=[],nextCalendar=null,birthdayInfo=null,wochenplan=[];
+ try{[tasks,projects,news,nextCalendar,birthdayInfo,wochenplan]=await Promise.all([getCollection("tasks","deadline",false),getCollection("projects"),getCollection("news"),getUpcomingCampusCalendarEvent(),getUpcomingBirthdayInfo(),getMeineWochenplanung()])}catch(e){}
  const on=tasks.filter(x=>x.status==="green").length;
  const upcomingDate=nextCalendar?.start||nextCalendar?.date||nextCalendar?.startDate;
  const upcomingDateText=upcomingDate?.seconds?new Date(upcomingDate.seconds*1000).toLocaleDateString("de-DE"):String(upcomingDate||"").slice(0,10);
@@ -1088,6 +1301,17 @@ async function renderStart(){
  return`<section class="hero"><div><span class="badge"> F11Sb 26/27</span><h1>Willkommen auf dem Campus.</h1><p>Hier
 verbinden wir Lernen, Projekte, Praxis und Gemeinschaft. Alle angemeldeten Mitglieder arbeiten am selben digitalen Campus.</p>
 </div><div class="actions"><button class="primary"onclick="go('kompass')">Mein Kompass →</button><button class="secondary"onclick="go('forum')">Campus-Forum</button></div></section>
+ <div class="card"style="margin-bottom:16px">
+ <div class="kicker">STUNDENPLAN</div>
+ <h2 style="margin-top:4px">Aktueller Stundenplan</h2>
+ ${webUntisEmbedHTML(340)}
+ <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+ <input id="quickWpInput"type="text"maxlength="140"placeholder="Was steht diese Woche an? Kurz eintragen …"style="flex:1;min-width:220px">
+ <button class="primary"onclick="quickAddWochenplan()">＋ Zur Wochenplanung</button>
+ <button class="secondary"onclick="go('kompass')">Ausführlicher planen →</button>
+ </div>
+ ${wochenplan.length?`<div class="list"style="margin-top:10px">${wochenplan.filter(w=>!w.done).slice(0,3).map(w=>`<div class="list-item"><div><strong>${esc(w.title)}</strong>${w.subject?`<small>${esc(F11SB_FAECHER.find(f=>f.key===w.subject)?.label||"")}</small>`:""}</div><span class="pill">${w.scope==="monat"?"Monat":"Woche"}</span></div>`).join("")}</div>`:""}
+ </div>
  <div class="card"style="margin-bottom:16px;text-align:center;background:var(--soft-green)">
  <h2 style="margin:0 0 8px"> FOSBOS-WM Jahresfokus: Solidarität und Zusammenhalt</h2>
  <p style="margin:0;font-style:italic;color:var(--muted)">„Solidarität lebt von kleinen Taten – heute schon jemandem geholfen?“</p>
@@ -1118,11 +1342,147 @@ class="list-item"><div><strong>${esc(p.title||p.text)}</strong>${p.title?`<small
  }</div>
  </div>${footer()}`;
 }
+async function getRecentForumActivityCount(days){
+ try{
+ const posts=await getCollection("posts","createdAt",true);
+ const cutoff=Date.now()-days*86400000;
+ return posts.filter(p=>{
+ const t=p.createdAt?.seconds?p.createdAt.seconds*1000:0;
+ return t>=cutoff;
+ }).length;
+ }catch(e){return 0}
+}
+
+function printNotenPDF(noten,bestehen){
+ const win=window.open("","_blank","width=800,height=800");
+ if(!win){toast("Das PDF-Fenster wurde vom Browser blockiert. Bitte Pop-ups erlauben.");return}
+ const rows=F11SB_FAECHER.map(f=>`<tr><td>${escPDF(f.label)}</td><td>${noten.subjects?.[f.key]?.hj1??"—"}</td><td>${noten.subjects?.[f.key]?.hj2??"—"}</td></tr>`).join("");
+ const fpaRow=`<tr><td><em>Fachpraktische Ausbildung</em></td><td>${noten.fpa?.hj1??"—"}</td><td>${noten.fpa?.hj2??"—"}</td></tr>`;
+ const statusText=(label,r)=>!r?`${label}: noch nicht alle Noten eingetragen.`:`${label}: ${r.passed?"nach aktueller Punktlage bestanden":"nach aktueller Punktlage nicht bestanden"}.`;
+ win.document.write(`<!doctype html><html lang="de"><head><meta charset="utf-8"><title>Meine Noten – F11Sb</title>
+ <style>
+ @page{size:A4;margin:18mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#222;line-height:1.55;margin:0}
+ h1{font-size:24px;margin:0 0 4px}.meta{color:#666;font-size:12px;margin-bottom:20px}
+ table{width:100%;border-collapse:collapse;margin-bottom:20px}th,td{border:1px solid #ccc;padding:8px;text-align:left;font-size:13px}
+ th{background:#f3f3f3}.status{background:#f3f3f3;border-radius:8px;padding:12px;font-size:13px;margin-top:10px}
+ .disclaimer{font-size:11px;color:#777;margin-top:16px}
+ .print-note{background:#f3f3f3;padding:10px;border-radius:8px;margin-bottom:20px;font-size:12px}
+ @media print{.print-note{display:none}}
+ </style></head><body>
+ <div class="print-note">Persönliche Notenübersicht. Im Druckdialog „Als PDF sichern“ auswählen.</div>
+ <h1>Meine Noten – F11Sb</h1>
+ <div class="meta">Punkte 0–15 je Fach und Halbjahr</div>
+ <table><thead><tr><th>Fach</th><th>HJ1</th><th>HJ2</th></tr></thead><tbody>${rows}${fpaRow}</tbody></table>
+ <div class="status">
+ <strong>${statusText("Probezeit (Stand HJ1)",bestehen.probezeit)}</strong><br>
+ <strong>${statusText("Bestehen des Schuljahres",bestehen.jahr)}</strong>
+ </div>
+ <p class="disclaimer">Diese Berechnung ist ausschließlich eine Orientierungshilfe nach §8, §21 Abs. 3, §22 Abs. 1 Nr. 2 FOBOSO – ohne Gewähr. Die tatsächliche Entscheidung trifft die Klassenkonferenz/Schulleitung anhand einer pädagogischen Gesamtwürdigung.</p>
+ <script>window.onload=function(){setTimeout(function(){window.print()},300)}<\/script>
+ </body></html>`);
+ win.document.close();
+}
+function printWochenplanPDF(entries){
+ const win=window.open("","_blank","width=800,height=800");
+ if(!win){toast("Das PDF-Fenster wurde vom Browser blockiert. Bitte Pop-ups erlauben.");return}
+ const rows=entries.map(w=>`<tr><td>${w.done?"✓":""}</td><td>${escPDF(w.title)}</td><td>${w.subject?escPDF(F11SB_FAECHER.find(f=>f.key===w.subject)?.label||""):"—"}</td><td>${w.scope==="monat"?"Monat":"Woche"}</td><td>${escPDF(w.dueDate||"—")}</td></tr>`).join("");
+ win.document.write(`<!doctype html><html lang="de"><head><meta charset="utf-8"><title>Wochenplanung – F11Sb</title>
+ <style>
+ @page{size:A4;margin:18mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#222;line-height:1.55;margin:0}
+ h1{font-size:24px;margin:0 0 16px}
+ table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:8px;text-align:left;font-size:13px}
+ th{background:#f3f3f3}
+ .print-note{background:#f3f3f3;padding:10px;border-radius:8px;margin-bottom:20px;font-size:12px}
+ @media print{.print-note{display:none}}
+ </style></head><body>
+ <div class="print-note">Persönliche Wochen-/Monatsplanung. Im Druckdialog „Als PDF sichern“ auswählen.</div>
+ <h1>Meine Wochen-/Monatsplanung – F11Sb</h1>
+ <table><thead><tr><th>Erl.</th><th>Was steht an</th><th>Fach</th><th>Zeitraum</th><th>Termin</th></tr></thead><tbody>${rows||"<tr><td colspan=5>Noch keine Einträge.</td></tr>"}</tbody></table>
+ <script>window.onload=function(){setTimeout(function(){window.print()},300)}<\/script>
+ </body></html>`);
+ win.document.close();
+}
+window.printNotenPDF=printNotenPDF;window.printWochenplanPDF=printWochenplanPDF;
+
 async function renderKompass(){
  const tasks=await getCollection("tasks","deadline",false), projects=await getCollection("projects");
  const projectDeadlines=projects.filter(p=>p.deadline).sort((a,b)=>String(a.deadline).localeCompare(String(b.deadline)));
  const todayStr=new Date().toISOString().slice(0,10);
- return`${pageHead("PERSÖNLICH","Mein Campus-Kompass","Dein persönlicher Überblick über Aufgaben, Projekte, Ziele und Lernweg.",`<button class="primary"onclick="openTaskForm()">＋ Aufgabe</button>`)}
+ const [unreadCount,forumActivity,wochenplan,noten]=await Promise.all([
+ getUnreadMessageCount().catch(()=>0),
+ getRecentForumActivityCount(3),
+ getMeineWochenplanung(),
+ getMeineNoten()
+ ]);
+ const bestehen=berechneBestehen(noten);
+ const offenePlanung=wochenplan.filter(w=>!w.done);
+ const erledigtePlanung=wochenplan.filter(w=>w.done);
+
+ return`${pageHead("PERSÖNLICH","Mein Campus-Kompass","Dein persönlicher Überblick über Stundenplan, Aufgaben, Noten und Projekte.",`<button class="primary"onclick="openTaskForm()">＋ Aufgabe</button>`)}
+
+ ${(unreadCount>0||forumActivity>0)?`<div class="kompass-alerts">
+ ${unreadCount>0?`<a href="#forum-nachrichten"class="pill kompass-alert-msg"> ${unreadCount} neue Nachricht${unreadCount===1?"":"en"}</a>`:""}
+ ${forumActivity>0?`<a href="#forum-board"class="pill kompass-alert-forum"> ${forumActivity} neue${forumActivity===1?"r":""} Forum-Beitrag${forumActivity===1?"":"e"} (3 Tage)</a>`:""}
+ </div>`:""}
+
+ <div class="kicker"style="margin-top:6px">ORIENTIERUNG</div>
+ <div class="card"style="margin-top:8px">
+ <h2 style="margin-top:0"> Aktueller Stundenplan</h2>
+ ${webUntisEmbedHTML(420)}
+ </div>
+
+ <div class="kicker"style="margin:22px 0 8px">WOCHEN-/MONATSPLANUNG</div>
+ <div class="card">
+ <p style="color:var(--muted);margin-top:0">Orientiere dich am Stundenplan oben: Was steht diese Woche oder diesen Monat an? Nur du siehst deine eigene Planung.</p>
+ <div class="form-actions"style="margin-bottom:10px">
+ <button class="primary"onclick="openWochenplanForm(null)">＋ Neuer Planungspunkt</button>
+ ${wochenplan.length?`<button class="secondary"onclick="printWochenplanPDF(${JSON.stringify(wochenplan).replace(/"/g,"&quot;")})"> Als PDF</button>`:""}
+ </div>
+ <div class="list">${offenePlanung.map(w=>`<div class="list-item">
+ <div><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox"onclick="toggleWochenplanDone('${w.id}',${!!w.done})"><strong>${esc(w.title)}</strong></label>
+ <small>${w.subject?esc(F11SB_FAECHER.find(f=>f.key===w.subject)?.label||""):"Kein Fach"} ${w.dueDate?"· "+esc(fmtDateOnly(w.dueDate)):""}</small></div>
+ <div style="display:flex;gap:6px;align-items:center"><span class="pill">${w.scope==="monat"?"Monat":"Woche"}</span><button class="secondary"onclick="openWochenplanForm(${JSON.stringify(w).replace(/"/g,"&quot;")})">Bearbeiten</button></div>
+ </div>`).join("")||`<div class="empty">Noch nichts geplant. Leg deinen ersten Punkt an.</div>`}</div>
+ ${erledigtePlanung.length?`<details style="margin-top:10px"><summary style="cursor:pointer;color:var(--muted);font-size:13px">${erledigtePlanung.length} erledigt</summary>
+ <div class="list"style="margin-top:8px">${erledigtePlanung.map(w=>`<div class="list-item"style="opacity:.6"><div><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox"checked onclick="toggleWochenplanDone('${w.id}',${!!w.done})"><strong style="text-decoration:line-through">${esc(w.title)}</strong></label></div><button class="secondary"onclick="deleteWochenplanEntry('${w.id}')">Löschen</button></div>`).join("")}</div>
+ </details>`:""}
+ </div>
+
+ <div class="kicker"style="margin:22px 0 8px">PERSÖNLICH · NUR FÜR DICH SICHTBAR</div>
+ <div class="card">
+ <h2 style="margin-top:0"> Meine Noten</h2>
+ <p style="color:var(--muted)">Punkte von 0 bis 15 je Fach und Halbjahr – wie im offiziellen FOS-Notensystem üblich. Diese Ansicht sieht ausschließlich du selbst, nicht einmal Lehrkräfte.</p>
+ <div style="overflow-x:auto"><table class="noten-table">
+ <thead><tr><th>Fach</th><th>HJ1</th><th>HJ2</th></tr></thead>
+ <tbody>
+ ${F11SB_FAECHER.map(f=>`<tr><td>${f.label}</td>
+ <td><input type="number"min="0"max="15"value="${noten.subjects?.[f.key]?.hj1??""}"onchange="saveNotenFeld('${f.key}','hj1',this.value)"></td>
+ <td><input type="number"min="0"max="15"value="${noten.subjects?.[f.key]?.hj2??""}"onchange="saveNotenFeld('${f.key}','hj2',this.value)"></td>
+ </tr>`).join("")}
+ <tr class="noten-fpa"><td><em>Fachpraktische Ausbildung</em></td>
+ <td><input type="number"min="0"max="15"value="${noten.fpa?.hj1??""}"onchange="saveNotenFeld('fpa','hj1',this.value)"></td>
+ <td><input type="number"min="0"max="15"value="${noten.fpa?.hj2??""}"onchange="saveNotenFeld('fpa','hj2',this.value)"></td>
+ </tr>
+ </tbody></table></div>
+
+ <div class="notice"style="margin-top:16px">
+ ${!bestehen.vollHJ1?`<strong> Probezeit-Status (HJ1)</strong><p style="margin:6px 0 0">Trag alle Noten des 1. Halbjahrs ein (inkl. fachpraktischer Ausbildung), um deinen Stand zu sehen.</p>
+ <div class="grid grid-2"style="margin-top:10px;gap:8px">${wasFehltNochHJ1(noten).map(x=>`<div class="card"style="padding:8px 10px;background:${x.status==="ok"?"var(--soft-green)":x.status==="kritisch"?"var(--soft-orange)":"#f7fafc"}"><strong style="font-size:12px">${esc(x.label)}</strong><small style="display:block">${esc(x.text)}</small></div>`).join("")}</div>`
+ :`<strong style="font-size:15px">${bestehen.probezeit.passed?" Probezeit nach aktueller Punktlage bestanden":" Probezeit nach aktueller Punktlage nicht bestanden"}</strong>
+ <p style="margin:8px 0 0;font-size:12px;color:var(--muted)">Fachpraktische Ausbildung HJ1: ${bestehen.probezeit.fpaOk?"✓ mind. 4 Punkte":"✗ unter 4 Punkten"} · Fächer-Regel: ${bestehen.probezeit.fachCheck.passed?`erfüllt (Variante ${bestehen.probezeit.fachCheck.rule})`:"nicht erfüllt"}</p>`}
+ ${bestehen.vollJahr?`<hr style="margin:14px 0;border:none;border-top:1px solid var(--line,#e2eaf0)">
+ <strong style="font-size:15px">${bestehen.jahr.passed?" Schuljahr nach aktueller Punktlage bestanden":" Schuljahr nach aktueller Punktlage nicht bestanden"}</strong>
+ <p style="margin:8px 0 0;font-size:12px;color:var(--muted)">Fachpraktische Ausbildung: ${bestehen.jahr.fpaOk?"✓ Bedingungen erfüllt":"✗ Bedingungen nicht erfüllt"} · Fächer-Regel: ${bestehen.jahr.fachCheck.passed?`erfüllt (Variante ${bestehen.jahr.fachCheck.rule})`:"nicht erfüllt"}</p>`:""}
+ <p style="margin-top:14px;font-size:11px;color:var(--muted)">Diese Berechnung ist ausschließlich eine Orientierungshilfe nach §8, §21 Abs. 3, §22 Abs. 1 Nr. 2 FOBOSO – <strong>ohne Gewähr</strong>. Die tatsächliche Entscheidung trifft die Klassenkonferenz/Schulleitung anhand einer pädagogischen Gesamtwürdigung, nicht rein rechnerisch.</p>
+ </div>
+
+ <div class="form-actions"style="margin-top:14px">
+ <button class="secondary"onclick="resetMeineNoten()">Alle Noten zurücksetzen</button>
+ <button class="primary"onclick="printNotenPDF(${JSON.stringify(noten).replace(/"/g,"&quot;")},${JSON.stringify(bestehen).replace(/"/g,"&quot;")})"> Als PDF</button>
+ </div>
+ </div>
+
+ <div class="kicker"style="margin:22px 0 8px">AUFGABEN & PROJEKTE</div>
  <div class="grid grid-3"><div class="card stat"><b>${tasks.filter(t=>t.ownerUid===currentUser.uid).length}</b><span>Meine
 Aufgaben</span></div><div class="card stat"><b>${projects.length}</b><span>Projekte</span></div><div class="card stat">
 <b>${profile?.role==="teacher"?"Lehrkraft":profile?.role==="admin"?"Admin":"Schüler/in"}</b><span>Rolle</span></div></div>

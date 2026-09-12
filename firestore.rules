@@ -117,6 +117,23 @@ service cloud.firestore {
     }
 
     // Herkunftsorte-Karte (Landkreis Weilheim-Schongau): jede Person legt
+    // Noten (Punkte 0–15 je Fach/Halbjahr): rein privat, ausschließlich die
+    // Person selbst darf ihre eigenen Noten lesen/ändern – nicht einmal
+    // Lehrkräfte oder Admins (genau wie die Resilienz-Schatzkiste).
+    match /noten/{uid} {
+      allow read, delete: if isApproved() && uid == request.auth.uid;
+      allow create, update: if isApproved() && uid == request.auth.uid
+        && request.resource.data.uid == request.auth.uid;
+    }
+
+    // Wochen-/Monatsplanung: private Aufgabenplanung jeder Person für sich,
+    // orientiert am Stundenplan.
+    match /wochenplanung/{id} {
+      allow read: if isApproved() && resource.data.uid == request.auth.uid;
+      allow create: if isApproved() && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if isApproved() && resource.data.uid == request.auth.uid;
+    }
+
     // genau einen eigenen Eintrag an (Dokument-ID = eigene UID), alle
     // freigeschalteten Nutzer:innen sehen die gesamte Karte.
     match /heimatorte/{uid} {
