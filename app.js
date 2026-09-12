@@ -1132,50 +1132,100 @@ function webUntisEmbedHTML(heightPx,openByDefault){
 
 // ---- Noten (0–15 Punkte je Fach, getrennt nach Halbjahr) ------------------
 async function getMeineNoten(){
- if(!db||!currentUser)return {subjects:{},fpa:{}};
+ if(!db||!currentUser)return {entries:{}};
  try{
  const snap=await getDoc(doc(db,"noten",currentUser.uid));
- if(!snap.exists())return {subjects:{},fpa:{}};
+ if(!snap.exists())return {entries:{}};
  const d=snap.data();
- return {subjects:d.subjects||{},fpa:d.fpa||{}};
- }catch(e){console.error("Noten laden:",e);return {subjects:{},fpa:{}}}
+ return {entries:d.entries||{}};
+ }catch(e){console.error("Noten laden:",e);return {entries:{}}}
 }
-async function saveNotenFeld(fach,hj,value){
+function notenListe(noten,fach,hj){
+ return (noten.entries?.[fach]?.[hj])||[];
+}
+function notenDurchschnitt(liste){
+ if(!liste.length)return null;
+ const sum=liste.reduce((a,e)=>a+e.value,0);
+ return Math.round(sum/liste.length);
+}
+function fachLabel(fach){
+ if(fach==="fpa")return "Fachpraktische Ausbildung";
+ return F11SB_FAECHER.find(f=>f.key===fach)?.label||fach;
+}
+async function addNotenEintrag(fach,hj,value,type){
  if(!isApproved()){toast("Nur freigeschaltete Nutzer können Noten eintragen.");return}
- const num=value===""?null:Math.max(0,Math.min(15,parseInt(value,10)));
+ const num=Math.max(0,Math.min(15,parseInt(value,10)));
+ if(!Number.isFinite(num)){toast("Bitte eine Zahl von 0 bis 15 eingeben.");return}
  try{
  const ref=doc(db,"noten",currentUser.uid);
  const snap=await getDoc(ref);
- const data=snap.exists()?snap.data():{uid:currentUser.uid,subjects:{},fpa:{}};
- if(fach==="fpa"){
- data.fpa=data.fpa||{};
- if(num===null)delete data.fpa[hj];else data.fpa[hj]=num;
- }else{
- data.subjects=data.subjects||{};
- data.subjects[fach]=data.subjects[fach]||{};
- if(num===null)delete data.subjects[fach][hj];else data.subjects[fach][hj]=num;
- }
+ const data=snap.exists()?snap.data():{uid:currentUser.uid,entries:{}};
+ data.entries=data.entries||{};
+ data.entries[fach]=data.entries[fach]||{};
+ data.entries[fach][hj]=data.entries[fach][hj]||[];
+ data.entries[fach][hj].push({id:`${Date.now()}_${Math.random().toString(36).slice(2,7)}`,value:num,type});
  data.uid=currentUser.uid;
  data.updatedAt=serverTimestamp();
  await setDoc(ref,data);
+ await openNotenDetail(fach,hj);
  await render();
+ toast("Note hinzugefügt.");
  }catch(e){console.error("Note speichern:",e);toast("Note konnte nicht gespeichert werden.")}
+}
+async function deleteNotenEintrag(fach,hj,entryId){
+ try{
+ const ref=doc(db,"noten",currentUser.uid);
+ const snap=await getDoc(ref);
+ if(!snap.exists())return;
+ const data=snap.data();
+ if(data.entries?.[fach]?.[hj]){
+ data.entries[fach][hj]=data.entries[fach][hj].filter(e=>e.id!==entryId);
+ }
+ data.updatedAt=serverTimestamp();
+ await setDoc(ref,data);
+ await openNotenDetail(fach,hj);
+ await render();
+ toast("Note gelöscht.");
+ }catch(e){console.error("Note löschen:",e);toast("Konnte nicht gelöscht werden.")}
+}
+async function openNotenDetail(fach,hj){
+ const noten=await getMeineNoten();
+ const liste=notenListe(noten,fach,hj);
+ const avg=notenDurchschnitt(liste);
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+ <div class="kicker">MEINE NOTEN · ${hj==="hj1"?"1. HALBJAHR":"2. HALBJAHR"}</div>
+ <h2>${esc(fachLabel(fach))}</h2>
+ <p style="color:var(--muted)">Trag jede einzelne schriftliche oder mündliche Leistung ein – der Durchschnitt wird automatisch berechnet und für die Bestehens-Übersicht verwendet.</p>
+ <div class="notice"style="margin-bottom:14px"><strong style="font-size:22px">${avg===null?"—":avg+" Punkte"}</strong><small style="display:block;color:var(--muted)">Durchschnitt aus ${liste.length} ${liste.length===1?"Eintrag":"Einträgen"}</small></div>
+ <div class="list">${liste.map(e=>`<div class="list-item"><div><strong>${e.value} Punkte</strong><small>${e.type==="muendlich"?"Mündlich":"Schriftlich"}</small></div><button class="secondary"onclick="deleteNotenEintrag('${fach}','${hj}','${e.id}')">Löschen</button></div>`).join("")||`<div class="empty">Noch keine Note eingetragen.</div>`}</div>
+ <div class="form-actions"style="margin-top:14px;flex-wrap:wrap">
+ <input id="notenNeuValue"type="number"min="0"max="15"placeholder="0–15"style="width:80px">
+ <select id="notenNeuType"><option value="schriftlich">Schriftlich</option><option value="muendlich">Mündlich</option></select>
+ <button class="primary"onclick="addNotenEintrag('${fach}','${hj}',$('notenNeuValue').value,$('notenNeuType').value)">＋ Hinzufügen</button>
+ </div>
+ <div class="form-actions"style="margin-top:10px"><button class="secondary"onclick="closeModal()">Schließen</button></div>
+ `);
 }
 async function resetMeineNoten(){
  if(!confirm("Wirklich alle eigenen Noten zurücksetzen? Das kann nicht rückgängig gemacht werden."))return;
  try{
  await deleteDoc(doc(db,"noten",currentUser.uid));
+ closeModal();
  await render();
  toast("Noten zurückgesetzt.");
  }catch(e){console.error("Noten zurücksetzen:",e);toast("Konnte nicht zurückgesetzt werden.")}
 }
-window.saveNotenFeld=saveNotenFeld;window.resetMeineNoten=resetMeineNoten;
+window.openNotenDetail=openNotenDetail;
+window.addNotenEintrag=addNotenEintrag;
+window.deleteNotenEintrag=deleteNotenEintrag;
+window.resetMeineNoten=resetMeineNoten;
 
 // ---- Bestehens-Rechner nach §8, §21 Abs. 3, §22 Abs. 1 Nr. 2 FOBOSO -------
 // Hinweis: Dies ist ausschließlich eine Orientierungshilfe (wie die
 // entsprechenden "ohne Gewähr"-Tools der Schulen selbst). Die tatsächliche
 // Entscheidung trifft die Klassenkonferenz/Schulleitung anhand einer
-// pädagogischen Gesamtwürdigung, nicht rein rechnerisch.
+// pädagogischen Gesamtwürdigung, nicht rein rechnerisch. Verwendet wird
+// jeweils der Durchschnitt aller schriftlichen/mündlichen Einzelnoten.
 function checkFoboso21(punkte){
  const n=punkte.length;
  if(!n)return{passed:null,rule:null};
@@ -1190,35 +1240,37 @@ function checkFoboso21(punkte){
  return{passed:false,rule:null};
 }
 function berechneBestehen(noten){
- const faecherHJ1=F11SB_FAECHER.map(f=>noten.subjects?.[f.key]?.hj1);
- const faecherHJ2=F11SB_FAECHER.map(f=>noten.subjects?.[f.key]?.hj2);
- const vollHJ1=faecherHJ1.every(p=>Number.isFinite(p))&&Number.isFinite(noten.fpa?.hj1);
- const vollJahr=vollHJ1&&faecherHJ2.every(p=>Number.isFinite(p))&&Number.isFinite(noten.fpa?.hj2);
+ const avgFor=(fach,hj)=>notenDurchschnitt(notenListe(noten,fach,hj));
+ const faecherHJ1=F11SB_FAECHER.map(f=>avgFor(f.key,"hj1"));
+ const faecherHJ2=F11SB_FAECHER.map(f=>avgFor(f.key,"hj2"));
+ const fpaHj1=avgFor("fpa","hj1"),fpaHj2=avgFor("fpa","hj2");
+ const vollHJ1=faecherHJ1.every(p=>Number.isFinite(p))&&Number.isFinite(fpaHj1);
+ const vollJahr=vollHJ1&&faecherHJ2.every(p=>Number.isFinite(p))&&Number.isFinite(fpaHj2);
 
  let probezeit=null;
  if(vollHJ1){
  const fachCheck=checkFoboso21(faecherHJ1);
- const fpaOk=noten.fpa.hj1>=4;
+ const fpaOk=fpaHj1>=4;
  probezeit={passed:fachCheck.passed&&fpaOk,fachCheck,fpaOk};
  }
  let jahr=null;
  if(vollJahr){
  const jahrespunkte=F11SB_FAECHER.map((f,i)=>Math.round((faecherHJ1[i]+faecherHJ2[i])/2));
  const fachCheck=checkFoboso21(jahrespunkte);
- const fpaOk=noten.fpa.hj1>=4&&noten.fpa.hj2>=4&&(noten.fpa.hj1+noten.fpa.hj2)>=10;
+ const fpaOk=fpaHj1>=4&&fpaHj2>=4&&(fpaHj1+fpaHj2)>=10;
  jahr={passed:fachCheck.passed&&fpaOk,fachCheck,fpaOk,jahrespunkte};
  }
  return{probezeit,jahr,vollHJ1,vollJahr};
 }
 // Einfache Orientierung "was fehlt noch": für jedes noch unter 4 liegende
-// oder fehlende Fach wird angezeigt, welcher Wert für die einfachste
-// Bestehens-Variante (Regel a: alle Fächer ≥4) fehlen würde.
+// oder fehlende Fach wird angezeigt, welcher Durchschnittswert für die
+// einfachste Bestehens-Variante (Regel a: alle Fächer ≥4) fehlen würde.
 function wasFehltNochHJ1(noten){
  return F11SB_FAECHER.map(f=>{
- const p=noten.subjects?.[f.key]?.hj1;
+ const p=notenDurchschnitt(notenListe(noten,f.key,"hj1"));
  if(!Number.isFinite(p))return{label:f.label,status:"fehlt",text:"Note fehlt noch"};
- if(p<4)return{label:f.label,status:"kritisch",text:`Aktuell ${p} Punkte – für die einfache Variante (alle Fächer ≥4) fehlen noch ${4-p} Punkte`};
- return{label:f.label,status:"ok",text:`${p} Punkte`};
+ if(p<4)return{label:f.label,status:"kritisch",text:`Aktuell ⌀ ${p} Punkte – für die einfache Variante (alle Fächer ≥4) fehlen noch ${4-p} Punkte`};
+ return{label:f.label,status:"ok",text:`⌀ ${p} Punkte`};
  });
 }
 
@@ -1325,17 +1377,14 @@ async function renderStart(){
  return`<section class="hero"><div><span class="badge"> F11Sb 26/27</span><h1>Willkommen auf dem Campus.</h1><p>Hier
 verbinden wir Lernen, Projekte, Praxis und Gemeinschaft. Alle angemeldeten Mitglieder arbeiten am selben digitalen Campus.</p>
 </div><div class="actions"><button class="primary"onclick="go('kompass')">Mein Kompass →</button><button class="secondary"onclick="go('forum')">Campus-Forum</button></div></section>
- <div class="grid grid-3"><div class="card stat"><b>${tasks.length}</b><span>Arbeitspakete</span></div>
-<div class="card stat"><b>${on}</b><span>auf Kurs</span></div><div class="card stat"><b>${currentUser?1:0}</b><span>dein Zugang
-ist aktiv</span></div></div>
- <div class="grid grid-3"style="margin-top:12px">
- <div class="card"style="background:var(--soft-blue)"><h3> Campus-News</h3><div class="list">${news.slice(0,3).map(p=>`<div
+ <div class="grid grid-3">
+ <div class="card card-compact"style="background:var(--soft-blue)"><h3> Campus-News</h3><div class="list">${news.slice(0,3).map(p=>`<div
 class="list-item"><div><strong>${esc(p.title||p.text)}</strong>${p.title?`<small>${esc(p.text)} · ${fmtDate(p.createdAt)}</small>`:`<small>${fmtDate(p.createdAt)}</small>`}</div><div style="display:flex;align-items:center;gap:8px"><span class="pill">Info</span>${isAdmin()?`<button class="secondary"onclick="deleteNews('${p.id}')">Löschen</button>`:""}</div>
 </div>`).join("")||`<div class="empty">Noch keine News.</div>`}</div></div>
- <div class="card"style="background:var(--soft-purple)"><h3> Nächster Termin</h3><div class="list">${nextCalendar?`<div class="list-item"><div><strong>${esc(nextCalendar.title||nextCalendar.name||"Termin")}</strong><small>${esc(upcomingDateText)}${upcomingTime}</small></div><span class="pill green">Termin</span></div>`:`<div class="empty">Noch keine anstehenden Termine.</div>`}</div></div>
- <div class="card"style="background:var(--soft-pink)"><h3> Geburtstage</h3>${
+ <div class="card card-compact"style="background:var(--soft-purple)"><h3> Nächster Termin</h3><div class="list">${nextCalendar?`<div class="list-item"><div><strong>${esc(nextCalendar.title||nextCalendar.name||"Termin")}</strong><small>${esc(upcomingDateText)}${upcomingTime}</small></div><span class="pill green">Termin</span></div>`:`<div class="empty">Noch keine anstehenden Termine.</div>`}</div></div>
+ <div class="card card-compact"style="background:var(--soft-pink)"><h3> Geburtstage</h3>${
  !birthdayInfo?`<div class="empty">Noch keine Geburtstage eingetragen.</div>`
- :birthdayInfo.isToday?`<p style="margin:10px 0 0;font-weight:800;font-size:16px"> Herzlichen Glückwunsch zum Geburtstag, ${birthdayInfo.people.map(p=>{const c=personColor(p.uid);return`<span style="color:${c.text}">${esc(p.name)}</span>`}).join(" & ")}!</p>`
+ :birthdayInfo.isToday?`<p style="margin:6px 0 0;font-weight:800;font-size:14px"> Herzlichen Glückwunsch, ${birthdayInfo.people.map(p=>{const c=personColor(p.uid);return`<span style="color:${c.text}">${esc(p.name)}</span>`}).join(" & ")}!</p>`
  :`<div class="list-item"><div><strong>${birthdayInfo.people.map(p=>{const c=personColor(p.uid);return`<span style="color:${c.text}">${esc(p.name)}</span>`}).join(" & ")}</strong><small>${esc(birthdayInfo.date.toLocaleDateString("de-DE",{day:"2-digit",month:"long"}))} · ${birthdayInfo.days===1?"morgen":`in ${birthdayInfo.days} Tagen`}</small></div><span class="pill"style="background:${personColor(birthdayInfo.people[0].uid).border};color:#fff">Nächste(r)</span></div>`
  }</div>
  </div>
@@ -1365,6 +1414,9 @@ class="list-item"><div><strong>${esc(p.title||p.text)}</strong>${p.title?`<small
  ${tile(" ","Lernjournal","Lernweg, Reflexionen und nächste Schritte.","journal")}
  ${tile(" ","fpA","Praxisaufträge und Reflexion.","praktikum")}
  ${tile(" ","KI-Innovationslabor","KI-Ideen und Innovationspartnerschaften.","ki")}</div>
+ <div class="grid grid-3"style="margin-top:16px"><div class="card card-compact stat"><b>${tasks.length}</b><span>Arbeitspakete</span></div>
+<div class="card card-compact stat"><b>${on}</b><span>auf Kurs</span></div><div class="card card-compact stat"><b>${currentUser?1:0}</b><span>dein Zugang
+ist aktiv</span></div></div>
 </div>${footer()}`;
 }
 async function getRecentForumActivityCount(days){
@@ -1381,8 +1433,9 @@ async function getRecentForumActivityCount(days){
 function printNotenPDF(noten,bestehen){
  const win=window.open("","_blank","width=800,height=800");
  if(!win){toast("Das PDF-Fenster wurde vom Browser blockiert. Bitte Pop-ups erlauben.");return}
- const rows=F11SB_FAECHER.map(f=>`<tr><td>${escPDF(f.label)}</td><td>${noten.subjects?.[f.key]?.hj1??"—"}</td><td>${noten.subjects?.[f.key]?.hj2??"—"}</td></tr>`).join("");
- const fpaRow=`<tr><td><em>Fachpraktische Ausbildung</em></td><td>${noten.fpa?.hj1??"—"}</td><td>${noten.fpa?.hj2??"—"}</td></tr>`;
+ const fmt=(fach,hj)=>{const l=notenListe(noten,fach,hj);const a=notenDurchschnitt(l);return a===null?"—":`${a} (${l.length} ${l.length===1?"Note":"Noten"})`};
+ const rows=F11SB_FAECHER.map(f=>`<tr><td>${escPDF(f.label)}</td><td>${fmt(f.key,"hj1")}</td><td>${fmt(f.key,"hj2")}</td></tr>`).join("");
+ const fpaRow=`<tr><td><em>Fachpraktische Ausbildung</em></td><td>${fmt("fpa","hj1")}</td><td>${fmt("fpa","hj2")}</td></tr>`;
  const statusText=(label,r)=>!r?`${label}: noch nicht alle Noten eingetragen.`:`${label}: ${r.passed?"nach aktueller Punktlage bestanden":"nach aktueller Punktlage nicht bestanden"}.`;
  win.document.write(`<!doctype html><html lang="de"><head><meta charset="utf-8"><title>Meine Noten – F11Sb</title>
  <style>
@@ -1476,34 +1529,53 @@ async function renderKompass(){
  <div class="kicker"style="margin:22px 0 8px">PERSÖNLICH · NUR FÜR DICH SICHTBAR</div>
  <div class="card">
  <h2 style="margin-top:0"> Meine Noten</h2>
- <p style="color:var(--muted)">Punkte von 0 bis 15 je Fach und Halbjahr – wie im offiziellen FOS-Notensystem üblich. Diese Ansicht sieht ausschließlich du selbst, nicht einmal Lehrkräfte.</p>
+ <p style="color:var(--muted)">Trag beliebig viele schriftliche und mündliche Einzelnoten pro Fach ein – der Durchschnitt wird automatisch berechnet. Diese Ansicht sieht ausschließlich du selbst, nicht einmal Lehrkräfte.</p>
+
+ <details class="noten-collapsible"open>
+ <summary> Noten eintragen/bearbeiten</summary>
  <div style="overflow-x:auto"><table class="noten-table">
  <thead><tr><th>Fach</th><th>HJ1</th><th>HJ2</th></tr></thead>
  <tbody>
- ${F11SB_FAECHER.map(f=>`<tr><td>${f.label}</td>
- <td><input type="number"min="0"max="15"value="${noten.subjects?.[f.key]?.hj1??""}"onchange="saveNotenFeld('${f.key}','hj1',this.value)"></td>
- <td><input type="number"min="0"max="15"value="${noten.subjects?.[f.key]?.hj2??""}"onchange="saveNotenFeld('${f.key}','hj2',this.value)"></td>
- </tr>`).join("")}
- <tr class="noten-fpa"><td><em>Fachpraktische Ausbildung</em></td>
- <td><input type="number"min="0"max="15"value="${noten.fpa?.hj1??""}"onchange="saveNotenFeld('fpa','hj1',this.value)"></td>
- <td><input type="number"min="0"max="15"value="${noten.fpa?.hj2??""}"onchange="saveNotenFeld('fpa','hj2',this.value)"></td>
- </tr>
+ ${F11SB_FAECHER.map(f=>{
+ const l1=notenListe(noten,f.key,"hj1"),a1=notenDurchschnitt(l1);
+ const l2=notenListe(noten,f.key,"hj2"),a2=notenDurchschnitt(l2);
+ return`<tr><td>${f.label}</td>
+ <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('${f.key}','hj1')">${a1===null?"＋ Note":`${a1} Pkt (${l1.length})`}</button></td>
+ <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('${f.key}','hj2')">${a2===null?"＋ Note":`${a2} Pkt (${l2.length})`}</button></td>
+ </tr>`;
+ }).join("")}
+ ${(()=>{const l1=notenListe(noten,"fpa","hj1"),a1=notenDurchschnitt(l1),l2=notenListe(noten,"fpa","hj2"),a2=notenDurchschnitt(l2);
+ return`<tr class="noten-fpa"><td><em>Fachpraktische Ausbildung</em></td>
+ <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('fpa','hj1')">${a1===null?"＋ Note":`${a1} Pkt (${l1.length})`}</button></td>
+ <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('fpa','hj2')">${a2===null?"＋ Note":`${a2} Pkt (${l2.length})`}</button></td>
+ </tr>`;})()}
  </tbody></table></div>
-
- <div class="notice"style="margin-top:16px">
- ${!bestehen.vollHJ1?`<strong> Probezeit-Status (HJ1)</strong><p style="margin:6px 0 0">Trag alle Noten des 1. Halbjahrs ein (inkl. fachpraktischer Ausbildung), um deinen Stand zu sehen.</p>
- <div class="grid grid-2"style="margin-top:10px;gap:8px">${wasFehltNochHJ1(noten).map(x=>`<div class="card"style="padding:8px 10px;background:${x.status==="ok"?"var(--soft-green)":x.status==="kritisch"?"var(--soft-orange)":"#f7fafc"}"><strong style="font-size:12px">${esc(x.label)}</strong><small style="display:block">${esc(x.text)}</small></div>`).join("")}</div>`
- :`<strong style="font-size:15px">${bestehen.probezeit.passed?" Probezeit nach aktueller Punktlage bestanden":" Probezeit nach aktueller Punktlage nicht bestanden"}</strong>
- <p style="margin:8px 0 0;font-size:12px;color:var(--muted)">Fachpraktische Ausbildung HJ1: ${bestehen.probezeit.fpaOk?"✓ mind. 4 Punkte":"✗ unter 4 Punkten"} · Fächer-Regel: ${bestehen.probezeit.fachCheck.passed?`erfüllt (Variante ${bestehen.probezeit.fachCheck.rule})`:"nicht erfüllt"}</p>`}
- ${bestehen.vollJahr?`<hr style="margin:14px 0;border:none;border-top:1px solid var(--line,#e2eaf0)">
- <strong style="font-size:15px">${bestehen.jahr.passed?" Schuljahr nach aktueller Punktlage bestanden":" Schuljahr nach aktueller Punktlage nicht bestanden"}</strong>
- <p style="margin:8px 0 0;font-size:12px;color:var(--muted)">Fachpraktische Ausbildung: ${bestehen.jahr.fpaOk?"✓ Bedingungen erfüllt":"✗ Bedingungen nicht erfüllt"} · Fächer-Regel: ${bestehen.jahr.fachCheck.passed?`erfüllt (Variante ${bestehen.jahr.fachCheck.rule})`:"nicht erfüllt"}</p>`:""}
- <p style="margin-top:14px;font-size:11px;color:var(--muted)">Diese Berechnung ist ausschließlich eine Orientierungshilfe nach §8, §21 Abs. 3, §22 Abs. 1 Nr. 2 FOBOSO – <strong>ohne Gewähr</strong>. Die tatsächliche Entscheidung trifft die Klassenkonferenz/Schulleitung anhand einer pädagogischen Gesamtwürdigung, nicht rein rechnerisch.</p>
- </div>
-
  <div class="form-actions"style="margin-top:14px">
  <button class="secondary"onclick="resetMeineNoten()">Alle Noten zurücksetzen</button>
  <button class="primary"onclick="printNotenPDF(${JSON.stringify(noten).replace(/"/g,"&quot;")},${JSON.stringify(bestehen).replace(/"/g,"&quot;")})"> Als PDF</button>
+ </div>
+ </details>
+
+ <div class="grid grid-2"style="margin-top:16px;gap:12px">
+ <details class="noten-collapsible">
+ <summary> Probezeit-Status (HJ1)</summary>
+ <div class="notice">
+ ${!bestehen.vollHJ1?`<p style="margin:0">Trag alle Noten des 1. Halbjahrs ein (inkl. fachpraktischer Ausbildung), um deinen Stand zu sehen.</p>
+ <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">${wasFehltNochHJ1(noten).map(x=>`<div class="card"style="padding:8px 10px;background:${x.status==="ok"?"var(--soft-green)":x.status==="kritisch"?"var(--soft-orange)":"#f7fafc"}"><strong style="font-size:12px">${esc(x.label)}</strong><small style="display:block">${esc(x.text)}</small></div>`).join("")}</div>`
+ :`<strong style="font-size:15px">${bestehen.probezeit.passed?" Probezeit nach aktueller Punktlage bestanden":" Probezeit nach aktueller Punktlage nicht bestanden"}</strong>
+ <p style="margin:8px 0 0;font-size:12px;color:var(--muted)">Fachpraktische Ausbildung HJ1: ${bestehen.probezeit.fpaOk?"✓ mind. 4 Punkte":"✗ unter 4 Punkten"} · Fächer-Regel: ${bestehen.probezeit.fachCheck.passed?`erfüllt (Variante ${bestehen.probezeit.fachCheck.rule})`:"nicht erfüllt"}</p>`}
+ <p style="margin-top:14px;font-size:11px;color:var(--muted)">Orientierungshilfe nach §8, §21 Abs. 3 FOBOSO – <strong>ohne Gewähr</strong>. Die tatsächliche Entscheidung trifft die Klassenkonferenz.</p>
+ </div>
+ </details>
+ <details class="noten-collapsible">
+ <summary> Bestehen des Schuljahres</summary>
+ <div class="notice">
+ ${!bestehen.vollJahr?`<p style="margin:0">Trag alle Noten beider Halbjahre ein (inkl. fachpraktischer Ausbildung), um deinen Stand zu sehen.</p>`
+ :`<strong style="font-size:15px">${bestehen.jahr.passed?" Schuljahr nach aktueller Punktlage bestanden":" Schuljahr nach aktueller Punktlage nicht bestanden"}</strong>
+ <p style="margin:8px 0 0;font-size:12px;color:var(--muted)">Fachpraktische Ausbildung: ${bestehen.jahr.fpaOk?"✓ Bedingungen erfüllt":"✗ Bedingungen nicht erfüllt"} · Fächer-Regel: ${bestehen.jahr.fachCheck.passed?`erfüllt (Variante ${bestehen.jahr.fachCheck.rule})`:"nicht erfüllt"}</p>`}
+ <p style="margin-top:14px;font-size:11px;color:var(--muted)">Orientierungshilfe nach §22 Abs. 1 Nr. 2, §21 Abs. 3 FOBOSO – <strong>ohne Gewähr</strong>. Die tatsächliche Entscheidung trifft die Klassenkonferenz.</p>
+ </div>
+ </details>
  </div>
  </div>
 
