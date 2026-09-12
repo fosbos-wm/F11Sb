@@ -955,6 +955,24 @@ async function removeHeimatort(){
  try{await deleteDoc(doc(db,"heimatorte",currentUser.uid));await render();toast("Eintrag entfernt.")}
  catch(e){console.error("Heimatort löschen:",e);toast("Konnte nicht entfernt werden.")}
 }
+async function removeHeimatortAsTeacher(uid,name){
+ if(!isTeacher()){toast("Dieser Bereich ist nur für Lehrkräfte.");return}
+ if(!confirm(`Eintrag von ${name||"dieser Person"} wirklich entfernen?`))return;
+ try{await deleteDoc(doc(db,"heimatorte",uid));await render();toast("Eintrag entfernt.")}
+ catch(e){console.error("Heimatort löschen (Lehrkraft):",e);toast("Konnte nicht entfernt werden.")}
+}
+async function resetAlleHeimatorte(){
+ if(!isTeacher()){toast("Dieser Bereich ist nur für Lehrkräfte.");return}
+ if(!confirm("Wirklich ALLE Heimatorte-Einträge der Klasse zurücksetzen? Das kann nicht rückgängig gemacht werden."))return;
+ try{
+ const entries=await getHeimatEintraege();
+ await Promise.all(entries.map(e=>deleteDoc(doc(db,"heimatorte",e.uid))));
+ await render();
+ toast("Alle Einträge zurückgesetzt.");
+ }catch(e){console.error("Heimatorte zurücksetzen:",e);toast("Konnte nicht zurückgesetzt werden.")}
+}
+window.removeHeimatortAsTeacher=removeHeimatortAsTeacher;
+window.resetAlleHeimatorte=resetAlleHeimatorte;
 function subscribeHeimatkarteLive(){
  liveUnsubHeimat=onSnapshot(collection(db,"heimatorte"),snap=>{
  const entries=snap.docs.map(d=>({id:d.id,...d.data()}));
@@ -1053,6 +1071,11 @@ async function renderKlassenteam(){
  ${myHeimatort?`<button class="secondary"onclick="removeHeimatort()">Entfernen</button>`:""}
  </div>
  <div id="heimatkarteWrap">${heimatkarteSVG(heimatEntries)}</div>
+ ${isTeacher()?`<details style="margin-top:14px">
+ <summary style="cursor:pointer;color:var(--muted);font-size:13px">Für Lehrkräfte: Einträge verwalten (${heimatEntries.length})</summary>
+ <div class="list"style="margin-top:10px">${heimatEntries.map(e=>`<div class="list-item"><div><strong>${esc(e.name||"Campus-Mitglied")}</strong><small>${esc(e.ort||"")}</small></div><button class="secondary"onclick="removeHeimatortAsTeacher('${e.uid}','${esc(e.name||"")}')">Entfernen</button></div>`).join("")||`<div class="empty">Noch keine Einträge.</div>`}</div>
+ ${heimatEntries.length?`<div class="form-actions"style="margin-top:10px"><button class="secondary"onclick="resetAlleHeimatorte()">Alle Einträge zurücksetzen</button></div>`:""}
+ </details>`:""}
  </div>
 
  <div class="card"style="margin-top:16px">
@@ -1097,13 +1120,14 @@ function webUntisUrl(){
  const today=new Date().toISOString().slice(0,10);
  return `https://fos-bos-weilheim.webuntis.com/WebUntis?school=fos-bos-weilheim#/basic/timetablePublic/class?date=${today}&entityId=1190`;
 }
-function webUntisEmbedHTML(heightPx){
+function webUntisEmbedHTML(heightPx,openByDefault){
  const url=webUntisUrl();
- return `<div class="untis-embed">
- <iframe src="${url}"loading="lazy"style="width:100%;height:${heightPx}px;border:1px solid var(--line,#e2eaf0);border-radius:10px;background:#fff"title="Stundenplan F11Sb (WebUntis)"></iframe>
+ return `<details class="untis-embed"${openByDefault?"open":""}>
+ <summary> Stundenplan anzeigen/ausblenden</summary>
+ <iframe src="${url}"loading="lazy"style="width:100%;height:${heightPx}px;border:1px solid var(--line,#e2eaf0);border-radius:10px;background:#fff"class="untis-iframe"title="Stundenplan F11Sb (WebUntis)"></iframe>
  <div class="untis-fallback"><small>Wird der Stundenplan oben nicht angezeigt? Manche Schulnetzwerke blockieren die Einbettung.</small>
  <a href="${url}"target="_blank"rel="noopener"class="pill"> Stundenplan in WebUntis öffnen ↗</a></div>
- </div>`;
+ </details>`;
 }
 
 // ---- Noten (0–15 Punkte je Fach, getrennt nach Halbjahr) ------------------
@@ -1301,10 +1325,24 @@ async function renderStart(){
  return`<section class="hero"><div><span class="badge"> F11Sb 26/27</span><h1>Willkommen auf dem Campus.</h1><p>Hier
 verbinden wir Lernen, Projekte, Praxis und Gemeinschaft. Alle angemeldeten Mitglieder arbeiten am selben digitalen Campus.</p>
 </div><div class="actions"><button class="primary"onclick="go('kompass')">Mein Kompass →</button><button class="secondary"onclick="go('forum')">Campus-Forum</button></div></section>
- <div class="card"style="margin-bottom:16px">
+ <div class="grid grid-3"><div class="card stat"><b>${tasks.length}</b><span>Arbeitspakete</span></div>
+<div class="card stat"><b>${on}</b><span>auf Kurs</span></div><div class="card stat"><b>${currentUser?1:0}</b><span>dein Zugang
+ist aktiv</span></div></div>
+ <div class="grid grid-3"style="margin-top:12px">
+ <div class="card"style="background:var(--soft-blue)"><h3> Campus-News</h3><div class="list">${news.slice(0,3).map(p=>`<div
+class="list-item"><div><strong>${esc(p.title||p.text)}</strong>${p.title?`<small>${esc(p.text)} · ${fmtDate(p.createdAt)}</small>`:`<small>${fmtDate(p.createdAt)}</small>`}</div><div style="display:flex;align-items:center;gap:8px"><span class="pill">Info</span>${isAdmin()?`<button class="secondary"onclick="deleteNews('${p.id}')">Löschen</button>`:""}</div>
+</div>`).join("")||`<div class="empty">Noch keine News.</div>`}</div></div>
+ <div class="card"style="background:var(--soft-purple)"><h3> Nächster Termin</h3><div class="list">${nextCalendar?`<div class="list-item"><div><strong>${esc(nextCalendar.title||nextCalendar.name||"Termin")}</strong><small>${esc(upcomingDateText)}${upcomingTime}</small></div><span class="pill green">Termin</span></div>`:`<div class="empty">Noch keine anstehenden Termine.</div>`}</div></div>
+ <div class="card"style="background:var(--soft-pink)"><h3> Geburtstage</h3>${
+ !birthdayInfo?`<div class="empty">Noch keine Geburtstage eingetragen.</div>`
+ :birthdayInfo.isToday?`<p style="margin:10px 0 0;font-weight:800;font-size:16px"> Herzlichen Glückwunsch zum Geburtstag, ${birthdayInfo.people.map(p=>{const c=personColor(p.uid);return`<span style="color:${c.text}">${esc(p.name)}</span>`}).join(" & ")}!</p>`
+ :`<div class="list-item"><div><strong>${birthdayInfo.people.map(p=>{const c=personColor(p.uid);return`<span style="color:${c.text}">${esc(p.name)}</span>`}).join(" & ")}</strong><small>${esc(birthdayInfo.date.toLocaleDateString("de-DE",{day:"2-digit",month:"long"}))} · ${birthdayInfo.days===1?"morgen":`in ${birthdayInfo.days} Tagen`}</small></div><span class="pill"style="background:${personColor(birthdayInfo.people[0].uid).border};color:#fff">Nächste(r)</span></div>`
+ }</div>
+ </div>
+ <div class="card"style="margin-top:16px;margin-bottom:16px">
  <div class="kicker">STUNDENPLAN</div>
  <h2 style="margin-top:4px">Aktueller Stundenplan</h2>
- ${webUntisEmbedHTML(340)}
+ ${webUntisEmbedHTML(300)}
  <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
  <input id="quickWpInput"type="text"maxlength="140"placeholder="Was steht diese Woche an? Kurz eintragen …"style="flex:1;min-width:220px">
  <button class="primary"onclick="quickAddWochenplan()">＋ Zur Wochenplanung</button>
@@ -1327,20 +1365,7 @@ verbinden wir Lernen, Projekte, Praxis und Gemeinschaft. Alle angemeldeten Mitgl
  ${tile(" ","Lernjournal","Lernweg, Reflexionen und nächste Schritte.","journal")}
  ${tile(" ","fpA","Praxisaufträge und Reflexion.","praktikum")}
  ${tile(" ","KI-Innovationslabor","KI-Ideen und Innovationspartnerschaften.","ki")}</div>
- <div class="grid grid-3"style="margin-top:12px"><div class="card stat"><b>${tasks.length}</b><span>Arbeitspakete</span></div>
-<div class="card stat"><b>${on}</b><span>auf Kurs</span></div><div class="card stat"><b>${currentUser?1:0}</b><span>dein Zugang
-ist aktiv</span></div></div>
- <div class="grid grid-3"style="margin-top:12px">
- <div class="card"style="background:var(--soft-blue)"><h3> Campus-News</h3><div class="list">${news.slice(0,3).map(p=>`<div
-class="list-item"><div><strong>${esc(p.title||p.text)}</strong>${p.title?`<small>${esc(p.text)} · ${fmtDate(p.createdAt)}</small>`:`<small>${fmtDate(p.createdAt)}</small>`}</div><div style="display:flex;align-items:center;gap:8px"><span class="pill">Info</span>${isAdmin()?`<button class="secondary"onclick="deleteNews('${p.id}')">Löschen</button>`:""}</div>
-</div>`).join("")||`<div class="empty">Noch keine News.</div>`}</div></div>
- <div class="card"style="background:var(--soft-purple)"><h3> Nächster Termin</h3><div class="list">${nextCalendar?`<div class="list-item"><div><strong>${esc(nextCalendar.title||nextCalendar.name||"Termin")}</strong><small>${esc(upcomingDateText)}${upcomingTime}</small></div><span class="pill green">Termin</span></div>`:`<div class="empty">Noch keine anstehenden Termine.</div>`}</div></div>
- <div class="card"style="background:var(--soft-pink)"><h3> Geburtstage</h3>${
- !birthdayInfo?`<div class="empty">Noch keine Geburtstage eingetragen.</div>`
- :birthdayInfo.isToday?`<p style="margin:10px 0 0;font-weight:800;font-size:16px"> Herzlichen Glückwunsch zum Geburtstag, ${birthdayInfo.people.map(p=>{const c=personColor(p.uid);return`<span style="color:${c.text}">${esc(p.name)}</span>`}).join(" & ")}!</p>`
- :`<div class="list-item"><div><strong>${birthdayInfo.people.map(p=>{const c=personColor(p.uid);return`<span style="color:${c.text}">${esc(p.name)}</span>`}).join(" & ")}</strong><small>${esc(birthdayInfo.date.toLocaleDateString("de-DE",{day:"2-digit",month:"long"}))} · ${birthdayInfo.days===1?"morgen":`in ${birthdayInfo.days} Tagen`}</small></div><span class="pill"style="background:${personColor(birthdayInfo.people[0].uid).border};color:#fff">Nächste(r)</span></div>`
- }</div>
- </div>${footer()}`;
+</div>${footer()}`;
 }
 async function getRecentForumActivityCount(days){
  try{
@@ -1428,7 +1453,7 @@ async function renderKompass(){
  <div class="kicker"style="margin-top:6px">ORIENTIERUNG</div>
  <div class="card"style="margin-top:8px">
  <h2 style="margin-top:0"> Aktueller Stundenplan</h2>
- ${webUntisEmbedHTML(420)}
+ ${webUntisEmbedHTML(360)}
  </div>
 
  <div class="kicker"style="margin:22px 0 8px">WOCHEN-/MONATSPLANUNG</div>

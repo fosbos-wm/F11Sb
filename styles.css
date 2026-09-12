@@ -214,6 +214,12 @@ main#content{flex:1;min-width:0;padding:28px 34px 60px;max-width:1500px}
 
 /* ===== Stundenplan (WebUntis), Wochenplanung, Noten ===== */
 .untis-embed{margin-top:10px}
+.untis-embed summary{cursor:pointer;font-weight:800;color:var(--blue-dark);padding:8px 0;list-style:none;display:flex;align-items:center;gap:6px}
+.untis-embed summary::-webkit-details-marker{display:none}
+.untis-embed summary::before{content:"▸";transition:transform .2s}
+.untis-embed[open] summary::before{transform:rotate(90deg)}
+.untis-embed .untis-iframe{margin-top:6px}
+@media(max-width:600px){.untis-embed .untis-iframe{height:230px!important}}
 .untis-fallback{margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .untis-fallback small{color:var(--muted);font-size:11px}
 .kompass-alerts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
