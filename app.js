@@ -1895,7 +1895,7 @@ function berechneBestehen(noten){
 // oder fehlende Fach wird angezeigt, welcher Wert für die einfachste
 // Bestehens-Variante (Regel a: alle Fächer ≥4) fehlen würde.
 function wasFehltNochHJ1(noten){
- return F11SB_FAECHER.map(f=>{
+ const liste=F11SB_FAECHER.map(f=>{
  const p=berechneHalbjahresergebnis(noten,f.key,"hj1");
  if(!Number.isFinite(p)){
  const hatSA=schulaufgabenListe(noten,f.key,"hj1").length>0;
@@ -1907,6 +1907,37 @@ function wasFehltNochHJ1(noten){
  if(p<4)return{label:f.label,status:"kritisch",text:`Aktuell ${p} Punkte – für die einfache Variante (alle Fächer ≥4) fehlen noch ${4-p} Punkte`};
  return{label:f.label,status:"ok",text:`${p} Punkte`};
  });
+ const fpaP=notenDurchschnitt(notenListe(noten,"fpa","hj1"));
+ if(fpaP===null)liste.push({label:"Fachpraktische Ausbildung",status:"fehlt",text:"Note fehlt noch"});
+ else if(fpaP===0)liste.push({label:"Fachpraktische Ausbildung",status:"ungenuegend",text:"0 Punkte – mind. 4 Punkte nötig"});
+ else if(fpaP<4)liste.push({label:"Fachpraktische Ausbildung",status:"kritisch",text:`Aktuell ${fpaP} Punkte – mind. 4 Punkte nötig`});
+ else liste.push({label:"Fachpraktische Ausbildung",status:"ok",text:`${fpaP} Punkte`});
+ return liste;
+}
+// Analoge Übersicht fürs ganze Schuljahr: Jahrespunktzahl je Fach (Durchschnitt
+// der beiden Halbjahresergebnisse) plus fpA mit eigener Jahresregel (§8 FOBOSO).
+function wasFehltNochJahr(noten){
+ const liste=F11SB_FAECHER.map(f=>{
+ const p1=berechneHalbjahresergebnis(noten,f.key,"hj1");
+ const p2=berechneHalbjahresergebnis(noten,f.key,"hj2");
+ if(!Number.isFinite(p1)||!Number.isFinite(p2)){
+ const fehlt=!Number.isFinite(p1)&&!Number.isFinite(p2)?"HJ1 und HJ2 fehlen noch":!Number.isFinite(p1)?"HJ1 fehlt noch":"HJ2 fehlt noch";
+ return{label:f.label,status:"fehlt",text:fehlt};
+ }
+ const jp=foboso19Runden((p1+p2)/2);
+ if(jp===0)return{label:f.label,status:"ungenuegend",text:`0 Punkte im Jahr – für die einfache Variante (alle Fächer ≥4) fehlen noch 4 Punkte`};
+ if(jp<4)return{label:f.label,status:"kritisch",text:`Aktuell ${jp} Punkte im Jahr – für die einfache Variante (alle Fächer ≥4) fehlen noch ${4-jp} Punkte`};
+ return{label:f.label,status:"ok",text:`${jp} Punkte im Jahr`};
+ });
+ const fpa1=notenDurchschnitt(notenListe(noten,"fpa","hj1"));
+ const fpa2=notenDurchschnitt(notenListe(noten,"fpa","hj2"));
+ if(fpa1===null||fpa2===null){
+ liste.push({label:"Fachpraktische Ausbildung",status:"fehlt",text:fpa1===null&&fpa2===null?"HJ1 und HJ2 fehlen noch":fpa1===null?"HJ1 fehlt noch":"HJ2 fehlt noch"});
+ }else{
+ const ok=fpa1>=4&&fpa2>=4&&(fpa1+fpa2)>=10;
+ liste.push({label:"Fachpraktische Ausbildung",status:ok?"ok":(fpa1===0||fpa2===0)?"ungenuegend":"kritisch",text:`HJ1: ${fpa1} · HJ2: ${fpa2} Punkte (Summe ${fpa1+fpa2}, mind. 10 nötig)`});
+ }
+ return liste;
 }
 
 // ---- Wochen-/Monatsplanung -------------------------------------------
@@ -2277,19 +2308,20 @@ async function renderKompass(){
  <details class="noten-collapsible">
  <summary> Probezeit-Status (HJ1)</summary>
  <div class="notice">
- ${!bestehen.vollHJ1?`<p style="margin:0">Trag alle Noten des 1. Halbjahrs ein (inkl. fachpraktischer Ausbildung), um deinen Stand zu sehen.</p>
- <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">${wasFehltNochHJ1(noten).map(x=>`<div class="card"style="padding:8px 10px;background:${x.status==="ok"?"var(--soft-green)":x.status==="kritisch"?"var(--soft-orange)":x.status==="ungenuegend"?"#fbdada":"#f7fafc"}"><strong style="font-size:12px">${esc(x.label)}</strong><small style="display:block">${esc(x.text)}</small></div>`).join("")}</div>`
+ ${!bestehen.vollHJ1?`<p style="margin:0">Trag alle Noten des 1. Halbjahrs ein (inkl. fachpraktischer Ausbildung), um deinen endgültigen Stand zu sehen.</p>`
  :`<strong style="font-size:15px">${bestehen.probezeit.passed?" Probezeit nach aktueller Punktlage bestanden":" Probezeit nach aktueller Punktlage nicht bestanden"}</strong>
  <p style="margin:8px 0 0;font-size:12px;color:var(--muted)">Fachpraktische Ausbildung HJ1: ${bestehen.probezeit.fpaOk?"✓ mind. 4 Punkte":"✗ unter 4 Punkten"} · Fächer-Regel: ${bestehen.probezeit.fachCheck.passed?`erfüllt (Variante ${bestehen.probezeit.fachCheck.rule})`:"nicht erfüllt"}</p>`}
+ <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">${wasFehltNochHJ1(noten).map(x=>`<div class="card"style="padding:8px 10px;background:${x.status==="ok"?"var(--soft-green)":x.status==="kritisch"?"var(--soft-orange)":x.status==="ungenuegend"?"#fbdada":"#f7fafc"}"><strong style="font-size:12px">${esc(x.label)}</strong><small style="display:block">${esc(x.text)}</small></div>`).join("")}</div>
  <p style="margin-top:14px;font-size:11px;color:var(--muted)">Orientierungshilfe nach §8, §21 Abs. 3 FOBOSO – <strong>ohne Gewähr</strong>. Die tatsächliche Entscheidung trifft die Klassenkonferenz.</p>
  </div>
  </details>
  <details class="noten-collapsible">
  <summary> Bestehen des Schuljahres</summary>
  <div class="notice">
- ${!bestehen.vollJahr?`<p style="margin:0">Trag alle Noten beider Halbjahre ein (inkl. fachpraktischer Ausbildung), um deinen Stand zu sehen.</p>`
+ ${!bestehen.vollJahr?`<p style="margin:0">Trag alle Noten beider Halbjahre ein (inkl. fachpraktischer Ausbildung), um deinen endgültigen Stand zu sehen.</p>`
  :`<strong style="font-size:15px">${bestehen.jahr.passed?" Schuljahr nach aktueller Punktlage bestanden":" Schuljahr nach aktueller Punktlage nicht bestanden"}</strong>
  <p style="margin:8px 0 0;font-size:12px;color:var(--muted)">Fachpraktische Ausbildung: ${bestehen.jahr.fpaOk?"✓ Bedingungen erfüllt":"✗ Bedingungen nicht erfüllt"} · Fächer-Regel: ${bestehen.jahr.fachCheck.passed?`erfüllt (Variante ${bestehen.jahr.fachCheck.rule})`:"nicht erfüllt"}</p>`}
+ <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">${wasFehltNochJahr(noten).map(x=>`<div class="card"style="padding:8px 10px;background:${x.status==="ok"?"var(--soft-green)":x.status==="kritisch"?"var(--soft-orange)":x.status==="ungenuegend"?"#fbdada":"#f7fafc"}"><strong style="font-size:12px">${esc(x.label)}</strong><small style="display:block">${esc(x.text)}</small></div>`).join("")}</div>
  <p style="margin-top:14px;font-size:11px;color:var(--muted)">Orientierungshilfe nach §22 Abs. 1 Nr. 2, §21 Abs. 3 FOBOSO – <strong>ohne Gewähr</strong>. Die tatsächliche Entscheidung trifft die Klassenkonferenz.</p>
  </div>
  </details>
