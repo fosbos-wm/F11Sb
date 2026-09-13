@@ -2290,17 +2290,53 @@ async function renderKompass(){
  <div class="grid grid-3"><div class="card stat"><b>${tasks.filter(t=>t.ownerUid===currentUser.uid).length}</b><span>Meine
 Aufgaben</span></div><div class="card stat"><b>${projects.length}</b><span>Projekte</span></div><div class="card stat">
 <b>${profile?.role==="teacher"?"Lehrkraft":profile?.role==="admin"?"Admin":"Schüler/in"}</b><span>Rolle</span></div></div>
- <div class="card"style="margin-top:12px;background:var(--soft-blue)"><h3> Meine Aufgaben</h3><div
-class="list">${tasks.filter(t=>t.ownerUid===currentUser.uid).map(taskHTML).join("")||`<div class="empty"><strong>Noch keine
-Aufgaben</strong>Lege deine erste Aufgabe an.</div>`}</div></div>
- <div class="card"style="margin-top:12px;background:var(--soft-purple)"><h3> Meine Projekt-Fristen</h3><p style="color:var(--muted);font-size:12px;margin-top:-4px">Dein persönlicher Überblick über Projekt-Abgabetermine – erscheint bewusst nicht im allgemeinen Campus-Kalender.</p><div class="list">${projectDeadlines.map(p=>{
- const overdue=String(p.deadline)<todayStr;
- return`<div class="list-item"><div><strong>${esc(p.title)}</strong><small>${esc(p.team||"")}</small></div><span class="pill${overdue?"":"green"}">${overdue?"überfällig · ":""}${esc(fmtDateOnly(p.deadline))}</span></div>`;
- }).join("")||`<div class="empty">Noch keine Projekt-Fristen eingetragen.</div>`}</div></div>
- <div class="card"style="margin-top:12px;background:var(--soft-teal)"><h3> Aktuelle Projekte</h3><div class="list">${projects.map(p=>`<div class="list- item"><div><strong>${esc(p.title)}</strong><small>${esc(p.team||"")} · ${esc(p.partner||"")}</small></div><span
-class="pill">${Number(p.progress||0)}%</span></div>`).join("")||`<div class="empty">Noch keine Projekte.</div>`}</div>
+ <div class="grid grid-3"style="margin-top:12px">
+ <button type="button"class="card tile-square"style="background:var(--soft-blue)"onclick="openMeineAufgabenModal()">
+ <span class="emoji"></span><strong>Meine Aufgaben</strong><small>${tasks.filter(t=>t.ownerUid===currentUser.uid).length} offen</small>
+ </button>
+ <button type="button"class="card tile-square"style="background:var(--soft-purple)"onclick="openProjektFristenModal()">
+ <span class="emoji"></span><strong>Meine Projektfristen</strong><small>${projectDeadlines.length} Termine</small>
+ </button>
+ <button type="button"class="card tile-square"style="background:var(--soft-teal)"onclick="openAktuelleProjekteModal()">
+ <span class="emoji"></span><strong>Meine Projekte</strong><small>${projects.length} Projekte</small>
+ </button>
+ </div>
 </div>${footer()}`;
 }
+async function openMeineAufgabenModal(){
+ let tasks=[];
+ try{tasks=await getCollection("tasks","deadline",false)}catch(e){}
+ const meine=tasks.filter(t=>t.ownerUid===currentUser.uid);
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+ <div class="kicker">MEIN KOMPASS</div><h2> Meine Aufgaben</h2>
+ <div class="list">${meine.map(taskHTML).join("")||`<div class="empty"><strong>Noch keine Aufgaben</strong>Lege deine erste Aufgabe an.</div>`}</div>
+ <div class="form-actions"style="margin-top:14px"><button class="primary"onclick="closeModal();openTaskForm()">＋ Aufgabe</button><button class="secondary"onclick="closeModal()">Schließen</button></div>`);
+}
+async function openProjektFristenModal(){
+ let projects=[];
+ try{projects=await getCollection("projects")}catch(e){}
+ const todayStr=new Date().toISOString().slice(0,10);
+ const projectDeadlines=projects.filter(p=>p.deadline).sort((a,b)=>String(a.deadline).localeCompare(String(b.deadline)));
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+ <div class="kicker">MEIN KOMPASS</div><h2> Meine Projektfristen</h2>
+ <p style="color:var(--muted);font-size:12px">Dein persönlicher Überblick über Projekt-Abgabetermine – erscheint bewusst nicht im allgemeinen Campus-Kalender.</p>
+ <div class="list">${projectDeadlines.map(p=>{
+ const overdue=String(p.deadline)<todayStr;
+ return`<div class="list-item"><div><strong>${esc(p.title)}</strong><small>${esc(p.team||"")}</small></div><span class="pill${overdue?"":"green"}">${overdue?"überfällig · ":""}${esc(fmtDateOnly(p.deadline))}</span></div>`;
+ }).join("")||`<div class="empty">Noch keine Projekt-Fristen eingetragen.</div>`}</div>
+ <div class="form-actions"style="margin-top:14px"><button class="secondary"onclick="closeModal()">Schließen</button></div>`);
+}
+async function openAktuelleProjekteModal(){
+ let projects=[];
+ try{projects=await getCollection("projects")}catch(e){}
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+ <div class="kicker">MEIN KOMPASS</div><h2> Meine Projekte</h2>
+ <div class="list">${projects.map(p=>`<div class="list-item"><div><strong>${esc(p.title)}</strong><small>${esc(p.team||"")} · ${esc(p.partner||"")}</small></div><span class="pill">${Number(p.progress||0)}%</span></div>`).join("")||`<div class="empty">Noch keine Projekte.</div>`}</div>
+ <div class="form-actions"style="margin-top:14px"><button class="secondary"onclick="closeModal()">Schließen</button></div>`);
+}
+window.openMeineAufgabenModal=openMeineAufgabenModal;
+window.openProjektFristenModal=openProjektFristenModal;
+window.openAktuelleProjekteModal=openAktuelleProjekteModal;
 function taskHTML(t){return`<div class="list-item"><div><strong>${esc(t.title)}</strong><small>Verantwortlich:
 ${esc(t.ownerName||"")} · Deadline: ${esc(t.deadline||"—")} · Nächster Schritt: ${esc(t.next||"—")}</small></div><div
 class="traffic">${statusDot(t.status)}<span class="pill">${statusLabel[t.status]||"—"}</span></div></div>`}
