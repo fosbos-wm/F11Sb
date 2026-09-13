@@ -6958,6 +6958,12 @@ async function renderResilienz(){
  .res-icon{font-size:31px;margin-bottom:8px}.res-tag{display:inline-block;margin-top:6px;border-radius:999px;font-size:9.5px;padding:3px 9px}
  .res-layout{display:grid;grid-template-columns:1.35fr .65fr;gap:18px}
  .res-scale{width:100%;accent-color:#168fd0}
+ .vstress-wrap{display:flex;align-items:center;gap:16px;margin:20px 0}
+ .vstress-num{font-size:32px;font-weight:800;color:#c0392b;line-height:1}
+ .vstress-track{position:relative;width:54px;height:220px;border-radius:27px;background:#f0f3f5;border:1px solid var(--line,#e2eaf0);overflow:hidden}
+ .vstress-fill{position:absolute;bottom:0;left:0;width:100%;border-radius:0 0 27px 27px;transition:height .12s ease,background .12s ease}
+ .vstress-input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer;writing-mode:vertical-lr;direction:rtl;-webkit-appearance:slider-vertical}
+ .vstress-scale{display:flex;flex-direction:column;justify-content:space-between;height:220px;font-size:11px;color:var(--muted)}
  .stress-value{font-size:40px;font-weight:900;line-height:1;background:linear-gradient(90deg,var(--blue-dark),var(--green));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
  .stress-face{font-size:30px}
  .stress-signs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
@@ -7002,16 +7008,22 @@ async function renderResilienz(){
  <div class="kicker">DEIN MOMENT</div>
  <h2> Wie hoch ist dein Stress gerade?</h2>
  <p>Schätze deinen momentanen Stress von <b>0</b> (ruhig) bis <b>10</b> (sehr angespannt) ein. Es gibt dabei kein „richtig“ oder „falsch“.</p>
- <div style="display:flex;align-items:center;gap:14px;margin:18px 0 8px">
- <div class="stress-value"id="resStressValue">5</div><div class="stress-face"id="resStressFace"></div>
- </div>
- <input id="resStress"class="res-scale"type="range"min="0"max="10"value="5"oninput="updateResilienzStress(this.value)">
- <div style="display:flex;justify-content:space-between;color:var(--muted);font-size:12px"><span>0 · ruhig</span><span>5 · angespannt</span><span>10 · sehr hoch</span></div>
 
  <div class="card"style="margin-top:16px">
  <h3>Woran merkst du es bei dir?</h3>
  <p style="color:var(--muted);font-size:12px;margin-top:-6px">Tippe an, was gerade zutrifft.</p>
  <div class="stress-signs"id="resStressSigns">${STRESS_SIGNS.map(s=>`<div class="stress-sign"data-active="0"onclick="toggleStressSign(this,'hsl(${s.hue},55%,90%)','hsl(${s.hue},42%,55%)')"> ${s.label}</div>`).join("")}</div>
+ </div>
+
+ <div class="vstress-wrap">
+ <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+ <div class="vstress-num"id="resStressValue">5</div>
+ <div class="vstress-track">
+ <div class="vstress-fill"id="resStressFill"style="height:50%;background:rgba(214,58,58,0.53)"></div>
+ <input id="resStress"type="range"min="0"max="10"step="1"value="5"oninput="updateResilienzStress(this.value)"class="vstress-input">
+ </div>
+ </div>
+ <div class="vstress-scale"><span>10 · sehr hoch</span><span>5 · angespannt</span><span>0 · ruhig</span></div>
  </div>
 
  <div class="skill-suggest"id="resSkillSuggest">
@@ -7067,9 +7079,12 @@ async function renderResilienz(){
 
 function updateResilienzStress(value){
  const v=Number(value);
- const val=$("resStressValue"),face=$("resStressFace"),box=$("resSkillButtons");
+ const val=$("resStressValue"),box=$("resSkillButtons"),fill=$("resStressFill");
  if(val)val.textContent=v;
- if(face)face.textContent=v<=2?"":v<=4?"":v<=6?"":v<=8?"":"";
+ if(fill){
+ fill.style.height=`${v*10}%`;
+ fill.style.background=`rgba(214,58,58,${0.08+(v/10)*0.82})`;
+ }
  const ids=v<=2?["fokus","ressource","leicht"]:v<=5?["boden","bewegung","fokus","kontakt"]:v<=7?["atem","boden","distanz","bewegung"]:["atem","boden","pause","kontakt"];
  if(box)box.innerHTML=ids.slice(0,3).map(id=>{
  const s=resilienzSkillData(id);
