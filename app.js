@@ -1,4 +1,4 @@
-let initializeApp, getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, updateProfile; let getFirestore, collection, doc, addDoc, setDoc, updateDoc, deleteDoc, getDoc, getDocs, query, orderBy, limit, where, onSnapshot, serverTimestamp, arrayUnion, arrayRemove, increment; let firebaseReadyPromise = null; async function loadFirebase(){ if(firebaseReadyPromise) return firebaseReadyPromise; firebaseReadyPromise = Promise.all([ import("https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js"), import("https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js"), import("https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js") ]).then(([appMod, authMod, fsMod])=>{ ({initializeApp}=appMod); ({getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,sendPasswordResetEmail,updateProfile}=authMod); ({getFirestore,collection,doc,addDoc,setDoc,updateDoc,deleteDoc,getDoc,getDocs,query,orderBy,limit,where,onSnapshot,serverTimestamp,arrayUnion,arrayRemove,increment}=fsMod); if(!app) app=initializeApp(firebaseConfig); if(!auth) auth=getAuth(app); if(!db) db=getFirestore(app); window.CampusFirebase={ get db(){return db}, get currentUser(){return currentUser}, collection,doc,addDoc,setDoc,updateDoc,deleteDoc,getDoc,getDocs, query,orderBy,limit,where,onSnapshot,serverTimestamp,arrayUnion,increment, modal,toast,pageHead,footer,render }; return true; }); return firebaseReadyPromise; } /*
+let initializeApp, getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, updateProfile; let getFirestore, collection, doc, addDoc, setDoc, updateDoc, deleteDoc, getDoc, getDocs, query, orderBy, limit, where, onSnapshot, serverTimestamp, arrayUnion, arrayRemove, increment; let getStorage, storageRef, uploadBytes, getDownloadURL, deleteObject; let storage=null; let firebaseReadyPromise = null; async function loadFirebase(){ if(firebaseReadyPromise) return firebaseReadyPromise; firebaseReadyPromise = Promise.all([ import("https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js"), import("https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js"), import("https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js"), import("https://www.gstatic.com/firebasejs/12.16.0/firebase-storage.js") ]).then(([appMod, authMod, fsMod, storageMod])=>{ ({initializeApp}=appMod); ({getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,sendPasswordResetEmail,updateProfile}=authMod); ({getFirestore,collection,doc,addDoc,setDoc,updateDoc,deleteDoc,getDoc,getDocs,query,orderBy,limit,where,onSnapshot,serverTimestamp,arrayUnion,arrayRemove,increment}=fsMod); ({getStorage,ref:storageRef,uploadBytes,getDownloadURL,deleteObject}=storageMod); if(!app) app=initializeApp(firebaseConfig); if(!auth) auth=getAuth(app); if(!db) db=getFirestore(app); if(!storage) storage=getStorage(app); window.CampusFirebase={ get db(){return db}, get currentUser(){return currentUser}, collection,doc,addDoc,setDoc,updateDoc,deleteDoc,getDoc,getDocs, query,orderBy,limit,where,onSnapshot,serverTimestamp,arrayUnion,increment, modal,toast,pageHead,footer,render }; return true; }); return firebaseReadyPromise; } /*
  WICHTIG:
  Diese Werte werden nach dem Anlegen deiner Firebase-Web-App aus
  der Firebase Console hier eingesetzt.
@@ -1479,12 +1479,20 @@ async function getLehrplanProdukte(wocheId){
 async function addLehrplanProdukt(fach,wocheId){
  const titel=$("produktTitel")?.value.trim();
  const inhalt=$("produktInhalt")?.value.trim();
+ const file=$("produktDatei")?.files?.[0]||null;
  if(!titel){toast("Bitte einen Titel eingeben.");return}
+ if(!inhalt&&!file){toast("Bitte einen Link/Text eingeben oder eine Datei auswählen.");return}
  try{
- await addDoc(collection(db,"lehrplanProdukte"),{wocheId,fach,uid:currentUser.uid,name:profile?.displayName||"Campus-Mitglied",titel,inhalt,createdAt:serverTimestamp()});
+ let dateiUrl="",dateiName="";
+ if(file){
+ toast("Datei wird hochgeladen …");
+ const up=await uploadCampusDatei(file,`lehrplanProdukte/${wocheId}`);
+ dateiUrl=up.url;dateiName=up.name;
+ }
+ await addDoc(collection(db,"lehrplanProdukte"),{wocheId,fach,uid:currentUser.uid,name:profile?.displayName||"Campus-Mitglied",titel,inhalt,dateiUrl,dateiName,createdAt:serverTimestamp()});
  await openWocheDetail(fach,wocheId);
- showMotivationsToast();
- }catch(e){console.error(e);toast("Konnte nicht hochgeladen werden.")}
+ showMotivationsBild();
+ }catch(e){console.error("Lernprodukt hochladen:",e);toast("Fehler: "+(e?.message||e));}
 }
 async function deleteLehrplanProdukt(id,fach,wocheId){
  if(!confirm("Dieses Produkt wirklich löschen?"))return;
@@ -1632,8 +1640,8 @@ async function addSchulaufgabe(fach,hj,value){
  data.entries[fach][hj].schulaufgaben=data.entries[fach][hj].schulaufgaben||[];
  data.entries[fach][hj].schulaufgaben.push(num);
  });
- await openNotenDetail(fach,hj);
- render();
+ closeModal();
+ await render();
  toast("Schulaufgabe hinzugefügt.");
  }catch(e){console.error("Schulaufgabe speichern:",e);toast("Fehler: "+(e?.message||e));}
 }
@@ -1642,8 +1650,8 @@ async function deleteSchulaufgabe(fach,hj,index){
  await updateNotenDoc(data=>{
  if(data.entries?.[fach]?.[hj]?.schulaufgaben)data.entries[fach][hj].schulaufgaben.splice(index,1);
  });
- await openNotenDetail(fach,hj);
- render();
+ closeModal();
+ await render();
  toast("Entfernt.");
  }catch(e){console.error("Schulaufgabe löschen:",e);toast("Fehler: "+(e?.message||e));}
 }
@@ -1658,8 +1666,8 @@ async function addSonstigeLeistung(fach,hj,value,type,gewicht){
  data.entries[fach][hj].sonstige=data.entries[fach][hj].sonstige||[];
  data.entries[fach][hj].sonstige.push({id:`${Date.now()}_${Math.random().toString(36).slice(2,7)}`,value:num,type,gewicht:g});
  });
- await openNotenDetail(fach,hj);
- render();
+ closeModal();
+ await render();
  toast("Note hinzugefügt.");
  }catch(e){console.error("Sonstige Leistung speichern:",e);toast("Fehler: "+(e?.message||e));}
 }
@@ -1668,8 +1676,8 @@ async function deleteSonstigeLeistung(fach,hj,entryId){
  await updateNotenDoc(data=>{
  if(data.entries?.[fach]?.[hj]?.sonstige)data.entries[fach][hj].sonstige=data.entries[fach][hj].sonstige.filter(e=>e.id!==entryId);
  });
- await openNotenDetail(fach,hj);
- render();
+ closeModal();
+ await render();
  toast("Gelöscht.");
  }catch(e){console.error("Sonstige Leistung löschen:",e);toast("Fehler: "+(e?.message||e));}
 }
@@ -2420,10 +2428,16 @@ async function openWocheDetail(fach,wocheId){
  </div>
 
  <div class="wd-panel"id="wdPanel_produkte">
- <div class="list">${produkte.map(p=>`<div class="list-item"><div><strong>${esc(p.titel)}</strong><small>${esc(p.name)}${p.inhalt?" · "+esc(p.inhalt.slice(0,60)):""}</small></div>${(p.uid===currentUser.uid||isTeacher())?`<button class="secondary"onclick="deleteLehrplanProdukt('${p.id}','${fach}','${wocheId}')">Löschen</button>`:""}</div>`).join("")||`<div class="empty">Noch keine Lernprodukte hochgeladen.</div>`}</div>
+ <div class="list">${produkte.map(p=>`<div class="list-item"style="flex-direction:column;align-items:stretch;gap:8px">
+ <div style="display:flex;justify-content:space-between;align-items:center"><div><strong>${esc(p.titel)}</strong><small>${esc(p.name)}${p.inhalt?" · "+esc(p.inhalt.slice(0,60)):""}</small></div>${(p.uid===currentUser.uid||isTeacher())?`<button class="secondary"onclick="deleteLehrplanProdukt('${p.id}','${fach}','${wocheId}')">Löschen</button>`:""}</div>
+ ${p.dateiUrl?dateiEmbedHTML(p.dateiUrl,p.dateiName):""}
+ </div>`).join("")||`<div class="empty">Noch keine Lernprodukte hochgeladen.</div>`}</div>
  <div class="form-actions"style="margin-top:10px;flex-wrap:wrap">
  <input id="produktTitel"type="text"placeholder="Titel des Lernprodukts"style="flex:1;min-width:140px">
- <input id="produktInhalt"type="text"placeholder="Link oder kurze Beschreibung"style="flex:1;min-width:160px">
+ <input id="produktInhalt"type="text"placeholder="Link oder kurze Beschreibung (optional)"style="flex:1;min-width:160px">
+ </div>
+ <div class="form-actions"style="margin-top:8px;flex-wrap:wrap;align-items:center">
+ <label style="font-weight:700;font-size:12px">Datei (optional, max. 15 MB)<input id="produktDatei"type="file"style="display:block;margin-top:4px"></label>
  <button class="primary"onclick="addLehrplanProdukt('${fach}','${wocheId}')">＋ Hochladen</button>
  </div>
  </div>
@@ -4434,6 +4448,37 @@ let pomodoroSecondsLeft=25*60, pomodoroPhase="fokus", pomodoroRunning=false, pom
 let pomodoroWorkMin=25, pomodoroBreakMin=5;
 
 // ---- Uhr & Timer (frei einstellbar für Lehrkräfte und Schüler) ----------
+// ---- Datei-Upload (Firebase Storage) – gemeinsam für Lernprodukte und
+// Pinnwand-Notizen genutzt. Max. 15 MB pro Datei.
+const DATEI_MAX_BYTES=15*1024*1024;
+async function uploadCampusDatei(file,pfadPrefix){
+ if(!storage)await loadFirebase();
+ if(!storage)throw new Error("Firebase Storage konnte nicht geladen werden (Netzwerk/Verbindung prüfen).");
+ if(file.size>DATEI_MAX_BYTES)throw new Error("Datei ist zu groß (max. 15 MB).");
+ const safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
+ const path=`${pfadPrefix}/${currentUser.uid}_${Date.now()}_${safeName}`;
+ try{
+ const fileRef=storageRef(storage,path);
+ await uploadBytes(fileRef,file);
+ const url=await getDownloadURL(fileRef);
+ return {url,name:file.name,path};
+ }catch(e){
+ console.error("Datei-Upload:",e);
+ if(e?.code==="storage/unauthorized")throw new Error("Firebase blockiert den Upload (storage/unauthorized) – die storage.rules wurden vermutlich noch nicht in der Firebase-Konsole veröffentlicht.");
+ if(e?.code==="storage/unknown"||e?.code==="storage/retry-limit-exceeded")throw new Error("Firebase Storage antwortet nicht – ist Storage im Firebase-Projekt bereits aktiviert (Konsole → Storage → Erste Schritte)?");
+ throw new Error(`Upload fehlgeschlagen (${e?.code||e?.message||"unbekannter Fehler"}).`);
+ }
+}
+function dateiIstBild(name){return /\.(jpe?g|png|gif|webp|svg)$/i.test(name||"")}
+function dateiIstVideo(name){return /\.(mp4|webm|mov|m4v)$/i.test(name||"")}
+function dateiIstAudio(name){return /\.(mp3|wav|ogg|m4a)$/i.test(name||"")}
+function dateiEmbedHTML(url,name){
+ if(dateiIstBild(name))return`<img src="${esc(url)}"alt="${esc(name)}"style="max-width:100%;border-radius:8px">`;
+ if(dateiIstVideo(name))return`<video controls style="width:100%;border-radius:8px;max-height:240px"src="${esc(url)}"></video>`;
+ if(dateiIstAudio(name))return`<audio controls style="width:100%"src="${esc(url)}"></audio>`;
+ return`<a href="${esc(url)}"target="_blank"rel="noopener"class="pill"> ${esc(name)} öffnen ↗</a>`;
+}
+
 function analogClockSVG(size){
  const s=size||90;
  const marks=Array.from({length:12},(_,i)=>{
@@ -5776,6 +5821,7 @@ function openBoardPostForm(){
  <option value="audio">Audio</option>
  </select></label>
  <label>Link/URL (optional)<input id="bpUrl"type="url"placeholder="https://…"></label>
+ <label>Oder Datei hochladen (optional, max. 15 MB)<input id="bpDatei"type="file"></label>
  <label>Farbe</label>
  <div class="chips"id="bpColorPicker"style="margin:2px 0 10px">
  ${noteColors.map((c,i)=>`<span class="chip"data-color="${c.id}"style="background:${c.bg};cursor:pointer;color:#2a2a2a;${i===0?"outline:2px solid var(--brand,#1598d1)":""}"onclick="selectBoardNoteColor('${c.id}')">${c.id}</span>`).join("")}
@@ -5800,15 +5846,23 @@ async function addBoardPost(){
  if(!activeBoardId)return;
  const text=$("bpText")?.value.trim()||"";
  let url=$("bpUrl")?.value.trim()||"";
- const mediaType=$("bpMediaType")?.value||"link";
+ let mediaType=$("bpMediaType")?.value||"link";
  const color=$("bpColor")?.value||noteColors[0].id;
+ const file=$("bpDatei")?.files?.[0]||null;
  if(!text){toast("Bitte einen Text für die Notiz eingeben.");return}
+ if(url&&file){toast("Bitte entweder einen Link ODER eine Datei angeben, nicht beides.");return}
  if(url){
  url=/^https?:\/\//i.test(url)?url:"https://"+url;
  try{const u=new URL(url);if(!/^https?:$/.test(u.protocol))throw new Error("protocol")}
  catch(e){toast("Bitte einen gültigen Link eingeben oder das Feld leer lassen.");return}
  }
  try{
+ if(file){
+ toast("Datei wird hochgeladen …");
+ const up=await uploadCampusDatei(file,`boardPosts/${activeBoardId}`);
+ url=up.url;
+ mediaType=dateiIstBild(up.name)?"bild":dateiIstVideo(up.name)?"video":dateiIstAudio(up.name)?"audio":"link";
+ }
  await addDoc(collection(db,"boardPosts"),{
  boardId:activeBoardId,text,url,mediaType,color,
  authorUid:currentUser.uid,
@@ -5818,7 +5872,7 @@ async function addBoardPost(){
  closeModal();await render();showMotivationsBild();toast("Notiz angeheftet.");
  }catch(e){
  console.error("Notiz anheften:",e);
- toast(e?.code==="permission-denied"?"Firebase verweigert das Anheften. Bitte die Firestore-Regeln prüfen.":"Notiz konnte nicht gespeichert werden.");
+ toast("Fehler: "+(e?.message||e));
  }
 }
 
