@@ -2244,18 +2244,28 @@ async function renderKompass(){
  const erg2=berechneHalbjahresergebnis(noten,f.key,"hj2");
  const w1=alleEinzelwerte(noten,f.key,"hj1");
  const w2=alleEinzelwerte(noten,f.key,"hj2");
+ const zelle=(erg,w)=>{
+ if(!w.length)return"–";
+ const werte=w.join(", ");
+ return erg!==null?`<strong>${erg}</strong><br><small style="font-weight:400">(${werte})</small>`:werte;
+ };
  return`<tr><td>${f.label}</td>
- <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('${f.key}','hj1')">${erg1!==null?erg1:w1.length?w1.join(", "):"–"}</button></td>
- <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('${f.key}','hj2')">${erg2!==null?erg2:w2.length?w2.join(", "):"–"}</button></td>
+ <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('${f.key}','hj1')">${zelle(erg1,w1)}</button></td>
+ <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('${f.key}','hj2')">${zelle(erg2,w2)}</button></td>
  </tr>`;
  }).join("")}
  ${(()=>{const l1=notenListe(noten,"fpa","hj1"),a1=notenDurchschnitt(l1),l2=notenListe(noten,"fpa","hj2"),a2=notenDurchschnitt(l2);
+ const zelleFpa=(a,l)=>{
+ if(!l.length)return"–";
+ const werte=l.map(e=>e.value).join(", ");
+ return a!==null&&l.length>1?`<strong>${a}</strong><br><small style="font-weight:400">(${werte})</small>`:werte;
+ };
  return`<tr class="noten-fpa"><td><em>fpA</em></td>
- <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('fpa','hj1')">${a1!==null?a1:l1.length?l1.map(e=>e.value).join(", "):"–"}</button></td>
- <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('fpa','hj2')">${a2!==null?a2:l2.length?l2.map(e=>e.value).join(", "):"–"}</button></td>
+ <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('fpa','hj1')">${zelleFpa(a1,l1)}</button></td>
+ <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('fpa','hj2')">${zelleFpa(a2,l2)}</button></td>
  </tr>`;})()}
  </tbody></table></div>
- <p style="font-size:10px;color:var(--muted);margin:6px 0 0">Mehrere Werte durch Komma getrennt = einzelne Noten, aber noch kein Halbjahresergebnis (dafür braucht's Schulaufgabe UND sonstige Leistungen).</p>
+ <p style="font-size:10px;color:var(--muted);margin:6px 0 0">Fett = Halbjahresergebnis nach FOBOSO (braucht Schulaufgabe UND sonstige Leistungen). In Klammern/ohne Klammer: die einzelnen eingetragenen Werte.</p>
  <div class="form-actions"style="margin-top:10px">
  <button class="secondary"onclick="resetMeineNoten()">Zurücksetzen</button>
  <button class="secondary"onclick="printNotenPDF(${JSON.stringify(noten).replace(/"/g,"&quot;")},${JSON.stringify(bestehen).replace(/"/g,"&quot;")})"> PDF</button>
