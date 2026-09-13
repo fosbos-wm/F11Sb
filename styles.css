@@ -251,6 +251,12 @@ main#content{flex:1;min-width:0;padding:28px 34px 60px;max-width:1500px}
 .noten-table input[type="number"]:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 3px rgba(22,136,207,.1)}
 .noten-fpa td{background:#f7fafc}
 .noten-cell-btn{width:100%;padding:6px 8px;font-size:12px;font-weight:700;border-radius:8px}
+.noten-split{display:grid;grid-template-columns:200px 1fr;gap:16px;margin-top:10px;align-items:start}
+.noten-eintragen-kachel{background:var(--soft-blue);border-radius:12px;padding:14px}
+.noten-eintragen-kachel select{width:100%}
+.noten-table-kompakt th,.noten-table-kompakt td{padding:4px 6px;font-size:12px}
+.noten-table-kompakt .noten-cell-btn{padding:4px 6px;font-size:12px;width:56px}
+@media(max-width:640px){.noten-split{grid-template-columns:1fr}}
 .noten-collapsible summary{cursor:pointer;font-weight:800;color:var(--blue-dark);padding:6px 0;list-style:none;display:flex;align-items:center;gap:6px}
 .noten-collapsible summary::-webkit-details-marker{display:none}
 .noten-collapsible summary::before{content:"▸";transition:transform .2s}

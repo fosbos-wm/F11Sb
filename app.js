@@ -1792,6 +1792,12 @@ async function resetMeineNoten(){
 window.addSchulaufgabe=addSchulaufgabe;window.deleteSchulaufgabe=deleteSchulaufgabe;
 window.addSonstigeLeistung=addSonstigeLeistung;window.deleteSonstigeLeistung=deleteSonstigeLeistung;
 window.openNotenDetail=openNotenDetail;
+function openNotenSchnellzugriff(){
+ const fach=$("notenSchnellFach")?.value;
+ const hj=$("notenSchnellHj")?.value;
+ if(fach&&hj)openNotenDetail(fach,hj);
+}
+window.openNotenSchnellzugriff=openNotenSchnellzugriff;
 window.addNotenEintrag=addNotenEintrag;
 window.deleteNotenEintrag=deleteNotenEintrag;
 window.resetMeineNoten=resetMeineNoten;
@@ -2167,34 +2173,46 @@ async function renderKompass(){
  <div class="kicker"style="margin:22px 0 8px">PERSÖNLICH · NUR FÜR DICH SICHTBAR</div>
  <div class="card">
  <h2 style="margin-top:0"> Meine Noten</h2>
- <p style="color:var(--muted)">Für jedes Fach: Schulaufgabe(n) und sonstige Leistungen (schriftlich + mündlich) getrennt eintragen – das Halbjahresergebnis wird automatisch nach § 21 Abs. 1 FOBOSO berechnet. Diese Ansicht sieht ausschließlich du selbst, nicht einmal Lehrkräfte.</p>
+ <p style="color:var(--muted);font-size:12px">Halbjahresergebnis nach § 21 Abs. 1 FOBOSO. Diese Ansicht sieht ausschließlich du selbst, nicht einmal Lehrkräfte.</p>
 
- <details class="noten-collapsible"open>
- <summary> Noten eintragen/bearbeiten</summary>
- <div style="overflow-x:auto"><table class="noten-table">
+ <div class="noten-split">
+ <div class="noten-eintragen-kachel">
+ <strong style="display:block;font-size:13px;margin-bottom:8px"> Note eintragen</strong>
+ <label style="font-size:11px">Fach<select id="notenSchnellFach">
+ ${F11SB_FAECHER.map(f=>`<option value="${f.key}">${f.label}</option>`).join("")}
+ <option value="fpa">Fachpraktische Ausbildung</option>
+ </select></label>
+ <label style="font-size:11px;margin-top:8px;display:block">Halbjahr<select id="notenSchnellHj">
+ <option value="hj1">1. Halbjahr</option>
+ <option value="hj2">2. Halbjahr</option>
+ </select></label>
+ <button class="primary"style="margin-top:10px;width:100%"onclick="openNotenSchnellzugriff()">Öffnen →</button>
+ </div>
+
+ <div class="noten-uebersicht">
+ <div style="overflow-x:auto"><table class="noten-table noten-table-kompakt">
  <thead><tr><th>Fach</th><th>HJ1</th><th>HJ2</th></tr></thead>
  <tbody>
  ${F11SB_FAECHER.map(f=>{
  const erg1=berechneHalbjahresergebnis(noten,f.key,"hj1");
  const erg2=berechneHalbjahresergebnis(noten,f.key,"hj2");
- const n1=schulaufgabenListe(noten,f.key,"hj1").length+sonstigeListe(noten,f.key,"hj1").length;
- const n2=schulaufgabenListe(noten,f.key,"hj2").length+sonstigeListe(noten,f.key,"hj2").length;
  return`<tr><td>${f.label}</td>
- <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('${f.key}','hj1')">${erg1===null?"＋ Note":`${erg1} Pkt (${n1})`}</button></td>
- <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('${f.key}','hj2')">${erg2===null?"＋ Note":`${erg2} Pkt (${n2})`}</button></td>
+ <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('${f.key}','hj1')">${erg1===null?"–":erg1}</button></td>
+ <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('${f.key}','hj2')">${erg2===null?"–":erg2}</button></td>
  </tr>`;
  }).join("")}
- ${(()=>{const l1=notenListe(noten,"fpa","hj1"),a1=notenDurchschnitt(l1),l2=notenListe(noten,"fpa","hj2"),a2=notenDurchschnitt(l2);
- return`<tr class="noten-fpa"><td><em>Fachpraktische Ausbildung</em></td>
- <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('fpa','hj1')">${a1===null?"＋ Note":`${a1} Pkt (${l1.length})`}</button></td>
- <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('fpa','hj2')">${a2===null?"＋ Note":`${a2} Pkt (${l2.length})`}</button></td>
+ ${(()=>{const a1=notenDurchschnitt(notenListe(noten,"fpa","hj1")),a2=notenDurchschnitt(notenListe(noten,"fpa","hj2"));
+ return`<tr class="noten-fpa"><td><em>fpA</em></td>
+ <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('fpa','hj1')">${a1===null?"–":a1}</button></td>
+ <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('fpa','hj2')">${a2===null?"–":a2}</button></td>
  </tr>`;})()}
  </tbody></table></div>
- <div class="form-actions"style="margin-top:14px">
- <button class="secondary"onclick="resetMeineNoten()">Alle Noten zurücksetzen</button>
- <button class="primary"onclick="printNotenPDF(${JSON.stringify(noten).replace(/"/g,"&quot;")},${JSON.stringify(bestehen).replace(/"/g,"&quot;")})"> Als PDF</button>
+ <div class="form-actions"style="margin-top:10px">
+ <button class="secondary"onclick="resetMeineNoten()">Zurücksetzen</button>
+ <button class="secondary"onclick="printNotenPDF(${JSON.stringify(noten).replace(/"/g,"&quot;")},${JSON.stringify(bestehen).replace(/"/g,"&quot;")})"> PDF</button>
  </div>
- </details>
+ </div>
+ </div>
 
  <div class="grid grid-2"style="margin-top:16px;gap:12px">
  <details class="noten-collapsible">
