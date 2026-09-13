@@ -1539,6 +1539,32 @@ async function toggleZielErfuellt(fach,wocheId,zielId,erfuellt){
  if(erfuellt)showMotivationsToast();
  }catch(e){console.error("Ziel-Status:",e);toast("Konnte nicht gespeichert werden.")}
 }
+async function toggleAuftragGelesen(fach,wocheId,erledigt){
+ try{
+ const ref=doc(db,"lehrplanFortschritt",`${currentUser.uid}_${wocheId}`);
+ const snap=await getDoc(ref);
+ const data=snap.exists()?snap.data():{uid:currentUser.uid,wocheId,fach,zieleErfuellt:{},abgeschlossen:false};
+ data.auftragGelesen=erledigt;
+ data.updatedAt=serverTimestamp();
+ await setDoc(ref,data);
+ await openWocheDetail(fach,wocheId);
+ if(erledigt)showMotivationsToast();
+ }catch(e){console.error("Auftrag-gelesen-Status:",e);toast("Konnte nicht gespeichert werden.")}
+}
+async function toggleMaterialErhalten(fach,wocheId,erledigt){
+ try{
+ const ref=doc(db,"lehrplanFortschritt",`${currentUser.uid}_${wocheId}`);
+ const snap=await getDoc(ref);
+ const data=snap.exists()?snap.data():{uid:currentUser.uid,wocheId,fach,zieleErfuellt:{},abgeschlossen:false};
+ data.materialErhalten=erledigt;
+ data.updatedAt=serverTimestamp();
+ await setDoc(ref,data);
+ await openWocheDetail(fach,wocheId);
+ if(erledigt)showMotivationsToast();
+ }catch(e){console.error("Material-erhalten-Status:",e);toast("Konnte nicht gespeichert werden.")}
+}
+window.toggleAuftragGelesen=toggleAuftragGelesen;
+window.toggleMaterialErhalten=toggleMaterialErhalten;
 async function markWocheAbgeschlossen(fach,wocheId){
  const fortschritt=await getLehrplanFortschritt(wocheId);
  const ziele=LEHRPLAN_ZIELE_VORSCHLAG[wocheId]||[];
@@ -1635,6 +1661,14 @@ function berechneHalbjahresergebnis(noten,fach,hj){
 function fachLabel(fach){
  if(fach==="fpa")return "Fachpraktische Ausbildung";
  return F11SB_FAECHER.find(f=>f.key===fach)?.label||fach;
+}
+// Bezeichnung der "sonstigen Leistung" – fängt auch ältere Einträge ab,
+// die noch mit dem alten zweistufigen "schriftlich"/"muendlich" gespeichert wurden.
+function sonstigeLeistungLabel(type){
+ if(type==="muendlich")return "Mündliche Note";
+ if(type==="stegreif")return "Stegreifaufgabe";
+ if(type==="kurzarbeit")return "Kurzarbeit";
+ return "Schriftlich (Stegreif/KA)";
 }
 async function updateNotenDoc(mutator){
  const ref=doc(db,"noten",currentUser.uid);
@@ -1769,10 +1803,14 @@ async function openNotenDetail(fach,hj){
 
  <h3 style="margin:18px 0 4px;font-size:14px"> Sonstige Leistungen (schriftlich & mündlich, ein gemeinsamer Topf)</h3>
  <p style="font-size:11px;color:var(--muted);margin:0 0 8px">Durchschnitt: ${sSchnitt===null?"—":sSchnitt.toFixed(2)+" Punkte"} aus ${sonst.length} ${sonst.length===1?"Eintrag":"Einträgen"} – zählt wie eine weitere Schulaufgabe.</p>
- <div class="list">${sonst.map(e=>`<div class="list-item"><div><strong>${e.value} Punkte</strong><small>${e.type==="muendlich"?"Mündlich":"Stegreif/Kurzarbeit"}${e.gewicht&&e.gewicht!==1?` · Gewicht ${e.gewicht}`:""}</small></div><button class="secondary"onclick="deleteSonstigeLeistung('${fach}','${hj}','${e.id}')">Löschen</button></div>`).join("")||`<div class="empty">Noch keine Leistung eingetragen.</div>`}</div>
+ <div class="list">${sonst.map(e=>`<div class="list-item"><div><strong>${e.value} Punkte</strong><small>${sonstigeLeistungLabel(e.type)}${e.gewicht&&e.gewicht!==1?` · Gewicht ${e.gewicht}`:""}</small></div><button class="secondary"onclick="deleteSonstigeLeistung('${fach}','${hj}','${e.id}')">Löschen</button></div>`).join("")||`<div class="empty">Noch keine Leistung eingetragen.</div>`}</div>
  <div class="form-actions"style="margin-top:8px;flex-wrap:wrap;align-items:flex-end">
  <label style="width:70px">Punkte<input id="sonstNeuValue"type="number"min="0"max="15"placeholder="0–15"></label>
- <label style="width:170px">Art<select id="sonstNeuType"><option value="schriftlich">Schriftlich (Stegreif/KA)</option><option value="muendlich">Mündlich</option></select></label>
+ <label style="width:170px">Art<select id="sonstNeuType">
+ <option value="stegreif">Stegreifaufgabe</option>
+ <option value="kurzarbeit">Kurzarbeit</option>
+ <option value="muendlich">Mündliche Note</option>
+ </select></label>
  <label style="width:85px">Gewichtung<input id="sonstNeuGewicht"type="number"min="0.5"max="5"step="0.5"value="1"title="Gewichtung nach Umfang/Schwierigkeitsgrad"></label>
  <button class="primary"onclick="addSonstigeLeistung('${fach}','${hj}')">＋ Hinzufügen</button>
  </div>
@@ -2196,17 +2234,20 @@ async function renderKompass(){
  ${F11SB_FAECHER.map(f=>{
  const erg1=berechneHalbjahresergebnis(noten,f.key,"hj1");
  const erg2=berechneHalbjahresergebnis(noten,f.key,"hj2");
+ const n1=schulaufgabenListe(noten,f.key,"hj1").length+sonstigeListe(noten,f.key,"hj1").length;
+ const n2=schulaufgabenListe(noten,f.key,"hj2").length+sonstigeListe(noten,f.key,"hj2").length;
  return`<tr><td>${f.label}</td>
- <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('${f.key}','hj1')">${erg1===null?"–":erg1}</button></td>
- <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('${f.key}','hj2')">${erg2===null?"–":erg2}</button></td>
+ <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('${f.key}','hj1')">${erg1!==null?erg1:n1>0?`${n1} Eintr.`:"–"}</button></td>
+ <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('${f.key}','hj2')">${erg2!==null?erg2:n2>0?`${n2} Eintr.`:"–"}</button></td>
  </tr>`;
  }).join("")}
- ${(()=>{const a1=notenDurchschnitt(notenListe(noten,"fpa","hj1")),a2=notenDurchschnitt(notenListe(noten,"fpa","hj2"));
+ ${(()=>{const l1=notenListe(noten,"fpa","hj1"),a1=notenDurchschnitt(l1),l2=notenListe(noten,"fpa","hj2"),a2=notenDurchschnitt(l2);
  return`<tr class="noten-fpa"><td><em>fpA</em></td>
- <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('fpa','hj1')">${a1===null?"–":a1}</button></td>
- <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('fpa','hj2')">${a2===null?"–":a2}</button></td>
+ <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('fpa','hj1')">${a1!==null?a1:l1.length>0?`${l1.length} Eintr.`:"–"}</button></td>
+ <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('fpa','hj2')">${a2!==null?a2:l2.length>0?`${l2.length} Eintr.`:"–"}</button></td>
  </tr>`;})()}
  </tbody></table></div>
+ <p style="font-size:10px;color:var(--muted);margin:6px 0 0">„X Eintr." = schon eingetragene Noten, aber noch kein Halbjahresergebnis (dafür braucht's Schulaufgabe UND sonstige Leistungen).</p>
  <div class="form-actions"style="margin-top:10px">
  <button class="secondary"onclick="resetMeineNoten()">Zurücksetzen</button>
  <button class="secondary"onclick="printNotenPDF(${JSON.stringify(noten).replace(/"/g,"&quot;")},${JSON.stringify(bestehen).replace(/"/g,"&quot;")})"> PDF</button>
@@ -2455,16 +2496,20 @@ async function openWocheDetail(fach,wocheId){
  const fachLbl=F11SB_FAECHER.find(f=>f.key===fach)?.label||fach;
  const meinProdukt=produkte.some(p=>p.uid===currentUser.uid);
 
- // Fortschritt: welche der vier Etappen ist erreicht?
+ // Fortschritt: jeder Arbeitsschritt bekommt einen eigenen Haken, damit
+ // jederzeit klar ist, wo genau man gerade steht.
  const schritte=[
- {label:"Lernprodukt",done:meinProdukt},
- {label:"Überprüfung",done:lernstandBearbeitet},
- {label:"Selbsteinschätzung",done:alleErfuellt},
- {label:"Fertig",done:!!fortschritt.abgeschlossen}
+ {label:"Auftrag gelesen",done:!!fortschritt.auftragGelesen,tab:"ziele"},
+ {label:"Material erhalten",done:!!fortschritt.materialErhalten,tab:"material"},
+ ...(woche.typ==="projekt"?[{label:"Team gebildet",done:!!meinTeam,tab:"team"}]:[]),
+ {label:"Lernprodukt",done:meinProdukt,tab:"produkte"},
+ {label:"Überprüfung",done:lernstandBearbeitet,tab:"lernstand"},
+ {label:"Selbsteinschätzung",done:alleErfuellt,tab:"selbsteinschaetzung"},
+ {label:"Fertig",done:!!fortschritt.abgeschlossen,tab:"selbsteinschaetzung"}
  ];
  let aktivIdx=schritte.findIndex(s=>!s.done);
  if(aktivIdx===-1)aktivIdx=schritte.length-1;
- const startTab=["produkte","lernstand","selbsteinschaetzung","selbsteinschaetzung"][Math.min(aktivIdx,3)];
+ const startTab=schritte[Math.min(aktivIdx,schritte.length-1)].tab;
 
  modal(`<button class="modal-close"onclick="closeModal()">×</button>
  <div class="kicker">${esc(fachLbl)} · ${esc(woche.lb)} · ${esc(fmtDateOnly(woche.start))}–${esc(fmtDateOnly(woche.end))}</div>
@@ -2506,6 +2551,7 @@ async function openWocheDetail(fach,wocheId){
  </div>`
  :!auftrag?`<div class="empty">Für diese Woche wurde noch kein Arbeitsauftrag eingetragen.</div>`
  :`<div class="card"style="background:var(--soft-blue)"><strong>${esc(auftrag.titel)}</strong>${auftrag.beschreibung?`<p style="margin:6px 0 0;white-space:pre-wrap">${esc(auftrag.beschreibung)}</p>`:""}</div>`}
+ ${!isTeacher()?`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:14px;font-weight:700;font-size:13px"><input type="checkbox"${fortschritt.auftragGelesen?"checked":""}onchange="toggleAuftragGelesen('${fach}','${wocheId}',this.checked)"><span> Auftrag gelesen, Ziele sind mir klar</span></label>`:""}
  </div>
 
  <div class="wd-panel"id="wdPanel_material">
@@ -2527,6 +2573,7 @@ async function openWocheDetail(fach,wocheId){
  <button class="secondary"onclick="closeModal();go('lernwerkzeuge')"> Karteikarten & Fokus-Timer</button>
  <button class="secondary"onclick="closeModal();go('ki-lernen')"> KI zum Lernen</button>
  </div>
+ ${!isTeacher()?`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:14px;font-weight:700;font-size:13px"><input type="checkbox"${fortschritt.materialErhalten?"checked":""}onchange="toggleMaterialErhalten('${fach}','${wocheId}',this.checked)"><span> Materialien erhalten/gesichtet</span></label>`:""}
  </div>
 
  <div class="wd-panel"id="wdPanel_team">
