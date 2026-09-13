@@ -1644,6 +1644,14 @@ function schulaufgabenListe(noten,fach,hj){
 function sonstigeListe(noten,fach,hj){
  return noten.entries?.[fach]?.[hj]?.sonstige||[];
 }
+// Alle bisher eingetragenen Einzelwerte (Schulaufgabe(n) + sonstige
+// Leistungen) als schlichte Zahlenliste, für die Kurzanzeige, solange noch
+// kein Halbjahresergebnis berechnet werden kann.
+function alleEinzelwerte(noten,fach,hj){
+ const sa=schulaufgabenListe(noten,fach,hj);
+ const so=sonstigeListe(noten,fach,hj).map(e=>e.value);
+ return[...sa,...so];
+}
 function sonstigeSchnitt(liste){
  if(!liste.length)return null;
  const gewSumme=liste.reduce((a,e)=>a+(e.gewicht||1),0);
@@ -2234,20 +2242,20 @@ async function renderKompass(){
  ${F11SB_FAECHER.map(f=>{
  const erg1=berechneHalbjahresergebnis(noten,f.key,"hj1");
  const erg2=berechneHalbjahresergebnis(noten,f.key,"hj2");
- const n1=schulaufgabenListe(noten,f.key,"hj1").length+sonstigeListe(noten,f.key,"hj1").length;
- const n2=schulaufgabenListe(noten,f.key,"hj2").length+sonstigeListe(noten,f.key,"hj2").length;
+ const w1=alleEinzelwerte(noten,f.key,"hj1");
+ const w2=alleEinzelwerte(noten,f.key,"hj2");
  return`<tr><td>${f.label}</td>
- <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('${f.key}','hj1')">${erg1!==null?erg1:n1>0?`${n1} Eintr.`:"–"}</button></td>
- <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('${f.key}','hj2')">${erg2!==null?erg2:n2>0?`${n2} Eintr.`:"–"}</button></td>
+ <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('${f.key}','hj1')">${erg1!==null?erg1:w1.length?w1.join(", "):"–"}</button></td>
+ <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('${f.key}','hj2')">${erg2!==null?erg2:w2.length?w2.join(", "):"–"}</button></td>
  </tr>`;
  }).join("")}
  ${(()=>{const l1=notenListe(noten,"fpa","hj1"),a1=notenDurchschnitt(l1),l2=notenListe(noten,"fpa","hj2"),a2=notenDurchschnitt(l2);
  return`<tr class="noten-fpa"><td><em>fpA</em></td>
- <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('fpa','hj1')">${a1!==null?a1:l1.length>0?`${l1.length} Eintr.`:"–"}</button></td>
- <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('fpa','hj2')">${a2!==null?a2:l2.length>0?`${l2.length} Eintr.`:"–"}</button></td>
+ <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('fpa','hj1')">${a1!==null?a1:l1.length?l1.map(e=>e.value).join(", "):"–"}</button></td>
+ <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('fpa','hj2')">${a2!==null?a2:l2.length?l2.map(e=>e.value).join(", "):"–"}</button></td>
  </tr>`;})()}
  </tbody></table></div>
- <p style="font-size:10px;color:var(--muted);margin:6px 0 0">„X Eintr." = schon eingetragene Noten, aber noch kein Halbjahresergebnis (dafür braucht's Schulaufgabe UND sonstige Leistungen).</p>
+ <p style="font-size:10px;color:var(--muted);margin:6px 0 0">Mehrere Werte durch Komma getrennt = einzelne Noten, aber noch kein Halbjahresergebnis (dafür braucht's Schulaufgabe UND sonstige Leistungen).</p>
  <div class="form-actions"style="margin-top:10px">
  <button class="secondary"onclick="resetMeineNoten()">Zurücksetzen</button>
  <button class="secondary"onclick="printNotenPDF(${JSON.stringify(noten).replace(/"/g,"&quot;")},${JSON.stringify(bestehen).replace(/"/g,"&quot;")})"> PDF</button>
