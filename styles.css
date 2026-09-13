@@ -276,8 +276,19 @@ main#content{flex:1;min-width:0;padding:28px 34px 60px;max-width:1500px}
 .wd-step-line{flex:1;height:3px;background:#e2eaf0;margin:0 4px;margin-bottom:16px;transition:.3s}
 .wd-step-line-done{background:#3fa66a}
 .wd-tabs{display:flex;gap:4px;overflow-x:auto;margin-top:8px;border-bottom:1px solid var(--line,#e2eaf0)}
-.wd-tab{flex:0 0 auto;padding:8px 12px;border:0;background:none;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;font-family:inherit}
-.wd-tab-active{color:var(--blue-dark);border-bottom-color:var(--blue)}
+.wd-tab{flex:0 0 auto;padding:8px 12px;border:0;background:none;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;font-family:inherit;transition:.15s}
+.wd-tab[data-tab="ziele"]{border-bottom-color:#c7dcf0}
+.wd-tab[data-tab="material"]{border-bottom-color:#c8e8d2}
+.wd-tab[data-tab="team"]{border-bottom-color:#e2d1ee}
+.wd-tab[data-tab="produkte"]{border-bottom-color:#f5e0b8}
+.wd-tab[data-tab="lernstand"]{border-bottom-color:#bfe6e2}
+.wd-tab[data-tab="selbsteinschaetzung"]{border-bottom-color:#f2cfe0}
+.wd-tab[data-tab="ziele"].wd-tab-active{color:#1f5a8a;border-bottom-color:#4a90d9}
+.wd-tab[data-tab="material"].wd-tab-active{color:#1f6b3d;border-bottom-color:#3fa66a}
+.wd-tab[data-tab="team"].wd-tab-active{color:#6c3483;border-bottom-color:#9b59b6}
+.wd-tab[data-tab="produkte"].wd-tab-active{color:#8a6512;border-bottom-color:#e0a324}
+.wd-tab[data-tab="lernstand"].wd-tab-active{color:#0f6b62;border-bottom-color:#1a9b8e}
+.wd-tab[data-tab="selbsteinschaetzung"].wd-tab-active{color:#a13d70;border-bottom-color:#e0629e}
 .wd-panel{display:none;padding-top:14px}
 .wd-ziele-info{background:#f7fafc;border-radius:10px;padding:12px 14px;font-size:12px}
 .wd-ziele-info strong{font-size:12px;color:#17384f}
