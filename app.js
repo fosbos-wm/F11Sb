@@ -653,7 +653,7 @@ async function saveLernpfadOutcome(){
  if(!outcome){toast("Bitte kurz eintragen, wie es gelaufen ist.");return}
  try{
  await updateDoc(doc(db,"lernpfade",id),{outcome,outcomeAt:serverTimestamp()});
- closeModal();await render();toast("Danke für deine Reflexion.");
+ closeModal();await render();showMotivationsBild();toast("Danke für deine Reflexion.");
  }catch(e){
  console.error("Lernpfad-Ergebnis speichern:",e);
  toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Konnte nicht gespeichert werden.");
@@ -1057,7 +1057,7 @@ async function saveSteckbrief(){
  uid:currentUser.uid,name:profile?.displayName||currentUser.email||"Campus-Mitglied",
  mag,gutDarin,fakt,updatedAt:serverTimestamp()
  });
- closeModal();await render();toast("Steckbrief gespeichert.");
+ closeModal();await render();showMotivationsBild();toast("Steckbrief gespeichert.");
  }catch(e){console.error("Steckbrief speichern:",e);toast("Konnte nicht gespeichert werden.")}
 }
 async function deleteSteckbrief(){
@@ -4363,7 +4363,7 @@ async function addCard(){
  createdByName:profile?.displayName||currentUser.email||"Campus-Mitglied",
  createdAt:serverTimestamp()
  });
- closeModal();studyOrder=[];await render();toast("Karte hinzugefügt.");
+ closeModal();studyOrder=[];await render();showMotivationsBild();toast("Karte hinzugefügt.");
  }catch(e){
  console.error("Karte anlegen:",e);
  toast(e?.code==="permission-denied"?"Firebase verweigert das Hinzufügen. Bitte die Firestore-Regeln prüfen.":"Karte konnte nicht gespeichert werden.");
@@ -4674,7 +4674,7 @@ async function addGlossaryEntry(){
  createdByName:profile?.displayName||currentUser.email||"Campus-Mitglied",
  createdAt:serverTimestamp()
  });
- closeModal();await render();toast("Begriff hinzugefügt.");
+ closeModal();await render();showMotivationsBild();toast("Begriff hinzugefügt.");
  }catch(e){
  console.error("Glossar-Eintrag anlegen:",e);
  toast(e?.code==="permission-denied"?"Firebase verweigert das Hinzufügen. Bitte die Firestore-Regeln prüfen.":"Begriff konnte nicht gespeichert werden.");
@@ -4967,6 +4967,7 @@ async function saveEssayEntry(caseId,type){
  text,selfCheck,selfCheckAt:serverTimestamp(),updatedAt:serverTimestamp()
  },{merge:true});
  await render();
+ showMotivationsBild();
  toast("Gespeichert.");
  }catch(e){
  console.error("Fachaufsatz-Baustein speichern:",e);
@@ -5814,7 +5815,7 @@ async function addBoardPost(){
  authorName:profile?.displayName||currentUser.email||"Campus-Mitglied",
  createdAt:serverTimestamp()
  });
- closeModal();await render();toast("Notiz angeheftet.");
+ closeModal();await render();showMotivationsBild();toast("Notiz angeheftet.");
  }catch(e){
  console.error("Notiz anheften:",e);
  toast(e?.code==="permission-denied"?"Firebase verweigert das Anheften. Bitte die Firestore-Regeln prüfen.":"Notiz konnte nicht gespeichert werden.");
@@ -7285,7 +7286,7 @@ async function saveKISolution(challengeId){
  aiUse:$("kiAI")?.value.trim()||"",status:"in Bearbeitung",
  createdBy:currentUser.uid,createdAt:serverTimestamp()
  });
- closeModal();await render();toast("Bearbeitung gespeichert.");
+ closeModal();await render();showMotivationsBild();toast("Bearbeitung gespeichert.");
  }catch(e){console.error("KI Lösung:",e);toast("Speichern fehlgeschlagen: "+(e.code||"Fehler"))}
 }
 function openKISolutionsLibrary(){
@@ -9834,6 +9835,7 @@ async function addJournal(){
  });
 
  await render();
+ showMotivationsBild();
  toast("Lernjournal gespeichert.");
  }catch(error){
  console.error("Lernjournal speichern:",error);
@@ -9967,7 +9969,7 @@ async function addCompetence(){
  const name=$("cName")?.value.trim();if(!name){toast("Bitte eine Kompetenz eintragen.");return}
  try{
  await addDoc(collection(db,"competencies"),{uid:currentUser.uid,ownerName:profile?.displayName||currentUser?.email||"Campus-Mitglied",name,category:$("cCategory").value,level:Math.max(1,Math.min(5,Number($("cLevel").value)||1)),description:$("cDescription").value.trim()||"",canHelp:Boolean($("cCanHelp").checked),helpText:$("cHelpText").value.trim()||"",createdAt:serverTimestamp()});
- closeModal();await render();toast("Kompetenz ins Netzwerk aufgenommen.");
+ closeModal();await render();showMotivationsBild();toast("Kompetenz ins Netzwerk aufgenommen.");
  }catch(e){console.error("Kompetenz speichern:",e);toast("Kompetenz konnte nicht gespeichert werden.")}
 }
 
