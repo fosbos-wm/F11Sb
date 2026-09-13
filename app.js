@@ -6176,10 +6176,19 @@ async function renderJournal(){
  margin-top:12px;
  padding:14px;
  border:1px solid var(--line,#ddd);
- border-radius:10px;
+ border-left:4px solid #b8c4cc;
+ border-radius:6px 10px 10px 6px;
  }
  .journal-detail strong{display:block;margin-bottom:6px}
  .journal-detail p{margin:0;white-space:pre-wrap}
+ .journal-c-blau{background:var(--soft-blue);border-left-color:#4a90d9}
+ .journal-c-gruen{background:var(--soft-green);border-left-color:#3fa66a}
+ .journal-c-orange{background:var(--soft-orange);border-left-color:#e0a324}
+ .journal-c-lila{background:var(--soft-purple);border-left-color:#9b59b6}
+ .journal-c-teal{background:var(--soft-teal);border-left-color:#1a9b8e}
+ label.journal-c-blau,label.journal-c-gruen,label.journal-c-orange,label.journal-c-lila,label.journal-c-teal{
+ padding:12px;border-radius:6px 10px 10px 6px;border-left:4px solid;
+ }
  @media(max-width:800px){
  .journal-two-tiles{grid-template-columns:1fr}
  .journal-form-grid{grid-template-columns:1fr}
@@ -6239,23 +6248,23 @@ async function renderJournal(){
  <textarea id="jWorkedOn"rows="3"placeholder="Thema, Aufgabe, Projekt oder Lernziel …"></textarea>
  </label>
 
- <label>Was habe ich verstanden oder gelernt?
+ <label class="journal-c-gruen">Was habe ich verstanden oder gelernt?
  <textarea id="jLearned"rows="4"placeholder="Was ist mir heute klarer geworden? Was kann ich jetzt besser?"></textarea>
  </label>
 
- <label>Was war schwierig?
+ <label class="journal-c-orange">Was war schwierig?
  <textarea id="jDifficult"rows="4"placeholder="Was war schwierig oder ist noch unklar?"></textarea>
  </label>
 
- <label>Was hat mir geholfen? Welche Methode/Strategie hat funktioniert?
+ <label class="journal-c-blau">Was hat mir geholfen? Welche Methode/Strategie hat funktioniert?
  <textarea id="jHelpful"rows="4"placeholder="Methode, Person, Material, Erklärung oder Strategie …"></textarea>
  </label>
 
- <label class="full">Ein Gedanke über mein Lernen <small style="font-weight:400;color:var(--muted)">(optional, metakognitiv)</small>
+ <label class="full journal-c-lila">Ein Gedanke über mein Lernen <small style="font-weight:400;color:var(--muted)">(optional, metakognitiv)</small>
  <textarea id="jMetaThought"rows="3"placeholder="Was ist dir heute über dein eigenes Lernen aufgefallen? Z. B.: Wie gut konntest du vorher einschätzen, was schwer wird? Wie hast du gemerkt, ob du etwas wirklich verstanden hast?"></textarea>
  </label>
 
- <label>Mein nächster Lernschritt
+ <label class="journal-c-teal">Mein nächster Lernschritt
  <textarea id="jNextStep"rows="4"placeholder="Was mache ich als Nächstes?"></textarea>
  </label>
 
@@ -9955,13 +9964,13 @@ function openJournalEntry(id){
  ${j.mood?`<span class="pill">Befinden: ${esc(j.mood)}</span>`:""}
  ${j.satisfaction?`<span class="pill">Zufriedenheit: ${esc(j.satisfaction)}</span>`:""}
 
- ${j.goalAchieved?`<div class="journal-detail"><strong>Zielerreichung (letztes Ziel)</strong><p>${esc(j.goalAchieved)}</p></div>`:""}
+ ${j.goalAchieved?`<div class="journal-detail journal-c-blau"><strong>Zielerreichung (letztes Ziel)</strong><p>${esc(j.goalAchieved)}</p></div>`:""}
  ${j.workedOn?`<div class="journal-detail"><strong>Woran habe ich heute gearbeitet?</strong><p>${esc(j.workedOn)}</p></div>`:""}
- ${j.learned?`<div class="journal-detail"><strong>Was habe ich verstanden oder gelernt?</strong><p>${esc(j.learned)}</p></div>`:""}
- ${j.difficult?`<div class="journal-detail"><strong>Was war schwierig?</strong><p>${esc(j.difficult)}</p></div>`:""}
- ${j.helpful?`<div class="journal-detail"><strong>Was hat mir geholfen? Welche Methode/Strategie hat funktioniert?</strong><p>${esc(j.helpful)}</p></div>`:""}
- ${j.metaThought?`<div class="journal-detail"><strong>Ein Gedanke über mein Lernen</strong><p>${esc(j.metaThought)}</p></div>`:""}
- ${j.nextStep?`<div class="journal-detail"><strong>Mein nächster Lernschritt</strong><p>${esc(j.nextStep)}</p></div>`:""}
+ ${j.learned?`<div class="journal-detail journal-c-gruen"><strong>Was habe ich verstanden oder gelernt?</strong><p>${esc(j.learned)}</p></div>`:""}
+ ${j.difficult?`<div class="journal-detail journal-c-orange"><strong>Was war schwierig?</strong><p>${esc(j.difficult)}</p></div>`:""}
+ ${j.helpful?`<div class="journal-detail journal-c-blau"><strong>Was hat mir geholfen? Welche Methode/Strategie hat funktioniert?</strong><p>${esc(j.helpful)}</p></div>`:""}
+ ${j.metaThought?`<div class="journal-detail journal-c-lila"><strong>Ein Gedanke über mein Lernen</strong><p>${esc(j.metaThought)}</p></div>`:""}
+ ${j.nextStep?`<div class="journal-detail journal-c-teal"><strong>Mein nächster Lernschritt</strong><p>${esc(j.nextStep)}</p></div>`:""}
 
  <div class="form-actions">
  <button class="secondary"onclick="closeModal()">Schließen</button>
