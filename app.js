@@ -1079,7 +1079,7 @@ async function renderKlassenteam(){
  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
  <select id="heimatOrtSelect"style="flex:1;min-width:200px">
  <option value="">Ort auswählen …</option>
- ${LANDKREIS_ORTE.map(([name])=>`<option value="${esc(name)}"${myHeimatort?.ort===name?"selected":""}>${esc(name)}</option>`).join("")}
+ ${[...LANDKREIS_ORTE].sort((a,b)=>a[0].localeCompare(b[0],"de")).map(([name])=>`<option value="${esc(name)}"${myHeimatort?.ort===name?"selected":""}>${esc(name)}</option>`).join("")}
  </select>
  <button class="primary"onclick="saveHeimatort()">${myHeimatort?"Aktualisieren":"Eintragen"}</button>
  ${myHeimatort?`<button class="secondary"onclick="removeHeimatort()">Entfernen</button>`:""}
@@ -1258,6 +1258,29 @@ const LEHRPLAN_WOCHEN={
  ],
  deutsch:[],englisch:[],geschichte:[],mathematik:[],sozialwirtschaft:[],chemie:[]
 };
+// Lernziel-Vorschläge je Woche, abgeleitet aus den offiziellen
+// Kompetenzerwartungen des LehrplanPLUS FOS 11 Pädagogik/Psychologie
+// (lehrplanplus.bayern.de, LB 1–4). Lehrkräfte sehen diese als Vorschlag
+// beim erstmaligen Anlegen eines Auftrags und können sie frei anpassen.
+const LEHRPLAN_ZIELE_VORSCHLAG={
+ pp01:["Ich kann die Gegenstandsbereiche der Psychologie und Pädagogik erläutern und ihre Wechselwirkung an Beispielen zeigen.","Ich kann Erleben, Verhalten und Handeln als Gegenstand der Psychologie von Erziehungspraxis und -theorie als Gegenstand der Pädagogik unterscheiden.","Ich kann die Bedeutung von Pädagogik und Psychologie für das Sozialwesen an eigenen Praxisfragen festmachen."],
+ pp02:["Ich kann die Wesenszüge einer wissenschaftlichen Pädagogik bzw. Psychologie untersuchen und von alltagspsychologischen Aussagen abgrenzen.","Ich kann Unterschiede zwischen Beschreibung und Erklärung als wissenschaftliche Kriterien erfassen.","Ich kann Merkmale von wissenschaftlicher Theorie und Alltagstheorie an eigenen Beispielen erklären."],
+ pp03:["Ich kann Prinzipien wissenschaftlichen Beschreibens und Erklärens auf ein eigenes kleines Experiment anwenden.","Ich kann Fragestellung, Durchführung und Auswertung eines Mini-Experiments nachvollziehbar dokumentieren.","Ich kann meine Ergebnisse sachlich und wissenschaftlich korrekt präsentieren."],
+ pp04:["Ich kann Erziehung als Anregung zur Bildung verstehen und den Erziehungs- und Bildungsbegriff auf Handlungssituationen anwenden.","Ich kann Merkmale von Erziehung (z. B. soziale Beziehung, bewusste Zielvorgaben) und von Bildung (z. B. mündiger Mensch, individuelle Zielsetzungen) unterscheiden.","Ich kann Erziehung von Betreuung und Versorgung abgrenzen."],
+ pp05:["Ich kann unterschiedliche Erziehungs- und Bildungsziele entwerfen und passende Erziehungsmaßnahmen ableiten.","Ich kann die Erziehungsstile nach Baumrind unterscheiden und ihre Eignung für unterschiedliche Situationen beurteilen.","Ich kann anhand eines Praxisfalls pädagogisches Handeln begründen und Alternativen entwickeln."],
+ pp06:["Ich kann das übergreifende Erziehungs- und Bildungsziel Selbst-, Sach- und Sozialkompetenz erläutern.","Ich kann Mündigkeit nach Heinrich Roth mit den drei Kompetenzbereichen beschreiben.","Ich kann Erziehungsziele kompetenzorientiert formulieren."],
+ pp07:["Ich kann die Dimensionen von Erziehungs- und Führungsstilen (autoritär, laissez-faire, sozialintegrativ) nach Tausch/Tausch erläutern.","Ich kann Aufgaben und Ziele einer Kindertageseinrichtung nach dem Bayerischen Bildungs- und Erziehungsplan (BayBEP) beschreiben.","Ich kann diese Erziehungs- und Bildungsziele in einer realen Einrichtung wiedererkennen."],
+ pp08:["Ich kann Probleme und Schwierigkeiten einer Erziehungs- oder Bildungsinstitution an einem Praxisfall reflektieren.","Ich kann Erziehung mit Wahrnehmung und Motivation vernetzt betrachten und eine Handlungsempfehlung ableiten.","Ich kann Werthaltungen zu meinem pädagogischen Handeln entwickeln."],
+ pp09:["Ich kann den Wahrnehmungsprozess nach Zimbardo erläutern und Wahrnehmung als subjektive Konstruktion der Wirklichkeit begreifen.","Ich kann das Mehrspeicher-Modell des Gedächtnisses nach Markowitsch erklären.","Ich kann Kontrollprozesse des Gedächtnisses nutzen, um Phänomene aus Schule und Beruf zu erklären."],
+ pp10:["Ich kann Emotion als Begriff mit ihren Komponenten am Beispiel Angst verdeutlichen.","Ich kann Strategien zur Selbstregulation von Emotionen entwickeln und anwenden.","Ich kann emotionale Situationen aus der Praxis professionell analysieren."],
+ pp11:["Ich kann den Prozesscharakter der Motivation am Beispiel der Leistungsmotivation aufzeigen.","Ich kann Attributionsmuster (internal/external, stabil/variabel) nach Weiner erkennen und deren Folgen für Emotion und Erfolgserwartung erklären.","Ich kann daraus Konsequenzen für mein eigenes Selbstmanagement ableiten."],
+ pp12:["Ich kann anhand der Gedächtnisforschung effektive Lernstrategien entwickeln und für meinen eigenen Wissenserwerb nutzen.","Ich kann Wechselwirkungen zwischen Kognition, Emotion und Motivation an einem konkreten Beispiel erläutern.","Ich kann eine Lernhilfe oder Anleitung für eine reale Lern-/Orientierungssituation erstellen."],
+ pp13:["Ich kann Reifungs- und Lernprozesse unterscheiden und Fremd- sowie Selbststeuerungsprozesse an Beispielen aufzeigen.","Ich kann den Konditionierungsprozess nach Pawlow erklären, inklusive Reizgeneralisierung und Löschung.","Ich kann klassisches Konditionieren in Alltagssituationen wiedererkennen."],
+ pp14:["Ich kann das Verstärkungslernen nach Skinner (Verstärkerarten, Löschung, Shaping) erklären.","Ich kann die Entstehung und Veränderung von Verhalten mithilfe des operanten Konditionierens erklären und zielgerichtet anwenden.","Ich kann anhand eines Praxisfalls professionell-ethische Handlungsalternativen entwickeln."],
+ pp15:["Ich kann Phasen und Teilprozesse der sozial-kognitiven Theorie nach Bandura beschreiben.","Ich kann die Entwicklung von der behavioristischen zur kognitiven Sichtweise reflektieren.","Ich kann Selbstwirksamkeit nach Bandura (Erwartungshaltungen, Selbstbewertung, Selbstregulation) erläutern."],
+ pp16:["Ich kann die Wirkung von Medien auf das Lernen emotionaler Reaktionen und aggressiven Verhaltens auf Basis einer Lerntheorie einordnen.","Ich kann lernförderliche digitale Angebote reflektiert beurteilen.","Ich kann mit medialen Einflüssen bewusst und reflektiert umgehen."],
+ pp17:["Ich kann Erziehung, Wahrnehmung, Emotion, Motivation, Gedächtnis und Lernen an einem Praxisfall vernetzt anwenden.","Ich kann eine anonymisierte Fallsituation theoriegeleitet analysieren und einen Handlungsvorschlag entwickeln.","Ich kann meine Ergebnisse präsentieren und mein Praxisjahr reflektieren."]
+};
 function lehrplanWocheById(fach,wocheId){
  return (LEHRPLAN_WOCHEN[fach]||[]).find(w=>w.id===wocheId)||null;
 }
@@ -1296,12 +1319,34 @@ function combinedTimeline(fach){
 // (nach einem variablen Muster), bei großen Meilensteinen (Woche
 // komplett geschafft) immer – intermittierende Verstärkung wirkt
 // nachhaltiger als eine erwartbare Nachricht bei jedem Klick.
-const MOTIVATIONS_NACHRICHTEN=["Stark gemacht! ","Weiter so, das läuft richtig gut! ","Geschafft – ein Schritt weiter! ","Klasse Leistung! ","Dranbleiben lohnt sich! ","Das war ein guter Zug! ","Sauber erledigt! ","Nice, das sitzt! "];
-function showMotivationsToast(besonders){
+const MOTIVATIONS_KARTEN=[
+ {emoji:"🔥",text:"Läuft bei dir!"},
+ {emoji:"💪",text:"Nice, weiter so!"},
+ {emoji:"🚀",text:"Das war stark!"},
+ {emoji:"⭐",text:"Du rockst das!"},
+ {emoji:"🙌",text:"Sauber gemacht!"},
+ {emoji:"🎯",text:"Ziel erreicht – on to the next!"},
+ {emoji:"😎",text:"Genau so!"},
+ {emoji:"🏆",text:"Top Leistung!"}
+];
+const MOTIVATIONS_KARTEN_BESONDERS=[
+ {emoji:"🎉",text:"Ganze Woche geschafft – richtig stark!"},
+ {emoji:"🥳",text:"Komplett abgeschlossen, weiter so!"},
+ {emoji:"👑",text:"Das nenn ich Einsatz!"}
+];
+function showMotivationsBild(besonders){
  if(!besonders && Math.random()>0.65)return;
- const list=besonders?["Ganze Woche geschafft – richtig stark! ","Woche komplett abgeschlossen, weiter so! "]:MOTIVATIONS_NACHRICHTEN;
- toast(list[Math.floor(Math.random()*list.length)]);
+ const liste=besonders?MOTIVATIONS_KARTEN_BESONDERS:MOTIVATIONS_KARTEN;
+ const pick=liste[Math.floor(Math.random()*liste.length)];
+ const el=document.createElement("div");
+ el.className="motivations-karte";
+ el.innerHTML=`<div class="motivations-karte-inner"><span class="motivations-emoji">${pick.emoji}</span><strong>${esc(pick.text)}</strong></div>`;
+ el.onclick=()=>el.remove();
+ document.body.appendChild(el);
+ setTimeout(()=>el.remove(),2600);
 }
+// Alte Aufrufstellen nutzen weiterhin diesen Namen.
+function showMotivationsToast(besonders){showMotivationsBild(besonders)}
 
 // ---- Auftrag/Ziele je Woche (Lehrkraft pflegt, Schüler:innen sehen) ------
 async function getLehrplanAuftrag(wocheId){
@@ -1588,8 +1633,9 @@ async function addSchulaufgabe(fach,hj,value){
  data.entries[fach][hj].schulaufgaben.push(num);
  });
  await openNotenDetail(fach,hj);
+ render();
  toast("Schulaufgabe hinzugefügt.");
- }catch(e){console.error("Schulaufgabe speichern:",e);toast("Konnte nicht gespeichert werden.")}
+ }catch(e){console.error("Schulaufgabe speichern:",e);toast("Fehler: "+(e?.message||e));}
 }
 async function deleteSchulaufgabe(fach,hj,index){
  try{
@@ -1597,8 +1643,9 @@ async function deleteSchulaufgabe(fach,hj,index){
  if(data.entries?.[fach]?.[hj]?.schulaufgaben)data.entries[fach][hj].schulaufgaben.splice(index,1);
  });
  await openNotenDetail(fach,hj);
+ render();
  toast("Entfernt.");
- }catch(e){console.error("Schulaufgabe löschen:",e);toast("Konnte nicht entfernt werden.")}
+ }catch(e){console.error("Schulaufgabe löschen:",e);toast("Fehler: "+(e?.message||e));}
 }
 async function addSonstigeLeistung(fach,hj,value,type,gewicht){
  const num=Math.max(0,Math.min(15,parseInt(value,10)));
@@ -1612,8 +1659,9 @@ async function addSonstigeLeistung(fach,hj,value,type,gewicht){
  data.entries[fach][hj].sonstige.push({id:`${Date.now()}_${Math.random().toString(36).slice(2,7)}`,value:num,type,gewicht:g});
  });
  await openNotenDetail(fach,hj);
+ render();
  toast("Note hinzugefügt.");
- }catch(e){console.error("Sonstige Leistung speichern:",e);toast("Konnte nicht gespeichert werden.")}
+ }catch(e){console.error("Sonstige Leistung speichern:",e);toast("Fehler: "+(e?.message||e));}
 }
 async function deleteSonstigeLeistung(fach,hj,entryId){
  try{
@@ -1621,8 +1669,9 @@ async function deleteSonstigeLeistung(fach,hj,entryId){
  if(data.entries?.[fach]?.[hj]?.sonstige)data.entries[fach][hj].sonstige=data.entries[fach][hj].sonstige.filter(e=>e.id!==entryId);
  });
  await openNotenDetail(fach,hj);
+ render();
  toast("Gelöscht.");
- }catch(e){console.error("Sonstige Leistung löschen:",e);toast("Konnte nicht gelöscht werden.")}
+ }catch(e){console.error("Sonstige Leistung löschen:",e);toast("Fehler: "+(e?.message||e));}
 }
 // FPA behält die einfache Eintragsliste (kein Schulaufgabe/sonstige-Modell).
 async function addNotenEintrag(fach,hj,value,type){
@@ -2294,9 +2343,9 @@ async function openWocheDetail(fach,wocheId){
 
  // Fortschritt: welche der vier Etappen ist erreicht?
  const schritte=[
- {label:"Ziele",done:alleErfuellt},
- {label:"Produkt",done:meinProdukt},
- {label:"Lernstand",done:lernstandBearbeitet},
+ {label:"Lernziele",done:alleErfuellt},
+ {label:"Lernprodukt",done:meinProdukt},
+ {label:"Überprüfung",done:lernstandBearbeitet},
  {label:"Fertig",done:!!fortschritt.abgeschlossen}
  ];
  let aktivIdx=schritte.findIndex(s=>!s.done);
@@ -2317,17 +2366,18 @@ async function openWocheDetail(fach,wocheId){
  </div>
 
  <div class="wd-tabs">
- <button type="button"class="wd-tab"data-tab="ziele"onclick="showWocheTab('ziele')"> Ziele</button>
- <button type="button"class="wd-tab"data-tab="material"onclick="showWocheTab('material')"> Material</button>
- <button type="button"class="wd-tab"data-tab="team"onclick="showWocheTab('team')"> Team</button>
- <button type="button"class="wd-tab"data-tab="produkte"onclick="showWocheTab('produkte')"> Produkte</button>
- <button type="button"class="wd-tab"data-tab="lernstand"onclick="showWocheTab('lernstand')"> Lernstand</button>
+ <button type="button"class="wd-tab"data-tab="ziele"onclick="showWocheTab('ziele')"> Lernziele und Aufgaben</button>
+ <button type="button"class="wd-tab"data-tab="material"onclick="showWocheTab('material')"> Lernmaterialien</button>
+ <button type="button"class="wd-tab"data-tab="team"onclick="showWocheTab('team')"> ${woche.typ==="projekt"?"Team":"(Team)"}</button>
+ <button type="button"class="wd-tab"data-tab="produkte"onclick="showWocheTab('produkte')"> Lernprodukte</button>
+ <button type="button"class="wd-tab"data-tab="lernstand"onclick="showWocheTab('lernstand')"> Überprüfung des Lernstandes</button>
  </div>
 
  <div class="wd-panel"id="wdPanel_ziele">
  ${isTeacher()?`<div class="form">
  <label>Titel des Auftrags<input id="auftragTitel"type="text"value="${esc(auftrag?.titel||"")}"placeholder="z. B. Fallanalyse Erziehungsstile"></label>
- <label>Ziele (eine Zeile je Ziel)<textarea id="auftragZiele"rows="4"placeholder="z. B. Ich kann die vier Erziehungsstile nach Baumrind unterscheiden">${esc((ziele.map(z=>z.text)).join("\n"))}</textarea></label>
+ <label>Lernziele (eine Zeile je Ziel)<textarea id="auftragZiele"rows="5"placeholder="z. B. Ich kann die vier Erziehungsstile nach Baumrind unterscheiden">${esc((ziele.length?ziele.map(z=>z.text):LEHRPLAN_ZIELE_VORSCHLAG[wocheId]||[]).join("\n"))}</textarea></label>
+ ${!ziele.length&&LEHRPLAN_ZIELE_VORSCHLAG[wocheId]?`<p style="font-size:11px;color:var(--muted);margin:-6px 0 0"> Vorschlag auf Basis des LehrplanPLUS FOS 11 Pädagogik/Psychologie – gerne anpassen.</p>`:""}
  <div class="form-actions">
  <button class="primary"onclick="saveLehrplanAuftrag('${fach}','${wocheId}')">Speichern</button>
  ${auftrag?`<button class="secondary"onclick="deleteLehrplanAuftrag('${auftrag.id}','${fach}','${wocheId}')">Auftrag löschen</button>`:""}
@@ -2335,9 +2385,9 @@ async function openWocheDetail(fach,wocheId){
  </div>`
  :!auftrag?`<div class="empty">Für diese Woche wurde noch kein Auftrag eingetragen.</div>`
  :`<h3 style="margin:8px 0">${esc(auftrag.titel)}</h3>
- <div class="list">${ziele.map(z=>`<div class="list-item"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;flex:1"><input type="checkbox"${fortschritt.zieleErfuellt?.[z.id]?"checked":""}onchange="toggleZielErfuellt('${fach}','${wocheId}','${z.id}',this.checked)"><span>${esc(z.text)}</span></label></div>`).join("")||`<div class="empty">Noch keine Ziele hinterlegt.</div>`}</div>
+ <div class="list">${ziele.map(z=>`<div class="list-item"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;flex:1"><input type="checkbox"${fortschritt.zieleErfuellt?.[z.id]?"checked":""}onchange="toggleZielErfuellt('${fach}','${wocheId}','${z.id}',this.checked)"><span>${esc(z.text)}</span></label></div>`).join("")||`<div class="empty">Noch keine Lernziele hinterlegt.</div>`}</div>
  <div class="form-actions"style="margin-top:12px">
- <button class="primary"${fortschritt.abgeschlossen?"disabled":""}onclick="markWocheAbgeschlossen('${fach}','${wocheId}')">${fortschritt.abgeschlossen?"✓ Woche abgeschlossen":alleErfuellt?"✓ Woche als abgeschlossen markieren":" Erst alle Ziele erfüllen"}</button>
+ <button class="primary"${fortschritt.abgeschlossen?"disabled":""}onclick="markWocheAbgeschlossen('${fach}','${wocheId}')">${fortschritt.abgeschlossen?"✓ Woche abgeschlossen":alleErfuellt?"✓ Woche als abgeschlossen markieren":" Erst alle Lernziele erfüllen"}</button>
  </div>`}
  </div>
 
@@ -2353,7 +2403,7 @@ async function openWocheDetail(fach,wocheId){
  <div class="list">${materialien.map(m=>`<div class="list-item"style="flex-direction:column;align-items:stretch;gap:8px">
  <div style="display:flex;justify-content:space-between;align-items:center"><strong>${esc(MATERIAL_KATEGORIEN.find(k=>k.key===m.kategorie)?.label||m.kategorie)}: ${esc(m.titel)}</strong>${isTeacher()?`<button class="secondary"onclick="deleteLehrplanMaterial('${m.id}','${fach}','${wocheId}')">Löschen</button>`:""}</div>
  ${m.url?materialEmbedHTML(m):""}
- </div>`).join("")||`<div class="empty">Noch kein Material eingestellt.</div>`}</div>
+ </div>`).join("")||`<div class="empty">Noch keine Lernmaterialien eingestellt.</div>`}</div>
  <div class="form-actions"style="margin-top:12px;flex-wrap:wrap">
  <button class="secondary"onclick="closeModal();go('kompetenz')"> Kompetenzwerkstatt</button>
  <button class="secondary"onclick="closeModal();go('kollaboration')"> Kollaborations-Tools</button>
@@ -2363,16 +2413,16 @@ async function openWocheDetail(fach,wocheId){
  </div>
 
  <div class="wd-panel"id="wdPanel_team">
- <p style="color:var(--muted);margin-top:0">Team/Gruppe${woche.typ==="projekt"?" – für dieses Projekt vorgesehen":" – freiwillig"}. Passende Mitstreiter:innen findest du auch über die Kompetenzwerkstatt.</p>
+ <p style="color:var(--muted);margin-top:0">Team/Gruppe${woche.typ==="projekt"?" – für dieses Projekt vorgesehen":" – freiwillig (deshalb in Klammern)"}. Passende Mitstreiter:innen findest du auch über die Kompetenzwerkstatt.</p>
  <div class="list">${teams.map(t=>{const inTeam=(t.mitgliederUids||[]).includes(currentUser.uid);return`<div class="list-item"><div><strong>${esc(t.teamName)}</strong><small>${esc((t.mitgliederNamen||[]).join(", ")||"Noch niemand")}</small></div><div style="display:flex;gap:6px">${inTeam?`<button class="secondary"onclick="leaveLehrplanTeam('${t.id}','${fach}','${wocheId}')">Verlassen</button>`:`<button class="primary"onclick="joinLehrplanTeam('${t.id}','${fach}','${wocheId}')">Beitreten</button>`}${isTeacher()?`<button class="secondary"onclick="deleteLehrplanTeam('${t.id}','${fach}','${wocheId}')">Auflösen</button>`:""}</div></div>`}).join("")||`<div class="empty">Noch keine Teams gebildet.</div>`}</div>
  ${!meinTeam?`<div class="form-actions"style="margin-top:10px"><input id="neuTeamName"type="text"placeholder="Team-Name"style="flex:1"><button class="primary"onclick="createLehrplanTeam('${fach}','${wocheId}')">＋ Team gründen</button></div>`:""}
  <div class="form-actions"style="margin-top:10px"><button class="secondary"onclick="closeModal();go('kompetenz')"> Zur Kompetenzwerkstatt</button></div>
  </div>
 
  <div class="wd-panel"id="wdPanel_produkte">
- <div class="list">${produkte.map(p=>`<div class="list-item"><div><strong>${esc(p.titel)}</strong><small>${esc(p.name)}${p.inhalt?" · "+esc(p.inhalt.slice(0,60)):""}</small></div>${(p.uid===currentUser.uid||isTeacher())?`<button class="secondary"onclick="deleteLehrplanProdukt('${p.id}','${fach}','${wocheId}')">Löschen</button>`:""}</div>`).join("")||`<div class="empty">Noch keine Produkte hochgeladen.</div>`}</div>
+ <div class="list">${produkte.map(p=>`<div class="list-item"><div><strong>${esc(p.titel)}</strong><small>${esc(p.name)}${p.inhalt?" · "+esc(p.inhalt.slice(0,60)):""}</small></div>${(p.uid===currentUser.uid||isTeacher())?`<button class="secondary"onclick="deleteLehrplanProdukt('${p.id}','${fach}','${wocheId}')">Löschen</button>`:""}</div>`).join("")||`<div class="empty">Noch keine Lernprodukte hochgeladen.</div>`}</div>
  <div class="form-actions"style="margin-top:10px;flex-wrap:wrap">
- <input id="produktTitel"type="text"placeholder="Titel des Produkts"style="flex:1;min-width:140px">
+ <input id="produktTitel"type="text"placeholder="Titel des Lernprodukts"style="flex:1;min-width:140px">
  <input id="produktInhalt"type="text"placeholder="Link oder kurze Beschreibung"style="flex:1;min-width:160px">
  <button class="primary"onclick="addLehrplanProdukt('${fach}','${wocheId}')">＋ Hochladen</button>
  </div>
@@ -5344,22 +5394,17 @@ async function openNewMessagePicker(){
  if(!isApproved()){toast("Nur freigeschaltete Nutzer können Nachrichten schreiben.");return}
  const users=await getApprovedUserDirectory();
  if(!users.length){toast("Keine anderen freigeschalteten Campus-Mitglieder gefunden.");return}
- window.__messageDirectory=users;
  modal(`<button class="modal-close"onclick="closeModal()">×</button><div class="kicker"> NEUE NACHRICHT</div><h2>Person auswählen</h2>
- <label>Suche<input class="search"id="messageUserSearch"placeholder="Name suchen …"oninput="filterMessageUserList()"></label>
- <div class="list"id="messageUserList"style="max-height:320px;overflow:auto;margin-top:10px">
- ${users.map(u=>`<div class="card"data-name="${esc((u.displayName||u.email||"").toLowerCase())}"style="cursor:pointer;padding:10px 14px;margin-bottom:6px"onclick="openConversation('${u.uid}')">
- <strong>${esc(u.displayName||u.email||"Campus-Mitglied")}</strong> <small>${u.role==="teacher"?"· Lehrkraft":u.role==="admin"?"· Admin":"· Schüler/in"}</small>
- </div>`).join("")}
+ <div class="form">
+ <label>Empfänger:in<select id="messageRecipientSelect">
+ <option value="">Bitte auswählen …</option>
+ ${users.map(u=>`<option value="${u.uid}">${esc(u.displayName||u.email||"Campus-Mitglied")} ${u.role==="teacher"?"(Lehrkraft)":u.role==="admin"?"(Admin)":"(Schüler/in)"}</option>`).join("")}
+ </select></label>
+ <div class="form-actions">
+ <button class="secondary"onclick="closeModal()">Abbrechen</button>
+ <button class="primary"onclick="openConversation($('messageRecipientSelect').value)">Nachricht schreiben</button>
  </div>
- <div class="form-actions"><button class="secondary"onclick="closeModal()">Abbrechen</button></div>`);
-}
-
-function filterMessageUserList(){
- const q=($("messageUserSearch")?.value||"").toLowerCase().trim();
- document.querySelectorAll("#messageUserList [data-name]").forEach(row=>{
- row.hidden=Boolean(q) && !row.dataset.name.includes(q);
- });
+ </div>`);
 }
 
 async function markConversationRead(otherUid){
@@ -5377,6 +5422,7 @@ async function markConversationRead(otherUid){
 }
 
 async function openConversation(otherUid){
+ if(!otherUid){toast("Bitte eine Person auswählen.");return}
  const users=window.__messageDirectory||await getApprovedUserDirectory();
  const other=users.find(u=>u.uid===otherUid);
  activeConversationUid=otherUid;
@@ -9051,6 +9097,7 @@ async function submitLernstand(taskId,attempt){
  try{
  await addDoc(collection(db,"lernstandVersuche"),{uid:currentUser.uid,displayName:profile?.displayName||currentUser?.email||"Schüler/in",taskId:t.id,title:t.title,nr:t.nr,learningArea:t.learningArea,attempt,answers,competencies,kprimFeedback,total:autoPoints,status:"abgegeben",createdAt:serverTimestamp()});
  closeModal();
+ showMotivationsBild();
  showLernstandSubmitFeedback(t,kprimFeedback,attempt);
  }catch(e){console.error("Lernstand speichern:",e);toast("Lernstand konnte nicht gespeichert werden.")}
 }
@@ -9392,7 +9439,6 @@ window.deleteNews=deleteNews;
 window.render=render;
 window.resilienzSkillDone=resilienzSkillDone;
 window.toggleResilienzSchatz=toggleResilienzSchatz;
-window.filterMessageUserList=filterMessageUserList;
 window.openConversation=openConversation;
 window.closeConversation=closeConversation;
 window.replyToMessage=replyToMessage;
