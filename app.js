@@ -1375,23 +1375,22 @@ async function getLehrplanAuftrag(wocheId){
  }catch(e){console.error("Auftrag laden:",e);return null}
 }
 async function saveLehrplanAuftrag(fach,wocheId){
- if(!isTeacher()){toast("Nur Lehrkräfte können Aufträge eintragen.");return}
+ if(!isTeacher()){toast("Nur Lehrkräfte können Arbeitsaufträge eintragen.");return}
  const titel=$("auftragTitel")?.value.trim();
- const zieleText=$("auftragZiele")?.value||"";
+ const beschreibung=$("auftragBeschreibung")?.value.trim()||"";
  if(!titel){toast("Bitte einen Titel eingeben.");return}
- const ziele=zieleText.split("\n").map(z=>z.trim()).filter(Boolean).map((text,i)=>({id:`z${i}`,text}));
  try{
  const existing=await getLehrplanAuftrag(wocheId);
- const payload={wocheId,fach,titel,ziele,updatedAt:serverTimestamp(),updatedBy:currentUser.uid};
+ const payload={wocheId,fach,titel,beschreibung,updatedAt:serverTimestamp(),updatedBy:currentUser.uid};
  if(existing)await updateDoc(doc(db,"lehrplanAuftraege",existing.id),payload);
  else{payload.createdAt=serverTimestamp();await addDoc(collection(db,"lehrplanAuftraege"),payload)}
  await openWocheDetail(fach,wocheId);
- toast("Auftrag gespeichert.");
+ toast("Arbeitsauftrag gespeichert.");
  }catch(e){console.error("Auftrag speichern:",e);toast("Konnte nicht gespeichert werden.")}
 }
 async function deleteLehrplanAuftrag(id,fach,wocheId){
- if(!confirm("Diesen Auftrag wirklich löschen?"))return;
- try{await deleteDoc(doc(db,"lehrplanAuftraege",id));await openWocheDetail(fach,wocheId);toast("Auftrag gelöscht.")}
+ if(!confirm("Diesen Arbeitsauftrag wirklich löschen?"))return;
+ try{await deleteDoc(doc(db,"lehrplanAuftraege",id));await openWocheDetail(fach,wocheId);toast("Arbeitsauftrag gelöscht.")}
  catch(e){console.error(e);toast("Konnte nicht gelöscht werden.")}
 }
 
@@ -1541,10 +1540,9 @@ async function toggleZielErfuellt(fach,wocheId,zielId,erfuellt){
  }catch(e){console.error("Ziel-Status:",e);toast("Konnte nicht gespeichert werden.")}
 }
 async function markWocheAbgeschlossen(fach,wocheId){
- const auftrag=await getLehrplanAuftrag(wocheId);
  const fortschritt=await getLehrplanFortschritt(wocheId);
- const ziele=auftrag?.ziele||[];
- const alleErfuellt=ziele.length>0 && ziele.every(z=>fortschritt.zieleErfuellt?.[z.id]);
+ const ziele=LEHRPLAN_ZIELE_VORSCHLAG[wocheId]||[];
+ const alleErfuellt=ziele.length>0 && ziele.every((z,i)=>fortschritt.zieleErfuellt?.[`z${i}`]);
  if(!alleErfuellt){toast("Bitte zuerst alle Ziele als erfüllt markieren.");return}
  try{
  await setDoc(doc(db,"lehrplanFortschritt",`${currentUser.uid}_${wocheId}`),{...fortschritt,uid:currentUser.uid,wocheId,fach,abgeschlossen:true,updatedAt:serverTimestamp()});
@@ -2374,7 +2372,7 @@ async function openWocheDetail(fach,wocheId){
  const wocheLbKeys=(woche.lb||"").match(/\d/g)?.map(n=>"lb"+n)||[];
  const relevanteTasks=lsTasks.filter(t=>wocheLbKeys.includes(t.learningArea));
  const lernstandBearbeitet=relevanteTasks.some(t=>lernstandAttemptCount(lsAttempts,t.id)>0);
- const ziele=auftrag?.ziele||[];
+ const ziele=(LEHRPLAN_ZIELE_VORSCHLAG[wocheId]||[]).map((text,i)=>({id:`z${i}`,text}));
  const alleErfuellt=ziele.length>0 && ziele.every(z=>fortschritt.zieleErfuellt?.[z.id]);
  const meinTeam=teams.find(t=>(t.mitgliederUids||[]).includes(currentUser.uid));
  const fachLbl=F11SB_FAECHER.find(f=>f.key===fach)?.label||fach;
@@ -2413,21 +2411,25 @@ async function openWocheDetail(fach,wocheId){
  </div>
 
  <div class="wd-panel"id="wdPanel_ziele">
+ <h3 style="margin:0 0 4px;font-size:13px;text-transform:uppercase;letter-spacing:.02em;color:var(--muted)"> Lernziele laut Lehrplan</h3>
+ <p style="font-size:11px;color:var(--muted);margin:0 0 10px">Fest nach LehrplanPLUS FOS 11 Pädagogik/Psychologie (${esc(woche.lb)}) – gilt für alle Klassen gleich.</p>
+ <div class="list">${ziele.map(z=>`<div class="list-item"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;flex:1"><input type="checkbox"${fortschritt.zieleErfuellt?.[z.id]?"checked":""}onchange="toggleZielErfuellt('${fach}','${wocheId}','${z.id}',this.checked)"><span>${esc(z.text)}</span></label></div>`).join("")||`<div class="empty">Für dieses Fach/diese Woche sind noch keine Lehrplan-Ziele hinterlegt.</div>`}</div>
+ ${ziele.length?`<div class="form-actions"style="margin-top:12px">
+ <button class="primary"${fortschritt.abgeschlossen?"disabled":""}onclick="markWocheAbgeschlossen('${fach}','${wocheId}')">${fortschritt.abgeschlossen?"✓ Woche abgeschlossen":alleErfuellt?"✓ Woche als abgeschlossen markieren":" Erst alle Ziele erfüllen"}</button>
+ </div>`:""}
+
+ <h3 style="margin:22px 0 4px;font-size:13px;text-transform:uppercase;letter-spacing:.02em;color:var(--muted)"> Konkreter Arbeitsauftrag</h3>
+ <p style="font-size:11px;color:var(--muted);margin:0 0 10px">Von der Lehrkraft frei gestaltet – legt fest, WIE die Lernziele oben konkret bearbeitet werden.</p>
  ${isTeacher()?`<div class="form">
- <label>Titel des Auftrags<input id="auftragTitel"type="text"value="${esc(auftrag?.titel||"")}"placeholder="z. B. Fallanalyse Erziehungsstile"></label>
- <label>Lernziele (eine Zeile je Ziel)<textarea id="auftragZiele"rows="5"placeholder="z. B. Ich kann die vier Erziehungsstile nach Baumrind unterscheiden">${esc((ziele.length?ziele.map(z=>z.text):LEHRPLAN_ZIELE_VORSCHLAG[wocheId]||[]).join("\n"))}</textarea></label>
- ${!ziele.length&&LEHRPLAN_ZIELE_VORSCHLAG[wocheId]?`<p style="font-size:11px;color:var(--muted);margin:-6px 0 0"> Vorschlag auf Basis des LehrplanPLUS FOS 11 Pädagogik/Psychologie – gerne anpassen.</p>`:""}
+ <label>Titel<input id="auftragTitel"type="text"value="${esc(auftrag?.titel||"")}"placeholder="z. B. Fallanalyse Erziehungsstile"></label>
+ <label>Beschreibung<textarea id="auftragBeschreibung"rows="4"placeholder="Was genau sollen die Schüler:innen tun?">${esc(auftrag?.beschreibung||"")}</textarea></label>
  <div class="form-actions">
  <button class="primary"onclick="saveLehrplanAuftrag('${fach}','${wocheId}')">Speichern</button>
- ${auftrag?`<button class="secondary"onclick="deleteLehrplanAuftrag('${auftrag.id}','${fach}','${wocheId}')">Auftrag löschen</button>`:""}
+ ${auftrag?`<button class="secondary"onclick="deleteLehrplanAuftrag('${auftrag.id}','${fach}','${wocheId}')">Löschen</button>`:""}
  </div>
  </div>`
- :!auftrag?`<div class="empty">Für diese Woche wurde noch kein Auftrag eingetragen.</div>`
- :`<h3 style="margin:8px 0">${esc(auftrag.titel)}</h3>
- <div class="list">${ziele.map(z=>`<div class="list-item"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;flex:1"><input type="checkbox"${fortschritt.zieleErfuellt?.[z.id]?"checked":""}onchange="toggleZielErfuellt('${fach}','${wocheId}','${z.id}',this.checked)"><span>${esc(z.text)}</span></label></div>`).join("")||`<div class="empty">Noch keine Lernziele hinterlegt.</div>`}</div>
- <div class="form-actions"style="margin-top:12px">
- <button class="primary"${fortschritt.abgeschlossen?"disabled":""}onclick="markWocheAbgeschlossen('${fach}','${wocheId}')">${fortschritt.abgeschlossen?"✓ Woche abgeschlossen":alleErfuellt?"✓ Woche als abgeschlossen markieren":" Erst alle Lernziele erfüllen"}</button>
- </div>`}
+ :!auftrag?`<div class="empty">Für diese Woche wurde noch kein Arbeitsauftrag eingetragen.</div>`
+ :`<div class="card"style="background:var(--soft-blue)"><strong>${esc(auftrag.titel)}</strong>${auftrag.beschreibung?`<p style="margin:6px 0 0;white-space:pre-wrap">${esc(auftrag.beschreibung)}</p>`:""}</div>`}
  </div>
 
  <div class="wd-panel"id="wdPanel_material">
