@@ -2256,6 +2256,65 @@ function taskHTML(t){return`<div class="list-item"><div><strong>${esc(t.title)}<
 ${esc(t.ownerName||"")} · Deadline: ${esc(t.deadline||"—")} · Nächster Schritt: ${esc(t.next||"—")}</small></div><div
 class="traffic">${statusDot(t.status)}<span class="pill">${statusLabel[t.status]||"—"}</span></div></div>`}
 
+// ---- Klassenübersicht für Lehrkräfte: Lehrplan-Fortschritt + Ampel je LB --
+function ampelDotHTML(status){
+ if(status===null)return`<span class="ampel-dot ampel-none"title="Noch keine Daten"></span>`;
+ const color=status==="green"?"#3fa66a":status==="yellow"?"#e0a324":"#d9534f";
+ return`<span class="ampel-dot"style="background:${color}"title="${status==="green"?"gut":status==="yellow"?"teilweise":"braucht Unterstützung"}"></span>`;
+}
+async function openLehrplanKlassenuebersicht(fach){
+ if(!isTeacher()){toast("Nur Lehrkräfte können die Klassenübersicht öffnen.");return}
+ const fachLbl=F11SB_FAECHER.find(f=>f.key===fach)?.label||fach;
+ const wochenGesamt=(LEHRPLAN_WOCHEN[fach]||[]).length;
+ let students=[],fortschrittDocs=[],lsTasks=[],allAttempts=[];
+ try{
+ [students,fortschrittDocs,lsTasks,allAttempts]=await Promise.all([
+ getAllUsersForLernstand(),
+ getDocs(query(collection(db,"lehrplanFortschritt"),where("fach","==",fach))).then(s=>s.docs.map(d=>d.data())),
+ getLernstandTasks(),
+ getAllLernstandAttempts()
+ ]);
+ }catch(e){console.error("Klassenübersicht laden:",e);toast("Konnte nicht geladen werden.");return}
+
+ const tasksByLb={1:[],2:[],3:[],4:[]};
+ lsTasks.forEach(t=>{const n=t.learningArea?.match(/\d/)?.[0];if(n&&tasksByLb[n])tasksByLb[n].push(t)});
+
+ function ampelFuerSchueler(uid,lbNum){
+ const relevantIds=tasksByLb[lbNum].map(t=>t.id);
+ const relevant=allAttempts.filter(a=>a.uid===uid&&relevantIds.includes(a.taskId));
+ if(!relevant.length)return null;
+ const neuesterProAufgabe={};
+ relevant.forEach(a=>{if(!neuesterProAufgabe[a.taskId]||a.attempt>neuesterProAufgabe[a.taskId].attempt)neuesterProAufgabe[a.taskId]=a});
+ const werte=Object.values(neuesterProAufgabe);
+ const maxSum=werte.reduce((s,a)=>s+lernstandMaxPoints(a.taskId),0);
+ const totalSum=werte.reduce((s,a)=>s+(a.total||0),0);
+ return maxSum>0?lernstandStatus(totalSum,maxSum):null;
+ }
+
+ const rows=students.map(s=>{
+ const abgeschlossen=fortschrittDocs.filter(f=>f.uid===s.uid&&f.abgeschlossen).length;
+ const ampeln=[1,2,3,4].map(n=>ampelFuerSchueler(s.uid,n));
+ return{s,abgeschlossen,ampeln};
+ });
+
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+ <div class="kicker"> KLASSENÜBERSICHT · NUR LEHRKRÄFTE</div>
+ <h2>${esc(fachLbl)} – Fortschritt der Klasse</h2>
+ <p style="color:var(--muted);font-size:12px">Lehrplan-Fortschritt (abgeschlossene Wochen im Lernpfad) und Ampel-Status je Lernbereich, basierend auf den Lernstandsmessungen.</p>
+ <div style="overflow-x:auto"><table class="ls-matrix">
+ <thead><tr><th>Schüler:in</th><th>Wochen</th><th>LB 1</th><th>LB 2</th><th>LB 3</th><th>LB 4</th></tr></thead>
+ <tbody>${rows.map(r=>`<tr>
+ <td>${esc(r.s.displayName||r.s.email||"Schüler/in")}</td>
+ <td>${r.abgeschlossen} / ${wochenGesamt}</td>
+ ${r.ampeln.map(a=>`<td style="text-align:center">${ampelDotHTML(a)}</td>`).join("")}
+ </tr>`).join("")||`<tr><td colspan="6">Keine Schüler:innen gefunden.</td></tr>`}</tbody>
+ </table></div>
+ <p style="font-size:11px;color:var(--muted);margin-top:10px"><span class="ampel-dot"style="background:#3fa66a"></span> gut &nbsp; <span class="ampel-dot"style="background:#e0a324"></span> teilweise &nbsp; <span class="ampel-dot"style="background:#d9534f"></span> braucht Unterstützung &nbsp; <span class="ampel-dot ampel-none"></span> noch keine Daten</p>
+ <div class="form-actions"style="margin-top:14px"><button class="secondary"onclick="closeModal()">Schließen</button></div>
+ `);
+}
+window.openLehrplanKlassenuebersicht=openLehrplanKlassenuebersicht;
+
 async function renderFaecherUebersicht(){
  return`${pageHead("LEHRPLAN & LERNINHALTE","Fächer 11. Klasse","Wähle ein Fach, um den Lehrplan-Zeitstrahl mit Themen, Aufträgen und Material zu öffnen.","")}
  <div class="grid grid-4">${F11SB_FAECHER.map(f=>{
@@ -2283,7 +2342,7 @@ async function renderFachDetail(){
  const naechsteIdx=timeline.findIndex(item=>item.kind==="woche"&&!fortschrittMap[item.id]?.abgeschlossen);
 
  return`<button class="secondary"onclick="closeFach()">← Zurück zu den Fächern</button>
- ${pageHead("LERNPFAD",fach?.label||"Fach",`Dein Weg durchs Schuljahr – ${erledigtCount} von ${wochenItems.length} Wochen geschafft.`,"")}
+ ${pageHead("LERNPFAD",fach?.label||"Fach",`Dein Weg durchs Schuljahr – ${erledigtCount} von ${wochenItems.length} Wochen geschafft.`,isTeacher()?`<button class="secondary"onclick="openLehrplanKlassenuebersicht('${activeFach}')"> Klassenübersicht</button>`:"")}
  <style>
  .lernpfad{position:relative;margin:20px 0 10px;padding-left:44px}
  .lp-linie-hinter{position:absolute;left:20px;top:6px;bottom:6px;width:5px;background:#e2eaf0;border-radius:3px}
@@ -2398,14 +2457,14 @@ async function openWocheDetail(fach,wocheId){
 
  // Fortschritt: welche der vier Etappen ist erreicht?
  const schritte=[
- {label:"Lernziele",done:alleErfuellt},
  {label:"Lernprodukt",done:meinProdukt},
  {label:"Überprüfung",done:lernstandBearbeitet},
+ {label:"Selbsteinschätzung",done:alleErfuellt},
  {label:"Fertig",done:!!fortschritt.abgeschlossen}
  ];
  let aktivIdx=schritte.findIndex(s=>!s.done);
  if(aktivIdx===-1)aktivIdx=schritte.length-1;
- const startTab=["ziele","produkte","lernstand","lernstand"][Math.min(aktivIdx,3)];
+ const startTab=["produkte","lernstand","selbsteinschaetzung","selbsteinschaetzung"][Math.min(aktivIdx,3)];
 
  modal(`<button class="modal-close"onclick="closeModal()">×</button>
  <div class="kicker">${esc(fachLbl)} · ${esc(woche.lb)} · ${esc(fmtDateOnly(woche.start))}–${esc(fmtDateOnly(woche.end))}</div>
@@ -2426,17 +2485,16 @@ async function openWocheDetail(fach,wocheId){
  <button type="button"class="wd-tab"data-tab="team"onclick="showWocheTab('team')"> ${woche.typ==="projekt"?"Team":"(Team)"}</button>
  <button type="button"class="wd-tab"data-tab="produkte"onclick="showWocheTab('produkte')"> Lernprodukte</button>
  <button type="button"class="wd-tab"data-tab="lernstand"onclick="showWocheTab('lernstand')"> Überprüfung des Lernstandes</button>
+ <button type="button"class="wd-tab"data-tab="selbsteinschaetzung"onclick="showWocheTab('selbsteinschaetzung')"> Selbsteinschätzung</button>
  </div>
 
  <div class="wd-panel"id="wdPanel_ziele">
- <h3 style="margin:0 0 4px;font-size:13px;text-transform:uppercase;letter-spacing:.02em;color:var(--muted)"> Lernziele laut Lehrplan</h3>
- <p style="font-size:11px;color:var(--muted);margin:0 0 10px">Fest nach LehrplanPLUS FOS 11 Pädagogik/Psychologie (${esc(woche.lb)}) – gilt für alle Klassen gleich.</p>
- <div class="list">${ziele.map(z=>`<div class="list-item"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;flex:1"><input type="checkbox"${fortschritt.zieleErfuellt?.[z.id]?"checked":""}onchange="toggleZielErfuellt('${fach}','${wocheId}','${z.id}',this.checked)"><span>${esc(z.text)}</span></label></div>`).join("")||`<div class="empty">Für dieses Fach/diese Woche sind noch keine Lehrplan-Ziele hinterlegt.</div>`}</div>
- ${ziele.length?`<div class="form-actions"style="margin-top:12px">
- <button class="primary"${fortschritt.abgeschlossen?"disabled":""}onclick="markWocheAbgeschlossen('${fach}','${wocheId}')">${fortschritt.abgeschlossen?"✓ Woche abgeschlossen":alleErfuellt?"✓ Woche als abgeschlossen markieren":" Erst alle Ziele erfüllen"}</button>
- </div>`:""}
+ <div class="wd-ziele-info">
+ <strong> Lernziele laut Lehrplan</strong> <small>(${esc(woche.lb)}, LehrplanPLUS FOS 11 Pädagogik/Psychologie)</small>
+ <ul>${ziele.map(z=>`<li>${esc(z.text)}</li>`).join("")||"<li>Für dieses Fach/diese Woche sind noch keine Lehrplan-Ziele hinterlegt.</li>"}</ul>
+ </div>
 
- <h3 style="margin:22px 0 4px;font-size:13px;text-transform:uppercase;letter-spacing:.02em;color:var(--muted)"> Konkreter Arbeitsauftrag</h3>
+ <h3 style="margin:18px 0 4px;font-size:13px;text-transform:uppercase;letter-spacing:.02em;color:var(--muted)"> Konkreter Arbeitsauftrag</h3>
  <p style="font-size:11px;color:var(--muted);margin:0 0 10px">Von der Lehrkraft frei gestaltet – legt fest, WIE die Lernziele oben konkret bearbeitet werden.</p>
  ${isTeacher()?`<div class="form">
  <label>Titel<input id="auftragTitel"type="text"value="${esc(auftrag?.titel||"")}"placeholder="z. B. Fallanalyse Erziehungsstile"></label>
@@ -2505,6 +2563,14 @@ async function openWocheDetail(fach,wocheId){
  </div></div>`;
  }).join("")||`<div class="empty">Für ${esc(woche.lb)} sind noch keine Lernstandsmessungen hinterlegt.</div>`}</div>
  <div class="form-actions"style="margin-top:10px"><button class="secondary"onclick="closeModal();go('lernstand')"> Alle Lernstandsmessungen ansehen</button></div>
+ </div>
+
+ <div class="wd-panel"id="wdPanel_selbsteinschaetzung">
+ <p style="color:var(--muted);margin-top:0">Schätz dich jetzt zum Schluss selbst ein: Welche Lernziele hast du wirklich erreicht?</p>
+ <div class="list">${ziele.map(z=>`<div class="list-item"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;flex:1"><input type="checkbox"${fortschritt.zieleErfuellt?.[z.id]?"checked":""}onchange="toggleZielErfuellt('${fach}','${wocheId}','${z.id}',this.checked)"><span>${esc(z.text)}</span></label></div>`).join("")||`<div class="empty">Für dieses Fach/diese Woche sind noch keine Lehrplan-Ziele hinterlegt.</div>`}</div>
+ ${ziele.length?`<div class="form-actions"style="margin-top:12px">
+ <button class="primary"${fortschritt.abgeschlossen?"disabled":""}onclick="markWocheAbgeschlossen('${fach}','${wocheId}')">${fortschritt.abgeschlossen?"✓ Woche abgeschlossen":alleErfuellt?"✓ Woche als abgeschlossen markieren":" Erst alle Ziele erfüllen"}</button>
+ </div>`:""}
  </div>
 
  <div class="wd-footer">
