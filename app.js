@@ -2100,7 +2100,6 @@ class="list-item"><div><strong>${esc(p.title||p.text)}</strong>${p.title?`<small
  ${tile(" ","Campus-Kompass","Dein persönlicher Lern- und Projektüberblick.","kompass")}
  ${tile(" ","Lernwerkstatt","Lernaufträge, Methoden, Tools und KI.","lernwerkstatt")}
  ${tile(" ","Campus-Forum","Austauschen, fragen, helfen und gemeinsam denken.","forum")}
- ${tile(" ","Pinnwand","Ideen sammeln, brainstormen und gemeinsam pinnen.","pinnwand")}
  ${tile(" ","Projekte","Projektteams, Ziele, Fortschritt und Ergebnisse.","projekte")}
  ${tile(" ","Kompetenzwerkstatt","Kompetenzen sichtbar machen und entwickeln.","kompetenz")}
  ${tile(" ","Lernjournal","Lernweg, Reflexionen und nächste Schritte.","journal")}
@@ -8083,6 +8082,7 @@ function openClassTeamUpdateForm(){
  </select></label>
  <label>Titel<input id="ctTitle"placeholder="Kurze Überschrift"required></label>
  <label>Information<textarea id="ctText"rows="6"placeholder="Was sollte das Klassenteam wissen?"required></textarea></label>
+ <div style="margin-top:-8px;margin-bottom:10px">${emojiPickerHTML("ctText","emojiPickerClassTeam")}</div>
  <label>Nächster Schritt / Vereinbarung (optional)<textarea id="ctFollowUp"rows="3"></textarea></label>
  <div class="form-actions"><button class="secondary"onclick="closeModal()">Abbrechen</button>
  <button class="primary"onclick="saveClassTeamUpdate()">Veröffentlichen</button></div>
