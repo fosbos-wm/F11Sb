@@ -1261,6 +1261,30 @@ const LEHRPLAN_WOCHEN={
 function lehrplanWocheById(fach,wocheId){
  return (LEHRPLAN_WOCHEN[fach]||[]).find(w=>w.id===wocheId)||null;
 }
+// Farbcodierung je Lernbereich (unabhängig von Projekt/Einzelthema),
+// dieselbe Nummerierung wie bei der Lernstandsmessung (LB1–LB4).
+const LERNBEREICH_FARBEN={
+ 1:{bg:"#dbeafe",border:"#4a90d9",text:"#1f5a8a"},
+ 2:{bg:"#f0e0fb",border:"#9b59b6",text:"#6c3483"},
+ 3:{bg:"#dcf3d1",border:"#3fa66a",text:"#1f6b3d"},
+ 4:{bg:"#fde8c2",border:"#e0a324",text:"#8a6512"}
+};
+function lernbereichNummern(lbText){
+ return (lbText||"").match(/\d/g)||[];
+}
+function lernbereichBadgeHTML(lbText){
+ const nums=lernbereichNummern(lbText);
+ if(!nums.length)return"";
+ if(nums.length>1)return`<span class="lb-badge"style="background:#eef1f3;border-color:#8a99a3;color:#556570">Lernbereich ${nums.join("+")}</span>`;
+ const c=LERNBEREICH_FARBEN[nums[0]]||LERNBEREICH_FARBEN[1];
+ return`<span class="lb-badge"style="background:${c.bg};border-color:${c.border};color:${c.text}">Lernbereich ${nums[0]}</span>`;
+}
+function lernbereichAkzentfarbe(lbText){
+ const nums=lernbereichNummern(lbText);
+ if(nums.length!==1)return"#8a99a3";
+ return(LERNBEREICH_FARBEN[nums[0]]||LERNBEREICH_FARBEN[1]).border;
+}
+
 function combinedTimeline(fach){
  const wochen=(LEHRPLAN_WOCHEN[fach]||[]).map(w=>({...w,kind:"woche"}));
  const praktika=fach==="paedagogik"?PRAKTIKUMSPHASEN.map(p=>({...p,kind:"praktikum"})):[];
@@ -1660,18 +1684,18 @@ async function openNotenDetail(fach,hj){
 
  <h3 style="margin:14px 0 6px;font-size:14px"> Schulaufgabe(n)</h3>
  <div class="list">${sa.map((v,i)=>`<div class="list-item"><strong>${v} Punkte</strong><button class="secondary"onclick="deleteSchulaufgabe('${fach}','${hj}',${i})">Löschen</button></div>`).join("")||`<div class="empty">Noch keine Schulaufgabe eingetragen.</div>`}</div>
- <div class="form-actions"style="margin-top:8px">
- <input id="saNeuValue"type="number"min="0"max="15"placeholder="0–15"style="width:80px">
+ <div class="form-actions"style="margin-top:8px;align-items:flex-end">
+ <label style="width:80px">Punkte<input id="saNeuValue"type="number"min="0"max="15"placeholder="0–15"></label>
  <button class="primary"onclick="addSchulaufgabe('${fach}','${hj}',$('saNeuValue').value)">＋ Schulaufgabe</button>
  </div>
 
  <h3 style="margin:18px 0 4px;font-size:14px"> Sonstige Leistungen (schriftlich & mündlich, ein gemeinsamer Topf)</h3>
  <p style="font-size:11px;color:var(--muted);margin:0 0 8px">Durchschnitt: ${sSchnitt===null?"—":sSchnitt.toFixed(2)+" Punkte"} aus ${sonst.length} ${sonst.length===1?"Eintrag":"Einträgen"} – zählt wie eine weitere Schulaufgabe.</p>
  <div class="list">${sonst.map(e=>`<div class="list-item"><div><strong>${e.value} Punkte</strong><small>${e.type==="muendlich"?"Mündlich":"Stegreif/Kurzarbeit"}${e.gewicht&&e.gewicht!==1?` · Gewicht ${e.gewicht}`:""}</small></div><button class="secondary"onclick="deleteSonstigeLeistung('${fach}','${hj}','${e.id}')">Löschen</button></div>`).join("")||`<div class="empty">Noch keine Leistung eingetragen.</div>`}</div>
- <div class="form-actions"style="margin-top:8px;flex-wrap:wrap">
- <input id="sonstNeuValue"type="number"min="0"max="15"placeholder="0–15"style="width:70px">
- <select id="sonstNeuType"><option value="schriftlich">Schriftlich (Stegreif/KA)</option><option value="muendlich">Mündlich</option></select>
- <input id="sonstNeuGewicht"type="number"min="0.5"max="5"step="0.5"value="1"placeholder="Gewicht"style="width:75px"title="Gewichtung nach Umfang/Schwierigkeitsgrad">
+ <div class="form-actions"style="margin-top:8px;flex-wrap:wrap;align-items:flex-end">
+ <label style="width:70px">Punkte<input id="sonstNeuValue"type="number"min="0"max="15"placeholder="0–15"></label>
+ <label style="width:170px">Art<select id="sonstNeuType"><option value="schriftlich">Schriftlich (Stegreif/KA)</option><option value="muendlich">Mündlich</option></select></label>
+ <label style="width:85px">Gewichtung<input id="sonstNeuGewicht"type="number"min="0.5"max="5"step="0.5"value="1"title="Gewichtung nach Umfang/Schwierigkeitsgrad"></label>
  <button class="primary"onclick="addSonstigeLeistung('${fach}','${hj}',$('sonstNeuValue').value,$('sonstNeuType').value,$('sonstNeuGewicht').value)">＋ Hinzufügen</button>
  </div>
 
@@ -2183,6 +2207,7 @@ async function renderFachDetail(){
  .lp-karte.lp-karte-projekt{background:var(--soft-green)}
  .lp-karte.lp-karte-einzel{background:var(--soft-yellow,#fff8e2)}
  .lp-karte-date{font-size:11px;color:var(--muted)}
+ .lb-badge{font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;border:1.5px solid;white-space:nowrap}
  .lp-karte strong{display:block;font-size:13px;margin-top:2px}
  .lp-karte small{display:block;color:var(--muted);font-size:11px;margin-top:4px;line-height:1.4}
  .lp-typ-pill{margin-top:8px;display:inline-block;font-size:10px}
@@ -2205,6 +2230,9 @@ async function renderFachDetail(){
  <span class="lp-legende-item"><span class="lp-legende-dot lp-legende-raute"style="background:var(--soft-blue);border-color:#4a90d9"><i>🏫</i></span>Praktikum · Erziehungsbereich</span>
  <span class="lp-legende-item"><span class="lp-legende-dot lp-legende-raute"style="background:var(--soft-blue);border-color:#4a90d9"><i>🏥</i></span>Praktikum · Pflegebereich</span>
  </div>
+ <div class="lp-legende"style="margin-top:6px">
+ ${[1,2,3,4].map(n=>`<span class="lp-legende-item"><span class="lb-badge"style="background:${LERNBEREICH_FARBEN[n].bg};border-color:${LERNBEREICH_FARBEN[n].border};color:${LERNBEREICH_FARBEN[n].text}">Lernbereich ${n}</span></span>`).join("")}
+ </div>
  <div class="lernpfad">
  <div class="lp-linie-hinter"></div>
  <div class="lp-linie-vorne"style="height:${fortschrittProzent}%"></div>
@@ -2224,8 +2252,11 @@ async function renderFachDetail(){
  const aktuell=idx===naechsteIdx;
  return`<div class="lp-node">
  <div class="lp-punkt lp-${item.typ}${fortschritt.abgeschlossen?" lp-done":""}${aktuell?" lp-aktuell":""}">${fortschritt.abgeschlossen?"✓":item.typ==="projekt"?"":""}</div>
- <div class="lp-karte lp-karte-${item.typ}"onclick="openWocheDetail('${activeFach}','${item.id}')">
- <span class="lp-karte-date">${esc(item.lb)} · ${esc(fmtDateOnly(item.start))}–${esc(fmtDateOnly(item.end))}</span>
+ <div class="lp-karte lp-karte-${item.typ}"style="border-top:4px solid ${lernbereichAkzentfarbe(item.lb)}"onclick="openWocheDetail('${activeFach}','${item.id}')">
+ <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+ ${lernbereichBadgeHTML(item.lb)}
+ <span class="lp-karte-date">${esc(fmtDateOnly(item.start))}–${esc(fmtDateOnly(item.end))}</span>
+ </div>
  <strong>${esc(item.thema)}</strong>
  <small>${esc(item.planung.slice(0,90))}${item.planung.length>90?"…":""}</small>
  <span class="pill lp-typ-pill"style="background:${item.typ==="projekt"?"#3fa66a":"#e0a324"};color:#fff">${item.typ==="projekt"?" Projekt":" Einzelthema"}</span>
