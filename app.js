@@ -6958,7 +6958,9 @@ async function renderResilienz(){
  .res-icon{font-size:31px;margin-bottom:8px}.res-tag{display:inline-block;margin-top:6px;border-radius:999px;font-size:9.5px;padding:3px 9px}
  .res-layout{display:grid;grid-template-columns:1.35fr .65fr;gap:18px}
  .res-scale{width:100%;accent-color:#168fd0}
- .vstress-wrap{display:flex;align-items:center;gap:16px;margin:20px 0}
+ .vstress-row{display:flex;gap:20px;align-items:flex-start;margin:20px 0;flex-wrap:wrap}
+ .vstress-wrap{display:flex;align-items:center;gap:16px;margin:0}
+ .vstress-row .skill-suggest{margin:0;min-width:220px}
  .vstress-num{font-size:32px;font-weight:800;color:#c0392b;line-height:1}
  .vstress-track{position:relative;width:54px;height:220px;border-radius:27px;background:#f0f3f5;border:1px solid var(--line,#e2eaf0);overflow:hidden}
  .vstress-fill{position:absolute;bottom:0;left:0;width:100%;border-radius:0 0 27px 27px;transition:height .12s ease,background .12s ease}
@@ -7006,15 +7008,14 @@ async function renderResilienz(){
  <div class="res-layout">
  <div class="card">
  <div class="kicker">DEIN MOMENT</div>
- <h2> Wie hoch ist dein Stress gerade?</h2>
- <p>Schätze deinen momentanen Stress von <b>0</b> (ruhig) bis <b>10</b> (sehr angespannt) ein. Es gibt dabei kein „richtig“ oder „falsch“.</p>
-
- <div class="card"style="margin-top:16px">
- <h3>Woran merkst du es bei dir?</h3>
+ <h2> Hast du Stress? Woran merkst du es?</h2>
  <p style="color:var(--muted);font-size:12px;margin-top:-6px">Tippe an, was gerade zutrifft.</p>
  <div class="stress-signs"id="resStressSigns">${STRESS_SIGNS.map(s=>`<div class="stress-sign"data-active="0"onclick="toggleStressSign(this,'hsl(${s.hue},55%,90%)','hsl(${s.hue},42%,55%)')"> ${s.label}</div>`).join("")}</div>
- </div>
 
+ <h2 style="margin-top:22px"> Wie hoch ist dein Stress gerade?</h2>
+ <p>Schätze deinen momentanen Stress von <b>0</b> (ruhig) bis <b>10</b> (sehr angespannt) ein. Es gibt dabei kein „richtig“ oder „falsch“.</p>
+
+ <div class="vstress-row">
  <div class="vstress-wrap">
  <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
  <div class="vstress-num"id="resStressValue">5</div>
@@ -7026,10 +7027,11 @@ async function renderResilienz(){
  <div class="vstress-scale"><span>10 · sehr hoch</span><span>5 · angespannt</span><span>0 · ruhig</span></div>
  </div>
 
- <div class="skill-suggest"id="resSkillSuggest">
+ <div class="skill-suggest"id="resSkillSuggest"style="flex:1">
  <strong> Deine passenden Skills</strong>
  <p style="margin-bottom:8px">Stell den Regler ein – dann schlägt dir die App passende Übungen vor.</p>
  <div id="resSkillButtons"></div>
+ </div>
  </div>
  </div>
 
