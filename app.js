@@ -1903,6 +1903,7 @@ function wasFehltNochHJ1(noten){
  const fehlt=!hatSA&&!hatSonst?"Schulaufgabe und sonstige Leistungen fehlen noch":!hatSA?"Schulaufgabe fehlt noch":"Sonstige Leistungen fehlen noch";
  return{label:f.label,status:"fehlt",text:fehlt};
  }
+ if(p===0)return{label:f.label,status:"ungenuegend",text:`0 Punkte – für die einfache Variante (alle Fächer ≥4) fehlen noch 4 Punkte`};
  if(p<4)return{label:f.label,status:"kritisch",text:`Aktuell ${p} Punkte – für die einfache Variante (alle Fächer ≥4) fehlen noch ${4-p} Punkte`};
  return{label:f.label,status:"ok",text:`${p} Punkte`};
  });
@@ -2277,7 +2278,7 @@ async function renderKompass(){
  <summary> Probezeit-Status (HJ1)</summary>
  <div class="notice">
  ${!bestehen.vollHJ1?`<p style="margin:0">Trag alle Noten des 1. Halbjahrs ein (inkl. fachpraktischer Ausbildung), um deinen Stand zu sehen.</p>
- <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">${wasFehltNochHJ1(noten).map(x=>`<div class="card"style="padding:8px 10px;background:${x.status==="ok"?"var(--soft-green)":x.status==="kritisch"?"var(--soft-orange)":"#f7fafc"}"><strong style="font-size:12px">${esc(x.label)}</strong><small style="display:block">${esc(x.text)}</small></div>`).join("")}</div>`
+ <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">${wasFehltNochHJ1(noten).map(x=>`<div class="card"style="padding:8px 10px;background:${x.status==="ok"?"var(--soft-green)":x.status==="kritisch"?"var(--soft-orange)":x.status==="ungenuegend"?"#fbdada":"#f7fafc"}"><strong style="font-size:12px">${esc(x.label)}</strong><small style="display:block">${esc(x.text)}</small></div>`).join("")}</div>`
  :`<strong style="font-size:15px">${bestehen.probezeit.passed?" Probezeit nach aktueller Punktlage bestanden":" Probezeit nach aktueller Punktlage nicht bestanden"}</strong>
  <p style="margin:8px 0 0;font-size:12px;color:var(--muted)">Fachpraktische Ausbildung HJ1: ${bestehen.probezeit.fpaOk?"✓ mind. 4 Punkte":"✗ unter 4 Punkten"} · Fächer-Regel: ${bestehen.probezeit.fachCheck.passed?`erfüllt (Variante ${bestehen.probezeit.fachCheck.rule})`:"nicht erfüllt"}</p>`}
  <p style="margin-top:14px;font-size:11px;color:var(--muted)">Orientierungshilfe nach §8, §21 Abs. 3 FOBOSO – <strong>ohne Gewähr</strong>. Die tatsächliche Entscheidung trifft die Klassenkonferenz.</p>
