@@ -2596,6 +2596,8 @@ async function openWocheDetail(fach,wocheId){
  :!auftrag?`<div class="empty">Für diese Woche wurde noch kein Arbeitsauftrag eingetragen.</div>`
  :`<div class="card"style="background:var(--soft-blue)"><strong>${esc(auftrag.titel)}</strong>${auftrag.beschreibung?`<p style="margin:6px 0 0;white-space:pre-wrap">${esc(auftrag.beschreibung)}</p>`:""}</div>`}
  ${!isTeacher()?`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:14px;font-weight:700;font-size:13px"><input type="checkbox"${fortschritt.auftragGelesen?"checked":""}onchange="toggleAuftragGelesen('${fach}','${wocheId}',this.checked)"><span> Auftrag gelesen, Ziele sind mir klar</span></label>`:""}
+ <p style="font-size:11px;color:var(--muted);margin:16px 0 6px">Bevor es losgeht:</p>
+ ${miniToolRow([["🧭","Lernpfad","lernpfad"],["🤔","Metakognition","metakognition"]])}
  </div>
 
  <div class="wd-panel"id="wdPanel_material">
@@ -2611,12 +2613,8 @@ async function openWocheDetail(fach,wocheId){
  <div style="display:flex;justify-content:space-between;align-items:center"><strong>${esc(MATERIAL_KATEGORIEN.find(k=>k.key===m.kategorie)?.label||m.kategorie)}: ${esc(m.titel)}</strong>${isTeacher()?`<button class="secondary"onclick="deleteLehrplanMaterial('${m.id}','${fach}','${wocheId}')">Löschen</button>`:""}</div>
  ${m.url?materialEmbedHTML(m):""}
  </div>`).join("")||`<div class="empty">Noch keine Lernmaterialien eingestellt.</div>`}</div>
- <div class="form-actions"style="margin-top:12px;flex-wrap:wrap">
- <button class="secondary"onclick="closeModal();go('kompetenz')"> Kompetenzwerkstatt</button>
- <button class="secondary"onclick="closeModal();go('kollaboration')"> Kollaborations-Tools</button>
- <button class="secondary"onclick="closeModal();go('lernwerkzeuge')"> Karteikarten & Fokus-Timer</button>
- <button class="secondary"onclick="closeModal();go('ki-lernen')"> KI zum Lernen</button>
- </div>
+ <p style="font-size:11px;color:var(--muted);margin-top:12px">Zum Bearbeiten des Materials:</p>
+ ${miniToolRow([["🗂️","Karteikarten & Timer","lernwerkzeuge"],["🤖","KI zum Lernen","ki-lernen"],["🔗","Lernressourcen","ressourcen"],["⏱️","Uhr & Timer","uhr-timer"]])}
  ${!isTeacher()?`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:14px;font-weight:700;font-size:13px"><input type="checkbox"${fortschritt.materialErhalten?"checked":""}onchange="toggleMaterialErhalten('${fach}','${wocheId}',this.checked)"><span> Materialien erhalten/gesichtet</span></label>`:""}
  </div>
 
@@ -2624,7 +2622,7 @@ async function openWocheDetail(fach,wocheId){
  <p style="color:var(--muted);margin-top:0">Team/Gruppe${woche.typ==="projekt"?" – für dieses Projekt vorgesehen":" – freiwillig (deshalb in Klammern)"}. Passende Mitstreiter:innen findest du auch über die Kompetenzwerkstatt.</p>
  <div class="list">${teams.map(t=>{const inTeam=(t.mitgliederUids||[]).includes(currentUser.uid);return`<div class="list-item"><div><strong>${esc(t.teamName)}</strong><small>${esc((t.mitgliederNamen||[]).join(", ")||"Noch niemand")}</small></div><div style="display:flex;gap:6px">${inTeam?`<button class="secondary"onclick="leaveLehrplanTeam('${t.id}','${fach}','${wocheId}')">Verlassen</button>`:`<button class="primary"onclick="joinLehrplanTeam('${t.id}','${fach}','${wocheId}')">Beitreten</button>`}${isTeacher()?`<button class="secondary"onclick="deleteLehrplanTeam('${t.id}','${fach}','${wocheId}')">Auflösen</button>`:""}</div></div>`}).join("")||`<div class="empty">Noch keine Teams gebildet.</div>`}</div>
  ${!meinTeam?`<div class="form-actions"style="margin-top:10px"><input id="neuTeamName"type="text"placeholder="Team-Name"style="flex:1"><button class="primary"onclick="createLehrplanTeam('${fach}','${wocheId}')">＋ Team gründen</button></div>`:""}
- <div class="form-actions"style="margin-top:10px"><button class="secondary"onclick="closeModal();go('kompetenz')"> Zur Kompetenzwerkstatt</button></div>
+ ${miniToolRow([["🌟","Kompetenzwerkstatt","kompetenz"],["🤝","Kollaborations-Tools","kollaboration"]])}
  </div>
 
  <div class="wd-panel"id="wdPanel_produkte">
@@ -2632,6 +2630,8 @@ async function openWocheDetail(fach,wocheId){
  <div style="display:flex;justify-content:space-between;align-items:center"><div><strong>${esc(p.titel)}</strong><small>${esc(p.name)}${p.inhalt?" · "+esc(p.inhalt.slice(0,60)):""}</small></div>${(p.uid===currentUser.uid||isTeacher())?`<button class="secondary"onclick="deleteLehrplanProdukt('${p.id}','${fach}','${wocheId}')">Löschen</button>`:""}</div>
  ${p.dateiUrl?dateiEmbedHTML(p.dateiUrl,p.dateiName):""}
  </div>`).join("")||`<div class="empty">Noch keine Lernprodukte hochgeladen.</div>`}</div>
+ <p style="font-size:11px;color:var(--muted);margin-top:12px">Zum Erstellen deines Produkts:</p>
+ ${miniToolRow([["🔗","Lernressourcen","ressourcen"],["🤖","KI zum Lernen","ki-lernen"],["✍️","Fachaufsatz-Training","fachaufsatz"]])}
  <div class="form-actions"style="margin-top:10px;flex-wrap:wrap">
  <input id="produktTitel"type="text"placeholder="Titel des Lernprodukts"style="flex:1;min-width:140px">
  <input id="produktInhalt"type="text"placeholder="Link oder kurze Beschreibung (optional)"style="flex:1;min-width:160px">
@@ -2662,6 +2662,8 @@ async function openWocheDetail(fach,wocheId){
  ${ziele.length?`<div class="form-actions"style="margin-top:12px">
  <button class="primary"${fortschritt.abgeschlossen?"disabled":""}onclick="markWocheAbgeschlossen('${fach}','${wocheId}')">${fortschritt.abgeschlossen?"✓ Woche abgeschlossen":alleErfuellt?"✓ Woche als abgeschlossen markieren":" Erst alle Ziele erfüllen"}</button>
  </div>`:""}
+ <p style="font-size:11px;color:var(--muted);margin-top:16px">Zur Vertiefung deiner Reflexion:</p>
+ ${miniToolRow([["🤔","Metakognition","metakognition"],["🧭","Lernpfad aktualisieren","lernpfad"],["💬","Lerncoaching","lerncoaching"]])}
  </div>
 
  <div class="wd-footer">
@@ -4680,6 +4682,14 @@ async function uploadCampusDatei(file,pfadPrefix){
 function dateiIstBild(name){return /\.(jpe?g|png|gif|webp|svg)$/i.test(name||"")}
 function dateiIstVideo(name){return /\.(mp4|webm|mov|m4v)$/i.test(name||"")}
 function dateiIstAudio(name){return /\.(mp3|wav|ogg|m4a)$/i.test(name||"")}
+// ---- Mini-Werkzeug-Kacheln: passende Lernwerkstatt-Tools direkt im
+// jeweiligen Arbeitsschritt startbar machen ----------------------------
+function miniToolRow(tools){
+ return `<div class="mini-tool-row">${tools.map(([icon,label,route])=>
+ `<a href="#${route}"class="mini-tool-tile"onclick="closeModal()"><span class="mini-tool-icon">${icon}</span><span class="mini-tool-label">${label}</span></a>`
+ ).join("")}</div>`;
+}
+
 function dateiEmbedHTML(url,name){
  if(dateiIstBild(name))return`<img src="${esc(url)}"alt="${esc(name)}"style="max-width:100%;border-radius:8px">`;
  if(dateiIstVideo(name))return`<video controls style="width:100%;border-radius:8px;max-height:240px"src="${esc(url)}"></video>`;

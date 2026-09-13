@@ -321,3 +321,10 @@ main#content{flex:1;min-width:0;padding:28px 34px 60px;max-width:1500px}
 /* ===== Ampel-Punkte (Klassenübersicht Lehrplan-Fortschritt) ===== */
 .ampel-dot{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:middle}
 .ampel-dot.ampel-none{background:#e2eaf0;border:1.5px dashed #b8c4cc}
+
+/* ===== Mini-Werkzeug-Kacheln (Lernwerkstatt-Tools direkt im Arbeitsschritt) ===== */
+.mini-tool-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px}
+.mini-tool-tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;width:76px;padding:8px 4px;border-radius:10px;background:#f7fafc;border:1px solid var(--line,#e2eaf0);text-decoration:none;text-align:center;transition:.15s}
+.mini-tool-tile:hover{background:#eef3f6;transform:translateY(-2px)}
+.mini-tool-icon{font-size:19px}
+.mini-tool-label{font-size:9.5px;font-weight:700;color:#355064;line-height:1.2}
