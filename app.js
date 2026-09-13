@@ -1308,6 +1308,24 @@ function lernbereichAkzentfarbe(lbText){
  return(LERNBEREICH_FARBEN[nums[0]]||LERNBEREICH_FARBEN[1]).border;
 }
 
+// Unterrichtsblöcke aus der Block- und Praxislogik der Jahresverlaufsplanung
+// (nur Pädagogik/Psychologie) – gruppieren die Wochen im Lernpfad zu klar
+// abgegrenzten Abschnitten mit Überschrift.
+const UNTERRICHTSBLOECKE={
+ paedagogik:[
+ {id:"ub1",start:"2026-10-05",end:"2026-10-23",titel:"Unterrichtsblock 1",stunden:18},
+ {id:"ub2",start:"2026-11-23",end:"2026-12-11",titel:"Unterrichtsblock 2",stunden:18},
+ {id:"ub3",start:"2027-01-18",end:"2027-02-05",titel:"Unterrichtsblock 3",stunden:18},
+ {id:"ub4",start:"2027-03-08",end:"2027-03-19",titel:"Unterrichtsblock 4",stunden:12},
+ {id:"ub5",start:"2027-04-05",end:"2027-04-09",titel:"Unterrichtsblock 5",stunden:6},
+ {id:"ub6",start:"2027-05-03",end:"2027-05-14",titel:"Unterrichtsblock 6",stunden:12},
+ {id:"ub7",start:"2027-06-28",end:"2027-07-16",titel:"Unterrichtsblock 7",stunden:18}
+ ]
+};
+function findUnterrichtsblock(fach,dateStr){
+ return (UNTERRICHTSBLOECKE[fach]||[]).find(b=>dateStr>=b.start&&dateStr<=b.end)||null;
+}
+
 function combinedTimeline(fach){
  const wochen=(LEHRPLAN_WOCHEN[fach]||[]).map(w=>({...w,kind:"woche"}));
  const praktika=fach==="paedagogik"?PRAKTIKUMSPHASEN.map(p=>({...p,kind:"praktikum"})):[];
@@ -2257,8 +2275,6 @@ async function renderFachDetail(){
  .lp-punkt.lp-aktuell{transform:scale(1.15);box-shadow:0 0 0 5px rgba(22,136,207,.25)}
  .lp-karte{background:#fff;border:1px solid var(--line,#e2eaf0);border-radius:14px;padding:14px 16px;cursor:pointer;transition:.15s}
  .lp-karte:hover{transform:translateX(4px);box-shadow:0 6px 16px rgba(23,56,79,.1)}
- .lp-karte.lp-karte-projekt{background:var(--soft-green)}
- .lp-karte.lp-karte-einzel{background:var(--soft-yellow,#fff8e2)}
  .lp-karte-date{font-size:11px;color:var(--muted)}
  .lb-badge{font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;border:1.5px solid;white-space:nowrap}
  .lp-karte strong{display:block;font-size:13px;margin-top:2px}
@@ -2275,11 +2291,15 @@ async function renderFachDetail(){
  .lp-waypoint-karte{background:var(--soft-blue);border-radius:12px;padding:10px 14px;font-size:12px;cursor:pointer;transition:.15s}
  .lp-waypoint-karte:hover{transform:translateX(4px)}
  .lp-waypoint-karte strong{display:block;font-size:12.5px}
- @media(max-width:600px){.lernpfad{padding-left:38px}.lp-punkt,.lp-waypoint-punkt{left:-38px;width:34px;height:34px}}
+ .lp-block-head{position:relative;margin:30px 0 14px;padding-left:2px}
+ .lp-block-head::before{content:"";position:absolute;left:-44px;top:50%;width:24px;height:2px;background:#b8c4cc}
+ .lp-block-head strong{font-size:13px;color:#17384f;text-transform:uppercase;letter-spacing:.03em}
+ .lp-block-head small{color:var(--muted);margin-left:6px}
+ @media(max-width:600px){.lernpfad{padding-left:38px}.lp-punkt,.lp-waypoint-punkt{left:-38px;width:34px;height:34px}.lp-block-head::before{left:-38px;width:20px}}
  </style>
  <div class="lp-legende">
- <span class="lp-legende-item"><span class="lp-legende-dot"style="background:var(--soft-green);border-color:#3fa66a"></span>Projekt</span>
- <span class="lp-legende-item"><span class="lp-legende-dot"style="background:var(--soft-yellow,#fff8e2);border-color:#e0a324"></span>Einzelthema</span>
+ <span class="lp-legende-item"><span class="pill"style="background:#3fa66a;color:#fff;font-size:10px"> Projekt</span></span>
+ <span class="lp-legende-item"><span class="pill"style="background:#e0a324;color:#fff;font-size:10px"> Einzelthema</span></span>
  <span class="lp-legende-item"><span class="lp-legende-dot lp-legende-raute"style="background:var(--soft-blue);border-color:#4a90d9"><i>🏫</i></span>Praktikum · Erziehungsbereich</span>
  <span class="lp-legende-item"><span class="lp-legende-dot lp-legende-raute"style="background:var(--soft-blue);border-color:#4a90d9"><i>🏥</i></span>Praktikum · Pflegebereich</span>
  </div>
@@ -2289,7 +2309,7 @@ async function renderFachDetail(){
  <div class="lernpfad">
  <div class="lp-linie-hinter"></div>
  <div class="lp-linie-vorne"style="height:${fortschrittProzent}%"></div>
- ${timeline.map((item,idx)=>{
+ ${(()=>{let lastBlock=null;return timeline.map((item,idx)=>{
  if(item.kind==="praktikum"){
  const auftrag=praktikumsAuftraege[item.id];
  return`<div class="lp-waypoint">
@@ -2301,11 +2321,17 @@ async function renderFachDetail(){
  </div>
  </div>`;
  }
+ const block=findUnterrichtsblock(activeFach,item.start);
+ let blockHeadHTML="";
+ if(block&&block.id!==lastBlock){
+ blockHeadHTML=`<div class="lp-block-head"><strong>${esc(block.titel)}</strong><small>${esc(block.stunden)} Std.</small></div>`;
+ lastBlock=block.id;
+ }
  const fortschritt=fortschrittMap[item.id]||{abgeschlossen:false};
  const aktuell=idx===naechsteIdx;
- return`<div class="lp-node">
+ return`${blockHeadHTML}<div class="lp-node">
  <div class="lp-punkt lp-${item.typ}${fortschritt.abgeschlossen?" lp-done":""}${aktuell?" lp-aktuell":""}">${fortschritt.abgeschlossen?"✓":item.typ==="projekt"?"":""}</div>
- <div class="lp-karte lp-karte-${item.typ}"style="border-top:4px solid ${lernbereichAkzentfarbe(item.lb)}"onclick="openWocheDetail('${activeFach}','${item.id}')">
+ <div class="lp-karte"style="border-top:4px solid ${lernbereichAkzentfarbe(item.lb)}"onclick="openWocheDetail('${activeFach}','${item.id}')">
  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
  ${lernbereichBadgeHTML(item.lb)}
  <span class="lp-karte-date">${esc(fmtDateOnly(item.start))}–${esc(fmtDateOnly(item.end))}</span>
@@ -2315,7 +2341,7 @@ async function renderFachDetail(){
  <span class="pill lp-typ-pill"style="background:${item.typ==="projekt"?"#3fa66a":"#e0a324"};color:#fff">${item.typ==="projekt"?" Projekt":" Einzelthema"}</span>
  </div>
  </div>`;
- }).join("")||`<div class="empty"><strong>Für dieses Fach ist noch kein Lernpfad hinterlegt.</strong>Sobald die Jahresplanung vorliegt, erscheinen hier die einzelnen Stationen.</div>`}
+ }).join("")})()||`<div class="empty"><strong>Für dieses Fach ist noch kein Lernpfad hinterlegt.</strong>Sobald die Jahresplanung vorliegt, erscheinen hier die einzelnen Stationen.</div>`}
  </div>
  ${footer()}`;
 }
