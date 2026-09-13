@@ -1909,7 +1909,6 @@ async function renderStart(){
  const praktikumsphase=aktuellePraktikumsphase();
  const praktikumsAuftraegeMap=await getPraktikumsAuftraege().catch(()=>({}));
  const aktuellerPraktikumsauftrag=(praktikumsphase?.status==="laufend")?praktikumsAuftraegeMap[praktikumsphase.id]:null;
- const on=tasks.filter(x=>x.status==="green").length;
  const upcomingDate=nextCalendar?.start||nextCalendar?.date||nextCalendar?.startDate;
  const upcomingDateText=upcomingDate?.seconds?new Date(upcomingDate.seconds*1000).toLocaleDateString("de-DE"):String(upcomingDate||"").slice(0,10);
  const upcomingTime=nextCalendar?.time?` · ${esc(nextCalendar.time)} Uhr`:"";
@@ -1977,9 +1976,6 @@ class="list-item"><div><strong>${esc(p.title||p.text)}</strong>${p.title?`<small
  ${tile(" ","Lernjournal","Lernweg, Reflexionen und nächste Schritte.","journal")}
  ${tile(" ","fpA","Praxisaufträge und Reflexion.","praktikum")}
  ${tile(" ","KI-Innovationslabor","KI-Ideen und Innovationspartnerschaften.","ki")}</div>
- <div class="grid grid-3"style="margin-top:16px"><div class="card card-compact stat"><b>${tasks.length}</b><span>Arbeitspakete</span></div>
-<div class="card card-compact stat"><b>${on}</b><span>auf Kurs</span></div><div class="card card-compact stat"><b>${currentUser?1:0}</b><span>dein Zugang
-ist aktiv</span></div></div>
 </div>${footer()}`;
 }
 async function getRecentForumActivityCount(days){
@@ -7585,10 +7581,21 @@ function openBirthdayForm(){
  <label>Geburtstag (Tag &amp; Monat)<input id="birthdayInput"type="date"value="${current?`2000-${current}`:""}"></label>
  <p style="color:var(--muted);font-size:12px;margin-top:4px">Nur Tag und Monat werden gespeichert und im Campus-Kalender für alle sichtbar angezeigt – dein Geburtsjahr bleibt privat.</p>
  <div class="form-actions"><button class="secondary"type="button"onclick="closeModal()">Abbrechen</button>
+ ${current?`<button class="secondary"type="button"onclick="removeBirthday()">Löschen</button>`:""}
  <button id="birthdaySaveBtn"class="primary"type="button">Speichern</button></div>
  </div>`);
  $("birthdaySaveBtn").addEventListener("click",saveBirthday);
 }
+
+async function removeBirthday(){
+ if(!confirm("Deinen eingetragenen Geburtstag wirklich wieder entfernen?"))return;
+ try{
+ await updateDoc(doc(db,"users",currentUser.uid),{birthday:"",updatedAt:serverTimestamp()});
+ if(profile)profile.birthday="";
+ closeModal();toast("Geburtstag entfernt.");await render();
+ }catch(e){console.error("Geburtstag löschen:",e);toast("Konnte nicht entfernt werden.")}
+}
+window.removeBirthday=removeBirthday;
 
 async function saveBirthday(){
  const val=$("birthdayInput")?.value||"";
