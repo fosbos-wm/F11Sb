@@ -7020,7 +7020,7 @@ async function renderResilienz(){
  <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
  <div class="vstress-num"id="resStressValue">5</div>
  <div class="vstress-track">
- <div class="vstress-fill"id="resStressFill"style="height:50%;background:rgba(214,58,58,0.53)"></div>
+ <div class="vstress-fill"id="resStressFill"style="height:50%;background:rgb(63,166,106)"></div>
  <input id="resStress"type="range"min="0"max="10"step="1"value="5"oninput="updateResilienzStress(this.value)"class="vstress-input">
  </div>
  </div>
@@ -7079,13 +7079,28 @@ async function renderResilienz(){
  </div>${footer()}`;
 }
 
+// Farbverlauf des Stress-Reglers: 0 = leicht transparentes Grün, 5 = volles
+// Grün, 5–10 = sanfter Übergang zu Rot.
+function stressFarbe(v){
+ const gruen=[63,166,106],rot=[214,58,58];
+ if(v<=5){
+ const t=v/5;
+ const alpha=(0.12+t*0.88).toFixed(2);
+ return`rgba(${gruen[0]},${gruen[1]},${gruen[2]},${alpha})`;
+ }
+ const t=(v-5)/5;
+ const r=Math.round(gruen[0]+(rot[0]-gruen[0])*t);
+ const g=Math.round(gruen[1]+(rot[1]-gruen[1])*t);
+ const b=Math.round(gruen[2]+(rot[2]-gruen[2])*t);
+ return`rgb(${r},${g},${b})`;
+}
 function updateResilienzStress(value){
  const v=Number(value);
  const val=$("resStressValue"),box=$("resSkillButtons"),fill=$("resStressFill");
  if(val)val.textContent=v;
  if(fill){
  fill.style.height=`${v*10}%`;
- fill.style.background=`rgba(214,58,58,${0.08+(v/10)*0.82})`;
+ fill.style.background=stressFarbe(v);
  }
  const ids=v<=2?["fokus","ressource","leicht"]:v<=5?["boden","bewegung","fokus","kontakt"]:v<=7?["atem","boden","distanz","bewegung"]:["atem","boden","pause","kontakt"];
  if(box)box.innerHTML=ids.slice(0,3).map(id=>{
