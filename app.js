@@ -1648,7 +1648,8 @@ async function updateNotenDoc(mutator){
  data.updatedAt=serverTimestamp();
  await setDoc(ref,data);
 }
-async function addSchulaufgabe(fach,hj,value){
+async function addSchulaufgabe(fach,hj){
+ const value=$("saNeuValue")?.value;
  const num=Math.max(0,Math.min(15,parseInt(value,10)));
  if(!Number.isFinite(num)){toast("Bitte eine Zahl von 0 bis 15 eingeben.");return}
  try{
@@ -1673,7 +1674,10 @@ async function deleteSchulaufgabe(fach,hj,index){
  toast("Entfernt.");
  }catch(e){console.error("Schulaufgabe löschen:",e);toast("Fehler: "+(e?.message||e));}
 }
-async function addSonstigeLeistung(fach,hj,value,type,gewicht){
+async function addSonstigeLeistung(fach,hj){
+ const value=$("sonstNeuValue")?.value;
+ const type=$("sonstNeuType")?.value;
+ const gewicht=$("sonstNeuGewicht")?.value;
  const num=Math.max(0,Math.min(15,parseInt(value,10)));
  const g=Math.max(0.5,Math.min(5,parseFloat(gewicht)||1));
  if(!Number.isFinite(num)){toast("Bitte eine Zahl von 0 bis 15 eingeben.");return}
@@ -1700,17 +1704,18 @@ async function deleteSonstigeLeistung(fach,hj,entryId){
  }catch(e){console.error("Sonstige Leistung löschen:",e);toast("Fehler: "+(e?.message||e));}
 }
 // FPA behält die einfache Eintragsliste (kein Schulaufgabe/sonstige-Modell).
-async function addNotenEintrag(fach,hj,value,type){
+async function addNotenEintrag(fach,hj){
  if(!isApproved()){toast("Nur freigeschaltete Nutzer können Noten eintragen.");return}
+ const value=$("notenNeuValue")?.value;
  const num=Math.max(0,Math.min(15,parseInt(value,10)));
  if(!Number.isFinite(num)){toast("Bitte eine Zahl von 0 bis 15 eingeben.");return}
  try{
  await updateNotenDoc(data=>{
  data.entries[fach]=data.entries[fach]||{};
  data.entries[fach][hj]=data.entries[fach][hj]||[];
- data.entries[fach][hj].push({id:`${Date.now()}_${Math.random().toString(36).slice(2,7)}`,value:num,type});
+ data.entries[fach][hj].push({id:`${Date.now()}_${Math.random().toString(36).slice(2,7)}`,value:num,type:""});
  });
- await openNotenDetail(fach,hj);
+ closeModal();
  await render();
  toast("Note hinzugefügt.");
  }catch(e){console.error("Note speichern:",e);toast("Note konnte nicht gespeichert werden.")}
@@ -1738,7 +1743,7 @@ async function openNotenDetail(fach,hj){
  <div class="list">${liste.map(e=>`<div class="list-item"><div><strong>${e.value} Punkte</strong></div><button class="secondary"onclick="deleteNotenEintrag('${fach}','${hj}','${e.id}')">Löschen</button></div>`).join("")||`<div class="empty">Noch keine Note eingetragen.</div>`}</div>
  <div class="form-actions"style="margin-top:14px;flex-wrap:wrap">
  <input id="notenNeuValue"type="number"min="0"max="15"placeholder="0–15"style="width:80px">
- <button class="primary"onclick="addNotenEintrag('${fach}','${hj}',$('notenNeuValue').value,'')">＋ Hinzufügen</button>
+ <button class="primary"onclick="addNotenEintrag('${fach}','${hj}')">＋ Hinzufügen</button>
  </div>
  <div class="form-actions"style="margin-top:10px"><button class="secondary"onclick="closeModal()">Schließen</button></div>
  `);
@@ -1761,7 +1766,7 @@ async function openNotenDetail(fach,hj){
  <div class="list">${sa.map((v,i)=>`<div class="list-item"><strong>${v} Punkte</strong><button class="secondary"onclick="deleteSchulaufgabe('${fach}','${hj}',${i})">Löschen</button></div>`).join("")||`<div class="empty">Noch keine Schulaufgabe eingetragen.</div>`}</div>
  <div class="form-actions"style="margin-top:8px;align-items:flex-end">
  <label style="width:80px">Punkte<input id="saNeuValue"type="number"min="0"max="15"placeholder="0–15"></label>
- <button class="primary"onclick="addSchulaufgabe('${fach}','${hj}',$('saNeuValue').value)">＋ Schulaufgabe</button>
+ <button class="primary"onclick="addSchulaufgabe('${fach}','${hj}')">＋ Schulaufgabe</button>
  </div>
 
  <h3 style="margin:18px 0 4px;font-size:14px"> Sonstige Leistungen (schriftlich & mündlich, ein gemeinsamer Topf)</h3>
@@ -1771,7 +1776,7 @@ async function openNotenDetail(fach,hj){
  <label style="width:70px">Punkte<input id="sonstNeuValue"type="number"min="0"max="15"placeholder="0–15"></label>
  <label style="width:170px">Art<select id="sonstNeuType"><option value="schriftlich">Schriftlich (Stegreif/KA)</option><option value="muendlich">Mündlich</option></select></label>
  <label style="width:85px">Gewichtung<input id="sonstNeuGewicht"type="number"min="0.5"max="5"step="0.5"value="1"title="Gewichtung nach Umfang/Schwierigkeitsgrad"></label>
- <button class="primary"onclick="addSonstigeLeistung('${fach}','${hj}',$('sonstNeuValue').value,$('sonstNeuType').value,$('sonstNeuGewicht').value)">＋ Hinzufügen</button>
+ <button class="primary"onclick="addSonstigeLeistung('${fach}','${hj}')">＋ Hinzufügen</button>
  </div>
 
  <div class="form-actions"style="margin-top:14px"><button class="secondary"onclick="closeModal()">Schließen</button></div>
@@ -5474,7 +5479,7 @@ async function openNewMessagePicker(){
  </select></label>
  <div class="form-actions">
  <button class="secondary"onclick="closeModal()">Abbrechen</button>
- <button class="primary"onclick="openConversation($('messageRecipientSelect').value)">Nachricht schreiben</button>
+ <button class="primary"onclick="startNewConversation()">Nachricht schreiben</button>
  </div>
  </div>`);
 }
@@ -5493,6 +5498,10 @@ async function markConversationRead(otherUid){
  }catch(e){console.error("Nachrichten als gelesen markieren:",e)}
 }
 
+function startNewConversation(){
+ openConversation($("messageRecipientSelect")?.value);
+}
+window.startNewConversation=startNewConversation;
 async function openConversation(otherUid){
  if(!otherUid){toast("Bitte eine Person auswählen.");return}
  const users=window.__messageDirectory||await getApprovedUserDirectory();
