@@ -722,6 +722,53 @@ service cloud.firestore {
     }
 
     // ---------------------------------------------------------
+    // WOCHENBERICHTE (Tätigkeitsnachweis fpA)
+    // ---------------------------------------------------------
+    match /wochenberichte/{id} {
+      // Eigene Berichte lesen, Lehrkräfte lesen alle.
+      allow read: if isApproved()
+        && (resource.data.uid == request.auth.uid || isTeacher());
+
+      // Schüler*innen legen nur eigene, noch nicht geprüfte
+      // Berichte an bzw. ersetzen die hochgeladene Datei, solange
+      // noch nicht geprüft wurde. Lehrkräfte dürfen jederzeit
+      // schreiben (z. B. um "reviewed" zu setzen).
+      allow create: if isApproved()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.reviewed == false;
+
+      allow update: if isTeacher()
+        || (isApproved()
+            && resource.data.uid == request.auth.uid
+            && resource.data.reviewed == false
+            && request.resource.data.uid == resource.data.uid
+            && request.resource.data.reviewed == false);
+
+      allow delete: if isAdmin();
+    }
+
+    // ---------------------------------------------------------
+    // EINSCHÄTZUNGSBÖGEN (Beurteilung der Praktikumsstelle)
+    // ---------------------------------------------------------
+    match /einschaetzungsboegen/{id} {
+      allow read: if isApproved()
+        && (resource.data.uid == request.auth.uid || isTeacher());
+
+      allow create: if isApproved()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.reviewed == false;
+
+      allow update: if isTeacher()
+        || (isApproved()
+            && resource.data.uid == request.auth.uid
+            && resource.data.reviewed == false
+            && request.resource.data.uid == resource.data.uid
+            && request.resource.data.reviewed == false);
+
+      allow delete: if isAdmin();
+    }
+
+    // ---------------------------------------------------------
     // Deny everything not explicitly listed above.
     // ---------------------------------------------------------
     match /{document=**} {

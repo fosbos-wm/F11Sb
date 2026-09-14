@@ -2055,6 +2055,7 @@ async function renderStart(){
  let tasks=[],projects=[],news=[],nextCalendar=null,birthdayInfo=null,wochenplan=[];
  try{[tasks,projects,news,nextCalendar,birthdayInfo,wochenplan]=await Promise.all([getCollection("tasks","deadline",false),getCollection("projects"),getCollection("news"),getUpcomingCampusCalendarEvent(),getUpcomingBirthdayInfo(),getMeineWochenplanung()])}catch(e){}
  const miniKalender=await miniKalenderHTML();
+ const wbBanner=await pruefeWochenberichtBanner();
  const upcomingDate=nextCalendar?.start||nextCalendar?.date||nextCalendar?.startDate;
  const upcomingDateText=upcomingDate?.seconds?new Date(upcomingDate.seconds*1000).toLocaleDateString("de-DE"):String(upcomingDate||"").slice(0,10);
  const upcomingTime=nextCalendar?.time?` · ${esc(nextCalendar.time)} Uhr`:"";
@@ -2063,6 +2064,7 @@ async function renderStart(){
  return`<section class="hero"><div><span class="badge"> F11Sb 26/27</span><h1>Willkommen auf dem Campus.</h1><p>Hier
 verbinden wir Lernen, Projekte, Praxis und Gemeinschaft. Alle angemeldeten Mitglieder arbeiten am selben digitalen Campus.</p>
 </div><div class="actions">${isTeacher()?`<button class="primary"onclick="openNewsForm()">＋ News veröffentlichen</button>`:""}<button class="secondary"onclick="go('kompass')">Mein Kompass →</button><button class="secondary"onclick="go('forum')">Campus-Forum</button></div></section>
+ ${wbBanner}
  <div class="grid grid-3">
  <div class="card card-compact"style="background:var(--soft-blue)"><h3> Campus-News</h3><div class="list">${news.slice(0,3).map(p=>`<div
 class="list-item"><div><strong>${esc(p.title||p.text)}</strong>${p.title?`<small>${esc(p.text)} · ${fmtDate(p.createdAt)}</small>`:`<small>${fmtDate(p.createdAt)}</small>`}</div><div style="display:flex;align-items:center;gap:8px"><span class="pill">Info</span>${isAdmin()?`<button class="secondary"onclick="deleteNews('${p.id}')">Löschen</button>`:""}</div>
@@ -7399,6 +7401,16 @@ async function renderPraktikum(){
  <small>Praxisprojekte dokumentieren und Ergebnisse festhalten.</small>
  <span class="pill fpa-count">${projects.length} Projekte</span>
  </button>
+
+ <button class="card fpa-tool"onclick="${isTeacher()?"openWochenberichtUebersicht()":"openWochenberichte()"}">
+ <span class="emoji">📋</span><strong>Wochenberichte</strong>
+ <small>${isTeacher()?"Ampel-Übersicht: wer hat den Wochenbericht abgegeben und geprüft?":"Tätigkeitsnachweis online ausfüllen, ausdrucken, unterschreiben lassen und hochladen."}</small>
+ </button>
+
+ <button class="card fpa-tool"onclick="${isTeacher()?"openEinschaetzungUebersicht()":"openEinschaetzungsboegen()"}">
+ <span class="emoji">📝</span><strong>Einschätzungsbogen</strong>
+ <small>${isTeacher()?"Ampel-Übersicht der 4 Einschätzungen (2× Erziehung, 2× Pflege).":"Einschätzung der Praktikumsstelle herunterladen, ausfüllen lassen und hochladen."}</small>
+ </button>
  </div>
 
  <div class="kicker"style="margin:26px 0 8px">BEREICH 2 · KI-INNOVATIONSPARTNERSCHAFTEN</div>
@@ -7514,6 +7526,377 @@ async function saveFPAProject(){
  });
  closeModal();await render();toast("Praxisprojekt gespeichert.");
  }catch(e){console.error(e);toast("Projekt konnte nicht gespeichert werden: "+(e.code||"Fehler"))}
+}
+
+/* =========================================================
+ WOCHENBERICHTE (Tätigkeitsnachweis) – wöchentliche Nachweise
+ während der Praktikumsphasen. Ablauf: online ausfüllen &
+ ausdrucken → von Praktikumsstelle unterschreiben/stempeln
+ lassen → Foto/Scan hochladen → Lehrkraft prüft & bestätigt.
+ Ampel: grau=ausstehend, rot=überfällig, gelb=zu prüfen,
+ grün=geprüft. Abgabeschluss: wöchentlich Donnerstag 24:00 Uhr,
+ Erinnerung ab Mittwoch 18:00 Uhr als Banner beim Login.
+ ========================================================= */
+function isoDateLocal(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
+function heuteISO(){return isoDateLocal(new Date())}
+function phaseById(id){return PRAKTIKUMSPHASEN.find(p=>p.id===id)}
+function midDateISO(startISO,endISO){
+ const s=new Date(startISO+"T00:00:00"),e=new Date(endISO+"T00:00:00");
+ return isoDateLocal(new Date(s.getTime()+(e.getTime()-s.getTime())/2));
+}
+function getWochenberichtTermine(){
+ const termine=[];
+ PRAKTIKUMSPHASEN.forEach(ph=>{
+ const start=new Date(ph.start+"T00:00:00"),end=new Date(ph.end+"T00:00:00");
+ for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1)){
+ if(d.getDay()===4)termine.push({weekEndISO:isoDateLocal(d),phaseId:ph.id,bereich:ph.bereich,icon:ph.icon});
+ }
+ });
+ return termine.sort((a,b)=>a.weekEndISO.localeCompare(b.weekEndISO));
+}
+const WOCHENBERICHT_SPRUECHE=[
+ "Stark gemacht – wieder eine Woche Praxis dokumentiert!",
+ "Danke fürs Einreichen – weiter so!",
+ "Ein Bericht mehr, ein Schritt näher am Ziel.",
+ "Zuverlässigkeit zahlt sich aus – gut gemacht!",
+ "Sauber! Deine Praxis wird sichtbar dokumentiert.",
+ "Weiter so – du bleibst am Ball!",
+ "Klasse, dass du dranbleibst – Praxis und Reflexion zahlen sich aus.",
+ "Gut gemacht! Deine Betreuungslehrkraft schaut bald drauf."
+];
+function zufallsSpruch(){return WOCHENBERICHT_SPRUECHE[Math.floor(Math.random()*WOCHENBERICHT_SPRUECHE.length)]}
+function wochenberichtStatus(entry,deadlineISO){
+ if(entry?.reviewed)return"gruen";
+ if(entry?.fileUrl)return"gelb";
+ return heuteISO()>deadlineISO?"rot":"grau";
+}
+const AMPEL_LABEL={grau:"Ausstehend",rot:"Überfällig",gelb:"Zu prüfen",gruen:"Geprüft"};
+const AMPEL_FARBE={grau:"#c7ccd1",rot:"#e5484d",gelb:"#f2b705",gruen:"#2fae5c"};
+function ampelDot(status){return `<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${AMPEL_FARBE[status]};margin-right:6px;vertical-align:middle"></span>`}
+
+async function getMyWochenberichte(){
+ if(!currentUser)return{};
+ try{
+ const snap=await getDocs(query(collection(db,"wochenberichte"),where("uid","==",currentUser.uid)));
+ const map={};snap.docs.forEach(d=>map[d.data().weekEndISO]=({id:d.id,...d.data()}));
+ return map;
+ }catch(e){console.error("Wochenberichte laden:",e);return{}}
+}
+async function getAllWochenberichte(){
+ if(!isTeacher())return[];
+ try{const snap=await getDocs(collection(db,"wochenberichte"));return snap.docs.map(d=>({id:d.id,...d.data()}))}
+ catch(e){console.error("Wochenberichte (Lehrkraft) laden:",e);return[]}
+}
+
+const WOCHENBERICHT_ERKLAERUNG=`<div class="card"style="background:var(--soft-blue);margin-bottom:16px">
+ <div class="kicker">SO FUNKTIONIERT'S</div>
+ <ol style="margin:8px 0 0;padding-left:18px;line-height:1.7">
+ <li>Online ausfüllen: Abteilung, Arbeitszeit und Tätigkeiten eintragen.</li>
+ <li>PDF erzeugen und ausdrucken.</li>
+ <li>Von der Praktikumsstelle unterschreiben und stempeln lassen (auch selbst unterschreiben).</li>
+ <li>Bis <strong>Donnerstag 24:00 Uhr</strong> als Foto oder Scan hochladen.</li>
+ <li>Deine Betreuungslehrkraft prüft und bestätigt den Bericht.</li>
+ </ol>
+</div>`;
+
+async function openWochenberichte(){
+ const termine=getWochenberichtTermine();
+ const eigene=await getMyWochenberichte();
+ const heute=heuteISO();
+ const rows=termine.map(t=>{
+ const entry=eigene[t.weekEndISO];
+ const status=wochenberichtStatus(entry,t.weekEndISO);
+ const wochenStart=isoDateLocal(new Date(new Date(t.weekEndISO+"T00:00:00").getTime()-6*86400000));
+ const istAktuell=heute<=t.weekEndISO&&heute>=wochenStart;
+ return`<div class="card"style="margin-bottom:10px;${istAktuell?"border:2px solid var(--blue)":""}">
+ <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+ <div>${ampelDot(status)}<strong>${t.icon} Woche bis ${esc(fmtDateOnly(t.weekEndISO))}</strong>
+ <small style="display:block;color:var(--muted);margin-top:2px">${AMPEL_LABEL[status]}${entry?.fileName?" · "+esc(entry.fileName):""}</small></div>
+ <div style="display:flex;gap:6px;flex-wrap:wrap">
+ <button class="secondary"onclick="openWochenberichtDruckForm('${t.weekEndISO}','${t.phaseId}')">Formular</button>
+ <button class="${status==="gruen"?"secondary":"primary"}"onclick="startWochenberichtUpload('${t.weekEndISO}','${t.phaseId}')">${entry?.fileUrl?"Ersetzen":"Hochladen"}</button>
+ </div>
+ </div>
+ </div>`;
+ }).join("");
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+ <div class="kicker">fpA · WOCHENBERICHTE</div><h2>Meine Wochenberichte</h2>
+ ${WOCHENBERICHT_ERKLAERUNG}
+ <div id="wbList">${rows||`<div class="empty">Für dich sind aktuell keine Praktikumswochen eingetragen.</div>`}</div>
+ <div class="form-actions"><button class="secondary"onclick="closeModal()">Schließen</button></div>`);
+}
+
+function startWochenberichtUpload(weekEndISO,phaseId){
+ const input=document.createElement("input");
+ input.type="file";input.accept="image/*,application/pdf";
+ input.onchange=async()=>{
+ const file=input.files?.[0];if(!file)return;
+ toast("Wird hochgeladen …");
+ try{
+ const up=await uploadCampusDatei(file,`wochenberichte/${currentUser.uid}`);
+ await setDoc(doc(db,"wochenberichte",`${currentUser.uid}_${weekEndISO}`),{
+ uid:currentUser.uid,displayName:profile?.displayName||currentUser.email||"",
+ weekEndISO,phaseId,fileUrl:up.url,fileName:up.name,filePath:up.path,
+ uploadedAt:serverTimestamp(),reviewed:false
+ },{merge:true});
+ toast(zufallsSpruch());
+ openWochenberichte();
+ }catch(e){console.error("Wochenbericht Upload:",e);toast(e.message||"Upload fehlgeschlagen.")}
+ };
+ input.click();
+}
+
+function openWochenberichtDruckForm(weekEndISO,phaseId){
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+ <div class="kicker">fpA · TÄTIGKEITSNACHWEIS</div><h2>Woche bis ${esc(fmtDateOnly(weekEndISO))}</h2>
+ <div class="form">
+ <label>Abteilung / Einsatzbereich<input id="wbAbteilung"placeholder="z. B. Krippengruppe"></label>
+ <label>Wöchentliche Arbeitszeit des Betriebes in Vollzeit (Stunden)<input id="wbStunden"type="number"min="0"step="0.5"></label>
+ <label>Ausbildungsinhalte, Tätigkeiten (Stichpunkte)<textarea id="wbTaetigkeiten"rows="6"placeholder="Stichpunktartige, fachlich fundierte Erläuterung"></textarea></label>
+ <div class="form-actions"><button class="secondary"onclick="closeModal()">Abbrechen</button>
+ <button class="primary"onclick="druckeWochenbericht('${weekEndISO}','${phaseId}')">PDF erzeugen & drucken</button></div>
+ </div>`);
+}
+
+function druckeWochenbericht(weekEndISO,phaseId){
+ const phase=phaseById(phaseId);
+ const abteilung=$("wbAbteilung")?.value.trim()||"";
+ const stunden=$("wbStunden")?.value.trim()||"";
+ const taetigkeiten=($("wbTaetigkeiten")?.value.trim()||"").replace(/\n/g,"<br>");
+ const name=esc(profile?.displayName||currentUser?.email||"");
+ const body=`
+ <div class="col"><table>
+ <tr><th>Schüler*in</th><td>${name}</td><th>Klasse</th><td>F11Sb</td></tr>
+ <tr><th>Ausbildungsrichtung</th><td>Sozialwesen</td><th>Schuljahr</th><td>2026/27</td></tr>
+ <tr><th>Zeitraum</th><td colspan="3">${esc(fmtDateOnly(phase?.start))} – ${esc(fmtDateOnly(weekEndISO))}</td></tr>
+ <tr><th>Abteilung / Einsatzbereich</th><td colspan="3">${esc(abteilung)}</td></tr>
+ <tr><th>Wöchentl. Arbeitszeit Betrieb (Vollzeit)</th><td colspan="3">${esc(stunden)} Stunden</td></tr>
+ </table></div>
+ <div class="col"><h2>Ausbildungsinhalte, Tätigkeiten</h2><div class="item">${taetigkeiten||"—"}</div></div>
+ <div class="col"style="margin-top:30px">
+ <table>
+ <tr><td style="width:33%">Datum: ______________</td><td style="width:33%">Datum: ______________</td><td>Datum: ______________</td></tr>
+ <tr><td style="padding-top:40px">_____________________<br>Schülerin oder Schüler (Unterschrift)</td>
+ <td style="padding-top:40px">_____________________<br>Praktikumsstelle (Stempel, Unterschrift)</td>
+ <td style="padding-top:40px">_____________________<br>Schule (Stempel, Unterschrift)</td></tr>
+ </table>
+ </div>`;
+ openToolPrintWindow("Tätigkeitsnachweis – Woche bis "+fmtDateOnly(weekEndISO),body,"F11Sb · Fachpraktische Ausbildung");
+}
+
+/* ---- Lehrkraft-Übersicht Wochenberichte -------------------- */
+async function openWochenberichtUebersicht(){
+ if(!isTeacher()){toast("Dieser Bereich ist nur für Lehrkräfte.");return}
+ const termine=getWochenberichtTermine();
+ const heute=heuteISO();
+ const laufende=termine.find(t=>t.weekEndISO>=heute)||termine[termine.length-1];
+ const students=await getAllUsersForLernstand();
+ const alle=await getAllWochenberichte();
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+ <div class="kicker"> LEHRKRAFT</div><h2>Wochenberichte – Übersicht</h2>
+ <label>Woche<select id="wbUebersichtWoche"onchange="renderWochenberichtUebersichtTabelle()">
+ ${termine.map(t=>`<option value="${t.weekEndISO}"${laufende&&t.weekEndISO===laufende.weekEndISO?"selected":""}>${t.icon} Woche bis ${fmtDateOnly(t.weekEndISO)}</option>`).join("")}
+ </select></label>
+ <div id="wbUebersichtTabelle"style="margin-top:12px"></div>
+ <div class="form-actions"><button class="secondary"onclick="closeModal()">Schließen</button></div>`);
+ window.__wbStudents=students;window.__wbAlle=alle;
+ renderWochenberichtUebersichtTabelle();
+}
+function renderWochenberichtUebersichtTabelle(){
+ const weekEndISO=$("wbUebersichtWoche")?.value;if(!weekEndISO)return;
+ const students=window.__wbStudents||[],alle=window.__wbAlle||[];
+ const rows=students.map(s=>{
+ const entry=alle.find(a=>a.uid===s.uid&&a.weekEndISO===weekEndISO);
+ const status=wochenberichtStatus(entry,weekEndISO);
+ return`<tr><td>${esc(s.displayName||s.email||"Schüler/in")}</td><td>${ampelDot(status)}${AMPEL_LABEL[status]}</td>
+ <td>${entry?.fileUrl?`<button class="secondary"onclick="openWochenberichtReview('${s.uid}','${weekEndISO}')">Ansehen</button>`:"—"}</td></tr>`;
+ }).join("");
+ $("wbUebersichtTabelle").innerHTML=`<table><thead><tr><th>Schüler/in</th><th>Status</th><th></th></tr></thead><tbody>${rows||`<tr><td colspan="3"class="empty">Keine Schülerprofile gefunden.</td></tr>`}</tbody></table>`;
+}
+async function openWochenberichtReview(uid,weekEndISO){
+ if(!isTeacher())return;
+ try{
+ const snap=await getDoc(doc(db,"wochenberichte",`${uid}_${weekEndISO}`));
+ if(!snap.exists()){toast("Noch kein Bericht hochgeladen.");return}
+ const a=snap.data();
+ const istBild=dateiIstBild(a.fileName||"");
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+ <div class="kicker">PRÜFUNG · WOCHE BIS ${esc(fmtDateOnly(weekEndISO))}</div><h2>${esc(a.displayName||"Schüler/in")}</h2>
+ ${istBild?`<img src="${a.fileUrl}"style="max-width:100%;border-radius:10px;margin:10px 0">`:`<p><a href="${a.fileUrl}"target="_blank">${esc(a.fileName||"Datei öffnen")} →</a></p>`}
+ <p>${a.reviewed?"Bereits geprüft und bestätigt.":"Noch nicht geprüft."}</p>
+ <div class="form-actions"><button class="secondary"onclick="openWochenberichtUebersicht()">← Übersicht</button>
+ ${a.reviewed?"":`<button class="primary"onclick="bestaetigeWochenbericht('${uid}','${weekEndISO}')">✓ Als geprüft bestätigen</button>`}</div>`);
+ }catch(e){console.error(e);toast("Bericht konnte nicht geladen werden.")}
+}
+async function bestaetigeWochenbericht(uid,weekEndISO){
+ if(!isTeacher())return;
+ try{
+ await updateDoc(doc(db,"wochenberichte",`${uid}_${weekEndISO}`),{reviewed:true,reviewedAt:serverTimestamp(),reviewedBy:currentUser.uid});
+ toast("Bericht bestätigt.");
+ openWochenberichtUebersicht();
+ }catch(e){console.error(e);toast("Konnte nicht bestätigt werden.")}
+}
+
+/* =========================================================
+ EINSCHÄTZUNGSBÖGEN – Beurteilung der Praktikumsstelle.
+ Je 2× pro Bereich (Erziehung, Pflege). Wird NICHT online
+ ausgefüllt, sondern von der Praktikumsstelle auf dem
+ offiziellen Bogen bearbeitet, unterschrieben & gestempelt;
+ der/die Schüler*in unterschreibt ebenfalls und lädt den
+ Scan/das Foto hoch.
+ ========================================================= */
+const EINSCHAETZUNG_TERMINE=[
+ {id:"erz1",bereich:"Erziehungsbereich",slot:1,icon:"🏫",deadline:midDateISO(phaseById("pr2").start,phaseById("pr2").end)},
+ {id:"erz2",bereich:"Erziehungsbereich",slot:2,icon:"🏫",deadline:phaseById("pr3").end},
+ {id:"pfl1",bereich:"Pflegebereich",slot:1,icon:"🏥",deadline:phaseById("pr5").end},
+ {id:"pfl2",bereich:"Pflegebereich",slot:2,icon:"🏥",deadline:midDateISO(phaseById("pr6").start,phaseById("pr6").end)}
+];
+const EINSCHAETZUNG_ERKLAERUNG=`<div class="card"style="background:var(--soft-blue);margin-bottom:16px">
+ <div class="kicker">SO FUNKTIONIERT'S</div>
+ <ol style="margin:8px 0 0;padding-left:18px;line-height:1.7">
+ <li>Leeren Einschätzungsbogen herunterladen und der Praktikumsstelle geben.</li>
+ <li>Die Praktikumsstelle füllt die Einschätzung aus, unterschreibt und stempelt.</li>
+ <li>Die Einschätzung wird mit dir besprochen – anschließend unterschreibst du selbst.</li>
+ <li>Bis zur jeweiligen Frist als Foto oder Scan hochladen.</li>
+ <li>Deine Betreuungslehrkraft prüft und bestätigt den Bogen.</li>
+ </ol>
+</div>`;
+
+async function getMyEinschaetzungen(){
+ if(!currentUser)return{};
+ try{
+ const snap=await getDocs(query(collection(db,"einschaetzungsboegen"),where("uid","==",currentUser.uid)));
+ const map={};snap.docs.forEach(d=>map[d.data().terminId]=({id:d.id,...d.data()}));
+ return map;
+ }catch(e){console.error("Einschätzungsbögen laden:",e);return{}}
+}
+async function getAllEinschaetzungen(){
+ if(!isTeacher())return[];
+ try{const snap=await getDocs(collection(db,"einschaetzungsboegen"));return snap.docs.map(d=>({id:d.id,...d.data()}))}
+ catch(e){console.error("Einschätzungsbögen (Lehrkraft) laden:",e);return[]}
+}
+async function openEinschaetzungsboegen(){
+ const eigene=await getMyEinschaetzungen();
+ const rows=EINSCHAETZUNG_TERMINE.map(t=>{
+ const entry=eigene[t.id];
+ const status=wochenberichtStatus(entry,t.deadline);
+ return`<div class="card"style="margin-bottom:10px">
+ <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+ <div>${ampelDot(status)}<strong>${t.icon} ${t.bereich} · ${t.slot}. Einschätzung</strong>
+ <small style="display:block;color:var(--muted);margin-top:2px">Frist: ${esc(fmtDateOnly(t.deadline))} · ${AMPEL_LABEL[status]}${entry?.fileName?" · "+esc(entry.fileName):""}</small></div>
+ <button class="${status==="gruen"?"secondary":"primary"}"onclick="startEinschaetzungUpload('${t.id}')">${entry?.fileUrl?"Ersetzen":"Hochladen"}</button>
+ </div>
+ </div>`;
+ }).join("");
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+ <div class="kicker">fpA · EINSCHÄTZUNGSBOGEN</div><h2>Einschätzung der Praktikumsstelle</h2>
+ ${EINSCHAETZUNG_ERKLAERUNG}
+ <p><a href="formulare/einschaetzungsbogen.pdf"target="_blank">Leeren Einschätzungsbogen herunterladen ↓</a></p>
+ <div>${rows}</div>
+ <div class="form-actions"><button class="secondary"onclick="closeModal()">Schließen</button></div>`);
+}
+function startEinschaetzungUpload(terminId){
+ const t=EINSCHAETZUNG_TERMINE.find(x=>x.id===terminId);if(!t)return;
+ const input=document.createElement("input");
+ input.type="file";input.accept="image/*,application/pdf";
+ input.onchange=async()=>{
+ const file=input.files?.[0];if(!file)return;
+ toast("Wird hochgeladen …");
+ try{
+ const up=await uploadCampusDatei(file,`einschaetzungsboegen/${currentUser.uid}`);
+ await setDoc(doc(db,"einschaetzungsboegen",`${currentUser.uid}_${terminId}`),{
+ uid:currentUser.uid,displayName:profile?.displayName||currentUser.email||"",
+ terminId,bereich:t.bereich,slot:t.slot,fileUrl:up.url,fileName:up.name,filePath:up.path,
+ uploadedAt:serverTimestamp(),reviewed:false
+ },{merge:true});
+ toast(zufallsSpruch());
+ openEinschaetzungsboegen();
+ }catch(e){console.error("Einschätzung Upload:",e);toast(e.message||"Upload fehlgeschlagen.")}
+ };
+ input.click();
+}
+async function openEinschaetzungUebersicht(){
+ if(!isTeacher()){toast("Dieser Bereich ist nur für Lehrkräfte.");return}
+ const students=await getAllUsersForLernstand();
+ const alle=await getAllEinschaetzungen();
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+ <div class="kicker"> LEHRKRAFT</div><h2>Einschätzungsbögen – Übersicht</h2>
+ <label>Termin<select id="ebUebersichtTermin"onchange="renderEinschaetzungUebersichtTabelle()">
+ ${EINSCHAETZUNG_TERMINE.map(t=>`<option value="${t.id}">${t.icon} ${t.bereich} · ${t.slot}. Einschätzung (Frist ${fmtDateOnly(t.deadline)})</option>`).join("")}
+ </select></label>
+ <div id="ebUebersichtTabelle"style="margin-top:12px"></div>
+ <div class="form-actions"><button class="secondary"onclick="closeModal()">Schließen</button></div>`);
+ window.__ebStudents=students;window.__ebAlle=alle;
+ renderEinschaetzungUebersichtTabelle();
+}
+function renderEinschaetzungUebersichtTabelle(){
+ const terminId=$("ebUebersichtTermin")?.value;if(!terminId)return;
+ const t=EINSCHAETZUNG_TERMINE.find(x=>x.id===terminId);
+ const students=window.__ebStudents||[],alle=window.__ebAlle||[];
+ const rows=students.map(s=>{
+ const entry=alle.find(a=>a.uid===s.uid&&a.terminId===terminId);
+ const status=wochenberichtStatus(entry,t.deadline);
+ return`<tr><td>${esc(s.displayName||s.email||"Schüler/in")}</td><td>${ampelDot(status)}${AMPEL_LABEL[status]}</td>
+ <td>${entry?.fileUrl?`<button class="secondary"onclick="openEinschaetzungReview('${s.uid}','${terminId}')">Ansehen</button>`:"—"}</td></tr>`;
+ }).join("");
+ $("ebUebersichtTabelle").innerHTML=`<table><thead><tr><th>Schüler/in</th><th>Status</th><th></th></tr></thead><tbody>${rows||`<tr><td colspan="3"class="empty">Keine Schülerprofile gefunden.</td></tr>`}</tbody></table>`;
+}
+async function openEinschaetzungReview(uid,terminId){
+ if(!isTeacher())return;
+ try{
+ const snap=await getDoc(doc(db,"einschaetzungsboegen",`${uid}_${terminId}`));
+ if(!snap.exists()){toast("Noch nicht hochgeladen.");return}
+ const a=snap.data();
+ const istBild=dateiIstBild(a.fileName||"");
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+ <div class="kicker">PRÜFUNG</div><h2>${esc(a.displayName||"Schüler/in")}</h2>
+ ${istBild?`<img src="${a.fileUrl}"style="max-width:100%;border-radius:10px;margin:10px 0">`:`<p><a href="${a.fileUrl}"target="_blank">${esc(a.fileName||"Datei öffnen")} →</a></p>`}
+ <p>${a.reviewed?"Bereits geprüft und bestätigt.":"Noch nicht geprüft."}</p>
+ <div class="form-actions"><button class="secondary"onclick="openEinschaetzungUebersicht()">← Übersicht</button>
+ ${a.reviewed?"":`<button class="primary"onclick="bestaetigeEinschaetzung('${uid}','${terminId}')">✓ Als geprüft bestätigen</button>`}</div>`);
+ }catch(e){console.error(e);toast("Bogen konnte nicht geladen werden.")}
+}
+async function bestaetigeEinschaetzung(uid,terminId){
+ if(!isTeacher())return;
+ try{
+ await updateDoc(doc(db,"einschaetzungsboegen",`${uid}_${terminId}`),{reviewed:true,reviewedAt:serverTimestamp(),reviewedBy:currentUser.uid});
+ toast("Bogen bestätigt.");
+ openEinschaetzungUebersicht();
+ }catch(e){console.error(e);toast("Konnte nicht bestätigt werden.")}
+}
+
+/* ---- Login-Banner: Erinnerung ab Mittwoch 18 Uhr / überfällig -- */
+async function pruefeWochenberichtBanner(){
+ try{
+ if(!isApproved())return"";
+ const termine=getWochenberichtTermine();const heute=heuteISO();
+ if(isTeacher()){
+ const aktuelle=termine.find(t=>heute<=t.weekEndISO)||termine[termine.length-1];
+ if(!aktuelle)return"";
+ const mittwoch=new Date(new Date(aktuelle.weekEndISO+"T00:00:00").getTime()-86400000);
+ if(new Date()<mittwoch)return"";
+ const students=await getAllUsersForLernstand();const alle=await getAllWochenberichte();
+ const fehlend=students.filter(s=>!alle.some(a=>a.uid===s.uid&&a.weekEndISO===aktuelle.weekEndISO));
+ if(!fehlend.length)return"";
+ return`<div class="card"style="background:var(--soft-orange);margin-bottom:16px">
+ <strong>⏰ ${fehlend.length} Wochenbericht(e) fehlen noch</strong>
+ <p style="margin:6px 0 10px">Für die Woche bis ${esc(fmtDateOnly(aktuelle.weekEndISO))} haben noch nicht alle Schüler/innen hochgeladen.</p>
+ <button class="secondary"onclick="openWochenberichtUebersicht()">Übersicht öffnen</button>
+ </div>`;
+ }else{
+ const aktuelle=termine.find(t=>heute<=t.weekEndISO);
+ if(!aktuelle)return"";
+ const mittwoch=new Date(new Date(aktuelle.weekEndISO+"T00:00:00").getTime()-86400000);
+ if(new Date()<mittwoch)return"";
+ const eigene=await getMyWochenberichte();
+ if(eigene[aktuelle.weekEndISO])return"";
+ return`<div class="card"style="background:var(--soft-orange);margin-bottom:16px">
+ <strong>⏰ Dein Wochenbericht fehlt noch</strong>
+ <p style="margin:6px 0 10px">Bitte bis Donnerstag 24:00 Uhr hochladen (Woche bis ${esc(fmtDateOnly(aktuelle.weekEndISO))}).</p>
+ <button class="primary"onclick="openWochenberichte()">Jetzt hochladen</button>
+ </div>`;
+ }
+ }catch(e){console.error("Wochenbericht-Banner:",e);return""}
 }
 
 async function renderKI(){
@@ -7762,7 +8145,10 @@ async function exportCampusCalendarICS(){
  ["2027-06-01","Englisch – Fachabiturprüfung"],
  ["2027-06-03","Mathematik – Fachabiturprüfung"]
  ].map(([start,title])=>({start,title,description:"Zentraler Prüfungstermin lt. Kultusministerium."}));
- downloadICS([...events,...birthdayEvents,...ferienRangeEvents,...pruefungsTermineICS],"campuskalender.ics","F11Sb Kalender");
+ const praktikumRangeEvents=PRAKTIKUMSPHASEN.map(ph=>({
+ start:ph.start,rangeEnd:ph.end,title:`${ph.icon} ${ph.titel}`,description:`Praktikumsphase (fpA) · ${ph.bereich}`
+ }));
+ downloadICS([...events,...birthdayEvents,...ferienRangeEvents,...pruefungsTermineICS,...praktikumRangeEvents],"campuskalender.ics","F11Sb Kalender");
  toast("Kalender wird heruntergeladen – Datei öffnen, um sie zum Handy-Kalender hinzuzufügen.");
  }catch(e){console.error("Kalender-Export:",e);toast("Der Kalender konnte nicht exportiert werden.")}
 }
@@ -7794,7 +8180,8 @@ async function renderKalender(){
  sonstiges:{label:"Sonstiger Termin",className:"cal-grey"},
  geburtstag:{label:"Geburtstag",className:"cal-birthday"},
  ferien:{label:"Schulferien Bayern",className:"cal-holiday"},
- pruefung:{label:"Abschlussprüfung",className:"cal-gold"}
+ pruefung:{label:"Abschlussprüfung",className:"cal-gold"},
+ praktikum:{label:"Praktikum (fpA)",className:"cal-praktikum"}
  };
 
  // Schulferien Bayern – Schuljahr 2026/27.
@@ -7834,7 +8221,19 @@ async function renderKalender(){
  }));
  let birthdayEvents=[];
  try{birthdayEvents=await getBirthdayEvents()}catch(e){console.error("Kalender Geburtstage:",e)}
- events=[...events,...birthdayEvents,...ferienEvents,...pruefungsEvents];
+ // Praktikumsphasen (fpA) – tageweise, eigene Farbe, gilt fachübergreifend.
+ const praktikumEvents=[];
+ PRAKTIKUMSPHASEN.forEach(ph=>{
+ const start=new Date(ph.start+"T00:00:00"),end=new Date(ph.end+"T00:00:00");
+ for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1)){
+ praktikumEvents.push({
+ start:isoDateLocal(d),type:"praktikum",
+ title:`${ph.icon} ${ph.titel}`,
+ description:`Praktikumsphase (fpA) · ${ph.bereich}`
+ });
+ }
+ });
+ events=[...events,...birthdayEvents,...ferienEvents,...pruefungsEvents,...praktikumEvents];
 
  const normalizeType=e=>{
  const raw=String(e?.type||e?.eventType||e?.category||"sonstiges").toLowerCase().trim();
@@ -7907,6 +8306,7 @@ async function renderKalender(){
  .cal-holiday{background:#e3f5da!important;border-color:#8bc34a!important}
  .cal-birthday{background:#ffe4ec!important;border-color:#f472b6!important}
  .cal-gold{background:#fdf0c8!important;border-color:#d4a017!important;font-weight:700!important}
+ .cal-praktikum{background:#cdeeea!important;border-color:#159c8f!important}
  .cal-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
  .cal-legend-item{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:6px 10px;background:#fff;font-size:12px}
  .cal-legend-dot{width:13px;height:13px;border-radius:3px;border:1px solid rgba(0,0,0,.12)}
@@ -9786,6 +10186,20 @@ window.saveFPAQuestion=saveFPAQuestion;
 window.openFPAProjects=openFPAProjects;
 window.openFPAProjectForm=openFPAProjectForm;
 window.saveFPAProject=saveFPAProject;
+window.openWochenberichte=openWochenberichte;
+window.startWochenberichtUpload=startWochenberichtUpload;
+window.openWochenberichtDruckForm=openWochenberichtDruckForm;
+window.druckeWochenbericht=druckeWochenbericht;
+window.openWochenberichtUebersicht=openWochenberichtUebersicht;
+window.renderWochenberichtUebersichtTabelle=renderWochenberichtUebersichtTabelle;
+window.openWochenberichtReview=openWochenberichtReview;
+window.bestaetigeWochenbericht=bestaetigeWochenbericht;
+window.openEinschaetzungsboegen=openEinschaetzungsboegen;
+window.startEinschaetzungUpload=startEinschaetzungUpload;
+window.openEinschaetzungUebersicht=openEinschaetzungUebersicht;
+window.renderEinschaetzungUebersichtTabelle=renderEinschaetzungUebersichtTabelle;
+window.openEinschaetzungReview=openEinschaetzungReview;
+window.bestaetigeEinschaetzung=bestaetigeEinschaetzung;
 window.openKIChallengeForm=openKIChallengeForm;
 window.openKIChallengesLibrary=openKIChallengesLibrary;
 window.openKITakeChallenge=openKITakeChallenge;
