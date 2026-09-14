@@ -2,8 +2,8 @@ let initializeApp, getAuth, onAuthStateChanged, createUserWithEmailAndPassword, 
  WICHTIG:
  Diese Werte werden nach dem Anlegen deiner Firebase-Web-App aus
  der Firebase Console hier eingesetzt.
-*/ const firebaseConfig = { apiKey: "AIzaSyB_q4BaOGXaxLLL_fYB1MNA0HO2llAeG_s", authDomain: "f12sb-9f3db.firebaseapp.com", projectId: "f12sb-9f3db", storageBucket: "f12sb-9f3db.firebasestorage.app", messagingSenderId: "85936724696", appId: "1:85936724696:web:aa5be7604fd580e4add5ad" }; /* =========================================================
- F12Sb MASTER – STABILE MODULREGISTRY
+*/ const firebaseConfig = { apiKey: "AIzaSyBKRUQz7x0hA8_GxJ4qi-61veKrS3GQqCA", authDomain: "f11sb-62bae.firebaseapp.com", projectId: "f11sb-62bae", storageBucket: "f11sb-62bae.firebasestorage.app", messagingSenderId: "579105646323", appId: "1:579105646323:web:3bfb668a90cb37540e3986" }; /* =========================================================
+ F11Sb MASTER – STABILE MODULREGISTRY
  Die Master-App selbst enthält keine Pflicht-Imports
  von Zusatzmodulen. Module werden erst beim Öffnen geladen.
  ========================================================= */ const CAMPUS_MODULES={ lernpfad:{label:"Persönlicher Lernpfad",route:"lernpfad",ready:true}, lernressourcen:{label:"Lernressourcen",route:"ressourcen",ready:true}, lernjournal:{label:"Lernjournal",route:"journal",ready:true}, lernmethoden:{label:"Lernmethoden",route:"methoden",ready:true}, lernimpulse:{label:"Lernimpulse",route:"impulse",ready:false}, lernstand:{label:"Lernstandsmessung",route:"lernstand",ready:true}, lerncoaching:{label:"Lerncoaching",route:"lerncoaching",ready:false}, resilienz:{label:"Resilienz & Respressi",route:"resilienz",ready:false}, kompetenz:{label:"Kompetenzwerkstatt",route:"kompetenz",ready:true}, forum:{label:"Campus-Forum",route:"forum",ready:true}, pinnwand:{label:"Pinnwand",route:"pinnwand",ready:true}, kollaboration:{label:"Tools für Zusammenarbeit",route:"kollaboration",ready:true}, wortwolke:{label:"Wortwolke",route:"wortwolke",ready:true}, kanban:{label:"Kanban-Board",route:"kanban",ready:true}, terminfindung:{label:"Terminfindung",route:"terminfindung",ready:true}, teamgesucht:{label:"Team gesucht",route:"teamgesucht",ready:true}, checkliste:{label:"Gemeinsame Checkliste",route:"checkliste",ready:true}, ampel:{label:"Verständnis-Ampel",route:"ampel",ready:true}, umfrage:{label:"Live-Umfrage",route:"umfrage",ready:true}, zufallspicker:{label:"Wer ist dran?",route:"zufallspicker",ready:true}, lernwerkzeuge:{label:"Lern-Werkzeuge",route:"lernwerkzeuge",ready:true}, karteikarten:{label:"Karteikarten",route:"karteikarten",ready:true},"fokus-timer":{label:"Fokus-Timer",route:"fokus-timer",ready:true}, glossar:{label:"Glossar",route:"glossar",ready:true}, projekte:{label:"Projekte",route:"projekte",ready:true}, praxis:{label:"fpA",route:"praktikum",ready:true}, ki:{label:"KI-Innovationslabor",route:"ki",ready:true}, kalender:{label:"Campus-Kalender",route:"kalender",ready:true}, kompetenzprofil:{label:"Kompetenzprofil",route:"kompetenzprofil",ready:false}, team:{label:"Lehrkräfte Klassenteam",route:"team",ready:true} }; const configReady = !Object.values(firebaseConfig).some(v => String(v).includes("HIER_") || String(v).includes("DEIN-PROJEKT")); let app=null, auth=null, db=null; const $=id=>document.getElementById(id); const esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
@@ -29,7 +29,7 @@ function modal(html){$("modal").innerHTML=html;$("modalBackdrop").hidden=false}
 function closeModal(){$("modalBackdrop").hidden=true}
 function pageHead(k,h,p,actions=""){return`<div class="page-head"><div><div class="kicker">${k}</div><h1>${h}</h1><p>${p}</p>
 </div><div class="actions">${actions}</div></div>`}
-function footer(){return`<div class="footer"><span>F12Sb 26/27 · FOSBOS Weilheim</span><span>Gemeinsam · offen ·
+function footer(){return`<div class="footer"><span>F11Sb 26/27 · FOSBOS Weilheim</span><span>Gemeinsam · offen ·
 respektvoll</span><span><button type="button"onclick="showImpressum()"style="background:none;border:none;padding:0;font:inherit;color:inherit;text-decoration:underline;cursor:pointer">Impressum</button></span></div>`}
 
 /* =========================================================
@@ -67,7 +67,7 @@ function showImpressum(){
  Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
 
  <div class="notice">
- <strong>Hinweis zur F12Sb-App</strong>
+ <strong>Hinweis zur F11Sb-App</strong>
  <p style="margin-bottom:0">Diese App ist ein Unterrichts-/Klassenprojekt und kein offizielles IT-Angebot der Schulverwaltung. Die obigen Angaben entsprechen denen der offiziellen Schul-Website (fos-bos-weilheim.de). Für Rückfragen zu dieser App wende dich zusätzlich an die betreuende Lehrkraft. Eine ausführliche Datenschutzerklärung für die App selbst steht noch aus.</p>
  </div>
 
@@ -1114,7 +1114,7 @@ async function renderKlassenteam(){
 }
 
 // ============================================================
-// STUNDENPLAN (WebUntis), NOTEN & WOCHENPLANUNG – F12Sb
+// STUNDENPLAN (WebUntis), NOTEN & WOCHENPLANUNG – F11Sb
 // ============================================================
 
 // Fächer der FOS 12 Sozialwesen. "Sozialwirtschaft und Recht" läuft als
@@ -1620,7 +1620,7 @@ function webUntisEmbedHTML(heightPx,openByDefault){
  const url=webUntisUrl();
  return `<details class="untis-embed"${openByDefault?"open":""}>
  <summary> Stundenplan anzeigen/ausblenden</summary>
- <iframe src="${url}"loading="lazy"style="width:100%;height:${heightPx}px;border:1px solid var(--line,#e2eaf0);border-radius:10px;background:#fff"class="untis-iframe"title="Stundenplan F12Sb (WebUntis)"></iframe>
+ <iframe src="${url}"loading="lazy"style="width:100%;height:${heightPx}px;border:1px solid var(--line,#e2eaf0);border-radius:10px;background:#fff"class="untis-iframe"title="Stundenplan F11Sb (WebUntis)"></iframe>
  <div class="untis-fallback"><small>Wird der Stundenplan oben nicht angezeigt? Manche Schulnetzwerke blockieren die Einbettung.</small>
  <a href="${url}"target="_blank"rel="noopener"class="pill"> Stundenplan in WebUntis öffnen ↗</a></div>
  </details>`;
@@ -2060,7 +2060,7 @@ async function renderStart(){
  const upcomingTime=nextCalendar?.time?` · ${esc(nextCalendar.time)} Uhr`:"";
  const newsAction=(isTeacher()?`<button class="primary"onclick="openNewsForm()">＋ News veröffentlichen</button>`:"")
  +(isTeacher()?`<button class="secondary"onclick="openUserManagement()"> Benutzer verwalten</button>`:"");
- return`<section class="hero"><div><span class="badge"> F12Sb 26/27</span><h1>Willkommen auf dem Campus.</h1><p>Hier
+ return`<section class="hero"><div><span class="badge"> F11Sb 26/27</span><h1>Willkommen auf dem Campus.</h1><p>Hier
 verbinden wir Lernen, Projekte, Praxis und Gemeinschaft. Alle angemeldeten Mitglieder arbeiten am selben digitalen Campus.</p>
 </div><div class="actions">${isTeacher()?`<button class="primary"onclick="openNewsForm()">＋ News veröffentlichen</button>`:""}<button class="secondary"onclick="go('kompass')">Mein Kompass →</button><button class="secondary"onclick="go('forum')">Campus-Forum</button></div></section>
  <div class="grid grid-3">
@@ -2127,7 +2127,7 @@ function printNotenPDF(noten,bestehen){
  if(!win){toast("Das PDF-Fenster wurde vom Browser blockiert. Bitte Pop-ups erlauben.");return}
  const fmt=(fach,hj)=>{const erg=berechneHalbjahresergebnis(noten,fach,hj);const sa=schulaufgabenListe(noten,fach,hj).length,so=sonstigeListe(noten,fach,hj).length;return erg===null?"—":`${erg} Punkte (${sa} SA, ${so} sonst.)`};
  const rows=F12SB_FAECHER.map(f=>`<tr><td>${escPDF(f.label)}</td><td>${fmt(f.key,"hj1")}</td><td>${fmt(f.key,"hj2")}</td></tr>`).join("");
- win.document.write(`<!doctype html><html lang="de"><head><meta charset="utf-8"><title>Meine Noten – F12Sb</title>
+ win.document.write(`<!doctype html><html lang="de"><head><meta charset="utf-8"><title>Meine Noten – F11Sb</title>
  <style>
  @page{size:A4;margin:18mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#222;line-height:1.55;margin:0}
  h1{font-size:24px;margin:0 0 4px}.meta{color:#666;font-size:12px;margin-bottom:20px}
@@ -2138,7 +2138,7 @@ function printNotenPDF(noten,bestehen){
  @media print{.print-note{display:none}}
  </style></head><body>
  <div class="print-note">Persönliche Notenübersicht. Im Druckdialog „Als PDF sichern“ auswählen.</div>
- <h1>Meine Noten – F12Sb</h1>
+ <h1>Meine Noten – F11Sb</h1>
  <div class="meta">Punkte 0–15 je Fach und Halbjahr</div>
  <table><thead><tr><th>Fach</th><th>HJ1</th><th>HJ2</th></tr></thead><tbody>${rows}</tbody></table>
  <div class="status">
@@ -2153,7 +2153,7 @@ function printWochenplanPDF(entries){
  const win=window.open("","_blank","width=800,height=800");
  if(!win){toast("Das PDF-Fenster wurde vom Browser blockiert. Bitte Pop-ups erlauben.");return}
  const rows=entries.map(w=>`<tr><td>${w.done?"✓":""}</td><td>${escPDF(w.title)}</td><td>${w.subject?escPDF(F12SB_FAECHER.find(f=>f.key===w.subject)?.label||""):"—"}</td><td>${w.scope==="monat"?"Monat":"Woche"}</td><td>${escPDF(w.dueDate||"—")}</td></tr>`).join("");
- win.document.write(`<!doctype html><html lang="de"><head><meta charset="utf-8"><title>Wochenplanung – F12Sb</title>
+ win.document.write(`<!doctype html><html lang="de"><head><meta charset="utf-8"><title>Wochenplanung – F11Sb</title>
  <style>
  @page{size:A4;margin:18mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#222;line-height:1.55;margin:0}
  h1{font-size:24px;margin:0 0 16px}
@@ -2163,7 +2163,7 @@ function printWochenplanPDF(entries){
  @media print{.print-note{display:none}}
  </style></head><body>
  <div class="print-note">Persönliche Wochen-/Monatsplanung. Im Druckdialog „Als PDF sichern“ auswählen.</div>
- <h1>Meine Wochen-/Monatsplanung – F12Sb</h1>
+ <h1>Meine Wochen-/Monatsplanung – F11Sb</h1>
  <table><thead><tr><th>Erl.</th><th>Was steht an</th><th>Fach</th><th>Zeitraum</th><th>Termin</th></tr></thead><tbody>${rows||"<tr><td colspan=5>Noch keine Einträge.</td></tr>"}</tbody></table>
  <script>window.onload=function(){setTimeout(function(){window.print()},300)}<\/script>
  </body></html>`);
@@ -2711,7 +2711,7 @@ async function renderLernwerkstatt(){
  ]},
  {title:"Unterstützung holen",color:"var(--soft-orange)",items:[
  [" ","Lerncoaching","Individuelle Begleitung und Kontakt zu einer Lehrkraft.","lerncoaching"],
- [" ","Fragen & Hilfe","Antworten rund um die F12Sb und das Lernen.","fragenhilfe"]
+ [" ","Fragen & Hilfe","Antworten rund um die F11Sb und das Lernen.","fragenhilfe"]
  ]}
  ];
  return`${pageHead("SELBSTSTÄNDIG LERNEN","Lernwerkstatt","Der offene Lernraum für Lernaufträge, Methoden, Tools und KI.",`<button class="primary"onclick="openPostForm('idea')">＋ Lernimpuls</button>`)}
@@ -2747,7 +2747,7 @@ async function renderKollaborationsTools(){
  ];
  const toolTile=t=>`<a class="card tile"href="#${t[3]}"><span class="emoji">${t[0]}</span>
 <strong>${t[1]}</strong><small>${t[2]}</small>${!t[4]?`<span class="badge"style="margin-top:8px">IN VORBEREITUNG</span>`:""}</a>`;
- return`${pageHead("ZUSAMMENARBEIT","Tools für Zusammenarbeit","Kostenlose, direkt in die F12Sb integrierte Tools für Gruppenarbeit, Brainstorming und Unterricht – ganz ohne externe Anmeldung.",`<button class="secondary"onclick="go('lernwerkstatt')">← Lernwerkstatt</button>`)}
+ return`${pageHead("ZUSAMMENARBEIT","Tools für Zusammenarbeit","Kostenlose, direkt in die F11Sb integrierte Tools für Gruppenarbeit, Brainstorming und Unterricht – ganz ohne externe Anmeldung.",`<button class="secondary"onclick="go('lernwerkstatt')">← Lernwerkstatt</button>`)}
  <h3 style="margin:0 0 10px">🔴 Live im Unterricht</h3>
  <div class="grid grid-3">${liveTools.map(toolTile).join("")}</div>
  <h3 style="margin:22px 0 10px"> Projektorganisation</h3>
@@ -2955,7 +2955,7 @@ async function downloadWordcloudPDF(wordcloudId){
  </style>${wordcloudCloudHTML(items)}`;
  openToolPrintWindow(
  "Wortwolke – "+(cloud.title||"Wortwolke"),
- body,"F12Sb · Wortwolke"+(cloud.description?" · "+cloud.description:"")
+ body,"F11Sb · Wortwolke"+(cloud.description?" · "+cloud.description:"")
  );
  }catch(e){console.error("Wortwolke PDF:",e);toast("Die Wortwolke konnte nicht als PDF geöffnet werden.")}
 }
@@ -3147,7 +3147,7 @@ async function downloadKanbanPDF(boardId){
  }).join("");
  openToolPrintWindow(
  "Kanban-Board – "+(board.title||"Kanban-Board"),
- body,"F12Sb · Kanban-Board"+(board.description?" · "+board.description:"")
+ body,"F11Sb · Kanban-Board"+(board.description?" · "+board.description:"")
  );
  }catch(e){console.error("Kanban PDF:",e);toast("Das Kanban-Board konnte nicht als PDF geöffnet werden.")}
 }
@@ -3386,7 +3386,7 @@ async function downloadTermPollPDF(pollId){
  </div>`).join(""):`<p class="empty">Keine Terminvorschläge.</p>`;
  openToolPrintWindow(
  "Terminfindung – "+(poll.title||"Terminfindung"),
- body,"F12Sb · Terminfindung · "+votes.length+"Stimme(n) insgesamt"+(poll.description?" · "+poll.description:"")
+ body,"F11Sb · Terminfindung · "+votes.length+"Stimme(n) insgesamt"+(poll.description?" · "+poll.description:"")
  );
  }catch(e){console.error("Terminfindung PDF:",e);toast("Die Terminfindung konnte nicht als PDF geöffnet werden.")}
 }
@@ -3444,7 +3444,7 @@ async function downloadTeamAdsPDF(){
  ${interested.length?`<small>Interessiert: ${interested.map(i=>escPDF(i.name)).join(",")}</small>`:""}
  </div>`;
  }).join(""):`<p class="empty">Noch kein Gesuch.</p>`;
- openToolPrintWindow("Team gesucht",body,"F12Sb · Übersicht aller offenen Gesuche");
+ openToolPrintWindow("Team gesucht",body,"F11Sb · Übersicht aller offenen Gesuche");
  }catch(e){console.error("Team gesucht PDF:",e);toast("Die Übersicht konnte nicht als PDF geöffnet werden.")}
 }
 
@@ -3731,7 +3731,7 @@ async function downloadChecklistPDF(checklistId){
  </div>`).join(""):`<p class="empty">Noch keine Einträge.</p>`;
  openToolPrintWindow(
  "Checkliste – "+(list.title||"Checkliste"),
- body,"F12Sb · Gemeinsame Checkliste · "+done+"von"+items.length+"erledigt"+(list.description?" · "+list.description:"")
+ body,"F11Sb · Gemeinsame Checkliste · "+done+"von"+items.length+"erledigt"+(list.description?" · "+list.description:"")
  );
  }catch(e){console.error("Checkliste PDF:",e);toast("Die Checkliste konnte nicht als PDF geöffnet werden.")}
 }
@@ -4006,7 +4006,7 @@ async function downloadAmpelPDF(roundId){
  </tbody></table>`;
  openToolPrintWindow(
  "Verständnis-Ampel – "+(round.title||"Runde"),
- body,"F12Sb · Verständnis-Ampel · "+total+"Antwort(en)"+(round.description?" · "+round.description:"")
+ body,"F11Sb · Verständnis-Ampel · "+total+"Antwort(en)"+(round.description?" · "+round.description:"")
  );
  }catch(e){console.error("Ampel PDF:",e);toast("Die Runde konnte nicht als PDF geöffnet werden.")}
 }
@@ -4224,7 +4224,7 @@ async function downloadPollPDF(pollId){
  </tbody></table>`;
  openToolPrintWindow(
  "Live-Umfrage – "+(poll.question||"Umfrage"),
- body,"F12Sb · Live-Umfrage · "+total+"Stimme(n)"+(poll.description?" · "+poll.description:"")
+ body,"F11Sb · Live-Umfrage · "+total+"Stimme(n)"+(poll.description?" · "+poll.description:"")
  );
  }catch(e){console.error("Umfrage PDF:",e);toast("Die Umfrage konnte nicht als PDF geöffnet werden.")}
 }
@@ -4656,7 +4656,7 @@ async function downloadDeckPDF(deckId){
  </div>`).join(""):`<p class="empty">Noch keine Karten.</p>`;
  openToolPrintWindow(
  "Karteikarten – "+(deck.title||"Deck"),
- body,"F12Sb · Karteikarten · "+cards.length+"Karte(n)"+(deck.description?" · "+deck.description:"")
+ body,"F11Sb · Karteikarten · "+cards.length+"Karte(n)"+(deck.description?" · "+deck.description:"")
  );
  }catch(e){console.error("Karteikarten PDF:",e);toast("Das Deck konnte nicht als PDF geöffnet werden.")}
 }
@@ -5001,7 +5001,7 @@ async function downloadGlossaryPDF(){
  <strong>${escPDF(g.term)}</strong>
  <div>${escPDF(g.definition)}</div>
  </div>`).join(""):`<p class="empty">Noch keine Begriffe.</p>`;
- openToolPrintWindow("Glossar",body,"F12Sb · Fachbegriffe-Glossar · "+entries.length+"Begriff(e)");
+ openToolPrintWindow("Glossar",body,"F11Sb · Fachbegriffe-Glossar · "+entries.length+"Begriff(e)");
  }catch(e){console.error("Glossar PDF:",e);toast("Das Glossar konnte nicht als PDF geöffnet werden.")}
 }
 
@@ -5060,8 +5060,8 @@ function essaySelfCheckStatus(entry,criteriaCount){
  return {color:"yellow",label:`🟡 ${metCount}/${criteriaCount} Kriterien selbst erfüllt`};
 }
 
-// Fest eingebaute Beispiel-Fallbeispiele (aktuell keine für F12Sb hinterlegt –
-// die App unterstützt sie aber genauso wie F12Sb, falls später gewünscht).
+// Fest eingebaute Beispiel-Fallbeispiele (aktuell keine für F11Sb hinterlegt –
+// die App unterstützt sie aber genauso wie F11Sb, falls später gewünscht).
 const ESSAY_SEED_CASES=[];
 
 async function getEssayCases(){
@@ -5377,7 +5377,7 @@ async function downloadEssayPDF(caseId){
  </div>`).join("");
  openToolPrintWindow(
  "Fachaufsatz – "+(c.title||"Fallbeispiel"),
- body,"F12Sb · Fachaufsatz-Training"+(c.theoryArea?" · "+c.theoryArea:"")
+ body,"F11Sb · Fachaufsatz-Training"+(c.theoryArea?" · "+c.theoryArea:"")
  );
  }catch(e){console.error("Fachaufsatz PDF:",e);toast("Der Aufsatz konnte nicht als PDF geöffnet werden.")}
 }
@@ -5539,7 +5539,7 @@ async function renderForum(){
  <a class="card tile"href="#forum-board"style="min-height:180px;background:var(--soft-blue)">
  <span class="emoji"></span>
  <strong>Forum</strong>
- <small>Gemeinsam denken, fragen, austauschen und unterstützen – für die ganze F12Sb sichtbar.</small>
+ <small>Gemeinsam denken, fragen, austauschen und unterstützen – für die ganze F11Sb sichtbar.</small>
  </a>
  <a class="card tile"href="#forum-nachrichten"style="min-height:180px;background:var(--soft-teal)">
  <span class="emoji"></span>
@@ -5636,7 +5636,7 @@ async function renderForumMessages(){
  <button class="secondary"title="Unterhaltung aus meiner Übersicht entfernen"onclick="event.stopPropagation();deleteConversation('${c.otherUid}','${esc(c.otherName||"")}')">Löschen</button>
  </div>
  </div>
- </article>`).join("")||`<div class="empty"><strong>Noch keine Nachrichten.</strong><p>Schreibe jemandem aus der F12Sb eine persönliche Nachricht.</p></div>`}
+ </article>`).join("")||`<div class="empty"><strong>Noch keine Nachrichten.</strong><p>Schreibe jemandem aus der F11Sb eine persönliche Nachricht.</p></div>`}
  </div>${footer()}`;
 }
 
@@ -5889,7 +5889,7 @@ async function getBoardPosts(boardId){
 
 async function renderPinnwandUebersicht(){
  const boards=await getBoards();
- return`${pageHead("ZUSAMMENARBEIT","Pinnwand","Digitale Pinnwände für Ideen, Brainstorming und Gruppenarbeit – im Raster, für die ganze F12Sb sichtbar.",`<button class="primary"onclick="openBoardForm()">＋ Neue Pinnwand</button>`)}
+ return`${pageHead("ZUSAMMENARBEIT","Pinnwand","Digitale Pinnwände für Ideen, Brainstorming und Gruppenarbeit – im Raster, für die ganze F11Sb sichtbar.",`<button class="primary"onclick="openBoardForm()">＋ Neue Pinnwand</button>`)}
  <div class="grid grid-3">${boards.map(b=>`
  <div class="card tile"style="cursor:pointer;text-align:left"onclick="openBoard('${b.id}')">
  <span class="emoji"></span>
@@ -6037,7 +6037,7 @@ async function downloadBoardPDF(boardId){
  </div>`).join(""):`<p class="empty">Noch keine Notizen.</p>`;
  openToolPrintWindow(
  "Pinnwand – "+(board.title||"Pinnwand"),
- body,"F12Sb · Pinnwand"+(board.description?" · "+board.description:"")
+ body,"F11Sb · Pinnwand"+(board.description?" · "+board.description:"")
  );
  }catch(e){console.error("Pinnwand PDF:",e);toast("Die Pinnwand konnte nicht als PDF geöffnet werden.")}
 }
@@ -6702,7 +6702,7 @@ function openJournalPrintWindow(title,students){
  const studentSections=students.map(student=>`
  <section class="student-section">
  <h1>${escPDF(student.name)}</h1>
- <div class="meta">F12Sb · Persönliches Lernjournal</div>
+ <div class="meta">F11Sb · Persönliches Lernjournal</div>
  ${student.entries.length
  ? student.entries.map(j=>`
  <article class="entry">
@@ -6861,7 +6861,7 @@ async function downloadAllJournalsPDF(){
 
  closeModal();
  openJournalPrintWindow(
- "F12Sb – Lernjournale",
+ "F11Sb – Lernjournale",
  students
  );
  }catch(e){
@@ -7286,7 +7286,7 @@ function resilienzCheckin(name){try{localStorage.setItem("campus_resilienz_"+nam
 
 async function renderFragenHilfe(){
  const faqs=[
- ["Was ist die F12Sb?","Die F12Sb verbindet selbstständiges Lernen, Projekte, Praxis, Kompetenzentwicklung und Gemeinschaft. Du arbeitest zunehmend eigenverantwortlich und kannst deinen Lernweg aktiv mitgestalten."],
+ ["Was ist die F11Sb?","Die F11Sb verbindet selbstständiges Lernen, Projekte, Praxis, Kompetenzentwicklung und Gemeinschaft. Du arbeitest zunehmend eigenverantwortlich und kannst deinen Lernweg aktiv mitgestalten."],
  ["Wie funktioniert das Lernen?","Du setzt Ziele, planst deine nächsten Schritte, bearbeitest Lernaufträge und reflektierst deinen Lernweg. Die Lernwerkstatt unterstützt dich dabei mit Methoden, Lernressourcen, Lernimpulsen und KI-Angeboten."],
  ["Wo finde ich meine Aufgaben?","Im Campus-Kompass findest du deine persönlichen Aufgaben, Projekte, Ziele und deinen aktuellen Lernweg."],
  ["Was ist die Lernwerkstatt?","Die Lernwerkstatt ist dein Bereich für selbstständiges Lernen. Dort findest du Lernpfade, Lernressourcen, Lernimpulse, Lernstandsmessungen, KI zum Lernen und diese Fragen-&-Hilfe-Seite."],
@@ -7295,15 +7295,15 @@ async function renderFragenHilfe(){
  ["Was ist Deeper Learning?","Deeper Learning bedeutet, dass du Wissen nicht nur aufnimmst, sondern es verstehst, anwendest, auf neue Situationen überträgst, Probleme löst, gemeinsam arbeitest und deine Ergebnisse reflektierst."],
  ["Was ist ein Lernjournal?","Im Lernjournal hältst du deinen Lernweg fest: Was habe ich gelernt? Was hat funktioniert? Wo gab es Schwierigkeiten? Was ist mein nächster Schritt?"],
  ["Was sind Lernstandsmessungen?","Sie helfen dir zu erkennen, wo du bei deinen Kompetenzen stehst und woran du als Nächstes arbeiten solltest. Die Ergebnisse können deine Kompetenzentwicklung sichtbar machen."],
- ["Wo finde ich Termine?","Im Campus-Kalender findest du die wichtigen Termine der F12Sb. Dort sind auch die Schulferien von Bayern für das Schuljahr 2026/27 markiert."],
- ["Was mache ich bei Fragen zur F12Sb?","Wenn deine Frage hier nicht beantwortet wird, wende dich an deine Lehrkraft bzw. das Klassenteam. Die Seite soll dir zunächst schnelle Orientierung zu F12Sb und Lernen geben."]
+ ["Wo finde ich Termine?","Im Campus-Kalender findest du die wichtigen Termine der F11Sb. Dort sind auch die Schulferien von Bayern für das Schuljahr 2026/27 markiert."],
+ ["Was mache ich bei Fragen zur F11Sb?","Wenn deine Frage hier nicht beantwortet wird, wende dich an deine Lehrkraft bzw. das Klassenteam. Die Seite soll dir zunächst schnelle Orientierung zu F11Sb und Lernen geben."]
  ];
 
- return`${pageHead("ORIENTIERUNG","Fragen & Hilfe","Antworten rund um die F12Sb, selbstständiges Lernen und deinen Lernweg.")}
+ return`${pageHead("ORIENTIERUNG","Fragen & Hilfe","Antworten rund um die F11Sb, selbstständiges Lernen und deinen Lernweg.")}
  <div class="card"style="margin-bottom:16px;background:var(--soft-green)">
  <span class="badge"> ORIENTIERUNG</span>
  <h2>Du hast eine Frage?</h2>
- <p>Hier findest du schnelle Antworten zu den wichtigsten Fragen rund um die F12Sb und das Lernen. Nutze die Themen als erste Orientierung.</p>
+ <p>Hier findest du schnelle Antworten zu den wichtigsten Fragen rund um die F11Sb und das Lernen. Nutze die Themen als erste Orientierung.</p>
  </div>
  <div class="grid grid-2">
  ${faqs.map(([q,a])=>`<details class="card"style="margin:0 0 12px">
@@ -7698,7 +7698,7 @@ function escapeICS(text){
 }
 
 function buildICS(events,calName){
- const lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//F12Sb//Kalender//DE","CALSCALE:GREGORIAN",`X-WR-CALNAME:${escapeICS(calName||"F12Sb Kalender")}`];
+ const lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//F11Sb//Kalender//DE","CALSCALE:GREGORIAN",`X-WR-CALNAME:${escapeICS(calName||"F11Sb Kalender")}`];
  const stamp=new Date().toISOString().replace(/[-:]/g,"").split(".")[0]+"Z";
  events.forEach((e,i)=>{
  const raw=e.start||e.date||e.startDate;
@@ -7762,7 +7762,7 @@ async function exportCampusCalendarICS(){
  ["2027-06-01","Englisch – Fachabiturprüfung"],
  ["2027-06-03","Mathematik – Fachabiturprüfung"]
  ].map(([start,title])=>({start,title,description:"Zentraler Prüfungstermin lt. Kultusministerium."}));
- downloadICS([...events,...birthdayEvents,...ferienRangeEvents,...pruefungsTermineICS],"campuskalender.ics","F12Sb Kalender");
+ downloadICS([...events,...birthdayEvents,...ferienRangeEvents,...pruefungsTermineICS],"campuskalender.ics","F11Sb Kalender");
  toast("Kalender wird heruntergeladen – Datei öffnen, um sie zum Handy-Kalender hinzuzufügen.");
  }catch(e){console.error("Kalender-Export:",e);toast("Der Kalender konnte nicht exportiert werden.")}
 }
@@ -7775,7 +7775,7 @@ function exportCalendarDayICS(y,m,d){
  return !isNaN(x)&&x.getFullYear()===y&&x.getMonth()===m&&x.getDate()===d;
  });
  if(!day.length){toast("An diesem Tag gibt es keinen Termin zum Exportieren.");return}
- downloadICS(day,`termin-${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}.ics`,"F12Sb Termin");
+ downloadICS(day,`termin-${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}.ics`,"F11Sb Termin");
 }
 
 async function renderKalender(){
@@ -7978,7 +7978,7 @@ async function getBirthdayEvents(){
  return {
  start:dateStr,type:"geburtstag",
  title:` ${u.displayName||u.email||"Campus-Mitglied"} hat Geburtstag`,
- description:"Herzlichen Glückwunsch von der ganzen F12Sb!"
+ description:"Herzlichen Glückwunsch von der ganzen F11Sb!"
  };
  }).filter(Boolean);
  }catch(e){console.error("Geburtstage laden:",e);return []}
@@ -8531,7 +8531,7 @@ nächste Schritt sinnvoll sein kann.</p>
 
 
 /* =========================================================
- F12Sb – LERNIMPULSE
+ F11Sb – LERNIMPULSE
  Zwei Zugänge:
  1. Gezielte Auswahl
  2. Lern-Glücksrad
@@ -8698,7 +8698,7 @@ window.completeLernimpuls=completeLernimpuls;
 
 
 /* =========================================================
- F12Sb – LERNSTANDSMESSUNG PP 11
+ F11Sb – LERNSTANDSMESSUNG PP 11
  26 Lernstandsmessungen
  5 identische Kompetenzdimensionen × 3 Punkte = 15 Punkte
  ========================================================= */
@@ -9440,7 +9440,7 @@ async function downloadLernstandResultPDF(id){
  return`<div class="item"><strong>${escPDF(String(i+1)+"."+q.label)} · ${q.points} P.</strong><div><em>Aufgabe:</em> ${escPDF(q.prompt||"")}</div><div style="margin-top:6px"><em>Musterlösung:</em><br>${escPDF(q.solution||"Noch keine Musterlösung hinterlegt.").replace(/\n/g,"<br>")}</div></div>`;
  }).join("");
  openToolPrintWindow(
- "Lernstandsmessung – "+(t.title||"Thema"),`<div class="item"style="background:#f5f7f8"><strong>${escPDF(scoreLine)}</strong></div>`+body,"F12Sb · Lernstandsmessung"+t.nr+"/26 · "+(LERNSTAND_AREAS[t.learningArea]?.title||"")
+ "Lernstandsmessung – "+(t.title||"Thema"),`<div class="item"style="background:#f5f7f8"><strong>${escPDF(scoreLine)}</strong></div>`+body,"F11Sb · Lernstandsmessung"+t.nr+"/26 · "+(LERNSTAND_AREAS[t.learningArea]?.title||"")
  );
  }catch(e){console.error("Lernstand PDF:",e);toast("Das PDF konnte nicht erstellt werden.")}
 }
@@ -9532,7 +9532,7 @@ async function downloadLernstandTeacherPDF(attemptId){
  }).join("");
  const scoreLine=a.status==="bewertet"?`Gesamt: ${a.total}/${max} Punkte (${lernstandStatusText(a.total,max)})`:`Gesamt bisher: ${Number(a.total)||0}/${max} Punkte (noch nicht vollständig bewertet)`;
  openToolPrintWindow(
- "Bewertungsbericht – "+(t.title||"Thema"),`<div class="item"style="background:#f5f7f8"><strong>${escPDF(a.displayName||"Schüler/in")} · Versuch ${a.attempt}/3</strong><br>${escPDF(scoreLine)}${a.feedback?`<br><em>Rückmeldung:</em> ${escPDF(a.feedback)}`:""}</div>`+body,"F12Sb · Lernstandsmessung"+t.nr+"/26 · "+(LERNSTAND_AREAS[t.learningArea]?.title||"")
+ "Bewertungsbericht – "+(t.title||"Thema"),`<div class="item"style="background:#f5f7f8"><strong>${escPDF(a.displayName||"Schüler/in")} · Versuch ${a.attempt}/3</strong><br>${escPDF(scoreLine)}${a.feedback?`<br><em>Rückmeldung:</em> ${escPDF(a.feedback)}`:""}</div>`+body,"F11Sb · Lernstandsmessung"+t.nr+"/26 · "+(LERNSTAND_AREAS[t.learningArea]?.title||"")
  );
  }catch(e){console.error("Lernstand-Bewertungsbericht PDF:",e);toast("Das PDF konnte nicht erstellt werden.")}
 }
@@ -9727,7 +9727,7 @@ entwickelt. Die übrige Campus-App bleibt dabei unverändert.</p></div>${footer(
 
 
 /* =========================================================
- F12Sb – MODAL BRIDGE
+ F11Sb – MODAL BRIDGE
  app.js wird als ES-Modul geladen. Funktionen aus einem
  ES-Modul sind nicht automatisch window-global.
  Die bestehenden Modal-Formulare verwenden jedoch inline
