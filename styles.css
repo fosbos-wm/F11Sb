@@ -89,8 +89,10 @@ main#content{flex:1;min-width:0;padding:28px 34px 60px;max-width:1500px}
 .mini-kalender-dot{display:block;width:5px;height:5px;border-radius:50%;background:#e8890c;margin:3px auto 0}
 .mini-kalender-today .mini-kalender-dot{background:#fff}
 .mini-kalender-dot-pink{background:#e0629e}
-.mini-kalender-ferien{background:#e3f5da!important}
+.mini-kalender-ferien{background:#dcf6e3!important}
 .mini-kalender-ferien.mini-kalender-today{background:var(--blue)!important}
+.mini-kalender-praktikum{background:#ffffff!important;border:2px solid #1688cf!important}
+.mini-kalender-praktikum.mini-kalender-today{background:var(--blue)!important;border-color:var(--blue)!important}
 .card-compact h3{margin:0 0 8px;font-size:14px}
 .card-compact .list{gap:6px}
 .card-compact .list-item{padding:8px 10px}

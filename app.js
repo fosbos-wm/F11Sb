@@ -2037,6 +2037,7 @@ async function miniKalenderHTML(){
  ["2027-02-08","2027-02-12"],["2027-03-22","2027-04-02"],["2027-05-18","2027-05-28"],["2027-08-02","2027-09-13"]
  ];
  const istFerien=key=>ferienZeitraeume.some(([von,bis])=>key>=von&&key<=bis);
+ const istPraktikum=key=>PRAKTIKUMSPHASEN.some(p=>key>=p.start&&key<=p.end);
  const today=new Date();today.setHours(0,0,0,0);
  const monday=new Date(today);monday.setDate(today.getDate()-((today.getDay()+6)%7));
  const days=Array.from({length:7},(_,i)=>{const d=new Date(monday);d.setDate(monday.getDate()+i);return d});
@@ -2046,8 +2047,8 @@ async function miniKalenderHTML(){
  const wt=["Mo","Di","Mi","Do","Fr","Sa","So"];
  return `<a href="#kalender"class="mini-kalender">
  ${days.map((d,i)=>{const key=dateKey(d);const isToday=key===dateKey(today);
- const ferien=istFerien(key),geburtstag=birthdayDates.has(key),termin=eventDates.has(key);
- return `<div class="mini-kalender-day${isToday?" mini-kalender-today":""}${ferien?" mini-kalender-ferien":""}"><small>${wt[i]}</small><strong>${d.getDate()}</strong>${geburtstag?`<span class="mini-kalender-dot mini-kalender-dot-pink"></span>`:termin?`<span class="mini-kalender-dot"></span>`:""}</div>`;}).join("")}
+ const ferien=istFerien(key),praktikum=istPraktikum(key),geburtstag=birthdayDates.has(key),termin=eventDates.has(key);
+ return `<div class="mini-kalender-day${isToday?" mini-kalender-today":""}${ferien?" mini-kalender-ferien":""}${praktikum?" mini-kalender-praktikum":""}"><small>${wt[i]}</small><strong>${d.getDate()}</strong>${geburtstag?`<span class="mini-kalender-dot mini-kalender-dot-pink"></span>`:termin?`<span class="mini-kalender-dot"></span>`:""}</div>`;}).join("")}
  </a>
  <small style="display:block;margin-top:6px;color:var(--muted);font-size:10px">Zum vollständigen Campus-Kalender →</small>`;
 }
@@ -8299,12 +8300,16 @@ async function renderKalender(){
  .cal-num{display:block;font-size:14px;flex:0 0 auto}
  .cal-event-type{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;font-size:9.5px;line-height:1.25;margin-top:4px;font-weight:700;word-break:break-word}
  .cal-count{position:absolute;right:5px;bottom:5px;font-size:10px;background:rgba(255,255,255,.8);border-radius:10px;padding:1px 5px}
- .cal-blue{background:#dbeafe!important}.cal-red{background:#fee2e2!important}.cal-green{background:#dcfce7!important}
- .cal-yellow{background:#fef3c7!important}.cal-purple{background:#ede9fe!important}.cal-grey{background:#e5e7eb!important}
- .cal-holiday{background:#e3f5da!important;border-color:#8bc34a!important}
+ .cal-blue{background:#e1e5fb!important;border-color:#4c6ef5!important}
+ .cal-red{background:#fde2e2!important;border-color:#e5484d!important}
+ .cal-green{background:#cdf0ec!important;border-color:#12b3a8!important}
+ .cal-yellow{background:#fef3c7!important;border-color:#e8a91d!important}
+ .cal-purple{background:#f0e7fc!important;border-color:#9061f9!important}
+ .cal-grey{background:#e9ecef!important;border-color:#8a97a3!important}
+ .cal-holiday{background:#dcf6e3!important;border-color:#2fae5c!important}
  .cal-birthday{background:#ffe4ec!important;border-color:#f472b6!important}
- .cal-gold{background:#fdf0c8!important;border-color:#d4a017!important;font-weight:700!important}
- .cal-praktikum{background:#ffffff!important;border:3px solid #c2622a!important}
+ .cal-gold{background:#f5e6c8!important;border-color:#b8860b!important;font-weight:700!important}
+ .cal-praktikum{background:#ffffff!important;border:3px solid #1688cf!important}
  .cal-praktikum .cal-event-type{color:#c2622a}
  .cal-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
  .cal-legend-item{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:6px 10px;background:#fff;font-size:12px}
@@ -8452,7 +8457,8 @@ function calendarTypeMeta(e){
  sonstiges:{label:"Sonstiger Termin",className:"cal-grey"},
  geburtstag:{label:"Geburtstag",className:"cal-birthday"},
  ferien:{label:"Schulferien Bayern",className:"cal-holiday"},
- pruefung:{label:"Abschlussprüfung",className:"cal-gold"}
+ pruefung:{label:"Abschlussprüfung",className:"cal-gold"},
+ praktikum:{label:"Praktikum",className:"cal-praktikum"}
  })[key]||{label:"Sonstiger Termin",className:"cal-grey"};
 }
 
