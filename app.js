@@ -8393,13 +8393,17 @@ function openBirthdayForm(){
  <label>Geburtstag (Tag &amp; Monat)<input id="birthdayInput"type="date"value="${current?`2000-${current}`:""}"></label>
  <p style="color:var(--muted);font-size:12px;margin-top:4px">Nur Tag und Monat werden gespeichert und im Campus-Kalender für alle sichtbar angezeigt – dein Geburtsjahr bleibt privat.</p>
  <div class="form-actions"><button class="secondary"type="button"onclick="closeModal()">Abbrechen</button>
- ${current?`<button class="secondary"type="button"onclick="removeBirthday()">Löschen</button>`:""}
+ <button class="secondary"type="button"onclick="removeBirthday()">Löschen</button>
  <button id="birthdaySaveBtn"class="primary"type="button">Speichern</button></div>
  </div>`);
  $("birthdaySaveBtn").addEventListener("click",saveBirthday);
 }
 
 async function removeBirthday(){
+ try{
+ const snap=await getDoc(doc(db,"users",currentUser.uid));
+ if(!snap.exists()||!snap.data()?.birthday){toast("Du hast aktuell keinen Geburtstag eingetragen.");return}
+ }catch(e){console.error("Geburtstag prüfen:",e)}
  if(!confirm("Deinen eingetragenen Geburtstag wirklich wieder entfernen?"))return;
  try{
  await updateDoc(doc(db,"users",currentUser.uid),{birthday:"",updatedAt:serverTimestamp()});
