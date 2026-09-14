@@ -2,8 +2,8 @@ let initializeApp, getAuth, onAuthStateChanged, createUserWithEmailAndPassword, 
  WICHTIG:
  Diese Werte werden nach dem Anlegen deiner Firebase-Web-App aus
  der Firebase Console hier eingesetzt.
-*/ const firebaseConfig = { apiKey: "AIzaSyBKRUQz7x0hA8_GxJ4qi-61veKrS3GQqCA", authDomain: "f11sb-62bae.firebaseapp.com", projectId: "f11sb-62bae", storageBucket: "f11sb-62bae.firebasestorage.app", messagingSenderId: "579105646323", appId: "1:579105646323:web:3bfb668a90cb37540e3986", measurementId: "G-20SRP6BE9K" }; /* =========================================================
- F11Sb MASTER – STABILE MODULREGISTRY
+*/ const firebaseConfig = { apiKey: "AIzaSyB_q4BaOGXaxLLL_fYB1MNA0HO2llAeG_s", authDomain: "f12sb-9f3db.firebaseapp.com", projectId: "f12sb-9f3db", storageBucket: "f12sb-9f3db.firebasestorage.app", messagingSenderId: "85936724696", appId: "1:85936724696:web:aa5be7604fd580e4add5ad" }; /* =========================================================
+ F12Sb MASTER – STABILE MODULREGISTRY
  Die Master-App selbst enthält keine Pflicht-Imports
  von Zusatzmodulen. Module werden erst beim Öffnen geladen.
  ========================================================= */ const CAMPUS_MODULES={ lernpfad:{label:"Persönlicher Lernpfad",route:"lernpfad",ready:true}, lernressourcen:{label:"Lernressourcen",route:"ressourcen",ready:true}, lernjournal:{label:"Lernjournal",route:"journal",ready:true}, lernmethoden:{label:"Lernmethoden",route:"methoden",ready:true}, lernimpulse:{label:"Lernimpulse",route:"impulse",ready:false}, lernstand:{label:"Lernstandsmessung",route:"lernstand",ready:true}, lerncoaching:{label:"Lerncoaching",route:"lerncoaching",ready:false}, resilienz:{label:"Resilienz & Respressi",route:"resilienz",ready:false}, kompetenz:{label:"Kompetenzwerkstatt",route:"kompetenz",ready:true}, forum:{label:"Campus-Forum",route:"forum",ready:true}, pinnwand:{label:"Pinnwand",route:"pinnwand",ready:true}, kollaboration:{label:"Tools für Zusammenarbeit",route:"kollaboration",ready:true}, wortwolke:{label:"Wortwolke",route:"wortwolke",ready:true}, kanban:{label:"Kanban-Board",route:"kanban",ready:true}, terminfindung:{label:"Terminfindung",route:"terminfindung",ready:true}, teamgesucht:{label:"Team gesucht",route:"teamgesucht",ready:true}, checkliste:{label:"Gemeinsame Checkliste",route:"checkliste",ready:true}, ampel:{label:"Verständnis-Ampel",route:"ampel",ready:true}, umfrage:{label:"Live-Umfrage",route:"umfrage",ready:true}, zufallspicker:{label:"Wer ist dran?",route:"zufallspicker",ready:true}, lernwerkzeuge:{label:"Lern-Werkzeuge",route:"lernwerkzeuge",ready:true}, karteikarten:{label:"Karteikarten",route:"karteikarten",ready:true},"fokus-timer":{label:"Fokus-Timer",route:"fokus-timer",ready:true}, glossar:{label:"Glossar",route:"glossar",ready:true}, projekte:{label:"Projekte",route:"projekte",ready:true}, praxis:{label:"fpA",route:"praktikum",ready:true}, ki:{label:"KI-Innovationslabor",route:"ki",ready:true}, kalender:{label:"Campus-Kalender",route:"kalender",ready:true}, kompetenzprofil:{label:"Kompetenzprofil",route:"kompetenzprofil",ready:false}, team:{label:"Lehrkräfte Klassenteam",route:"team",ready:true} }; const configReady = !Object.values(firebaseConfig).some(v => String(v).includes("HIER_") || String(v).includes("DEIN-PROJEKT")); let app=null, auth=null, db=null; const $=id=>document.getElementById(id); const esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
@@ -29,7 +29,7 @@ function modal(html){$("modal").innerHTML=html;$("modalBackdrop").hidden=false}
 function closeModal(){$("modalBackdrop").hidden=true}
 function pageHead(k,h,p,actions=""){return`<div class="page-head"><div><div class="kicker">${k}</div><h1>${h}</h1><p>${p}</p>
 </div><div class="actions">${actions}</div></div>`}
-function footer(){return`<div class="footer"><span>F11Sb 26/27 · FOSBOS Weilheim</span><span>Gemeinsam · offen ·
+function footer(){return`<div class="footer"><span>F12Sb 26/27 · FOSBOS Weilheim</span><span>Gemeinsam · offen ·
 respektvoll</span><span><button type="button"onclick="showImpressum()"style="background:none;border:none;padding:0;font:inherit;color:inherit;text-decoration:underline;cursor:pointer">Impressum</button></span></div>`}
 
 /* =========================================================
@@ -67,7 +67,7 @@ function showImpressum(){
  Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
 
  <div class="notice">
- <strong>Hinweis zur F11Sb-App</strong>
+ <strong>Hinweis zur F12Sb-App</strong>
  <p style="margin-bottom:0">Diese App ist ein Unterrichts-/Klassenprojekt und kein offizielles IT-Angebot der Schulverwaltung. Die obigen Angaben entsprechen denen der offiziellen Schul-Website (fos-bos-weilheim.de). Für Rückfragen zu dieser App wende dich zusätzlich an die betreuende Lehrkraft. Eine ausführliche Datenschutzerklärung für die App selbst steht noch aus.</p>
  </div>
 
@@ -1108,26 +1108,28 @@ async function renderKlassenteam(){
  <div class="card"style="margin-top:16px">
  <div class="kicker">TERMINE</div>
  <h2 style="margin-top:4px">Geburtstage im Klassenteam</h2>
- <div class="list">${birthdays.map(b=>{const c=personColor(b.uid);return`<div class="list-item"style="background:${c.bg};border-left:4px solid ${c.border};border-radius:8px;padding:10px 12px;margin-bottom:6px"><div><strong style="color:${c.text}">${esc(b.name)}</strong><small>${esc(b.date.toLocaleDateString("de-DE",{day:"2-digit",month:"long"}))}</small></div>${b.isToday?`<span class="pill green"> Heute!</span>`:`<span class="pill"style="background:${c.border};color:#fff">in ${b.days} Tagen</span>`}</div>`}).join("")||`<div class="empty">Noch keine Geburtstage eingetragen.</div>`}</div>
+ <div class="list">${birthdays.map(b=>{const c=personColor(b.uid);return`<div class="list-item"style="background:${c.bg};border-left:4px solid ${c.border};border-radius:8px;padding:10px 12px;margin-bottom:6px"><div><strong style="color:${c.text}">${esc(b.name)}</strong><small>${esc(b.date.toLocaleDateString("de-DE",{day:"2-digit",month:"long"}))}</small></div><div style="display:flex;align-items:center;gap:8px">${b.isToday?`<span class="pill green"> Heute!</span>`:`<span class="pill"style="background:${c.border};color:#fff">in ${b.days} Tagen</span>`}${isTeacher()?`<button type="button"class="secondary"style="padding:4px 8px"onclick="adminRemoveBirthday('${b.uid}')"title="Geburtstag entfernen">✕</button>`:""}</div></div>`}).join("")||`<div class="empty">Noch keine Geburtstage eingetragen.</div>`}</div>
  </div>
  ${footer()}`;
 }
 
 // ============================================================
-// STUNDENPLAN (WebUntis), NOTEN & WOCHENPLANUNG – F11Sb
+// STUNDENPLAN (WebUntis), NOTEN & WOCHENPLANUNG – F12Sb
 // ============================================================
 
-// Die 7 benoteten Fächer der F11Sb (Sozialwesen). Das Wahlpflichtfach
-// ist reiner Förderunterricht, wird nicht benotet und taucht daher hier
-// bewusst nicht auf.
-const F11SB_FAECHER=[
+// Fächer der FOS 12 Sozialwesen. "Sozialwirtschaft und Recht" läuft als
+// zweijähriges Profilfach weiter. Die beiden frei gewählten Fächer der
+// Schule erscheinen als "Wahlpflichtfach 1/2" (echte Fachbezeichnung je
+// nach Wahl der Schüler:innen unterschiedlich).
+const F12SB_FAECHER=[
  {key:"deutsch",label:"Deutsch"},
  {key:"englisch",label:"Englisch"},
- {key:"geschichte",label:"Geschichte"},
+ {key:"geschichte",label:"Geschichte/Sozialkunde"},
  {key:"mathematik",label:"Mathematik"},
  {key:"paedagogik",label:"Pädagogik/Psychologie"},
  {key:"sozialwirtschaft",label:"Sozialwirtschaft und Recht"},
- {key:"chemie",label:"Chemie"}
+ {key:"wahlpflicht1",label:"Wahlpflichtfach 1"},
+ {key:"wahlpflicht2",label:"Wahlpflichtfach 2"}
 ];
 
 // ============================================================
@@ -1200,86 +1202,113 @@ window.deletePraktikumsphaseAuftrag=deletePraktikumsphaseAuftrag;
 
 // Lehrplan-Zeitstrahl je Fach. "typ": "projekt" | "einzel". Aktuell mit
 // echten Inhalten für Pädagogik/Psychologie befüllt (Jahresverlaufsplanung
-// FOS 11 Sozialwesen, B-Block 2026/27); die übrigen Fächer sind als leere,
+// FOS 12 Sozialwesen, B-Block 2026/27); die übrigen Fächer sind als leere,
 // erweiterbare Struktur angelegt.
 const LEHRPLAN_WOCHEN={
  paedagogik:[
- {id:"pp01",start:"2026-10-05",end:"2026-10-09",lb:"LB 1",thema:"Grundlagen: Pädagogik und Psychologie",typ:"einzel",
- planung:"2 Std.: Gegenstandsbereiche P/P; 2 Std.: Erziehung, Erleben und Verhalten unterscheiden; 2 Std.: Bedeutung für Sozialwesen + erste Praxisfragen.",
- praxis:"Erziehungspraktikum: Begriffe an realen Situationen wiedererkennen; kurze Beobachtungsnotizen sammeln."},
- {id:"pp02",start:"2026-10-12",end:"2026-10-16",lb:"LB 1",thema:"Wissenschaftlichkeit und Alltagspsychologie",typ:"einzel",
- planung:"2 Std.: wissenschaftliche Aussagen vs. Alltagswissen; 2 Std.: Systematik, Überprüfbarkeit, Allgemeingültigkeit, Objektivität; 2 Std.: Aussagen prüfen und sichern.",
- praxis:"Praxisbeobachtung mit Kriterienraster: Was ist Beobachtung, was ist Interpretation?"},
- {id:"pp03",start:"2026-10-19",end:"2026-10-23",lb:"LB 1",thema:"Experiment als wissenschaftliche Methode",typ:"projekt",
- planung:"2 Std.: Methode/Fragestellung; 2 Std.: Durchführung; 2 Std.: Auswertung, Kurzbericht und Präsentation.",
- praxis:"Erziehungsbereich: kleines Beobachtungs-/Mini-Experiment zu Aufmerksamkeit, Erinnerung oder Lernverhalten; Datenschutz und Ethik beachten."},
- {id:"pp04",start:"2026-11-23",end:"2026-11-27",lb:"LB 3",thema:"Erziehung: Begriff und Merkmale",typ:"einzel",
- planung:"2 Std.: Begriff; 2 Std.: beabsichtigte Lernhilfe; 2 Std.: soziale Kommunikation/Interaktion + Abgrenzung zu Betreuung/Versorgung.",
- praxis:"Erziehungspraktikum: reale Situationen anhand der Erziehungsmerkmale analysieren."},
- {id:"pp05",start:"2026-11-30",end:"2026-12-04",lb:"LB 3",thema:"Erziehungsmaßnahmen und Erziehungsstile",typ:"projekt",
- planung:"2 Std.: Erziehungsmaßnahmen; 2 Std.: Baumrind; 2 Std.: anonymisierter Praxisfall, Alternativen und Produkt.",
- praxis:"Erziehungspraktikum: Fallvignette erstellen; pädagogisches Handeln und Alternativen begründen."},
- {id:"pp06",start:"2026-12-07",end:"2026-12-11",lb:"LB 3",thema:"Mündigkeit nach Roth",typ:"einzel",
- planung:"2 Std.: Mündigkeit; 2 Std.: Selbst-, Sach-, Sozialkompetenz; 2 Std.: kompetenzorientierte Erziehungsziele + Sicherung.",
- praxis:"Erziehungsbereich: beobachten, welche Kompetenzen gefördert werden; Reflexion im Portfolio."},
- {id:"pp07",start:"2027-01-18",end:"2027-01-22",lb:"LB 3",thema:"Erziehungsstile vertiefen und frühe Bildung",typ:"projekt",
- planung:"2 Std.: Stile vertiefen; 2 Std.: BayBEP-Bildungs-/Erziehungsbereiche; 2 Std.: Praxisprodukt/Präsentation.",
- praxis:"Erziehungspraktikum: Einrichtung analysieren – welche Bildungs-/Erziehungsziele werden sichtbar?"},
- {id:"pp08",start:"2027-01-25",end:"2027-01-29",lb:"LB 3",thema:"Vernetzung: Erziehung, Wahrnehmung, Motivation",typ:"projekt",
- planung:"2 Std.: Fall auswählen; 2 Std.: Wahrnehmung/Attribution/Motivation anwenden; 2 Std.: Handlungsempfehlung + Fallkonferenz.",
- praxis:"Erziehungspraktikum: anonymisierter Praxisfall → Analyse → Handlungsempfehlung."},
- {id:"pp09",start:"2027-02-01",end:"2027-02-05",lb:"LB 2",thema:"Wahrnehmung und Gedächtnis",typ:"einzel",
- planung:"2 Std.: Wahrnehmungsprozess; 2 Std.: individuelle/soziale Einflussfaktoren; 2 Std.: Mehrspeichermodell + Lernstrategien.",
- praxis:"Praxis: Beobachtungsfehler und Erinnerungsverzerrungen reflektieren."},
- {id:"pp10",start:"2027-03-08",end:"2027-03-12",lb:"LB 2",thema:"Emotionen und Emotionsregulation",typ:"projekt",
- planung:"2 Std.: Emotionen/Komponenten; 2 Std.: Regulationsstrategien; 2 Std.: Praxisfall, Projektprodukt und Reflexion.",
- praxis:"Pflege-/Erziehungsbereich: emotionale Situationen beobachten; Regulationsmöglichkeiten professionell analysieren."},
- {id:"pp11",start:"2027-03-15",end:"2027-03-19",lb:"LB 2",thema:"Motivation und Attribution nach Weiner",typ:"einzel",
- planung:"2 Std.: Motivation; 2 Std.: Attribution internal/external, stabil/variabel; 2 Std.: Folgen für Emotion/Erfolgserwartung/Motivation.",
- praxis:"Pflegepraxis: Aussagen zu Erfolg/Misserfolg analysieren und Attributionsmuster erkennen."},
- {id:"pp12",start:"2027-04-05",end:"2027-04-09",lb:"LB 2",thema:"Lernen und Gedächtnis – Praxisprojekt",typ:"projekt",
- planung:"2 Std.: Strategien vergleichen; 2 Std.: Lernsetting planen; 2 Std.: Lernhilfe/Infografik/Anleitung erstellen und reflektieren.",
- praxis:"Pflegebereich: Lern-/Orientierungssituation analysieren; Barrieren und Ressourcen berücksichtigen."},
- {id:"pp13",start:"2027-05-03",end:"2027-05-07",lb:"LB 4",thema:"Klassisches Konditionieren",typ:"einzel",
- planung:"2 Std.: Pawlow; 2 Std.: Reiz/Reaktion und Konditionierung; 2 Std.: Generalisierung/höhere Ordnung + Anwendung.",
- praxis:"Pflege: Routinen, Signale und situative Auslöser beobachten; keine personenbezogenen Diagnosen."},
- {id:"pp14",start:"2027-05-10",end:"2027-05-14",lb:"LB 4",thema:"Operantes Konditionieren",typ:"projekt",
- planung:"2 Std.: Thorndike/Skinner; 2 Std.: Verstärkung/Verstärkerarten; 2 Std.: Praxisfall + professionell-ethische Alternativen.",
- praxis:"Pflege: Verstärkung in Anleitung/Alltagsbegleitung analysieren; Alternativen entwickeln."},
- {id:"pp15",start:"2027-06-28",end:"2027-07-02",lb:"LB 4",thema:"Sozial-kognitive Lerntheorie nach Bandura",typ:"einzel",
- planung:"2 Std.: Beobachtungslernen; 2 Std.: Aufmerksamkeit/Gedächtnis/Reproduktion/Motivation; 2 Std.: Selbstwirksamkeit + Transfer.",
- praxis:"Pflege: Lernen am Modell in Anleitung, Team und Alltag beobachten."},
- {id:"pp16",start:"2027-07-05",end:"2027-07-09",lb:"LB 4",thema:"Medien als Einflussfaktor auf Lernprozesse",typ:"einzel",
- planung:"2 Std.: Medien und Lernen; 2 Std.: Chancen/Risiken; 2 Std.: lernförderliche digitale Angebote beurteilen.",
- praxis:"Pflege: digitale Anleitung/Dokumentation/Informationsangebote untersuchen."},
- {id:"pp17",start:"2027-07-12",end:"2027-07-16",lb:"LB 1–4",thema:"Abschlussprojekt: Theorie-Praxis-Vernetzung",typ:"projekt",
- planung:"2 Std.: Praxisfall auswählen; 2 Std.: Erziehung/Wahrnehmung/Emotion/Motivation/Gedächtnis/Lernen vernetzen; 2 Std.: Produkt, Präsentation und Jahresreflexion.",
- praxis:"Pflegeeinrichtung: anonymisierte Fallsituation → Theorieanalyse → Handlungsvorschlag → Präsentation; Vergleich mit dem Erziehungspraktikum."}
+ {id:"pp12_01",start:"2026-09-15",end:"2026-09-17",lb:"LB 1",thema:"Formalia und der Begriff Entwicklung",typ:"einzel",
+ planung:"Formalia/Der Begriff Entwicklung; Begriff Entwicklung; Bedingungen der Entwicklung."},
+ {id:"pp12_02",start:"2026-09-22",end:"2026-09-24",lb:"LB 1",thema:"Psychoanalyse: Grundannahmen und Persönlichkeitsmodell",typ:"einzel",
+ planung:"Bedingungen der Entwicklung; Einstieg Psychoanalyse/Grundannahmen, Instanzen und Dynamiken; Das psychoanalytische Persönlichkeitsmodell."},
+ {id:"pp12_03",start:"2026-09-29",end:"2026-10-01",lb:"LB 1",thema:"Ich-Stärke, Angst und Abwehr",typ:"einzel",
+ planung:"Ich-Stärke und Ich-Schwäche; Angst und Abwehr (Lernsituation „Carlas Diebstähle“); Angst und Abwehr."},
+ {id:"pp12_04",start:"2026-10-06",end:"2026-10-08",lb:"LB 1",thema:"Abwehrmechanismen und psychosexuelle Entwicklung",typ:"einzel",
+ planung:"Die Abwehrmechanismen; Psychosexuelle Entwicklung (orale und anale Phase); Phallische Phase, Latenzperiode, genitale Phase (Puzzle)."},
+ {id:"pp12_05",start:"2026-10-13",end:"2026-10-15",lb:"LB 1",thema:"Fehlentwicklungen und Lebensspanne",typ:"einzel",
+ planung:"Entstehung von seelischen Fehlentwicklungen/kritische Würdigung der psychoanalytischen Theorie; Entwicklung im Lebenslauf – die Theorie der Lebensspanne; 1. Kurzarbeit: Entwicklung/Psychoanalytische Theorie.",
+ leistungsnachweis:true},
+ {id:"pp12_06",start:"2026-10-20",end:"2026-10-22",lb:"LB 1",thema:"Bindung und Erklärvideo (Produktphase)",typ:"einzel",
+ planung:"Bindung und Entwicklung; Erstellen eines Erklärvideos; Präsentation und Besprechung der Videos I.",
+ produktphase:true},
+ {id:"pp12_07",start:"2026-10-27",end:"2026-10-29",lb:"LB 1",thema:"Videos II und sichere/unsichere Bindung",typ:"einzel",
+ planung:"Präsentation und Besprechung der Videos II; Sichere und unsichere Bindung; Sichere und unsichere Bindung.",
+ produktphase:true},
+ {id:"pp12_08",start:"2026-11-10",end:"2026-11-12",lb:"LB 1",thema:"Bindungsförderung, Jugendalter, Resilienz",typ:"einzel",
+ planung:"Förderung gelungener Bindung; Entwicklung im Jugendalter; Vulnerabilität und Resilienz."},
+ {id:"pp12_09",start:"2026-11-17",end:"2026-11-19",lb:"LB 1",thema:"Puffer LB1 – Übergang zu LB 2: Persönlichkeit",typ:"einzel",
+ planung:"Puffer/Prüfungsvorbereitung zu LB 1; Start LB 2: Begriff Persönlichkeit."},
+ {id:"pp12_10",start:"2026-11-24",end:"2026-11-26",lb:"LB 2",thema:"Persönlichkeitserhebung und Big-Five-Modell",typ:"einzel",
+ planung:"Erhebung der Persönlichkeit; Big-Five-Modell; Big-Five-Modell."},
+ {id:"pp12_11",start:"2026-12-01",end:"2026-12-03",lb:"LB 2",thema:"Personenzentrierte Theorie und Aktualisierungstendenz",typ:"einzel",
+ planung:"Menschenbild der personenzentrierten Theorie; Menschenbild der personenzentrierten Theorie; Aktualisierungstendenz."},
+ {id:"pp12_12",start:"2026-12-08",end:"2026-12-10",lb:"LB 2",thema:"Selbstkonzept und Schulaufgabe",typ:"einzel",
+ planung:"Bildung und Wirkung des Selbstkonzepts; 1. Schulaufgabe: Psychosexuelle Entwicklung/Persönlichkeit; Flexibilität des Selbstkonzepts/Abwehr.",
+ leistungsnachweis:true},
+ {id:"pp12_13",start:"2026-12-15",end:"2026-12-17",lb:"LB 2",thema:"Bewertungsprozess, Kongruenz, psychische Störungen",typ:"einzel",
+ planung:"Organismischer Bewertungsprozess; Kongruenz und Inkongruenz; Entstehung psychischer Störungen."},
+ {id:"pp12_14",start:"2026-12-22",end:"2026-12-23",lb:"LB 2",thema:"Bedeutung für Erziehung und sozial-kognitive Theorie",typ:"einzel",
+ planung:"Bedeutung für die Erziehung; Die sozial-kognitive Theorie und Persönlichkeit."},
+ {id:"pp12_15",start:"2027-01-12",end:"2027-01-14",lb:"LB 2",thema:"Identität und Identitätstypen nach Marcia",typ:"einzel",
+ planung:"Identität oder Selbstverständnis eines Menschen; Identitätstypen nach Marcia; Puffer/Prüfungsvorbereitung."},
+ {id:"pp12_16",start:"2027-01-19",end:"2027-01-21",lb:"LB 3",thema:"Puffer LB2 – Start LB 3: Soziale Arbeit",typ:"einzel",
+ planung:"Puffer LB 2; Start LB 3: Grundlagen Sozialer Arbeit; Aufgabenbereiche der Sozialen Arbeit."},
+ {id:"pp12_17",start:"2027-01-26",end:"2027-01-28",lb:"LB 3",thema:"Aufgabenbereiche und Handlungskonzepte",typ:"einzel",
+ planung:"Aufgabenbereiche der Sozialen Arbeit; Aufgabenbereiche der Sozialen Arbeit; Handlungskonzepte."},
+ {id:"pp12_18",start:"2027-02-02",end:"2027-02-04",lb:"LB 3",thema:"Verhaltensorientiertes Konzept und Anpassung",typ:"einzel",
+ planung:"Verhaltensorientiertes Konzept; Verhaltensmodifikation; Anpassung."},
+ {id:"pp12_19",start:"2027-02-16",end:"2027-02-18",lb:"LB 3",thema:"Nische, Habitat und Lebens-Stress",typ:"einzel",
+ planung:"Nische und Habitat; Lebens-Stress; Methode für die Praxis."},
+ {id:"pp12_20",start:"2027-02-23",end:"2027-02-25",lb:"LB 3",thema:"Fallbearbeitung und Life-Modell/Lebenswelt",typ:"einzel",
+ planung:"Fallbearbeitung Frau Müller; kritische Würdigung Life-Modell; Thiersch – Lebenswelt."},
+ {id:"pp12_21",start:"2027-03-02",end:"2027-03-04",lb:"LB 3",thema:"Thiersch: Dimensionen und Handlungsmaximen",typ:"einzel",
+ planung:"Thiersch – Dimensionen; Thiersch – Handlungsmaximen; Wiederholung/Prüfungsvorbereitung."},
+ {id:"pp12_22",start:"2027-03-09",end:"2027-03-11",lb:"LB 4",thema:"2. Schulaufgabe – Start LB 4: Kommunikation",typ:"einzel",
+ planung:"2. Schulaufgabe: Soziale Arbeit; Puffer; Start LB 4: Soziale Kommunikation und Interaktion.",
+ leistungsnachweis:true},
+ {id:"pp12_23",start:"2027-03-16",end:"2027-03-18",lb:"LB 4",thema:"Organon-Modell und erstes Axiom",typ:"einzel",
+ planung:"Organon-Modell; erfolgreiche und gestörte Kommunikation; erstes Axiom (Watzlawick)."},
+ {id:"pp12_24",start:"2027-04-06",end:"2027-04-08",lb:"LB 4",thema:"Zweites bis viertes Axiom",typ:"einzel",
+ planung:"Zweites Axiom; drittes Axiom; viertes Axiom (Watzlawick)."},
+ {id:"pp12_25",start:"2027-04-13",end:"2027-04-15",lb:"LB 4",thema:"Fünftes Axiom, Fallbearbeitung, Techniken",typ:"einzel",
+ planung:"Fünftes Axiom; Fallbearbeitung; Kommunikationstechniken."},
+ {id:"pp12_26",start:"2027-04-20",end:"2027-04-22",lb:"LB 4",thema:"Kulturelle Unterschiede und Kurzarbeit",typ:"einzel",
+ planung:"Kulturbedingte Unterschiede; Wiederholung/Prüfungsvorbereitung; 2. Kurzarbeit: Kommunikation.",
+ leistungsnachweis:true},
+ {id:"pp12_27",start:"2027-04-27",end:"2027-04-29",lb:"LB 4",thema:"Digitale Medien – Start Fachreferate",typ:"einzel",
+ planung:"Kommunikation und digitale Medien; Puffer; Präsentationen der Fachreferate.",
+ produktphase:true},
+ {id:"pp12_28",start:"2027-05-04",end:"2027-05-05",lb:"LB 4",thema:"Präsentationen der Fachreferate",typ:"einzel",
+ planung:"Präsentationen Fachreferate; Präsentationen Fachreferate.",
+ produktphase:true},
+ {id:"pp12_29",start:"2027-05-11",end:"2027-05-13",lb:"LB 1–4",thema:"Puffer und Wiederholung vor der Fachabiturprüfung",typ:"einzel",
+ planung:"Puffer/Prüfungsvorbereitung; Puffer/Prüfungsvorbereitung; Wiederholung – Gesamtwiederholung LB 1–4."}
  ],
- deutsch:[],englisch:[],geschichte:[],mathematik:[],sozialwirtschaft:[],chemie:[]
+ deutsch:[],englisch:[],geschichte:[],mathematik:[],sozialwirtschaft:[],wahlpflicht1:[],wahlpflicht2:[]
 };
 // Lernziel-Vorschläge je Woche, abgeleitet aus den offiziellen
-// Kompetenzerwartungen des LehrplanPLUS FOS 11 Pädagogik/Psychologie
+// Kompetenzerwartungen des LehrplanPLUS FOS 12 Pädagogik/Psychologie
 // (lehrplanplus.bayern.de, LB 1–4). Lehrkräfte sehen diese als Vorschlag
 // beim erstmaligen Anlegen eines Auftrags und können sie frei anpassen.
 const LEHRPLAN_ZIELE_VORSCHLAG={
- pp01:["Ich kann die Gegenstandsbereiche der Psychologie und Pädagogik erläutern und ihre Wechselwirkung an Beispielen zeigen.","Ich kann Erleben, Verhalten und Handeln als Gegenstand der Psychologie von Erziehungspraxis und -theorie als Gegenstand der Pädagogik unterscheiden.","Ich kann die Bedeutung von Pädagogik und Psychologie für das Sozialwesen an eigenen Praxisfragen festmachen."],
- pp02:["Ich kann die Wesenszüge einer wissenschaftlichen Pädagogik bzw. Psychologie untersuchen und von alltagspsychologischen Aussagen abgrenzen.","Ich kann Unterschiede zwischen Beschreibung und Erklärung als wissenschaftliche Kriterien erfassen.","Ich kann Merkmale von wissenschaftlicher Theorie und Alltagstheorie an eigenen Beispielen erklären."],
- pp03:["Ich kann Prinzipien wissenschaftlichen Beschreibens und Erklärens auf ein eigenes kleines Experiment anwenden.","Ich kann Fragestellung, Durchführung und Auswertung eines Mini-Experiments nachvollziehbar dokumentieren.","Ich kann meine Ergebnisse sachlich und wissenschaftlich korrekt präsentieren."],
- pp04:["Ich kann Erziehung als Anregung zur Bildung verstehen und den Erziehungs- und Bildungsbegriff auf Handlungssituationen anwenden.","Ich kann Merkmale von Erziehung (z. B. soziale Beziehung, bewusste Zielvorgaben) und von Bildung (z. B. mündiger Mensch, individuelle Zielsetzungen) unterscheiden.","Ich kann Erziehung von Betreuung und Versorgung abgrenzen."],
- pp05:["Ich kann unterschiedliche Erziehungs- und Bildungsziele entwerfen und passende Erziehungsmaßnahmen ableiten.","Ich kann die Erziehungsstile nach Baumrind unterscheiden und ihre Eignung für unterschiedliche Situationen beurteilen.","Ich kann anhand eines Praxisfalls pädagogisches Handeln begründen und Alternativen entwickeln."],
- pp06:["Ich kann das übergreifende Erziehungs- und Bildungsziel Selbst-, Sach- und Sozialkompetenz erläutern.","Ich kann Mündigkeit nach Heinrich Roth mit den drei Kompetenzbereichen beschreiben.","Ich kann Erziehungsziele kompetenzorientiert formulieren."],
- pp07:["Ich kann die Dimensionen von Erziehungs- und Führungsstilen (autoritär, laissez-faire, sozialintegrativ) nach Tausch/Tausch erläutern.","Ich kann Aufgaben und Ziele einer Kindertageseinrichtung nach dem Bayerischen Bildungs- und Erziehungsplan (BayBEP) beschreiben.","Ich kann diese Erziehungs- und Bildungsziele in einer realen Einrichtung wiedererkennen."],
- pp08:["Ich kann Probleme und Schwierigkeiten einer Erziehungs- oder Bildungsinstitution an einem Praxisfall reflektieren.","Ich kann Erziehung mit Wahrnehmung und Motivation vernetzt betrachten und eine Handlungsempfehlung ableiten.","Ich kann Werthaltungen zu meinem pädagogischen Handeln entwickeln."],
- pp09:["Ich kann den Wahrnehmungsprozess nach Zimbardo erläutern und Wahrnehmung als subjektive Konstruktion der Wirklichkeit begreifen.","Ich kann das Mehrspeicher-Modell des Gedächtnisses nach Markowitsch erklären.","Ich kann Kontrollprozesse des Gedächtnisses nutzen, um Phänomene aus Schule und Beruf zu erklären."],
- pp10:["Ich kann Emotion als Begriff mit ihren Komponenten am Beispiel Angst verdeutlichen.","Ich kann Strategien zur Selbstregulation von Emotionen entwickeln und anwenden.","Ich kann emotionale Situationen aus der Praxis professionell analysieren."],
- pp11:["Ich kann den Prozesscharakter der Motivation am Beispiel der Leistungsmotivation aufzeigen.","Ich kann Attributionsmuster (internal/external, stabil/variabel) nach Weiner erkennen und deren Folgen für Emotion und Erfolgserwartung erklären.","Ich kann daraus Konsequenzen für mein eigenes Selbstmanagement ableiten."],
- pp12:["Ich kann anhand der Gedächtnisforschung effektive Lernstrategien entwickeln und für meinen eigenen Wissenserwerb nutzen.","Ich kann Wechselwirkungen zwischen Kognition, Emotion und Motivation an einem konkreten Beispiel erläutern.","Ich kann eine Lernhilfe oder Anleitung für eine reale Lern-/Orientierungssituation erstellen."],
- pp13:["Ich kann Reifungs- und Lernprozesse unterscheiden und Fremd- sowie Selbststeuerungsprozesse an Beispielen aufzeigen.","Ich kann den Konditionierungsprozess nach Pawlow erklären, inklusive Reizgeneralisierung und Löschung.","Ich kann klassisches Konditionieren in Alltagssituationen wiedererkennen."],
- pp14:["Ich kann das Verstärkungslernen nach Skinner (Verstärkerarten, Löschung, Shaping) erklären.","Ich kann die Entstehung und Veränderung von Verhalten mithilfe des operanten Konditionierens erklären und zielgerichtet anwenden.","Ich kann anhand eines Praxisfalls professionell-ethische Handlungsalternativen entwickeln."],
- pp15:["Ich kann Phasen und Teilprozesse der sozial-kognitiven Theorie nach Bandura beschreiben.","Ich kann die Entwicklung von der behavioristischen zur kognitiven Sichtweise reflektieren.","Ich kann Selbstwirksamkeit nach Bandura (Erwartungshaltungen, Selbstbewertung, Selbstregulation) erläutern."],
- pp16:["Ich kann die Wirkung von Medien auf das Lernen emotionaler Reaktionen und aggressiven Verhaltens auf Basis einer Lerntheorie einordnen.","Ich kann lernförderliche digitale Angebote reflektiert beurteilen.","Ich kann mit medialen Einflüssen bewusst und reflektiert umgehen."],
- pp17:["Ich kann Erziehung, Wahrnehmung, Emotion, Motivation, Gedächtnis und Lernen an einem Praxisfall vernetzt anwenden.","Ich kann eine anonymisierte Fallsituation theoriegeleitet analysieren und einen Handlungsvorschlag entwickeln.","Ich kann meine Ergebnisse präsentieren und mein Praxisjahr reflektieren."]
+ pp12_01:["Ich kann den Begriff Entwicklung definieren und zentrale Bedingungen von Entwicklung (Anlage, Umwelt, Selbststeuerung) erläutern."],
+ pp12_02:["Ich kann die Grundannahmen der Psychoanalyse und das psychoanalytische Instanzenmodell (Es, Ich, Über-Ich) erklären."],
+ pp12_03:["Ich kann Ich-Stärke und Ich-Schwäche unterscheiden und das Zusammenspiel von Angst und Abwehr an einem Fallbeispiel analysieren."],
+ pp12_04:["Ich kann zentrale Abwehrmechanismen benennen und die psychosexuellen Entwicklungsphasen nach Freud (oral, anal, phallisch, Latenz, genital) beschreiben."],
+ pp12_05:["Ich kann die Entstehung seelischer Fehlentwicklungen aus psychoanalytischer Sicht erklären und die Theorie kritisch würdigen.","Ich kann Entwicklung als lebenslangen Prozess (Theorie der Lebensspanne) beschreiben."],
+ pp12_06:["Ich kann den Zusammenhang von Bindung und Entwicklung erläutern und mein Wissen in einem eigenen Erklärvideo aufbereiten."],
+ pp12_07:["Ich kann sichere und unsichere Bindungsmuster unterscheiden und ihre Bedeutung für die weitere Entwicklung einschätzen."],
+ pp12_08:["Ich kann Maßnahmen zur Förderung gelungener Bindung benennen und Vulnerabilität sowie Resilienz im Jugendalter erläutern."],
+ pp12_09:["Ich kann die zentralen Inhalte von LB 1 (Entwicklung) zusammenfassend wiedergeben und den Übergang zum Persönlichkeitsbegriff (LB 2) einordnen."],
+ pp12_10:["Ich kann Methoden zur Erhebung von Persönlichkeit benennen und das Big-Five-Modell mit seinen Dimensionen erklären."],
+ pp12_11:["Ich kann das Menschenbild der personenzentrierten Theorie nach Rogers erläutern und den Begriff Aktualisierungstendenz erklären."],
+ pp12_12:["Ich kann die Bildung und Wirkung des Selbstkonzepts beschreiben und dessen Flexibilität sowie Abwehrmechanismen erläutern."],
+ pp12_13:["Ich kann den organismischen Bewertungsprozess sowie Kongruenz und Inkongruenz nach Rogers erklären und auf die Entstehung psychischer Störungen beziehen."],
+ pp12_14:["Ich kann die Bedeutung der personenzentrierten und der sozial-kognitiven Theorie für die Erziehung erläutern."],
+ pp12_15:["Ich kann den Begriff Identität erklären und die Identitätstypen nach Marcia unterscheiden."],
+ pp12_16:["Ich kann Grundlagen und zentrale Aufgabenbereiche der Sozialen Arbeit benennen und erläutern."],
+ pp12_17:["Ich kann Aufgabenbereiche der Sozialen Arbeit vertiefen und ein Handlungskonzept Sozialer Arbeit erläutern."],
+ pp12_18:["Ich kann das verhaltensorientierte Konzept Sozialer Arbeit erklären und Verhaltensmodifikation an einem Beispiel anwenden."],
+ pp12_19:["Ich kann die Begriffe Nische, Habitat und Lebens-Stress im Kontext Sozialer Arbeit erläutern und auf die Praxis beziehen."],
+ pp12_20:["Ich kann einen Praxisfall mithilfe des Life-Modells und Thierschs Konzept der Lebensweltorientierung analysieren."],
+ pp12_21:["Ich kann Thierschs Dimensionen und Handlungsmaximen der Lebensweltorientierung erläutern und auf einen Fall anwenden."],
+ pp12_22:["Ich kann soziale Kommunikation und Interaktion als Grundbegriffe definieren und ihre Bedeutung im Sozialwesen einordnen."],
+ pp12_23:["Ich kann das Organon-Modell nach Bühler erklären und erfolgreiche von gestörter Kommunikation unterscheiden (erstes Axiom nach Watzlawick)."],
+ pp12_24:["Ich kann das zweite, dritte und vierte Axiom von Watzlawick erläutern und an Beispielen erkennen."],
+ pp12_25:["Ich kann das fünfte Axiom erläutern und Kommunikationstechniken auf eine Fallbearbeitung anwenden."],
+ pp12_26:["Ich kann kulturbedingte Unterschiede in der Kommunikation erläutern und mein Wissen zu Kommunikationsmodellen zusammenfassen."],
+ pp12_27:["Ich kann Chancen und Risiken digitaler Medien für Kommunikation und Lernen einschätzen."],
+ pp12_28:["Ich kann mein Fachreferat strukturiert und fachlich fundiert präsentieren."],
+ pp12_29:["Ich kann die zentralen Inhalte aus LB 1 bis LB 4 vernetzt wiederholen und mich gezielt auf die Fachabiturprüfung vorbereiten."]
 };
 function lehrplanWocheById(fach,wocheId){
  return (LEHRPLAN_WOCHEN[fach]||[]).find(w=>w.id===wocheId)||null;
@@ -1328,8 +1357,7 @@ function findUnterrichtsblock(fach,dateStr){
 
 function combinedTimeline(fach){
  const wochen=(LEHRPLAN_WOCHEN[fach]||[]).map(w=>({...w,kind:"woche"}));
- const praktika=fach==="paedagogik"?PRAKTIKUMSPHASEN.map(p=>({...p,kind:"praktikum"})):[];
- return [...wochen,...praktika].sort((a,b)=>a.start.localeCompare(b.start));
+ return [...wochen].sort((a,b)=>a.start.localeCompare(b.start));
 }
 
 // ---- Motivierende Kurz-Verstärkung (intermittierend) ----
@@ -1592,7 +1620,7 @@ function webUntisEmbedHTML(heightPx,openByDefault){
  const url=webUntisUrl();
  return `<details class="untis-embed"${openByDefault?"open":""}>
  <summary> Stundenplan anzeigen/ausblenden</summary>
- <iframe src="${url}"loading="lazy"style="width:100%;height:${heightPx}px;border:1px solid var(--line,#e2eaf0);border-radius:10px;background:#fff"class="untis-iframe"title="Stundenplan F11Sb (WebUntis)"></iframe>
+ <iframe src="${url}"loading="lazy"style="width:100%;height:${heightPx}px;border:1px solid var(--line,#e2eaf0);border-radius:10px;background:#fff"class="untis-iframe"title="Stundenplan F12Sb (WebUntis)"></iframe>
  <div class="untis-fallback"><small>Wird der Stundenplan oben nicht angezeigt? Manche Schulnetzwerke blockieren die Einbettung.</small>
  <a href="${url}"target="_blank"rel="noopener"class="pill"> Stundenplan in WebUntis öffnen ↗</a></div>
  </details>`;
@@ -1667,8 +1695,7 @@ function berechneHalbjahresergebnis(noten,fach,hj){
  return foboso19Runden(roh);
 }
 function fachLabel(fach){
- if(fach==="fpa")return "Fachpraktische Ausbildung";
- return F11SB_FAECHER.find(f=>f.key===fach)?.label||fach;
+ return F12SB_FAECHER.find(f=>f.key===fach)?.label||fach;
 }
 // Bezeichnung der "sonstigen Leistung" – fängt auch ältere Einträge ab,
 // die noch mit dem alten zweistufigen "schriftlich"/"muendlich" gespeichert wurden.
@@ -1772,23 +1799,6 @@ async function deleteNotenEintrag(fach,hj,entryId){
 }
 async function openNotenDetail(fach,hj){
  const noten=await getMeineNoten();
- if(fach==="fpa"){
- const liste=notenListe(noten,fach,hj);
- const avg=notenDurchschnitt(liste);
- modal(`<button class="modal-close"onclick="closeModal()">×</button>
- <div class="kicker">MEINE NOTEN · ${hj==="hj1"?"1. HALBJAHR":"2. HALBJAHR"}</div>
- <h2>${esc(fachLabel(fach))}</h2>
- <p style="color:var(--muted)">Die fachpraktische Ausbildung wird separat bewertet (§8 FOBOSO) – trag hier die einzelnen Bewertungen ein.</p>
- <div class="notice"style="margin-bottom:14px"><strong style="font-size:22px">${avg===null?"—":avg+" Punkte"}</strong><small style="display:block;color:var(--muted)">Durchschnitt aus ${liste.length} ${liste.length===1?"Eintrag":"Einträgen"}</small></div>
- <div class="list">${liste.map(e=>`<div class="list-item"><div><strong>${e.value} Punkte</strong></div><button class="secondary"onclick="deleteNotenEintrag('${fach}','${hj}','${e.id}')">Löschen</button></div>`).join("")||`<div class="empty">Noch keine Note eingetragen.</div>`}</div>
- <div class="form-actions"style="margin-top:14px;flex-wrap:wrap">
- <input id="notenNeuValue"type="number"min="0"max="15"placeholder="0–15"style="width:80px">
- <button class="primary"onclick="addNotenEintrag('${fach}','${hj}')">＋ Hinzufügen</button>
- </div>
- <div class="form-actions"style="margin-top:10px"><button class="secondary"onclick="closeModal()">Schließen</button></div>
- `);
- return;
- }
  const sa=schulaufgabenListe(noten,fach,hj);
  const sonst=sonstigeListe(noten,fach,hj);
  const sSchnitt=sonstigeSchnitt(sonst);
@@ -1867,57 +1877,42 @@ function checkFoboso21(punkte){
  if(zero===0&&oneToThree===2&&atLeastFour===n-2&&sum>=6*n)return{passed:true,rule:"c"};
  return{passed:false,rule:null};
 }
+// Für die 12. Klasse gibt es keine Probezeit mehr (die gilt nur in der 11.).
+// Stattdessen ist relevant: die Jahrespunktzahl je Fach (§21 FOBOSO) und eine
+// grobe Orientierung, ob die Zulassungsvoraussetzungen zur Abschlussprüfung
+// nach §31/§35 FOBOSO grundsätzlich im Rahmen liegen. Die exakte
+// Fachabitur-Berechnung mit optimalem Streichvorschlag (25 Halbjahresergebnisse
+// + 4 dreifach gewichtete Prüfungen, §35 Abs. 6 FOBOSO) leistet
+// diese App bewusst nicht – dafür nutzt eure Schule den offiziellen
+// Streichvorschlag-Rechner (z. B. der Beruflichen Oberschule Traunstein).
 function berechneBestehen(noten){
- const faecherHJ1=F11SB_FAECHER.map(f=>berechneHalbjahresergebnis(noten,f.key,"hj1"));
- const faecherHJ2=F11SB_FAECHER.map(f=>berechneHalbjahresergebnis(noten,f.key,"hj2"));
- const fpaHj1=notenDurchschnitt(notenListe(noten,"fpa","hj1")),fpaHj2=notenDurchschnitt(notenListe(noten,"fpa","hj2"));
- const vollHJ1=faecherHJ1.every(p=>Number.isFinite(p))&&Number.isFinite(fpaHj1);
- const vollJahr=vollHJ1&&faecherHJ2.every(p=>Number.isFinite(p))&&Number.isFinite(fpaHj2);
+ const faecherHJ1=F12SB_FAECHER.map(f=>berechneHalbjahresergebnis(noten,f.key,"hj1"));
+ const faecherHJ2=F12SB_FAECHER.map(f=>berechneHalbjahresergebnis(noten,f.key,"hj2"));
+ const vollHJ1=faecherHJ1.every(p=>Number.isFinite(p));
+ const vollJahr=vollHJ1&&faecherHJ2.every(p=>Number.isFinite(p));
 
- let probezeit=null;
- if(vollHJ1){
- const fachCheck=checkFoboso21(faecherHJ1);
- const fpaOk=fpaHj1>=4;
- probezeit={passed:fachCheck.passed&&fpaOk,fachCheck,fpaOk};
- }
  let jahr=null;
  if(vollJahr){
  // Jahrespunktzahl nach § 21 Abs. 2 FOBOSO: Durchschnitt der beiden
  // (bereits gerundeten) Halbjahresergebnisse, danach erneut gerundet.
- const jahrespunkte=F11SB_FAECHER.map((f,i)=>foboso19Runden((faecherHJ1[i]+faecherHJ2[i])/2));
- const fachCheck=checkFoboso21(jahrespunkte);
- const fpaOk=fpaHj1>=4&&fpaHj2>=4&&(fpaHj1+fpaHj2)>=10;
- jahr={passed:fachCheck.passed&&fpaOk,fachCheck,fpaOk,jahrespunkte};
+ const jahrespunkte=F12SB_FAECHER.map((f,i)=>foboso19Runden((faecherHJ1[i]+faecherHJ2[i])/2));
+ // Orientierung nach §35 Abs. 9 FOBOSO: höchstens 2 Gesamtergebnisse mit
+ // 1–3 Punkten bzw. 1 mit 0 Punkten – sonst ist die Zulassung gefährdet.
+ const unter4=jahrespunkte.filter(p=>p>=1&&p<=3).length;
+ const nullPunkte=jahrespunkte.filter(p=>p===0).length;
+ const imRahmen=nullPunkte<=1 && (nullPunkte===1?unter4===0:unter4<=2);
+ jahr={jahrespunkte,imRahmen};
  }
- return{probezeit,jahr,vollHJ1,vollJahr};
+ return{jahr,vollHJ1,vollJahr};
 }
 // Einfache Orientierung "was fehlt noch": für jedes noch unter 4 liegende
 // oder fehlende Fach wird angezeigt, welcher Wert für die einfachste
 // Bestehens-Variante (Regel a: alle Fächer ≥4) fehlen würde.
-function wasFehltNochHJ1(noten){
- const liste=F11SB_FAECHER.map(f=>{
- const p=berechneHalbjahresergebnis(noten,f.key,"hj1");
- if(!Number.isFinite(p)){
- const hatSA=schulaufgabenListe(noten,f.key,"hj1").length>0;
- const hatSonst=sonstigeListe(noten,f.key,"hj1").length>0;
- const fehlt=!hatSA&&!hatSonst?"Schulaufgabe und sonstige Leistungen fehlen noch":!hatSA?"Schulaufgabe fehlt noch":"Sonstige Leistungen fehlen noch";
- return{label:f.label,status:"fehlt",text:fehlt};
- }
- if(p===0)return{label:f.label,status:"ungenuegend",text:`0 Punkte – für die einfache Variante (alle Fächer ≥4) fehlen noch 4 Punkte`};
- if(p<4)return{label:f.label,status:"kritisch",text:`Aktuell ${p} Punkte – für die einfache Variante (alle Fächer ≥4) fehlen noch ${4-p} Punkte`};
- return{label:f.label,status:"ok",text:`${p} Punkte`};
- });
- const fpaP=notenDurchschnitt(notenListe(noten,"fpa","hj1"));
- if(fpaP===null)liste.push({label:"Fachpraktische Ausbildung",status:"fehlt",text:"Note fehlt noch"});
- else if(fpaP===0)liste.push({label:"Fachpraktische Ausbildung",status:"ungenuegend",text:"0 Punkte – mind. 4 Punkte nötig"});
- else if(fpaP<4)liste.push({label:"Fachpraktische Ausbildung",status:"kritisch",text:`Aktuell ${fpaP} Punkte – mind. 4 Punkte nötig`});
- else liste.push({label:"Fachpraktische Ausbildung",status:"ok",text:`${fpaP} Punkte`});
- return liste;
-}
+
 // Analoge Übersicht fürs ganze Schuljahr: Jahrespunktzahl je Fach (Durchschnitt
 // der beiden Halbjahresergebnisse) plus fpA mit eigener Jahresregel (§8 FOBOSO).
 function wasFehltNochJahr(noten){
- const liste=F11SB_FAECHER.map(f=>{
+ const liste=F12SB_FAECHER.map(f=>{
  const p1=berechneHalbjahresergebnis(noten,f.key,"hj1");
  const p2=berechneHalbjahresergebnis(noten,f.key,"hj2");
  if(!Number.isFinite(p1)||!Number.isFinite(p2)){
@@ -1929,14 +1924,6 @@ function wasFehltNochJahr(noten){
  if(jp<4)return{label:f.label,status:"kritisch",text:`Aktuell ${jp} Punkte im Jahr – für die einfache Variante (alle Fächer ≥4) fehlen noch ${4-jp} Punkte`};
  return{label:f.label,status:"ok",text:`${jp} Punkte im Jahr`};
  });
- const fpa1=notenDurchschnitt(notenListe(noten,"fpa","hj1"));
- const fpa2=notenDurchschnitt(notenListe(noten,"fpa","hj2"));
- if(fpa1===null||fpa2===null){
- liste.push({label:"Fachpraktische Ausbildung",status:"fehlt",text:fpa1===null&&fpa2===null?"HJ1 und HJ2 fehlen noch":fpa1===null?"HJ1 fehlt noch":"HJ2 fehlt noch"});
- }else{
- const ok=fpa1>=4&&fpa2>=4&&(fpa1+fpa2)>=10;
- liste.push({label:"Fachpraktische Ausbildung",status:ok?"ok":(fpa1===0||fpa2===0)?"ungenuegend":"kritisch",text:`HJ1: ${fpa1} · HJ2: ${fpa2} Punkte (Summe ${fpa1+fpa2}, mind. 10 nötig)`});
- }
  return liste;
 }
 
@@ -1957,7 +1944,7 @@ function openWochenplanForm(existing){
  <label>Was steht an?<input id="wpTitle"type="text"maxlength="140"value="${esc(existing?.title||"")}"placeholder="z. B. Vokabeltest vorbereiten"></label>
  <label>Fach (optional)<select id="wpSubject">
  <option value="">Kein bestimmtes Fach</option>
- ${F11SB_FAECHER.map(f=>`<option value="${f.key}"${existing?.subject===f.key?"selected":""}>${f.label}</option>`).join("")}
+ ${F12SB_FAECHER.map(f=>`<option value="${f.key}"${existing?.subject===f.key?"selected":""}>${f.label}</option>`).join("")}
  </select></label>
  <label>Zeitraum<select id="wpScope">
  <option value="woche"${(!existing||existing.scope==="woche")?"selected":""}>Diese Woche</option>
@@ -2068,15 +2055,12 @@ async function renderStart(){
  let tasks=[],projects=[],news=[],nextCalendar=null,birthdayInfo=null,wochenplan=[];
  try{[tasks,projects,news,nextCalendar,birthdayInfo,wochenplan]=await Promise.all([getCollection("tasks","deadline",false),getCollection("projects"),getCollection("news"),getUpcomingCampusCalendarEvent(),getUpcomingBirthdayInfo(),getMeineWochenplanung()])}catch(e){}
  const miniKalender=await miniKalenderHTML();
- const praktikumsphase=aktuellePraktikumsphase();
- const praktikumsAuftraegeMap=await getPraktikumsAuftraege().catch(()=>({}));
- const aktuellerPraktikumsauftrag=(praktikumsphase?.status==="laufend")?praktikumsAuftraegeMap[praktikumsphase.id]:null;
  const upcomingDate=nextCalendar?.start||nextCalendar?.date||nextCalendar?.startDate;
  const upcomingDateText=upcomingDate?.seconds?new Date(upcomingDate.seconds*1000).toLocaleDateString("de-DE"):String(upcomingDate||"").slice(0,10);
  const upcomingTime=nextCalendar?.time?` · ${esc(nextCalendar.time)} Uhr`:"";
  const newsAction=(isTeacher()?`<button class="primary"onclick="openNewsForm()">＋ News veröffentlichen</button>`:"")
  +(isTeacher()?`<button class="secondary"onclick="openUserManagement()"> Benutzer verwalten</button>`:"");
- return`<section class="hero"><div><span class="badge"> F11Sb 26/27</span><h1>Willkommen auf dem Campus.</h1><p>Hier
+ return`<section class="hero"><div><span class="badge"> F12Sb 26/27</span><h1>Willkommen auf dem Campus.</h1><p>Hier
 verbinden wir Lernen, Projekte, Praxis und Gemeinschaft. Alle angemeldeten Mitglieder arbeiten am selben digitalen Campus.</p>
 </div><div class="actions">${isTeacher()?`<button class="primary"onclick="openNewsForm()">＋ News veröffentlichen</button>`:""}<button class="secondary"onclick="go('kompass')">Mein Kompass →</button><button class="secondary"onclick="go('forum')">Campus-Forum</button></div></section>
  <div class="grid grid-3">
@@ -2090,7 +2074,7 @@ class="list-item"><div><strong>${esc(p.title||p.text)}</strong>${p.title?`<small
  :`<div class="list-item"><div><strong>${birthdayInfo.people.map(p=>{const c=personColor(p.uid);return`<span style="color:${c.text}">${esc(p.name)}</span>`}).join(" & ")}</strong><small>${esc(birthdayInfo.date.toLocaleDateString("de-DE",{day:"2-digit",month:"long"}))} · ${birthdayInfo.days===1?"morgen":`in ${birthdayInfo.days} Tagen`}</small></div><span class="pill"style="background:${personColor(birthdayInfo.people[0].uid).border};color:#fff">Nächste(r)</span></div>`
  }</div>
  </div>
- <div class="grid grid-3"style="margin-bottom:16px;gap:12px">
+ <div class="grid grid-2"style="margin-bottom:16px;gap:12px">
  <div class="card card-compact"style="text-align:center">
  <h3 style="margin:0 0 6px"> Uhrzeit</h3>
  <div style="display:flex;justify-content:center">${analogClockSVG(64)}</div>
@@ -2100,17 +2084,7 @@ class="list-item"><div><strong>${esc(p.title||p.text)}</strong>${p.title?`<small
  <h3 style="margin:0 0 8px"> Kalender</h3>
  <div id="miniKalenderWrap">${miniKalender}</div>
  </div>
- ${praktikumsphase?`<a class="card card-compact"href="#praktikum"style="background:var(--soft-orange);display:block;text-decoration:none;color:inherit">
- <h3 style="margin:0 0 6px"> ${praktikumsphase.status==="laufend"?"Praktikum läuft gerade":"Nächstes Praktikum"}</h3>
- <strong style="display:block">${esc(praktikumsphase.titel)}</strong>
- <small style="display:block;margin-top:4px">${esc(fmtDateOnly(praktikumsphase.start))}–${esc(fmtDateOnly(praktikumsphase.end))} · ${esc(praktikumsphase.bereich)}</small>
- </a>`:`<div class="card card-compact"style="background:var(--soft-orange)"><h3 style="margin:0">Praktikum</h3><small>Aktuell keine Phase hinterlegt.</small></div>`}
  </div>
- ${aktuellerPraktikumsauftrag?`<a class="card"href="#praktikum"style="display:block;text-decoration:none;color:inherit;background:var(--soft-orange);margin-bottom:16px">
- <span class="pill"style="background:#e8890c;color:#fff">fpA Auftrag</span>
- <strong style="display:block;margin-top:8px;font-size:15px">${esc(aktuellerPraktikumsauftrag.titel)}</strong>
- ${aktuellerPraktikumsauftrag.beschreibung?`<small style="display:block;margin-top:4px;color:var(--muted)">${esc(aktuellerPraktikumsauftrag.beschreibung.slice(0,140))}${aktuellerPraktikumsauftrag.beschreibung.length>140?"…":""}</small>`:""}
- </a>`:""}
  ${(()=>{ensureGlobalClock();return"";})()}
  <div class="card"style="margin-top:16px;margin-bottom:16px">
  <div class="kicker">STUNDENPLAN</div>
@@ -2121,7 +2095,7 @@ class="list-item"><div><strong>${esc(p.title||p.text)}</strong>${p.title?`<small
  <button class="primary"onclick="quickAddWochenplan()">＋ Zur Wochenplanung</button>
  <button class="secondary"onclick="go('kompass')">Ausführlicher planen →</button>
  </div>
- ${wochenplan.length?`<div class="list"style="margin-top:10px">${wochenplan.filter(w=>!w.done).slice(0,3).map(w=>`<div class="list-item"><div><strong>${esc(w.title)}</strong>${w.subject?`<small>${esc(F11SB_FAECHER.find(f=>f.key===w.subject)?.label||"")}</small>`:""}</div><span class="pill">${w.scope==="monat"?"Monat":"Woche"}</span></div>`).join("")}</div>`:""}
+ ${wochenplan.length?`<div class="list"style="margin-top:10px">${wochenplan.filter(w=>!w.done).slice(0,3).map(w=>`<div class="list-item"><div><strong>${esc(w.title)}</strong>${w.subject?`<small>${esc(F12SB_FAECHER.find(f=>f.key===w.subject)?.label||"")}</small>`:""}</div><span class="pill">${w.scope==="monat"?"Monat":"Woche"}</span></div>`).join("")}</div>`:""}
  </div>
  <div class="card"style="margin-bottom:16px;text-align:center;background:var(--soft-green)">
  <h2 style="margin:0 0 8px"> FOSBOS-WM Jahresfokus: Solidarität und Zusammenhalt</h2>
@@ -2134,9 +2108,7 @@ class="list-item"><div><strong>${esc(p.title||p.text)}</strong>${p.title?`<small
  ${tile(" ","Campus-Forum","Austauschen, fragen, helfen und gemeinsam denken.","forum")}
  ${tile(" ","Projekte","Projektteams, Ziele, Fortschritt und Ergebnisse.","projekte")}
  ${tile(" ","Kompetenzwerkstatt","Kompetenzen sichtbar machen und entwickeln.","kompetenz")}
- ${tile(" ","Lernjournal","Lernweg, Reflexionen und nächste Schritte.","journal")}
- ${tile(" ","fpA","Praxisaufträge und Reflexion.","praktikum")}
- ${tile(" ","KI-Innovationslabor","KI-Ideen und Innovationspartnerschaften.","ki")}</div>
+ ${tile(" ","Lernjournal","Lernweg, Reflexionen und nächste Schritte.","journal")}</div>
 </div>${footer()}`;
 }
 async function getRecentForumActivityCount(days){
@@ -2154,11 +2126,8 @@ function printNotenPDF(noten,bestehen){
  const win=window.open("","_blank","width=800,height=800");
  if(!win){toast("Das PDF-Fenster wurde vom Browser blockiert. Bitte Pop-ups erlauben.");return}
  const fmt=(fach,hj)=>{const erg=berechneHalbjahresergebnis(noten,fach,hj);const sa=schulaufgabenListe(noten,fach,hj).length,so=sonstigeListe(noten,fach,hj).length;return erg===null?"—":`${erg} Punkte (${sa} SA, ${so} sonst.)`};
- const fmtFpa=hj=>{const l=notenListe(noten,"fpa",hj);const a=notenDurchschnitt(l);return a===null?"—":`${a} (${l.length} ${l.length===1?"Note":"Noten"})`};
- const rows=F11SB_FAECHER.map(f=>`<tr><td>${escPDF(f.label)}</td><td>${fmt(f.key,"hj1")}</td><td>${fmt(f.key,"hj2")}</td></tr>`).join("");
- const fpaRow=`<tr><td><em>Fachpraktische Ausbildung</em></td><td>${fmtFpa("hj1")}</td><td>${fmtFpa("hj2")}</td></tr>`;
- const statusText=(label,r)=>!r?`${label}: noch nicht alle Noten eingetragen.`:`${label}: ${r.passed?"nach aktueller Punktlage bestanden":"nach aktueller Punktlage nicht bestanden"}.`;
- win.document.write(`<!doctype html><html lang="de"><head><meta charset="utf-8"><title>Meine Noten – F11Sb</title>
+ const rows=F12SB_FAECHER.map(f=>`<tr><td>${escPDF(f.label)}</td><td>${fmt(f.key,"hj1")}</td><td>${fmt(f.key,"hj2")}</td></tr>`).join("");
+ win.document.write(`<!doctype html><html lang="de"><head><meta charset="utf-8"><title>Meine Noten – F12Sb</title>
  <style>
  @page{size:A4;margin:18mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#222;line-height:1.55;margin:0}
  h1{font-size:24px;margin:0 0 4px}.meta{color:#666;font-size:12px;margin-bottom:20px}
@@ -2169,14 +2138,13 @@ function printNotenPDF(noten,bestehen){
  @media print{.print-note{display:none}}
  </style></head><body>
  <div class="print-note">Persönliche Notenübersicht. Im Druckdialog „Als PDF sichern“ auswählen.</div>
- <h1>Meine Noten – F11Sb</h1>
+ <h1>Meine Noten – F12Sb</h1>
  <div class="meta">Punkte 0–15 je Fach und Halbjahr</div>
- <table><thead><tr><th>Fach</th><th>HJ1</th><th>HJ2</th></tr></thead><tbody>${rows}${fpaRow}</tbody></table>
+ <table><thead><tr><th>Fach</th><th>HJ1</th><th>HJ2</th></tr></thead><tbody>${rows}</tbody></table>
  <div class="status">
- <strong>${statusText("Probezeit (Stand HJ1)",bestehen.probezeit)}</strong><br>
- <strong>${statusText("Bestehen des Schuljahres",bestehen.jahr)}</strong>
+ <strong>${!bestehen.vollJahr?"Jahresergebnis: noch nicht alle Noten eingetragen.":bestehen.jahr.imRahmen?"Zulassungs-Orientierung: im Rahmen von §35 Abs. 9 FOBOSO.":"Achtung: Punktlage könnte die Zulassung zur Abschlussprüfung gefährden."}</strong>
  </div>
- <p class="disclaimer">Diese Berechnung ist ausschließlich eine Orientierungshilfe nach §8, §21 Abs. 3, §22 Abs. 1 Nr. 2 FOBOSO – ohne Gewähr. Die tatsächliche Entscheidung trifft die Klassenkonferenz/Schulleitung anhand einer pädagogischen Gesamtwürdigung.</p>
+ <p class="disclaimer">Diese Berechnung ist ausschließlich eine Orientierungshilfe nach §21, §35 Abs. 9 FOBOSO – ohne Gewähr. Die vollständige Fachabitur-Berechnung übernimmt der offizielle Streichvorschlag-Rechner eurer Schule.</p>
  <script>window.onload=function(){setTimeout(function(){window.print()},300)}<\/script>
  </body></html>`);
  win.document.close();
@@ -2184,8 +2152,8 @@ function printNotenPDF(noten,bestehen){
 function printWochenplanPDF(entries){
  const win=window.open("","_blank","width=800,height=800");
  if(!win){toast("Das PDF-Fenster wurde vom Browser blockiert. Bitte Pop-ups erlauben.");return}
- const rows=entries.map(w=>`<tr><td>${w.done?"✓":""}</td><td>${escPDF(w.title)}</td><td>${w.subject?escPDF(F11SB_FAECHER.find(f=>f.key===w.subject)?.label||""):"—"}</td><td>${w.scope==="monat"?"Monat":"Woche"}</td><td>${escPDF(w.dueDate||"—")}</td></tr>`).join("");
- win.document.write(`<!doctype html><html lang="de"><head><meta charset="utf-8"><title>Wochenplanung – F11Sb</title>
+ const rows=entries.map(w=>`<tr><td>${w.done?"✓":""}</td><td>${escPDF(w.title)}</td><td>${w.subject?escPDF(F12SB_FAECHER.find(f=>f.key===w.subject)?.label||""):"—"}</td><td>${w.scope==="monat"?"Monat":"Woche"}</td><td>${escPDF(w.dueDate||"—")}</td></tr>`).join("");
+ win.document.write(`<!doctype html><html lang="de"><head><meta charset="utf-8"><title>Wochenplanung – F12Sb</title>
  <style>
  @page{size:A4;margin:18mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#222;line-height:1.55;margin:0}
  h1{font-size:24px;margin:0 0 16px}
@@ -2195,7 +2163,7 @@ function printWochenplanPDF(entries){
  @media print{.print-note{display:none}}
  </style></head><body>
  <div class="print-note">Persönliche Wochen-/Monatsplanung. Im Druckdialog „Als PDF sichern“ auswählen.</div>
- <h1>Meine Wochen-/Monatsplanung – F11Sb</h1>
+ <h1>Meine Wochen-/Monatsplanung – F12Sb</h1>
  <table><thead><tr><th>Erl.</th><th>Was steht an</th><th>Fach</th><th>Zeitraum</th><th>Termin</th></tr></thead><tbody>${rows||"<tr><td colspan=5>Noch keine Einträge.</td></tr>"}</tbody></table>
  <script>window.onload=function(){setTimeout(function(){window.print()},300)}<\/script>
  </body></html>`);
@@ -2239,7 +2207,7 @@ async function renderKompass(){
  </div>
  <div class="list">${offenePlanung.map(w=>`<div class="list-item">
  <div><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox"onclick="toggleWochenplanDone('${w.id}',${!!w.done})"><strong>${esc(w.title)}</strong></label>
- <small>${w.subject?esc(F11SB_FAECHER.find(f=>f.key===w.subject)?.label||""):"Kein Fach"} ${w.dueDate?"· "+esc(fmtDateOnly(w.dueDate)):""}</small></div>
+ <small>${w.subject?esc(F12SB_FAECHER.find(f=>f.key===w.subject)?.label||""):"Kein Fach"} ${w.dueDate?"· "+esc(fmtDateOnly(w.dueDate)):""}</small></div>
  <div style="display:flex;gap:6px;align-items:center"><span class="pill">${w.scope==="monat"?"Monat":"Woche"}</span><button class="secondary"onclick="openWochenplanForm(${JSON.stringify(w).replace(/"/g,"&quot;")})">Bearbeiten</button></div>
  </div>`).join("")||`<div class="empty">Noch nichts geplant. Leg deinen ersten Punkt an.</div>`}</div>
  ${erledigtePlanung.length?`<details style="margin-top:10px"><summary style="cursor:pointer;color:var(--muted);font-size:13px">${erledigtePlanung.length} erledigt</summary>
@@ -2256,8 +2224,7 @@ async function renderKompass(){
  <div class="noten-eintragen-kachel">
  <strong style="display:block;font-size:13px;margin-bottom:8px"> Note eintragen</strong>
  <label style="font-size:11px">Fach<select id="notenSchnellFach">
- ${F11SB_FAECHER.map(f=>`<option value="${f.key}">${f.label}</option>`).join("")}
- <option value="fpa">Fachpraktische Ausbildung</option>
+ ${F12SB_FAECHER.map(f=>`<option value="${f.key}">${f.label}</option>`).join("")}
  </select></label>
  <label style="font-size:11px;margin-top:8px;display:block">Halbjahr<select id="notenSchnellHj">
  <option value="hj1">1. Halbjahr</option>
@@ -2270,7 +2237,7 @@ async function renderKompass(){
  <div style="overflow-x:auto"><table class="noten-table noten-table-kompakt">
  <thead><tr><th>Fach</th><th>HJ1</th><th>HJ2</th></tr></thead>
  <tbody>
- ${F11SB_FAECHER.map(f=>{
+ ${F12SB_FAECHER.map(f=>{
  const erg1=berechneHalbjahresergebnis(noten,f.key,"hj1");
  const erg2=berechneHalbjahresergebnis(noten,f.key,"hj2");
  const w1=alleEinzelwerte(noten,f.key,"hj1");
@@ -2285,16 +2252,6 @@ async function renderKompass(){
  <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('${f.key}','hj2')">${zelle(erg2,w2)}</button></td>
  </tr>`;
  }).join("")}
- ${(()=>{const l1=notenListe(noten,"fpa","hj1"),a1=notenDurchschnitt(l1),l2=notenListe(noten,"fpa","hj2"),a2=notenDurchschnitt(l2);
- const zelleFpa=(a,l)=>{
- if(!l.length)return"–";
- const werte=l.map(e=>e.value).join(", ");
- return a!==null&&l.length>1?`<strong>${a}</strong><br><small style="font-weight:400">(${werte})</small>`:werte;
- };
- return`<tr class="noten-fpa"><td><em>fpA</em></td>
- <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('fpa','hj1')">${zelleFpa(a1,l1)}</button></td>
- <td><button type="button"class="secondary noten-cell-btn"onclick="openNotenDetail('fpa','hj2')">${zelleFpa(a2,l2)}</button></td>
- </tr>`;})()}
  </tbody></table></div>
  <p style="font-size:10px;color:var(--muted);margin:6px 0 0">Fett = Halbjahresergebnis nach FOBOSO (braucht Schulaufgabe UND sonstige Leistungen). In Klammern/ohne Klammer: die einzelnen eingetragenen Werte.</p>
  <div class="form-actions"style="margin-top:10px">
@@ -2306,23 +2263,26 @@ async function renderKompass(){
 
  <div class="grid grid-2"style="margin-top:16px;gap:12px">
  <details class="noten-collapsible">
- <summary> Probezeit-Status (HJ1)</summary>
+ <summary> Jahresergebnis je Fach</summary>
  <div class="notice">
- ${!bestehen.vollHJ1?`<p style="margin:0">Trag alle Noten des 1. Halbjahrs ein (inkl. fachpraktischer Ausbildung), um deinen endgültigen Stand zu sehen.</p>`
- :`<strong style="font-size:15px">${bestehen.probezeit.passed?" Probezeit nach aktueller Punktlage bestanden":" Probezeit nach aktueller Punktlage nicht bestanden"}</strong>
- <p style="margin:8px 0 0;font-size:12px;color:var(--muted)">Fachpraktische Ausbildung HJ1: ${bestehen.probezeit.fpaOk?"✓ mind. 4 Punkte":"✗ unter 4 Punkten"} · Fächer-Regel: ${bestehen.probezeit.fachCheck.passed?`erfüllt (Variante ${bestehen.probezeit.fachCheck.rule})`:"nicht erfüllt"}</p>`}
- <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">${wasFehltNochHJ1(noten).map(x=>`<div class="card"style="padding:8px 10px;background:${x.status==="ok"?"var(--soft-green)":x.status==="kritisch"?"var(--soft-orange)":x.status==="ungenuegend"?"#fbdada":"#f7fafc"}"><strong style="font-size:12px">${esc(x.label)}</strong><small style="display:block">${esc(x.text)}</small></div>`).join("")}</div>
- <p style="margin-top:14px;font-size:11px;color:var(--muted)">Orientierungshilfe nach §8, §21 Abs. 3 FOBOSO – <strong>ohne Gewähr</strong>. Die tatsächliche Entscheidung trifft die Klassenkonferenz.</p>
+ ${!bestehen.vollJahr?`<p style="margin:0">Trag alle Noten beider Halbjahre ein, um deinen endgültigen Stand zu sehen.</p>`
+ :`<strong style="font-size:15px">${bestehen.jahr.imRahmen?" Zulassungs-Orientierung: im Rahmen von §35 Abs. 9 FOBOSO":" Achtung: Punktlage könnte die Zulassung zur Abschlussprüfung gefährden"}</strong>`}
+ <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">${wasFehltNochJahr(noten).map(x=>`<div class="card"style="padding:8px 10px;background:${x.status==="ok"?"var(--soft-green)":x.status==="kritisch"?"var(--soft-orange)":x.status==="ungenuegend"?"#fbdada":"#f7fafc"}"><strong style="font-size:12px">${esc(x.label)}</strong><small style="display:block">${esc(x.text)}</small></div>`).join("")}</div>
+ <p style="margin-top:14px;font-size:11px;color:var(--muted)">Orientierungshilfe nach §21, §35 Abs. 9 FOBOSO – <strong>ohne Gewähr</strong>. Die vollständige Fachabitur-Berechnung (25 Halbjahresergebnisse, 4 dreifach gewichtete Prüfungen, §35 Abs. 6 FOBOSO) mit optimalem Streichvorschlag leistet diese Übersicht bewusst nicht – dafür nutzt eure Schule den offiziellen Streichvorschlag-Rechner (z. B. der Beruflichen Oberschule Traunstein).</p>
  </div>
  </details>
  <details class="noten-collapsible">
- <summary> Bestehen des Schuljahres</summary>
+ <summary> So wird die Fachabiturnote berechnet</summary>
  <div class="notice">
- ${!bestehen.vollJahr?`<p style="margin:0">Trag alle Noten beider Halbjahre ein (inkl. fachpraktischer Ausbildung), um deinen endgültigen Stand zu sehen.</p>`
- :`<strong style="font-size:15px">${bestehen.jahr.passed?" Schuljahr nach aktueller Punktlage bestanden":" Schuljahr nach aktueller Punktlage nicht bestanden"}</strong>
- <p style="margin:8px 0 0;font-size:12px;color:var(--muted)">Fachpraktische Ausbildung: ${bestehen.jahr.fpaOk?"✓ Bedingungen erfüllt":"✗ Bedingungen nicht erfüllt"} · Fächer-Regel: ${bestehen.jahr.fachCheck.passed?`erfüllt (Variante ${bestehen.jahr.fachCheck.rule})`:"nicht erfüllt"}</p>`}
- <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">${wasFehltNochJahr(noten).map(x=>`<div class="card"style="padding:8px 10px;background:${x.status==="ok"?"var(--soft-green)":x.status==="kritisch"?"var(--soft-orange)":x.status==="ungenuegend"?"#fbdada":"#f7fafc"}"><strong style="font-size:12px">${esc(x.label)}</strong><small style="display:block">${esc(x.text)}</small></div>`).join("")}</div>
- <p style="margin-top:14px;font-size:11px;color:var(--muted)">Orientierungshilfe nach §22 Abs. 1 Nr. 2, §21 Abs. 3 FOBOSO – <strong>ohne Gewähr</strong>. Die tatsächliche Entscheidung trifft die Klassenkonferenz.</p>
+ <p style="margin:0"><strong>Kurz erklärt (§21, §31, §35 FOBOSO):</strong></p>
+ <ul style="margin:8px 0 0;padding-left:18px;font-size:12px;color:var(--muted);line-height:1.6">
+ <li>Je Halbjahr: Durchschnitt der sonstigen Leistungen + Schulaufgabe(n), geteilt durch die Anzahl der eingerechneten Werte.</li>
+ <li>Eingebracht werden 25 Halbjahresergebnisse aus 12/2, 12/1 und 11/2 (11/1 nur bei reinen 11.-Klasse-Fächern) – maximal ein Ergebnis pro Fach darf gestrichen werden.</li>
+ <li>Dazu kommen 4 Prüfungsleistungen (dreifach gewichtet) und (aus der 11. Klasse) die fachpraktische Ausbildung.</li>
+ <li>Zulassung zur Abschlussprüfung: höchstens 2 Gesamtergebnisse mit 1–3 Punkten bzw. 1 mit 0 Punkten, bei kritischer Punktlage zusätzlich eine Mindestsumme von 200–240 Punkten.</li>
+ <li>Durchschnittsnote: S = 17/3 − 5·E/M (E = erreichte Punktsumme, M = 600 Punkte höchstmöglich).</li>
+ </ul>
+ <p style="margin-top:12px;font-size:11px;color:var(--muted)">Das ist eine vereinfachte Orientierung – die exakte, optimale Berechnung (inkl. Streichvorschlag) übernimmt der offizielle Rechner eurer Schule.</p>
  </div>
  </details>
  </div>
@@ -2381,7 +2341,19 @@ window.openProjektFristenModal=openProjektFristenModal;
 window.openAktuelleProjekteModal=openAktuelleProjekteModal;
 function taskHTML(t){return`<div class="list-item"><div><strong>${esc(t.title)}</strong><small>Verantwortlich:
 ${esc(t.ownerName||"")} · Deadline: ${esc(t.deadline||"—")} · Nächster Schritt: ${esc(t.next||"—")}</small></div><div
-class="traffic">${statusDot(t.status)}<span class="pill">${statusLabel[t.status]||"—"}</span></div></div>`}
+class="traffic">${statusDot(t.status)}<span class="pill">${statusLabel[t.status]||"—"}</span>${(t.createdBy===currentUser.uid||isTeacher())?`<button type="button"class="secondary"style="padding:4px 8px;margin-left:6px"onclick="deleteTask('${t.id}')"title="Aufgabe löschen">✕</button>`:""}</div></div>`}
+async function deleteTask(id){
+ if(!confirm("Diese Aufgabe wirklich löschen?"))return;
+ try{
+ await deleteDoc(doc(db,"tasks",id));
+ await render();
+ toast("Aufgabe gelöscht.");
+ }catch(e){
+ console.error("Aufgabe löschen:",e);
+ toast(e?.code==="permission-denied"?"Firebase verweigert das Löschen. Bitte die Firestore-Regeln prüfen.":"Konnte nicht gelöscht werden.");
+ }
+}
+window.deleteTask=deleteTask;
 
 // ---- Klassenübersicht für Lehrkräfte: Lehrplan-Fortschritt + Ampel je LB --
 function ampelDotHTML(status){
@@ -2391,7 +2363,7 @@ function ampelDotHTML(status){
 }
 async function openLehrplanKlassenuebersicht(fach){
  if(!isTeacher()){toast("Nur Lehrkräfte können die Klassenübersicht öffnen.");return}
- const fachLbl=F11SB_FAECHER.find(f=>f.key===fach)?.label||fach;
+ const fachLbl=F12SB_FAECHER.find(f=>f.key===fach)?.label||fach;
  const wochenGesamt=(LEHRPLAN_WOCHEN[fach]||[]).length;
  let students=[],fortschrittDocs=[],lsTasks=[],allAttempts=[];
  try{
@@ -2443,8 +2415,8 @@ async function openLehrplanKlassenuebersicht(fach){
 window.openLehrplanKlassenuebersicht=openLehrplanKlassenuebersicht;
 
 async function renderFaecherUebersicht(){
- return`${pageHead("LEHRPLAN & LERNINHALTE","Fächer 11. Klasse","Wähle ein Fach, um den Lehrplan-Zeitstrahl mit Themen, Aufträgen und Material zu öffnen.","")}
- <div class="grid grid-4">${F11SB_FAECHER.map(f=>{
+ return`${pageHead("LEHRPLAN & LERNINHALTE","Fächer 12. Klasse","Wähle ein Fach, um den Lehrplan-Zeitstrahl mit Themen, Aufträgen und Material zu öffnen.","")}
+ <div class="grid grid-4">${F12SB_FAECHER.map(f=>{
  const wochen=LEHRPLAN_WOCHEN[f.key]||[];
  const c=personColor(f.key);
  return`<button class="card tile"style="background:${c.bg};border-left:4px solid ${c.border};text-align:left"onclick="openFach('${f.key}')">
@@ -2457,7 +2429,7 @@ async function renderFaecherUebersicht(){
 
 async function renderFachDetail(){
  if(!activeFach)return await renderFaecherUebersicht();
- const fach=F11SB_FAECHER.find(f=>f.key===activeFach);
+ const fach=F12SB_FAECHER.find(f=>f.key===activeFach);
  const timeline=combinedTimeline(activeFach);
  const wochenItems=timeline.filter(t=>t.kind==="woche");
  const fortschritte=await Promise.all(wochenItems.map(async w=>({id:w.id,f:await getLehrplanFortschritt(w.id)})));
@@ -2579,7 +2551,7 @@ async function openWocheDetail(fach,wocheId){
  const ziele=(LEHRPLAN_ZIELE_VORSCHLAG[wocheId]||[]).map((text,i)=>({id:`z${i}`,text}));
  const alleErfuellt=ziele.length>0 && ziele.every(z=>fortschritt.zieleErfuellt?.[z.id]);
  const meinTeam=teams.find(t=>(t.mitgliederUids||[]).includes(currentUser.uid));
- const fachLbl=F11SB_FAECHER.find(f=>f.key===fach)?.label||fach;
+ const fachLbl=F12SB_FAECHER.find(f=>f.key===fach)?.label||fach;
  const meinProdukt=produkte.some(p=>p.uid===currentUser.uid);
 
  // Fortschritt: jeder Arbeitsschritt bekommt einen eigenen Haken, damit
@@ -2621,7 +2593,7 @@ async function openWocheDetail(fach,wocheId){
 
  <div class="wd-panel"id="wdPanel_ziele">
  <div class="wd-ziele-info">
- <strong> Lernziele laut Lehrplan</strong> <small>(${esc(woche.lb)}, LehrplanPLUS FOS 11 Pädagogik/Psychologie)</small>
+ <strong> Lernziele laut Lehrplan</strong> <small>(${esc(woche.lb)}, LehrplanPLUS FOS 12 Pädagogik/Psychologie)</small>
  <ul>${ziele.map(z=>`<li>${esc(z.text)}</li>`).join("")||"<li>Für dieses Fach/diese Woche sind noch keine Lehrplan-Ziele hinterlegt.</li>"}</ul>
  </div>
 
@@ -2739,13 +2711,13 @@ async function renderLernwerkstatt(){
  ]},
  {title:"Unterstützung holen",color:"var(--soft-orange)",items:[
  [" ","Lerncoaching","Individuelle Begleitung und Kontakt zu einer Lehrkraft.","lerncoaching"],
- [" ","Fragen & Hilfe","Antworten rund um die F11Sb und das Lernen.","fragenhilfe"]
+ [" ","Fragen & Hilfe","Antworten rund um die F12Sb und das Lernen.","fragenhilfe"]
  ]}
  ];
  return`${pageHead("SELBSTSTÄNDIG LERNEN","Lernwerkstatt","Der offene Lernraum für Lernaufträge, Methoden, Tools und KI.",`<button class="primary"onclick="openPostForm('idea')">＋ Lernimpuls</button>`)}
  <div class="kicker"style="margin-bottom:10px">LEHRPLAN & LERNINHALTE</div>
  <a class="card tile"href="#faecher"style="background:linear-gradient(135deg,var(--soft-blue),var(--soft-purple));min-height:110px;margin-bottom:22px">
- <span class="emoji"></span><strong style="font-size:16px">Fächer 11. Klasse</strong>
+ <span class="emoji"></span><strong style="font-size:16px">Fächer 12. Klasse</strong>
  <small>Lehrplan-Zeitstrahl je Fach: Themen, Aufträge, Material, Teams und Produkte – Schritt für Schritt durchs Schuljahr.</small>
  </a>
  ${groups.map(g=>`<div class="kicker"style="margin:22px 0 10px">${g.title}</div><div class="grid grid-4">${g.items.map(x=>`<a class="card tile"style="background:${g.color}"href="#${x[3]}"><span class="emoji">${x[0]}</span>
@@ -2775,7 +2747,7 @@ async function renderKollaborationsTools(){
  ];
  const toolTile=t=>`<a class="card tile"href="#${t[3]}"><span class="emoji">${t[0]}</span>
 <strong>${t[1]}</strong><small>${t[2]}</small>${!t[4]?`<span class="badge"style="margin-top:8px">IN VORBEREITUNG</span>`:""}</a>`;
- return`${pageHead("ZUSAMMENARBEIT","Tools für Zusammenarbeit","Kostenlose, direkt in die F11Sb integrierte Tools für Gruppenarbeit, Brainstorming und Unterricht – ganz ohne externe Anmeldung.",`<button class="secondary"onclick="go('lernwerkstatt')">← Lernwerkstatt</button>`)}
+ return`${pageHead("ZUSAMMENARBEIT","Tools für Zusammenarbeit","Kostenlose, direkt in die F12Sb integrierte Tools für Gruppenarbeit, Brainstorming und Unterricht – ganz ohne externe Anmeldung.",`<button class="secondary"onclick="go('lernwerkstatt')">← Lernwerkstatt</button>`)}
  <h3 style="margin:0 0 10px">🔴 Live im Unterricht</h3>
  <div class="grid grid-3">${liveTools.map(toolTile).join("")}</div>
  <h3 style="margin:22px 0 10px"> Projektorganisation</h3>
@@ -2983,7 +2955,7 @@ async function downloadWordcloudPDF(wordcloudId){
  </style>${wordcloudCloudHTML(items)}`;
  openToolPrintWindow(
  "Wortwolke – "+(cloud.title||"Wortwolke"),
- body,"F11Sb · Wortwolke"+(cloud.description?" · "+cloud.description:"")
+ body,"F12Sb · Wortwolke"+(cloud.description?" · "+cloud.description:"")
  );
  }catch(e){console.error("Wortwolke PDF:",e);toast("Die Wortwolke konnte nicht als PDF geöffnet werden.")}
 }
@@ -3175,7 +3147,7 @@ async function downloadKanbanPDF(boardId){
  }).join("");
  openToolPrintWindow(
  "Kanban-Board – "+(board.title||"Kanban-Board"),
- body,"F11Sb · Kanban-Board"+(board.description?" · "+board.description:"")
+ body,"F12Sb · Kanban-Board"+(board.description?" · "+board.description:"")
  );
  }catch(e){console.error("Kanban PDF:",e);toast("Das Kanban-Board konnte nicht als PDF geöffnet werden.")}
 }
@@ -3414,7 +3386,7 @@ async function downloadTermPollPDF(pollId){
  </div>`).join(""):`<p class="empty">Keine Terminvorschläge.</p>`;
  openToolPrintWindow(
  "Terminfindung – "+(poll.title||"Terminfindung"),
- body,"F11Sb · Terminfindung · "+votes.length+"Stimme(n) insgesamt"+(poll.description?" · "+poll.description:"")
+ body,"F12Sb · Terminfindung · "+votes.length+"Stimme(n) insgesamt"+(poll.description?" · "+poll.description:"")
  );
  }catch(e){console.error("Terminfindung PDF:",e);toast("Die Terminfindung konnte nicht als PDF geöffnet werden.")}
 }
@@ -3472,7 +3444,7 @@ async function downloadTeamAdsPDF(){
  ${interested.length?`<small>Interessiert: ${interested.map(i=>escPDF(i.name)).join(",")}</small>`:""}
  </div>`;
  }).join(""):`<p class="empty">Noch kein Gesuch.</p>`;
- openToolPrintWindow("Team gesucht",body,"F11Sb · Übersicht aller offenen Gesuche");
+ openToolPrintWindow("Team gesucht",body,"F12Sb · Übersicht aller offenen Gesuche");
  }catch(e){console.error("Team gesucht PDF:",e);toast("Die Übersicht konnte nicht als PDF geöffnet werden.")}
 }
 
@@ -3759,7 +3731,7 @@ async function downloadChecklistPDF(checklistId){
  </div>`).join(""):`<p class="empty">Noch keine Einträge.</p>`;
  openToolPrintWindow(
  "Checkliste – "+(list.title||"Checkliste"),
- body,"F11Sb · Gemeinsame Checkliste · "+done+"von"+items.length+"erledigt"+(list.description?" · "+list.description:"")
+ body,"F12Sb · Gemeinsame Checkliste · "+done+"von"+items.length+"erledigt"+(list.description?" · "+list.description:"")
  );
  }catch(e){console.error("Checkliste PDF:",e);toast("Die Checkliste konnte nicht als PDF geöffnet werden.")}
 }
@@ -4034,7 +4006,7 @@ async function downloadAmpelPDF(roundId){
  </tbody></table>`;
  openToolPrintWindow(
  "Verständnis-Ampel – "+(round.title||"Runde"),
- body,"F11Sb · Verständnis-Ampel · "+total+"Antwort(en)"+(round.description?" · "+round.description:"")
+ body,"F12Sb · Verständnis-Ampel · "+total+"Antwort(en)"+(round.description?" · "+round.description:"")
  );
  }catch(e){console.error("Ampel PDF:",e);toast("Die Runde konnte nicht als PDF geöffnet werden.")}
 }
@@ -4252,7 +4224,7 @@ async function downloadPollPDF(pollId){
  </tbody></table>`;
  openToolPrintWindow(
  "Live-Umfrage – "+(poll.question||"Umfrage"),
- body,"F11Sb · Live-Umfrage · "+total+"Stimme(n)"+(poll.description?" · "+poll.description:"")
+ body,"F12Sb · Live-Umfrage · "+total+"Stimme(n)"+(poll.description?" · "+poll.description:"")
  );
  }catch(e){console.error("Umfrage PDF:",e);toast("Die Umfrage konnte nicht als PDF geöffnet werden.")}
 }
@@ -4684,7 +4656,7 @@ async function downloadDeckPDF(deckId){
  </div>`).join(""):`<p class="empty">Noch keine Karten.</p>`;
  openToolPrintWindow(
  "Karteikarten – "+(deck.title||"Deck"),
- body,"F11Sb · Karteikarten · "+cards.length+"Karte(n)"+(deck.description?" · "+deck.description:"")
+ body,"F12Sb · Karteikarten · "+cards.length+"Karte(n)"+(deck.description?" · "+deck.description:"")
  );
  }catch(e){console.error("Karteikarten PDF:",e);toast("Das Deck konnte nicht als PDF geöffnet werden.")}
 }
@@ -5029,7 +5001,7 @@ async function downloadGlossaryPDF(){
  <strong>${escPDF(g.term)}</strong>
  <div>${escPDF(g.definition)}</div>
  </div>`).join(""):`<p class="empty">Noch keine Begriffe.</p>`;
- openToolPrintWindow("Glossar",body,"F11Sb · Fachbegriffe-Glossar · "+entries.length+"Begriff(e)");
+ openToolPrintWindow("Glossar",body,"F12Sb · Fachbegriffe-Glossar · "+entries.length+"Begriff(e)");
  }catch(e){console.error("Glossar PDF:",e);toast("Das Glossar konnte nicht als PDF geöffnet werden.")}
 }
 
@@ -5037,7 +5009,7 @@ async function downloadGlossaryPDF(){
  FACHAUFSATZ-TRAINING – Fachaufsatz Pädagogik/Psychologie
  Baustein für Baustein üben (Einleitung, Theorie allgemein,
  Theorie am Fall analysieren, Beurteilung), gegliedert nach den
- vier Lernbereichen aus LehrplanPLUS FOS 11 Pädagogik/Psychologie.
+ vier Lernbereichen aus LehrplanPLUS FOS 12 Pädagogik/Psychologie.
  Fallbeispiele können als Text und/oder als Link zu einer bereits
  gehosteten PDF (z. B. Google Drive) hinterlegt werden – kein
  eigener Datei-Upload, damit kein Firebase Storage nötig ist.
@@ -5088,7 +5060,7 @@ function essaySelfCheckStatus(entry,criteriaCount){
  return {color:"yellow",label:`🟡 ${metCount}/${criteriaCount} Kriterien selbst erfüllt`};
 }
 
-// Fest eingebaute Beispiel-Fallbeispiele (aktuell keine für F11Sb hinterlegt –
+// Fest eingebaute Beispiel-Fallbeispiele (aktuell keine für F12Sb hinterlegt –
 // die App unterstützt sie aber genauso wie F12Sb, falls später gewünscht).
 const ESSAY_SEED_CASES=[];
 
@@ -5405,7 +5377,7 @@ async function downloadEssayPDF(caseId){
  </div>`).join("");
  openToolPrintWindow(
  "Fachaufsatz – "+(c.title||"Fallbeispiel"),
- body,"F11Sb · Fachaufsatz-Training"+(c.theoryArea?" · "+c.theoryArea:"")
+ body,"F12Sb · Fachaufsatz-Training"+(c.theoryArea?" · "+c.theoryArea:"")
  );
  }catch(e){console.error("Fachaufsatz PDF:",e);toast("Der Aufsatz konnte nicht als PDF geöffnet werden.")}
 }
@@ -5567,7 +5539,7 @@ async function renderForum(){
  <a class="card tile"href="#forum-board"style="min-height:180px;background:var(--soft-blue)">
  <span class="emoji"></span>
  <strong>Forum</strong>
- <small>Gemeinsam denken, fragen, austauschen und unterstützen – für die ganze F11Sb sichtbar.</small>
+ <small>Gemeinsam denken, fragen, austauschen und unterstützen – für die ganze F12Sb sichtbar.</small>
  </a>
  <a class="card tile"href="#forum-nachrichten"style="min-height:180px;background:var(--soft-teal)">
  <span class="emoji"></span>
@@ -5664,7 +5636,7 @@ async function renderForumMessages(){
  <button class="secondary"title="Unterhaltung aus meiner Übersicht entfernen"onclick="event.stopPropagation();deleteConversation('${c.otherUid}','${esc(c.otherName||"")}')">Löschen</button>
  </div>
  </div>
- </article>`).join("")||`<div class="empty"><strong>Noch keine Nachrichten.</strong><p>Schreibe jemandem aus der F11Sb eine persönliche Nachricht.</p></div>`}
+ </article>`).join("")||`<div class="empty"><strong>Noch keine Nachrichten.</strong><p>Schreibe jemandem aus der F12Sb eine persönliche Nachricht.</p></div>`}
  </div>${footer()}`;
 }
 
@@ -5917,7 +5889,7 @@ async function getBoardPosts(boardId){
 
 async function renderPinnwandUebersicht(){
  const boards=await getBoards();
- return`${pageHead("ZUSAMMENARBEIT","Pinnwand","Digitale Pinnwände für Ideen, Brainstorming und Gruppenarbeit – im Raster, für die ganze F11Sb sichtbar.",`<button class="primary"onclick="openBoardForm()">＋ Neue Pinnwand</button>`)}
+ return`${pageHead("ZUSAMMENARBEIT","Pinnwand","Digitale Pinnwände für Ideen, Brainstorming und Gruppenarbeit – im Raster, für die ganze F12Sb sichtbar.",`<button class="primary"onclick="openBoardForm()">＋ Neue Pinnwand</button>`)}
  <div class="grid grid-3">${boards.map(b=>`
  <div class="card tile"style="cursor:pointer;text-align:left"onclick="openBoard('${b.id}')">
  <span class="emoji"></span>
@@ -6065,7 +6037,7 @@ async function downloadBoardPDF(boardId){
  </div>`).join(""):`<p class="empty">Noch keine Notizen.</p>`;
  openToolPrintWindow(
  "Pinnwand – "+(board.title||"Pinnwand"),
- body,"F11Sb · Pinnwand"+(board.description?" · "+board.description:"")
+ body,"F12Sb · Pinnwand"+(board.description?" · "+board.description:"")
  );
  }catch(e){console.error("Pinnwand PDF:",e);toast("Die Pinnwand konnte nicht als PDF geöffnet werden.")}
 }
@@ -6730,7 +6702,7 @@ function openJournalPrintWindow(title,students){
  const studentSections=students.map(student=>`
  <section class="student-section">
  <h1>${escPDF(student.name)}</h1>
- <div class="meta">F11Sb · Persönliches Lernjournal</div>
+ <div class="meta">F12Sb · Persönliches Lernjournal</div>
  ${student.entries.length
  ? student.entries.map(j=>`
  <article class="entry">
@@ -6889,7 +6861,7 @@ async function downloadAllJournalsPDF(){
 
  closeModal();
  openJournalPrintWindow(
- "F11Sb – Lernjournale",
+ "F12Sb – Lernjournale",
  students
  );
  }catch(e){
@@ -7217,12 +7189,24 @@ async function toggleResilienzSchatz(skillId){
  toast("In deine Resilienz-Schatzkiste gelegt.");
  if(btn){btn.className="primary schatz-btn-active";btn.textContent="★ In der Schatzkiste"}
  }
+ await refreshTreasureCount();
  }catch(e){
  console.error("Resilienz-Schatzkiste ändern:",e);
  toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Konnte nicht gespeichert werden.");
  }finally{
  resilienzSchatzInFlight.delete(skillId);
  }
+}
+// Aktualisiert die "X Schätze gespeichert"-Anzeige auf der Kachel sofort,
+// ohne die ganze Resilienz-Seite neu zu laden (verhindert, dass eine
+// laufende Übung dabei unterbrochen wird).
+async function refreshTreasureCount(){
+ const badge=document.querySelector(".treasure-count");
+ if(!badge)return;
+ try{
+ const favorites=await getMyResilienzSchaetze();
+ badge.textContent=`${favorites.length} Schätze gespeichert`;
+ }catch(e){console.error("Schatzkisten-Zähler aktualisieren:",e)}
 }
 async function openResilienzSchatzkiste(){
  const favorites=await getMyResilienzSchaetze();
@@ -7240,6 +7224,7 @@ async function removeFromResilienzSchatzkiste(skillId){
  await deleteDoc(doc(db,"resilienzSchaetze",`${currentUser.uid}_${skillId}`));
  toast("Aus der Schatzkiste entfernt.");
  await openResilienzSchatzkiste();
+ await refreshTreasureCount();
  }catch(e){
  console.error("Aus Schatzkiste entfernen:",e);
  toast("Konnte nicht entfernt werden.");
@@ -7301,7 +7286,7 @@ function resilienzCheckin(name){try{localStorage.setItem("campus_resilienz_"+nam
 
 async function renderFragenHilfe(){
  const faqs=[
- ["Was ist die F11Sb?","Die F11Sb verbindet selbstständiges Lernen, Projekte, Praxis, Kompetenzentwicklung und Gemeinschaft. Du arbeitest zunehmend eigenverantwortlich und kannst deinen Lernweg aktiv mitgestalten."],
+ ["Was ist die F12Sb?","Die F12Sb verbindet selbstständiges Lernen, Projekte, Praxis, Kompetenzentwicklung und Gemeinschaft. Du arbeitest zunehmend eigenverantwortlich und kannst deinen Lernweg aktiv mitgestalten."],
  ["Wie funktioniert das Lernen?","Du setzt Ziele, planst deine nächsten Schritte, bearbeitest Lernaufträge und reflektierst deinen Lernweg. Die Lernwerkstatt unterstützt dich dabei mit Methoden, Lernressourcen, Lernimpulsen und KI-Angeboten."],
  ["Wo finde ich meine Aufgaben?","Im Campus-Kompass findest du deine persönlichen Aufgaben, Projekte, Ziele und deinen aktuellen Lernweg."],
  ["Was ist die Lernwerkstatt?","Die Lernwerkstatt ist dein Bereich für selbstständiges Lernen. Dort findest du Lernpfade, Lernressourcen, Lernimpulse, Lernstandsmessungen, KI zum Lernen und diese Fragen-&-Hilfe-Seite."],
@@ -7310,15 +7295,15 @@ async function renderFragenHilfe(){
  ["Was ist Deeper Learning?","Deeper Learning bedeutet, dass du Wissen nicht nur aufnimmst, sondern es verstehst, anwendest, auf neue Situationen überträgst, Probleme löst, gemeinsam arbeitest und deine Ergebnisse reflektierst."],
  ["Was ist ein Lernjournal?","Im Lernjournal hältst du deinen Lernweg fest: Was habe ich gelernt? Was hat funktioniert? Wo gab es Schwierigkeiten? Was ist mein nächster Schritt?"],
  ["Was sind Lernstandsmessungen?","Sie helfen dir zu erkennen, wo du bei deinen Kompetenzen stehst und woran du als Nächstes arbeiten solltest. Die Ergebnisse können deine Kompetenzentwicklung sichtbar machen."],
- ["Wo finde ich Termine?","Im Campus-Kalender findest du die wichtigen Termine der F11Sb. Dort sind auch die Schulferien von Bayern für das Schuljahr 2026/27 markiert."],
- ["Was mache ich bei Fragen zur F11Sb?","Wenn deine Frage hier nicht beantwortet wird, wende dich an deine Lehrkraft bzw. das Klassenteam. Die Seite soll dir zunächst schnelle Orientierung zu F11Sb und Lernen geben."]
+ ["Wo finde ich Termine?","Im Campus-Kalender findest du die wichtigen Termine der F12Sb. Dort sind auch die Schulferien von Bayern für das Schuljahr 2026/27 markiert."],
+ ["Was mache ich bei Fragen zur F12Sb?","Wenn deine Frage hier nicht beantwortet wird, wende dich an deine Lehrkraft bzw. das Klassenteam. Die Seite soll dir zunächst schnelle Orientierung zu F12Sb und Lernen geben."]
  ];
 
- return`${pageHead("ORIENTIERUNG","Fragen & Hilfe","Antworten rund um die F11Sb, selbstständiges Lernen und deinen Lernweg.")}
+ return`${pageHead("ORIENTIERUNG","Fragen & Hilfe","Antworten rund um die F12Sb, selbstständiges Lernen und deinen Lernweg.")}
  <div class="card"style="margin-bottom:16px;background:var(--soft-green)">
  <span class="badge"> ORIENTIERUNG</span>
  <h2>Du hast eine Frage?</h2>
- <p>Hier findest du schnelle Antworten zu den wichtigsten Fragen rund um die F11Sb und das Lernen. Nutze die Themen als erste Orientierung.</p>
+ <p>Hier findest du schnelle Antworten zu den wichtigsten Fragen rund um die F12Sb und das Lernen. Nutze die Themen als erste Orientierung.</p>
  </div>
  <div class="grid grid-2">
  ${faqs.map(([q,a])=>`<details class="card"style="margin:0 0 12px">
@@ -7346,7 +7331,7 @@ async function renderPraktikum(){
  try{solutions=await getCollection("kiSolutions","createdAt",true)}catch(e){console.error(e)}
  try{results=await getCollection("kiResults","createdAt",true)}catch(e){console.error(e)}
 
- assignments=assignments.filter(p=>p.module==="fpa" && p.type==="teacherAssignment");
+ assignments=assignments.filter(p=>p.module==="fachreferat" && p.type==="teacherAssignment");
  const praktikumsAuftraege=await getPraktikumsAuftraege();
 
  return`${pageHead("SCHULE ↔ PRAXIS","fpA","Praxisaufträge und eigenständige Werkzeuge für die fachpraktische Ausbildung.",
@@ -7484,7 +7469,7 @@ async function saveFPAQuestion(){
  if(!title||!textQ){toast("Bitte Titel und Frage ausfüllen.");return}
  try{
  await addDoc(collection(db,"fpaQuestions"),{
- module:"fpa",type:"question",title,text:textQ,context:$("fpaQContext")?.value.trim()||"",
+ module:"fachreferat",type:"question",title,text:textQ,context:$("fpaQContext")?.value.trim()||"",
  studentName:profile?.displayName||currentUser?.email||"Campus-Mitglied",
  createdBy:currentUser.uid,createdAt:serverTimestamp()
  });
@@ -7522,7 +7507,7 @@ async function saveFPAProject(){
  const title=$("fpaPTitle")?.value.trim()||"";if(!title){toast("Bitte einen Projektnamen eingeben.");return}
  try{
  await addDoc(collection(db,"fpaProjects"),{
- module:"fpa",title,team:$("fpaPTeam")?.value.trim()||"",
+ module:"fachreferat",title,team:$("fpaPTeam")?.value.trim()||"",
  partner:$("fpaPPartner")?.value.trim()||"",description:$("fpaPDescription")?.value.trim()||"",
  goal:$("fpaPGoal")?.value.trim()||"",status:"offen",
  createdBy:currentUser.uid,createdAt:serverTimestamp()
@@ -7713,7 +7698,7 @@ function escapeICS(text){
 }
 
 function buildICS(events,calName){
- const lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//F11Sb//Kalender//DE","CALSCALE:GREGORIAN",`X-WR-CALNAME:${escapeICS(calName||"F11Sb Kalender")}`];
+ const lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//F12Sb//Kalender//DE","CALSCALE:GREGORIAN",`X-WR-CALNAME:${escapeICS(calName||"F12Sb Kalender")}`];
  const stamp=new Date().toISOString().replace(/[-:]/g,"").split(".")[0]+"Z";
  events.forEach((e,i)=>{
  const raw=e.start||e.date||e.startDate;
@@ -7727,7 +7712,7 @@ function buildICS(events,calName){
  nd.setDate(nd.getDate()+1);
  const dtEnd=`${nd.getFullYear()}${String(nd.getMonth()+1).padStart(2,"0")}${String(nd.getDate()).padStart(2,"0")}`;
  lines.push("BEGIN:VEVENT");
- lines.push(`UID:${e.id||("ck-"+i+"-"+dt)}@f11sb-weilheim`);
+ lines.push(`UID:${e.id||("ck-"+i+"-"+dt)}@f12sb-weilheim`);
  lines.push(`DTSTAMP:${stamp}`);
  lines.push(`DTSTART;VALUE=DATE:${dt}`);
  lines.push(`DTEND;VALUE=DATE:${dtEnd}`);
@@ -7771,7 +7756,7 @@ async function exportCampusCalendarICS(){
  const ferienRangeEvents=ferienZeitraeume.map(([start,end,label])=>(
  {start,rangeEnd:end,title:label,description:"Schulferien in Bayern"}
  ));
- downloadICS([...events,...birthdayEvents,...ferienRangeEvents],"campuskalender.ics","F11Sb Kalender");
+ downloadICS([...events,...birthdayEvents,...ferienRangeEvents],"campuskalender.ics","F12Sb Kalender");
  toast("Kalender wird heruntergeladen – Datei öffnen, um sie zum Handy-Kalender hinzuzufügen.");
  }catch(e){console.error("Kalender-Export:",e);toast("Der Kalender konnte nicht exportiert werden.")}
 }
@@ -7784,7 +7769,7 @@ function exportCalendarDayICS(y,m,d){
  return !isNaN(x)&&x.getFullYear()===y&&x.getMonth()===m&&x.getDate()===d;
  });
  if(!day.length){toast("An diesem Tag gibt es keinen Termin zum Exportieren.");return}
- downloadICS(day,`termin-${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}.ics`,"F11Sb Termin");
+ downloadICS(day,`termin-${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}.ics`,"F12Sb Termin");
 }
 
 async function renderKalender(){
@@ -7973,7 +7958,7 @@ async function getBirthdayEvents(){
  return {
  start:dateStr,type:"geburtstag",
  title:` ${u.displayName||u.email||"Campus-Mitglied"} hat Geburtstag`,
- description:"Herzlichen Glückwunsch von der ganzen F11Sb!"
+ description:"Herzlichen Glückwunsch von der ganzen F12Sb!"
  };
  }).filter(Boolean);
  }catch(e){console.error("Geburtstage laden:",e);return []}
@@ -8002,6 +7987,20 @@ async function removeBirthday(){
  }catch(e){console.error("Geburtstag löschen:",e);toast("Konnte nicht entfernt werden.")}
 }
 window.removeBirthday=removeBirthday;
+
+async function adminRemoveBirthday(uid){
+ if(!isTeacher()){toast("Nur Lehrkräfte können fremde Geburtstage entfernen.");return}
+ if(!confirm("Diesen Geburtstag wirklich entfernen?"))return;
+ try{
+ await updateDoc(doc(db,"users",uid),{birthday:"",updatedAt:serverTimestamp()});
+ toast("Geburtstag entfernt.");
+ await render();
+ }catch(e){
+ console.error("Geburtstag (fremd) löschen:",e);
+ toast(e?.code==="permission-denied"?"Firebase verweigert das Entfernen. Bitte die Firestore-Regeln prüfen.":"Konnte nicht entfernt werden.");
+ }
+}
+window.adminRemoveBirthday=adminRemoveBirthday;
 
 async function saveBirthday(){
  const val=$("birthdayInput")?.value||"";
@@ -8511,7 +8510,7 @@ nächste Schritt sinnvoll sein kann.</p>
 
 
 /* =========================================================
- F11Sb – LERNIMPULSE
+ F12Sb – LERNIMPULSE
  Zwei Zugänge:
  1. Gezielte Auswahl
  2. Lern-Glücksrad
@@ -8579,10 +8578,10 @@ const lernImpulse=[
 ];
 
 function lernImpulseDone(){
- try{return JSON.parse(localStorage.getItem("f11sb_lernimpulse_done")||"[]")}catch(e){return []}
+ try{return JSON.parse(localStorage.getItem("f12sb_lernimpulse_done")||"[]")}catch(e){return []}
 }
 function lernImpulseSaveDone(ids){
- try{localStorage.setItem("f11sb_lernimpulse_done",JSON.stringify(ids))}catch(e){}
+ try{localStorage.setItem("f12sb_lernimpulse_done",JSON.stringify(ids))}catch(e){}
 }
 function lernImpulseCategory(id){return lernImpulseKategorien.find(x=>x.id===id)}
 function renderLernimpulsCard(i){
@@ -8678,7 +8677,7 @@ window.completeLernimpuls=completeLernimpuls;
 
 
 /* =========================================================
- F11Sb – LERNSTANDSMESSUNG PP 11
+ F12Sb – LERNSTANDSMESSUNG PP 11
  26 Lernstandsmessungen
  5 identische Kompetenzdimensionen × 3 Punkte = 15 Punkte
  ========================================================= */
@@ -9420,7 +9419,7 @@ async function downloadLernstandResultPDF(id){
  return`<div class="item"><strong>${escPDF(String(i+1)+"."+q.label)} · ${q.points} P.</strong><div><em>Aufgabe:</em> ${escPDF(q.prompt||"")}</div><div style="margin-top:6px"><em>Musterlösung:</em><br>${escPDF(q.solution||"Noch keine Musterlösung hinterlegt.").replace(/\n/g,"<br>")}</div></div>`;
  }).join("");
  openToolPrintWindow(
- "Lernstandsmessung – "+(t.title||"Thema"),`<div class="item"style="background:#f5f7f8"><strong>${escPDF(scoreLine)}</strong></div>`+body,"F11Sb · Lernstandsmessung"+t.nr+"/26 · "+(LERNSTAND_AREAS[t.learningArea]?.title||"")
+ "Lernstandsmessung – "+(t.title||"Thema"),`<div class="item"style="background:#f5f7f8"><strong>${escPDF(scoreLine)}</strong></div>`+body,"F12Sb · Lernstandsmessung"+t.nr+"/26 · "+(LERNSTAND_AREAS[t.learningArea]?.title||"")
  );
  }catch(e){console.error("Lernstand PDF:",e);toast("Das PDF konnte nicht erstellt werden.")}
 }
@@ -9512,7 +9511,7 @@ async function downloadLernstandTeacherPDF(attemptId){
  }).join("");
  const scoreLine=a.status==="bewertet"?`Gesamt: ${a.total}/${max} Punkte (${lernstandStatusText(a.total,max)})`:`Gesamt bisher: ${Number(a.total)||0}/${max} Punkte (noch nicht vollständig bewertet)`;
  openToolPrintWindow(
- "Bewertungsbericht – "+(t.title||"Thema"),`<div class="item"style="background:#f5f7f8"><strong>${escPDF(a.displayName||"Schüler/in")} · Versuch ${a.attempt}/3</strong><br>${escPDF(scoreLine)}${a.feedback?`<br><em>Rückmeldung:</em> ${escPDF(a.feedback)}`:""}</div>`+body,"F11Sb · Lernstandsmessung"+t.nr+"/26 · "+(LERNSTAND_AREAS[t.learningArea]?.title||"")
+ "Bewertungsbericht – "+(t.title||"Thema"),`<div class="item"style="background:#f5f7f8"><strong>${escPDF(a.displayName||"Schüler/in")} · Versuch ${a.attempt}/3</strong><br>${escPDF(scoreLine)}${a.feedback?`<br><em>Rückmeldung:</em> ${escPDF(a.feedback)}`:""}</div>`+body,"F12Sb · Lernstandsmessung"+t.nr+"/26 · "+(LERNSTAND_AREAS[t.learningArea]?.title||"")
  );
  }catch(e){console.error("Lernstand-Bewertungsbericht PDF:",e);toast("Das PDF konnte nicht erstellt werden.")}
 }
@@ -9707,7 +9706,7 @@ entwickelt. Die übrige Campus-App bleibt dabei unverändert.</p></div>${footer(
 
 
 /* =========================================================
- F11Sb – MODAL BRIDGE
+ F12Sb – MODAL BRIDGE
  app.js wird als ES-Modul geladen. Funktionen aus einem
  ES-Modul sind nicht automatisch window-global.
  Die bestehenden Modal-Formulare verwenden jedoch inline
@@ -10341,7 +10340,7 @@ function openPracticeForm(){
 async function addPractice(){
  if(!isTeacher()){toast("Nur Lehrkräfte können Praxisaufträge erstellen.");return}
  try{await addDoc(collection(db,"practice"),
-{module:"fpa",type:"teacherAssignment",title:$("rTitle").value.trim()||"Praxisauftrag",date:cleanDateInput($("rDate").value),state:"offen",text:$("rText").value.trim()
+{module:"fachreferat",type:"teacherAssignment",title:$("rTitle").value.trim()||"Praxisauftrag",date:cleanDateInput($("rDate").value),state:"offen",text:$("rText").value.trim()
 ||"Beschreibung ergänzen",createdBy:currentUser.uid,createdAt:serverTimestamp()});closeModal();await
 render();toast("fpA-Praxisauftrag gespeichert.")}catch(e){console.error(e);toast("fpA-Praxisauftrag konnte nicht gespeichert werden.")}}
 
