@@ -7340,13 +7340,16 @@ async function renderPraktikum(){
  isTeacher()?`<button class="primary"onclick="openPracticeForm()">＋ Praxisauftrag</button>`:"")}
  <style>
  .fpa-main{margin-bottom:18px}
- .fpa-tools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
- .fpa-tool{min-height:185px;cursor:pointer;transition:.15s;text-align:left;color:var(--ink);font:inherit}
+ .fpa-group{margin-bottom:26px}
+ .fpa-group-head{margin:0 0 10px}
+ .fpa-group-head p{margin:4px 0 0;font-size:12.5px;color:var(--muted)}
+ .fpa-tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+ .fpa-tool{min-height:108px;cursor:pointer;transition:.15s;text-align:left;color:var(--ink);font:inherit;padding:14px}
  .fpa-tool:hover{transform:translateY(-2px)}
- .fpa-tool .emoji{font-size:30px;display:block;margin-bottom:10px}
- .fpa-tool strong{display:block;font-size:14px;color:var(--blue-dark);margin:0 0 6px}
- .fpa-tool small{display:block;font-size:12px;color:var(--muted);line-height:1.5}
- .fpa-count{margin-top:14px}
+ .fpa-tool .emoji{font-size:20px;display:block;margin-bottom:6px}
+ .fpa-tool strong{display:block;font-size:13px;color:var(--blue-dark);margin:0 0 4px}
+ .fpa-tool small{display:block;font-size:11.5px;color:var(--muted);line-height:1.4}
+ .fpa-count{margin-top:8px}
  .ki-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
  .ki-card{min-height:255px;cursor:pointer;transition:.15s;text-align:left;color:var(--ink);font:inherit}
  .ki-card:hover{transform:translateY(-2px)}
@@ -7389,31 +7392,41 @@ async function renderPraktikum(){
  </div>
  </div>
 
+ <div class="fpa-group">
+ <div class="kicker">BEREICH 2 · NACHWEISE & FRISTEN</div>
+ <div class="fpa-group-head"><p>Offizielle Formulare mit festen Abgabefristen – werden geprüft und mit einer Ampel (grau/rot/gelb/grün) verfolgt.</p></div>
  <div class="fpa-tools">
- <button class="card fpa-tool"onclick="openFPAQuestions()">
+ <button class="card fpa-tool"style="background:var(--soft-teal)"onclick="${isTeacher()?"openWochenberichtUebersicht()":"openWochenberichte()"}">
+ <span class="emoji">📋</span><strong>Wochenberichte</strong>
+ <small>${isTeacher()?"Ampel-Übersicht: wer hat den Wochenbericht abgegeben und geprüft?":"Ablauf: online ausfüllen → drucken → unterschreiben/stempeln lassen → hochladen. Fällig jeden Donnerstag 24 Uhr."}</small>
+ </button>
+
+ <button class="card fpa-tool"style="background:var(--soft-teal)"onclick="${isTeacher()?"openEinschaetzungUebersicht()":"openEinschaetzungsboegen()"}">
+ <span class="emoji">📝</span><strong>Einschätzungsbogen</strong>
+ <small>${isTeacher()?"Ampel-Übersicht der 4 Einschätzungen (2× Erziehung, 2× Pflege).":"Ablauf: Formular herunterladen → von der Praktikumsstelle ausfüllen/unterschreiben/stempeln lassen → selbst unterschreiben → hochladen."}</small>
+ </button>
+ </div>
+ </div>
+
+ <div class="fpa-group">
+ <div class="kicker">BEREICH 3 · EIGENE DOKUMENTATION</div>
+ <div class="fpa-group-head"><p>Persönliche Werkzeuge ohne Fristen – freiwillig zum Sammeln eigener Erfahrungen.</p></div>
+ <div class="fpa-tools">
+ <button class="card fpa-tool"style="background:var(--soft-green)"onclick="openFPAQuestions()">
  <span class="emoji"></span><strong>Fragen aus der Praxis</strong>
  <small>Eigene Fragen aus dem Praktikum sammeln und dokumentieren.</small>
  <span class="pill fpa-count">${questions.length} Einträge</span>
  </button>
 
- <button class="card fpa-tool"onclick="openFPAProjects()">
+ <button class="card fpa-tool"style="background:var(--soft-green)"onclick="openFPAProjects()">
  <span class="emoji"></span><strong>Projekte in der Praxis</strong>
  <small>Praxisprojekte dokumentieren und Ergebnisse festhalten.</small>
  <span class="pill fpa-count">${projects.length} Projekte</span>
  </button>
-
- <button class="card fpa-tool"onclick="${isTeacher()?"openWochenberichtUebersicht()":"openWochenberichte()"}">
- <span class="emoji">📋</span><strong>Wochenberichte</strong>
- <small>${isTeacher()?"Ampel-Übersicht: wer hat den Wochenbericht abgegeben und geprüft?":"Tätigkeitsnachweis online ausfüllen, ausdrucken, unterschreiben lassen und hochladen."}</small>
- </button>
-
- <button class="card fpa-tool"onclick="${isTeacher()?"openEinschaetzungUebersicht()":"openEinschaetzungsboegen()"}">
- <span class="emoji">📝</span><strong>Einschätzungsbogen</strong>
- <small>${isTeacher()?"Ampel-Übersicht der 4 Einschätzungen (2× Erziehung, 2× Pflege).":"Einschätzung der Praktikumsstelle herunterladen, ausfüllen lassen und hochladen."}</small>
- </button>
+ </div>
  </div>
 
- <div class="kicker"style="margin:26px 0 8px">BEREICH 2 · KI-INNOVATIONSPARTNERSCHAFTEN</div>
+ <div class="kicker"style="margin:26px 0 8px">BEREICH 4 · KI-INNOVATIONSPARTNERSCHAFTEN</div>
  <div class="card"style="margin-bottom:16px;background:var(--soft-orange)">
  <h2>Praxisproblem → Schülerteam → Ergebnis</h2>
  <p>Betriebe tragen reale Herausforderungen ein, Schülerteams bearbeiten sie mit KI-Unterstützung, Ergebnisse werden dokumentiert.</p>
@@ -7865,25 +7878,11 @@ async function bestaetigeEinschaetzung(uid,terminId){
  }catch(e){console.error(e);toast("Konnte nicht bestätigt werden.")}
 }
 
-/* ---- Login-Banner: Erinnerung ab Mittwoch 18 Uhr / überfällig -- */
+/* ---- Login-Banner: Erinnerung ab Mittwoch 18 Uhr (nur Schüler) -- */
 async function pruefeWochenberichtBanner(){
  try{
- if(!isApproved())return"";
+ if(!isApproved()||isTeacher())return"";
  const termine=getWochenberichtTermine();const heute=heuteISO();
- if(isTeacher()){
- const aktuelle=termine.find(t=>heute<=t.weekEndISO)||termine[termine.length-1];
- if(!aktuelle)return"";
- const mittwoch=new Date(new Date(aktuelle.weekEndISO+"T00:00:00").getTime()-86400000);
- if(new Date()<mittwoch)return"";
- const students=await getAllUsersForLernstand();const alle=await getAllWochenberichte();
- const fehlend=students.filter(s=>!alle.some(a=>a.uid===s.uid&&a.weekEndISO===aktuelle.weekEndISO));
- if(!fehlend.length)return"";
- return`<div class="card"style="background:var(--soft-orange);margin-bottom:16px">
- <strong>⏰ ${fehlend.length} Wochenbericht(e) fehlen noch</strong>
- <p style="margin:6px 0 10px">Für die Woche bis ${esc(fmtDateOnly(aktuelle.weekEndISO))} haben noch nicht alle Schüler/innen hochgeladen.</p>
- <button class="secondary"onclick="openWochenberichtUebersicht()">Übersicht öffnen</button>
- </div>`;
- }else{
  const aktuelle=termine.find(t=>heute<=t.weekEndISO);
  if(!aktuelle)return"";
  const mittwoch=new Date(new Date(aktuelle.weekEndISO+"T00:00:00").getTime()-86400000);
@@ -7895,7 +7894,6 @@ async function pruefeWochenberichtBanner(){
  <p style="margin:6px 0 10px">Bitte bis Donnerstag 24:00 Uhr hochladen (Woche bis ${esc(fmtDateOnly(aktuelle.weekEndISO))}).</p>
  <button class="primary"onclick="openWochenberichte()">Jetzt hochladen</button>
  </div>`;
- }
  }catch(e){console.error("Wochenbericht-Banner:",e);return""}
 }
 
