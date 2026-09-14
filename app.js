@@ -8181,7 +8181,7 @@ async function renderKalender(){
  geburtstag:{label:"Geburtstag",className:"cal-birthday"},
  ferien:{label:"Schulferien Bayern",className:"cal-holiday"},
  pruefung:{label:"Abschlussprüfung",className:"cal-gold"},
- praktikum:{label:"Praktikum (fpA)",className:"cal-praktikum"}
+ praktikum:{label:"Praktikum",className:"cal-praktikum"}
  };
 
  // Schulferien Bayern – Schuljahr 2026/27.
@@ -8306,7 +8306,8 @@ async function renderKalender(){
  .cal-holiday{background:#e3f5da!important;border-color:#8bc34a!important}
  .cal-birthday{background:#ffe4ec!important;border-color:#f472b6!important}
  .cal-gold{background:#fdf0c8!important;border-color:#d4a017!important;font-weight:700!important}
- .cal-praktikum{background:#cdeeea!important;border-color:#159c8f!important}
+ .cal-praktikum{background:#ffffff!important;border:3px solid #c2622a!important}
+ .cal-praktikum .cal-event-type{color:#c2622a}
  .cal-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
  .cal-legend-item{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:6px 10px;background:#fff;font-size:12px}
  .cal-legend-dot{width:13px;height:13px;border-radius:3px;border:1px solid rgba(0,0,0,.12)}
