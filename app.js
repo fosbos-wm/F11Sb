@@ -7756,7 +7756,13 @@ async function exportCampusCalendarICS(){
  const ferienRangeEvents=ferienZeitraeume.map(([start,end,label])=>(
  {start,rangeEnd:end,title:label,description:"Schulferien in Bayern"}
  ));
- downloadICS([...events,...birthdayEvents,...ferienRangeEvents],"campuskalender.ics","F12Sb Kalender");
+ const pruefungsTermineICS=[
+ ["2027-05-12","Deutsch – Fachabiturprüfung"],
+ ["2027-05-14","Profilfach (Pädagogik/Psychologie) – Fachabiturprüfung"],
+ ["2027-06-01","Englisch – Fachabiturprüfung"],
+ ["2027-06-03","Mathematik – Fachabiturprüfung"]
+ ].map(([start,title])=>({start,title,description:"Zentraler Prüfungstermin lt. Kultusministerium."}));
+ downloadICS([...events,...birthdayEvents,...ferienRangeEvents,...pruefungsTermineICS],"campuskalender.ics","F12Sb Kalender");
  toast("Kalender wird heruntergeladen – Datei öffnen, um sie zum Handy-Kalender hinzuzufügen.");
  }catch(e){console.error("Kalender-Export:",e);toast("Der Kalender konnte nicht exportiert werden.")}
 }
@@ -7787,7 +7793,8 @@ async function renderKalender(){
  praesentation:{label:"Präsentation",className:"cal-purple"},
  sonstiges:{label:"Sonstiger Termin",className:"cal-grey"},
  geburtstag:{label:"Geburtstag",className:"cal-birthday"},
- ferien:{label:"Schulferien Bayern",className:"cal-holiday"}
+ ferien:{label:"Schulferien Bayern",className:"cal-holiday"},
+ pruefung:{label:"Abschlussprüfung",className:"cal-gold"}
  };
 
  // Schulferien Bayern – Schuljahr 2026/27.
@@ -7813,9 +7820,21 @@ async function renderKalender(){
  });
  }
  });
+ // Schriftliche Fachabiturprüfung 2027 – zentrale Prüfungstermine für alle
+ // FOSBOS Bayern (Bekanntmachung des Kultusministeriums, BayMBl. 2025 Nr. 320).
+ const pruefungsTermine=[
+ ["2027-05-12","Deutsch – Fachabiturprüfung"],
+ ["2027-05-14","Profilfach (Pädagogik/Psychologie) – Fachabiturprüfung"],
+ ["2027-06-01","Englisch – Fachabiturprüfung"],
+ ["2027-06-03","Mathematik – Fachabiturprüfung"]
+ ];
+ const pruefungsEvents=pruefungsTermine.map(([datum,titel])=>({
+ start:datum,type:"pruefung",title:titel,
+ description:"Zentraler Prüfungstermin lt. Kultusministerium – gilt für alle Beruflichen Oberschulen Bayerns."
+ }));
  let birthdayEvents=[];
  try{birthdayEvents=await getBirthdayEvents()}catch(e){console.error("Kalender Geburtstage:",e)}
- events=[...events,...birthdayEvents,...ferienEvents];
+ events=[...events,...birthdayEvents,...ferienEvents,...pruefungsEvents];
 
  const normalizeType=e=>{
  const raw=String(e?.type||e?.eventType||e?.category||"sonstiges").toLowerCase().trim();
@@ -7887,6 +7906,7 @@ async function renderKalender(){
  .cal-yellow{background:#fef3c7!important}.cal-purple{background:#ede9fe!important}.cal-grey{background:#e5e7eb!important}
  .cal-holiday{background:#e3f5da!important;border-color:#8bc34a!important}
  .cal-birthday{background:#ffe4ec!important;border-color:#f472b6!important}
+ .cal-gold{background:#fdf0c8!important;border-color:#d4a017!important;font-weight:700!important}
  .cal-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
  .cal-legend-item{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:6px 10px;background:#fff;font-size:12px}
  .cal-legend-dot{width:13px;height:13px;border-radius:3px;border:1px solid rgba(0,0,0,.12)}
@@ -8028,7 +8048,8 @@ function calendarTypeMeta(e){
  praesentation:{label:"Präsentation",className:"cal-purple"},
  sonstiges:{label:"Sonstiger Termin",className:"cal-grey"},
  geburtstag:{label:"Geburtstag",className:"cal-birthday"},
- ferien:{label:"Schulferien Bayern",className:"cal-holiday"}
+ ferien:{label:"Schulferien Bayern",className:"cal-holiday"},
+ pruefung:{label:"Abschlussprüfung",className:"cal-gold"}
  })[key]||{label:"Sonstiger Termin",className:"cal-grey"};
 }
 
