@@ -7603,7 +7603,8 @@ async function renderPraktikum(){
  const eintrag=meineBerichte[`${p.id}_${t.typ}`];
  return`<span class="pk-ampel-dot"style="background:${ampelFarbe(eintrag?.ampel)}"title="${t.label}: ${eintrag?ampelText(eintrag.ampel):"noch nicht hochgeladen"}"></span>`;
  }).join("");
- return`<div class="pk-node pk-${status}"onclick="${isTeacher()?`openLehrkraftPraktikumsUebersicht('${p.id}')`:`openPraktikumsblockDetail('${p.id}')`}">
+ const rahmenfarbe=p.bereich==="Erziehungsbereich"?"#3fa66a":p.bereich==="Pflegebereich"?"#4a90d9":"#b8c4cc";
+ return`<div class="pk-node pk-${status}"style="border-left:4px solid ${rahmenfarbe}"onclick="${isTeacher()?`openLehrkraftPraktikumsUebersicht('${p.id}')`:`openPraktikumsblockDetail('${p.id}')`}">
  <span class="pk-icon">${p.icon}</span>
  <div class="pk-info">
  <strong>${esc(p.titel)}</strong>
@@ -7612,10 +7613,10 @@ async function renderPraktikum(){
  ${isTeacher()?`<span class="pill"style="font-size:10px"> Übersicht</span>`:`<div class="pk-ampeln">${eigeneAmpeln}</div>`}
  </div>`;
  }).join("")}
- <p style="font-size:10px;color:var(--muted);margin:8px 0 0 26px"> pünktlich · unvollständig · zu spät · offen ·EB = Einschätzungsbogen zusätzlich fällig</p>
+ <p style="font-size:10px;color:var(--muted);margin:8px 0 0 26px"> pünktlich · unvollständig · zu spät · offen ·EB = Einschätzungsbogen zusätzlich fällig · <span style="color:#3fa66a">▍</span>Erziehung <span style="color:#4a90d9">▍</span>Pflege</p>
  </div>
  <div class="pk-kennzahlen">
- <button type="button"class="card pk-kz"onclick="closeModal();document.getElementById('fpaAuftraegeAnker')?.scrollIntoView({behavior:'smooth'})">
+ <button type="button"class="card pk-kz"onclick="closeModal();const el=document.getElementById('fpaAuftraegeAnker');if(el){el.open=true;el.scrollIntoView({behavior:'smooth'})}">
  <strong>${assignments.length}</strong><small> Theorie-Praxis-Transfer-Aufträge</small>
  </button>
  <button type="button"class="card pk-kz"onclick="openFPAQuestions()">
@@ -7630,10 +7631,10 @@ async function renderPraktikum(){
  </div>
  </div>
 
- <div class="kicker">BEREICH 1 · LEHRKRAFT → SCHÜLER</div>
- <div class="card fpa-main"id="fpaAuftraegeAnker"style="margin-top:8px;background:var(--soft-blue)">
- <h2> Theorie-Praxis-Transfer-Aufträge</h2>
- <p>Hier erscheinen ausschließlich fpA-Theorie-Praxis-Transfer-Aufträge der Lehrkraft: beobachten, bearbeiten, durchführen.</p>
+ <details class="noten-collapsible"id="fpaAuftraegeAnker"style="margin-bottom:16px">
+ <summary>BEREICH 1 · LEHRKRAFT → SCHÜLER: Theorie-Praxis-Transfer-Aufträge (${assignments.length})</summary>
+ <div class="card"style="margin-top:8px;background:var(--soft-yellow,#fff8e2)">
+ <p style="margin-top:0">Hier erscheinen ausschließlich fpA-Theorie-Praxis-Transfer-Aufträge der Lehrkraft: beobachten, bearbeiten, durchführen.</p>
  <div class="grid grid-2">
  ${assignments.map(p=>`<article class="card">
  <span class="pill ${p.state==="offen"?"orange":"green"}">${esc(p.state||"offen")}</span>
@@ -7644,23 +7645,10 @@ async function renderPraktikum(){
  </article>`).join("")||`<div class="empty">Noch keine Theorie-Praxis-Transfer-Aufträge vorhanden.</div>`}
  </div>
  </div>
-
- <div class="fpa-tools">
- <button class="card fpa-tool"onclick="openFPAQuestions()">
- <span class="emoji"></span><strong>Fragen aus der Praxis</strong>
- <small>Eigene Fragen aus dem Praktikum sammeln und dokumentieren.</small>
- <span class="pill fpa-count">${questions.length} Einträge</span>
- </button>
-
- <button class="card fpa-tool"onclick="openFPAProjects()">
- <span class="emoji"></span><strong>Projekte in der Praxis</strong>
- <small>Praxisprojekte dokumentieren und Ergebnisse festhalten.</small>
- <span class="pill fpa-count">${projects.length} Projekte</span>
- </button>
- </div>
+ </details>
 
  <div class="kicker"style="margin:26px 0 8px">BEREICH 2 · KI-INNOVATIONSPARTNERSCHAFTEN</div>
- <div class="card"style="margin-bottom:16px;background:var(--soft-orange)">
+ <div class="card"style="margin-bottom:16px;background:var(--soft-yellow,#fff8e2)">
  <h2>Praxisproblem → Schülerteam → Ergebnis</h2>
  <p>Betriebe tragen reale Herausforderungen ein, Schülerteams bearbeiten sie mit KI-Unterstützung, Ergebnisse werden dokumentiert.</p>
  ${isTeacher()?`<div style="margin-top:12px"><button class="primary"onclick="openKIChallengeForm()">＋ Praxisproblem eintragen</button></div>`:""}
