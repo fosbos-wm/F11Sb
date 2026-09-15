@@ -1950,6 +1950,191 @@ function wasFehltNochJahr(noten){
  return liste;
 }
 
+// ---- Praktikumsberichte (Blockberichte): Tätigkeitsnachweis + Einschätzungsbogen ----
+// Einschätzungsbogen ist nur bei den ersten beiden Blöcken je Ausbildungsrichtung
+// Pflicht (bestätigt: Erziehung pr1+pr2, Pflege pr5+pr6 – Abgabe 01.10./19.11.2026
+// bzw. 29.04./24.06.2027), Tätigkeitsnachweis bei allen 7 Blöcken.
+const EINSCHAETZUNG_PFLICHT_PHASEN=["pr1","pr2","pr5","pr6"];
+function praktikumsberichtTypenFuerPhase(phaseId){
+ const typen=[{typ:"taetigkeit",label:"Tätigkeitsnachweis"}];
+ if(EINSCHAETZUNG_PFLICHT_PHASEN.includes(phaseId))typen.push({typ:"einschaetzung",label:"Einschätzungsbogen"});
+ return typen;
+}
+function praktikumsberichtFristISO(phaseId){
+ const p=PRAKTIKUMSPHASEN.find(x=>x.id===phaseId);
+ return p?letzterDonnerstagVorOrAm(p.end):null;
+}
+function ampelFarbe(ampel){
+ if(ampel==="gruen")return"#3fa66a";
+ if(ampel==="orange")return"#e0a324";
+ if(ampel==="rot")return"#d9534f";
+ return"#c7d0d6";
+}
+function ampelText(ampel){
+ if(ampel==="gruen")return"Pünktlich & vollständig";
+ if(ampel==="orange")return"Noch unvollständig";
+ if(ampel==="rot")return"Zu spät / fehlerhaft";
+ return"Noch nicht eingeschätzt";
+}
+async function getMeinePraktikumsberichte(){
+ try{
+ const snap=await getDocs(query(collection(db,"praktikumsberichte"),where("uid","==",currentUser.uid)));
+ const map={};
+ snap.docs.forEach(d=>{const data=d.data();map[`${data.phaseId}_${data.typ}`]=data});
+ return map;
+ }catch(e){console.error("Praktikumsberichte laden:",e);return{}}
+}
+async function getAllePraktikumsberichte(){
+ try{
+ const snap=await getDocs(collection(db,"praktikumsberichte"));
+ return snap.docs.map(d=>({id:d.id,...d.data()}));
+ }catch(e){console.error("Praktikumsberichte (alle) laden:",e);return[]}
+}
+async function uploadPraktikumsbericht(phaseId,typ){
+ const input=$(`pbFile_${phaseId}_${typ}`);
+ const file=input?.files?.[0];
+ if(!file){toast("Bitte zuerst eine Datei auswählen.");return}
+ try{
+ toast("Datei wird hochgeladen …");
+ const up=await uploadCampusDatei(file,`praktikumsberichte/${phaseId}_${typ}`);
+ const docId=`${currentUser.uid}_${phaseId}_${typ}`;
+ await setDoc(doc(db,"praktikumsberichte",docId),{
+ uid:currentUser.uid,name:profile?.displayName||currentUser.email||"Schüler/in",
+ phaseId,typ,dateiUrl:up.url,dateiName:up.name,hochgeladenAm:serverTimestamp(),
+ ampel:null,unterschriftBetreuer:null,stempelBetrieb:null,unterschriftSchueler:null,ausfuehrlichkeit:null
+ },{merge:true});
+ await openPraktikumsblockDetail(phaseId);
+ showMotivationsBild();
+ }catch(e){console.error("Bericht hochladen:",e);toast("Fehler: "+(e?.message||e));}
+}
+window.uploadPraktikumsbericht=uploadPraktikumsbericht;
+async function saveAmpelBewertung(uid,phaseId,typ){
+ if(!isTeacher()){toast("Nur Lehrkräfte können bewerten.");return}
+ const ub=$(`amp_ub_${uid}_${phaseId}_${typ}`)?.checked||false;
+ const sb=$(`amp_sb_${uid}_${phaseId}_${typ}`)?.checked||false;
+ const us=$(`amp_us_${uid}_${phaseId}_${typ}`)?.checked||false;
+ const af=$(`amp_af_${uid}_${phaseId}_${typ}`)?.checked||false;
+ const ampel=$(`amp_farbe_${uid}_${phaseId}_${typ}`)?.value||null;
+ try{
+ await updateDoc(doc(db,"praktikumsberichte",`${uid}_${phaseId}_${typ}`),{
+ unterschriftBetreuer:ub,stempelBetrieb:sb,unterschriftSchueler:us,ausfuehrlichkeit:af,
+ ampel,bewertetAm:serverTimestamp(),bewertetVon:currentUser.uid
+ });
+ toast("Bewertung gespeichert.");
+ await openLehrkraftPraktikumsUebersicht(phaseId);
+ }catch(e){console.error("Ampel-Bewertung speichern:",e);toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Konnte nicht gespeichert werden.");}
+}
+window.saveAmpelBewertung=saveAmpelBewertung;
+
+async function openPraktikumsblockDetail(phaseId){
+ const p=PRAKTIKUMSPHASEN.find(x=>x.id===phaseId);
+ if(!p)return;
+ const auftraege=await getPraktikumsAuftraege();
+ const auftrag=auftraege[phaseId];
+ const meineBerichte=await getMeinePraktikumsberichte();
+ const frist=letzterDonnerstagVorOrAm(p.end);
+ const typen=praktikumsberichtTypenFuerPhase(phaseId);
+ const dateiNamen={taetigkeit:"taetigkeitsnachweis.pdf",einschaetzung:"einschaetzungsbogen.pdf"};
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+ <div class="kicker">${p.icon} ${esc(p.bereich)} · ${esc(fmtDateOnly(p.start))}–${esc(fmtDateOnly(p.end))}</div>
+ <h2>${esc(p.titel)}</h2>
+ ${isTeacher()?`<div class="form"style="margin-bottom:16px">
+ <label>Titel des Auftrags<input id="praktAuftragTitel"type="text"value="${esc(auftrag?.titel||"")}"placeholder="z. B. Beobachtungsauftrag Erziehungsstile"></label>
+ <label>Beschreibung<textarea id="praktAuftragBeschreibung"rows="3"placeholder="Was sollen die Schüler:innen konkret tun?">${esc(auftrag?.beschreibung||"")}</textarea></label>
+ <div class="form-actions">
+ <button class="primary"onclick="savePraktikumsphaseAuftrag('${phaseId}')">Auftrag speichern</button>
+ ${auftrag?`<button class="secondary"onclick="deletePraktikumsphaseAuftrag('${phaseId}')">Löschen</button>`:""}
+ </div>
+ </div>`
+ :auftrag?`<div class="card"style="background:var(--soft-blue);margin-bottom:16px"><strong>${esc(auftrag.titel)}</strong>${auftrag.beschreibung?`<p style="margin:6px 0 0;white-space:pre-wrap">${esc(auftrag.beschreibung)}</p>`:""}</div>`
+ :""}
+
+ <h3 style="margin-bottom:2px"> Blockberichte</h3>
+ <p style="font-size:12px;color:var(--muted);margin-top:0">Abgabe bis <strong>${esc(fmtDateOnly(frist))}, 19:00 Uhr</strong>. Formular ausfüllen/unterschreiben lassen, dann hier als Foto/Scan hochladen.</p>
+ ${typen.map(t=>{
+ const eintrag=meineBerichte[`${phaseId}_${t.typ}`];
+ return`<div class="card"style="margin-bottom:12px;background:${eintrag?"var(--soft-green)":"#f7fafc"}">
+ <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+ <strong>${esc(t.label)}</strong>
+ <a href="${dateiNamen[t.typ]}"download style="font-size:11px">Formular als PDF herunterladen ↓</a>
+ </div>
+ ${eintrag?`<div style="margin-top:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+ <a href="${esc(eintrag.dateiUrl)}"target="_blank"rel="noopener"class="pill"> ${esc(eintrag.dateiName)}</a>
+ <span class="pill"style="background:${ampelFarbe(eintrag.ampel)};color:#fff">${esc(ampelText(eintrag.ampel))}</span>
+ </div>`
+ :`<div class="form-actions"style="margin-top:8px">
+ <input id="pbFile_${phaseId}_${t.typ}"type="file"accept="image/*,.pdf"style="flex:1;min-width:160px">
+ <button class="primary"onclick="uploadPraktikumsbericht('${phaseId}','${t.typ}')">＋ Hochladen</button>
+ </div>`}
+ </div>`;
+ }).join("")}
+ <div class="form-actions"style="margin-top:10px"><button class="secondary"onclick="closeModal()">Schließen</button></div>
+ `);
+}
+window.openPraktikumsblockDetail=openPraktikumsblockDetail;
+
+async function openLehrkraftPraktikumsUebersicht(phaseId){
+ if(!isTeacher()){toast("Nur Lehrkräfte können die Übersicht öffnen.");return}
+ const p=PRAKTIKUMSPHASEN.find(x=>x.id===phaseId);
+ if(!p)return;
+ let students=[],alleBerichte=[];
+ try{
+ [students,alleBerichte]=await Promise.all([getAllUsersForLernstand(),getAllePraktikumsberichte()]);
+ }catch(e){console.error("Praktikumsübersicht laden:",e);toast("Konnte nicht geladen werden.");return}
+ const typen=praktikumsberichtTypenFuerPhase(phaseId);
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+ <div class="kicker">KLASSENÜBERSICHT · NUR LEHRKRÄFTE</div>
+ <h2>${p.icon} ${esc(p.titel)} – Blockberichte</h2>
+ <p style="color:var(--muted);font-size:12px">Abgabefrist war ${esc(fmtDateOnly(letzterDonnerstagVorOrAm(p.end)))}, 19:00 Uhr.</p>
+ <div style="overflow-x:auto"><table class="ls-matrix">
+ <thead><tr><th>Schüler:in</th>${typen.map(t=>`<th>${esc(t.label)}</th>`).join("")}</tr></thead>
+ <tbody>${students.map(s=>`<tr>
+ <td>${esc(s.displayName||s.email||"Schüler/in")}</td>
+ ${typen.map(t=>{
+ const eintrag=alleBerichte.find(b=>b.uid===s.uid&&b.phaseId===phaseId&&b.typ===t.typ);
+ if(!eintrag)return`<td style="text-align:center;color:var(--muted)">–</td>`;
+ return`<td><button type="button"class="secondary"style="padding:4px 8px;font-size:11px;background:${ampelFarbe(eintrag.ampel)};color:#fff;border:none"onclick="openAmpelBewertungForm('${s.uid}','${phaseId}','${t.typ}')">${esc(ampelText(eintrag.ampel))}</button></td>`;
+ }).join("")}
+ </tr>`).join("")||`<tr><td colspan="${typen.length+1}">Keine Schüler:innen gefunden.</td></tr>`}</tbody>
+ </table></div>
+ <div class="form-actions"style="margin-top:14px"><button class="secondary"onclick="closeModal()">Schließen</button></div>
+ `);
+}
+window.openLehrkraftPraktikumsUebersicht=openLehrkraftPraktikumsUebersicht;
+
+async function openAmpelBewertungForm(uid,phaseId,typ){
+ const berichte=await getAllePraktikumsberichte();
+ const eintrag=berichte.find(b=>b.uid===uid&&b.phaseId===phaseId&&b.typ===typ);
+ if(!eintrag){toast("Noch keine Datei hochgeladen.");return}
+ const p=PRAKTIKUMSPHASEN.find(x=>x.id===phaseId);
+ const frist=letzterDonnerstagVorOrAm(p.end);
+ const hochgeladenAm=eintrag.hochgeladenAm?.seconds?new Date(eintrag.hochgeladenAm.seconds*1000):null;
+ const fristDatum=new Date(frist+"T19:00:00");
+ const verspaetet=hochgeladenAm&&hochgeladenAm>fristDatum;
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+ <div class="kicker">${esc(eintrag.name)} · ${praktikumsberichtTypenFuerPhase(phaseId).find(t=>t.typ===typ)?.label}</div>
+ <h2>Bewertung</h2>
+ <a href="${esc(eintrag.dateiUrl)}"target="_blank"rel="noopener"class="pill"style="margin-bottom:10px;display:inline-block"> ${esc(eintrag.dateiName)} ansehen</a>
+ ${hochgeladenAm?`<p style="font-size:12px;color:${verspaetet?"#d9534f":"var(--muted)"}">Hochgeladen: ${hochgeladenAm.toLocaleString("de-DE")}${verspaetet?" – NACH der Frist!":" – rechtzeitig"}</p>`:""}
+ <div class="form"style="margin-top:10px">
+ <label class="check"><input id="amp_ub_${uid}_${phaseId}_${typ}"type="checkbox"${eintrag.unterschriftBetreuer?"checked":""}> Unterschrift Betreuer:in vorhanden</label>
+ <label class="check"><input id="amp_sb_${uid}_${phaseId}_${typ}"type="checkbox"${eintrag.stempelBetrieb?"checked":""}> Stempel des Betriebes vorhanden</label>
+ <label class="check"><input id="amp_us_${uid}_${phaseId}_${typ}"type="checkbox"${eintrag.unterschriftSchueler?"checked":""}> Unterschrift Schüler:in vorhanden</label>
+ <label class="check"><input id="amp_af_${uid}_${phaseId}_${typ}"type="checkbox"${eintrag.ausfuehrlichkeit?"checked":""}> Ausführlich & inhaltlich sinnvoll</label>
+ <label>Ampel-Einschätzung<select id="amp_farbe_${uid}_${phaseId}_${typ}">
+ <option value="gruen"${eintrag.ampel==="gruen"?"selected":""}> Grün – pünktlich & vollständig</option>
+ <option value="orange"${eintrag.ampel==="orange"?"selected":""}> Orange – noch unvollständig</option>
+ <option value="rot"${eintrag.ampel==="rot"?"selected":""}> Rot – zu spät/fehlerhaft</option>
+ </select></label>
+ <div class="form-actions">
+ <button class="secondary"onclick="openLehrkraftPraktikumsUebersicht('${phaseId}')">Zurück</button>
+ <button class="primary"onclick="saveAmpelBewertung('${uid}','${phaseId}','${typ}')">Speichern</button>
+ </div>
+ </div>
+ `);
+}
+window.openAmpelBewertungForm=openAmpelBewertungForm;
+
 // ---- Wochen-/Monatsplanung -------------------------------------------
 async function getMeineWochenplanung(){
  if(!db||!currentUser)return [];
@@ -7358,6 +7543,7 @@ async function renderPraktikum(){
 
  assignments=assignments.filter(p=>p.module==="fpa" && p.type==="teacherAssignment");
  const praktikumsAuftraege=await getPraktikumsAuftraege();
+ const meineBerichte=isTeacher()?{}:await getMeinePraktikumsberichte();
 
  return`${pageHead("SCHULE ↔ PRAXIS","fpA","Praxisaufträge und eigenständige Werkzeuge für die fachpraktische Ausbildung.",
  isTeacher()?`<button class="primary"onclick="openPracticeForm()">＋ Praxisauftrag</button>`:"")}
@@ -7382,37 +7568,41 @@ async function renderPraktikum(){
  .ki-process .grid strong{font-size:13px;color:var(--blue-dark)}
  .ki-process .grid small{font-size:12px;color:var(--muted);line-height:1.5}
  @media(max-width:850px){.fpa-tools{grid-template-columns:1fr}.ki-grid{grid-template-columns:1fr}}
+ .pk-zeitstrahl{position:relative;padding-left:26px;margin:10px 0 22px}
+ .pk-zeitstrahl::before{content:"";position:absolute;left:9px;top:6px;bottom:6px;width:2px;background:var(--line,#e2eaf0)}
+ .pk-node{position:relative;display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;background:#fff;border:1px solid var(--line,#e2eaf0);margin-bottom:8px;cursor:pointer;transition:.15s}
+ .pk-node:hover{transform:translateX(3px);box-shadow:0 4px 12px rgba(23,56,79,.08)}
+ .pk-node::before{content:"";position:absolute;left:-21px;top:50%;transform:translateY(-50%);width:11px;height:11px;border-radius:50%;background:#fff;border:2.5px solid var(--blue)}
+ .pk-node.pk-laufend::before{border-color:#e8890c}
+ .pk-node.pk-vorbei::before{border-color:#3fa66a}
+ .pk-icon{font-size:18px;flex:0 0 auto}
+ .pk-info{flex:1;min-width:0}
+ .pk-info strong{display:block;font-size:13px}
+ .pk-info small{display:block;color:var(--muted);font-size:11px;margin-top:1px}
+ .pk-ampeln{display:flex;gap:5px;flex:0 0 auto}
+ .pk-ampel-dot{width:13px;height:13px;border-radius:50%;display:inline-block;border:1.5px solid rgba(0,0,0,.08)}
  </style>
 
- <div class="kicker">PRAKTIKUMSPHASEN 2026/27</div>
- <div class="grid grid-3"style="margin-top:8px;margin-bottom:22px">${PRAKTIKUMSPHASEN.map(p=>{
+ <div class="kicker">PRAKTIKUMSPHASEN & BLOCKBERICHTE 2026/27</div>
+ <div class="pk-zeitstrahl">${PRAKTIKUMSPHASEN.map(p=>{
  const heute=new Date().toISOString().slice(0,10);
  const status=heute>=p.start&&heute<=p.end?"laufend":heute>p.end?"vorbei":"kommend";
- const auftrag=praktikumsAuftraege[p.id];
- return`<button type="button"class="card"style="text-align:left;cursor:pointer;background:${status==="laufend"?"var(--soft-orange)":status==="vorbei"?"#f3f5f7":"var(--soft-blue)"}"onclick="openPraktikumsphaseAuftragForm('${p.id}')">
- ${status==="laufend"?`<span class="pill"style="background:#e8890c;color:#fff">läuft gerade</span>`:""}
- <strong style="display:block;margin-top:6px">${p.icon} ${esc(p.titel)}</strong>
- <small style="display:block;color:var(--muted);margin-top:4px">${esc(fmtDateOnly(p.start))}–${esc(fmtDateOnly(p.end))}</small>
- <small style="display:block;margin-top:6px">${auftrag?` ${esc(auftrag.titel)}`:isTeacher()?"Antippen, um einen Auftrag einzutragen":"Noch kein Auftrag eingetragen"}</small>
- </button>`;
- }).join("")}</div>
-
- <div class="kicker">PRAKTIKUMSBERICHTE (BLOCKBERICHTE)</div>
- <div class="card"style="margin-bottom:22px;background:var(--soft-yellow,#fff8e2)">
- <h2 style="margin-top:0"> Tätigkeitsnachweis & Einschätzungsbogen</h2>
- <p style="color:var(--muted)">Pro Praktikumsblock wird <strong>ein Tätigkeitsnachweis</strong> abgegeben (kein wöchentlicher Bericht mehr). Der <strong>Einschätzungsbogen</strong> wird nur bei den jeweils letzten beiden Blöcken je Ausbildungsrichtung fällig – also 2× im Erziehungsbereich, 2× im Pflegebereich. Beides jeweils fällig am <strong>letzten Donnerstag</strong> des Blocks. Formulare ausdrucken, unterschreiben lassen und bei der Betreuungslehrkraft abgeben.</p>
- <div class="form-actions"style="margin:14px 0">
- <a class="primary"href="taetigkeitsnachweis.pdf"download style="text-decoration:none;display:inline-flex;align-items:center"> Tätigkeitsnachweis (PDF)</a>
- <a class="secondary"href="einschaetzungsbogen.pdf"download style="text-decoration:none;display:inline-flex;align-items:center"> Einschätzungsbogen (PDF)</a>
+ const frist=letzterDonnerstagVorOrAm(p.end);
+ const typen=praktikumsberichtTypenFuerPhase(p.id);
+ const eigeneAmpeln=typen.map(t=>{
+ const eintrag=meineBerichte[`${p.id}_${t.typ}`];
+ return`<span class="pk-ampel-dot"style="background:${ampelFarbe(eintrag?.ampel)}"title="${t.label}: ${eintrag?ampelText(eintrag.ampel):"noch nicht hochgeladen"}"></span>`;
+ }).join("");
+ return`<div class="pk-node pk-${status}"onclick="${isTeacher()?`openLehrkraftPraktikumsUebersicht('${p.id}')`:`openPraktikumsblockDetail('${p.id}')`}">
+ <span class="pk-icon">${p.icon}</span>
+ <div class="pk-info">
+ <strong>${esc(p.titel)}</strong>
+ <small>${esc(fmtDateOnly(p.start))}–${esc(fmtDateOnly(p.end))} · Abgabe bis ${esc(fmtDateOnly(frist))}, 19 Uhr${typen.length>1?" · + Einschätzungsbogen":""}</small>
  </div>
- <div class="list">${PRAKTIKUMSPHASEN.map(p=>{
- const abgabe=letzterDonnerstagVorOrAm(p.end);
- const heute=new Date().toISOString().slice(0,10);
- const status=heute>abgabe?"vorbei":heute>=p.start?"läuft":"kommend";
- const brauchtEinschaetzung=["pr2","pr3","pr6","pr7"].includes(p.id);
- return`<div class="list-item"><div><strong>${p.icon} ${esc(p.titel)}</strong><small>${esc(fmtDateOnly(p.start))}–${esc(fmtDateOnly(p.end))}${brauchtEinschaetzung?" · + Einschätzungsbogen":""}</small></div><span class="pill${status==="vorbei"?"":status==="läuft"?" orange":""}">Abgabe: ${esc(fmtDateOnly(abgabe))}</span></div>`;
+ ${isTeacher()?`<span class="pill"style="font-size:10px"> Übersicht</span>`:`<div class="pk-ampeln">${eigeneAmpeln}</div>`}
+ </div>`;
  }).join("")}</div>
- </div>
+ <p style="font-size:10px;color:var(--muted);margin:-12px 0 22px 26px"> = pünktlich & vollständig · = noch unvollständig · = zu spät/fehlerhaft · = noch nicht hochgeladen/eingeschätzt</p>
 
  <div class="kicker">BEREICH 1 · LEHRKRAFT → SCHÜLER</div>
  <div class="card fpa-main"style="margin-top:8px;background:var(--soft-blue)">

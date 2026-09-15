@@ -485,6 +485,20 @@ service cloud.firestore {
       allow read: if isApproved();
       allow create, update, delete: if isTeacher();
     }
+    // Blockberichte (Tätigkeitsnachweis + Einschätzungsbogen): Schüler:innen
+    // laden ihre eigene Datei hoch und dürfen sie erneut hochladen, aber
+    // NICHT selbst die Ampel-Bewertung setzen – das bleibt Lehrkräften
+    // vorbehalten.
+    match /praktikumsberichte/{id} {
+      allow read: if isApproved() && (resource.data.uid == request.auth.uid || isTeacher());
+      allow create: if isApproved() && request.resource.data.uid == request.auth.uid;
+      allow update: if isTeacher()
+        || (isApproved() && resource.data.uid == request.auth.uid
+          && request.resource.data.uid == resource.data.uid
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['dateiUrl','dateiName','hochgeladenAm']));
+      allow delete: if isTeacher();
+    }
     // Teams/Gruppen je Woche: Schüler:innen bilden sie selbst.
     match /lehrplanTeams/{id} {
       allow read: if isApproved();
