@@ -1145,13 +1145,13 @@ const F11SB_FAECHER=[
 // ============================================================
 // Praktikumsphasen 2026/27 (gilt fachübergreifend, aus dem B-Block-Plan).
 const PRAKTIKUMSPHASEN=[
- {id:"pr1",start:"2026-09-15",end:"2026-10-02",titel:"B-Block Start – Praktikum",bereich:"Erziehungsbereich",icon:"🏫"},
- {id:"pr2",start:"2026-10-26",end:"2026-11-20",titel:"Praktikumsphase",bereich:"Erziehungsbereich",icon:"🏫"},
- {id:"pr3",start:"2026-12-14",end:"2027-01-15",titel:"Praktikumsphase",bereich:"Erziehungsbereich",icon:"🏫"},
- {id:"pr4",start:"2027-02-15",end:"2027-03-05",titel:"Praktikumsphase",bereich:"Übergang",icon:"🔄"},
- {id:"pr5",start:"2027-04-12",end:"2027-04-30",titel:"Praktikumsphase Pflege",bereich:"Pflegebereich",icon:"🏥"},
- {id:"pr6",start:"2027-06-07",end:"2027-06-25",titel:"Praktikumsphase Pflege",bereich:"Pflegebereich",icon:"🏥"},
- {id:"pr7",start:"2027-07-19",end:"2027-07-30",titel:"Praktikumsphase Pflege",bereich:"Pflegebereich",icon:"🏥"}
+ {id:"pr1",start:"2026-09-15",end:"2026-10-02",titel:"Praktikum – B-Block – Erziehung (Block 1)",bereich:"Erziehungsbereich",icon:"🏫"},
+ {id:"pr2",start:"2026-10-26",end:"2026-11-20",titel:"Praktikum – B-Block – Erziehung (Block 2)",bereich:"Erziehungsbereich",icon:"🏫"},
+ {id:"pr3",start:"2026-12-14",end:"2027-01-15",titel:"Praktikum – B-Block – Erziehung (Block 3)",bereich:"Erziehungsbereich",icon:"🏫"},
+ {id:"pr4",start:"2027-02-15",end:"2027-03-05",titel:"Praktikum – Übergang",bereich:"Übergang",icon:"🔄"},
+ {id:"pr5",start:"2027-04-12",end:"2027-04-30",titel:"Praktikum – B-Block – Pflege (Block 2)",bereich:"Pflegebereich",icon:"🏥"},
+ {id:"pr6",start:"2027-06-07",end:"2027-06-25",titel:"Praktikum – B-Block – Pflege (Block 3)",bereich:"Pflegebereich",icon:"🏥"},
+ {id:"pr7",start:"2027-07-19",end:"2027-07-30",titel:"Praktikum – B-Block – Pflege (Block 4)",bereich:"Pflegebereich",icon:"🏥"}
 ];
 
 // Aufträge je Praktikumsphase: von Lehrkräften gepflegt, überall live
@@ -1954,7 +1954,7 @@ function wasFehltNochJahr(noten){
 // Einschätzungsbogen ist nur bei den ersten beiden Blöcken je Ausbildungsrichtung
 // Pflicht (bestätigt: Erziehung pr1+pr2, Pflege pr5+pr6 – Abgabe 01.10./19.11.2026
 // bzw. 29.04./24.06.2027), Tätigkeitsnachweis bei allen 7 Blöcken.
-const EINSCHAETZUNG_PFLICHT_PHASEN=["pr1","pr2","pr5","pr6"];
+const EINSCHAETZUNG_PFLICHT_PHASEN=["pr2","pr3","pr5","pr6"];
 function praktikumsberichtTypenFuerPhase(phaseId){
  const typen=[{typ:"taetigkeit",label:"Tätigkeitsnachweis"}];
  if(EINSCHAETZUNG_PFLICHT_PHASEN.includes(phaseId))typen.push({typ:"einschaetzung",label:"Einschätzungsbogen"});
