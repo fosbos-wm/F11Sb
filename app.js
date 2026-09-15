@@ -762,6 +762,14 @@ function fmtDateOnly(v){
  const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(v));
  return m?`${m[3]}.${m[2]}.${m[1]}`:String(v);
 }
+// Letzter Donnerstag am oder vor einem gegebenen Datum (für die
+// Blockberichte-Abgabetermine: letzter Donnerstag jedes Praktikumsblocks).
+function letzterDonnerstagVorOrAm(dateStr){
+ const d=new Date(dateStr+"T00:00:00");
+ const diff=(d.getDay()-4+7)%7; // Donnerstag = Tag 4
+ d.setDate(d.getDate()-diff);
+ return d.toISOString().slice(0,10);
+}
 function cleanDateInput(v){return v||"—"}
 
 async function getUpcomingCampusCalendarEvent(){
@@ -7388,6 +7396,23 @@ async function renderPraktikum(){
  <small style="display:block;margin-top:6px">${auftrag?` ${esc(auftrag.titel)}`:isTeacher()?"Antippen, um einen Auftrag einzutragen":"Noch kein Auftrag eingetragen"}</small>
  </button>`;
  }).join("")}</div>
+
+ <div class="kicker">PRAKTIKUMSBERICHTE (BLOCKBERICHTE)</div>
+ <div class="card"style="margin-bottom:22px;background:var(--soft-yellow,#fff8e2)">
+ <h2 style="margin-top:0"> Tätigkeitsnachweis & Einschätzungsbogen</h2>
+ <p style="color:var(--muted)">Pro Praktikumsblock wird <strong>ein Tätigkeitsnachweis</strong> abgegeben (kein wöchentlicher Bericht mehr). Der <strong>Einschätzungsbogen</strong> wird nur bei den jeweils letzten beiden Blöcken je Ausbildungsrichtung fällig – also 2× im Erziehungsbereich, 2× im Pflegebereich. Beides jeweils fällig am <strong>letzten Donnerstag</strong> des Blocks. Formulare ausdrucken, unterschreiben lassen und bei der Betreuungslehrkraft abgeben.</p>
+ <div class="form-actions"style="margin:14px 0">
+ <a class="primary"href="taetigkeitsnachweis.pdf"download style="text-decoration:none;display:inline-flex;align-items:center"> Tätigkeitsnachweis (PDF)</a>
+ <a class="secondary"href="einschaetzungsbogen.pdf"download style="text-decoration:none;display:inline-flex;align-items:center"> Einschätzungsbogen (PDF)</a>
+ </div>
+ <div class="list">${PRAKTIKUMSPHASEN.map(p=>{
+ const abgabe=letzterDonnerstagVorOrAm(p.end);
+ const heute=new Date().toISOString().slice(0,10);
+ const status=heute>abgabe?"vorbei":heute>=p.start?"läuft":"kommend";
+ const brauchtEinschaetzung=["pr2","pr3","pr6","pr7"].includes(p.id);
+ return`<div class="list-item"><div><strong>${p.icon} ${esc(p.titel)}</strong><small>${esc(fmtDateOnly(p.start))}–${esc(fmtDateOnly(p.end))}${brauchtEinschaetzung?" · + Einschätzungsbogen":""}</small></div><span class="pill${status==="vorbei"?"":status==="läuft"?" orange":""}">Abgabe: ${esc(fmtDateOnly(abgabe))}</span></div>`;
+ }).join("")}</div>
+ </div>
 
  <div class="kicker">BEREICH 1 · LEHRKRAFT → SCHÜLER</div>
  <div class="card fpa-main"style="margin-top:8px;background:var(--soft-blue)">
