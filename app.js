@@ -1144,14 +1144,16 @@ const F11SB_FAECHER=[
 // LERNWERKSTATT · FÄCHER-ZEITSTRAHL
 // ============================================================
 // Praktikumsphasen 2026/27 (gilt fachübergreifend, aus dem B-Block-Plan).
+// B-Block-Termine exakt aus dem offiziellen Dokument "Einteilung Unterrichts-
+// und Praktikumszeit 2026/2027" der FOSBOS Weilheim übernommen (nur 6 Blöcke,
+// nicht 7 – vorherige Annahme war hier ungenau).
 const PRAKTIKUMSPHASEN=[
  {id:"pr1",start:"2026-09-15",end:"2026-10-02",titel:"Praktikum – B-Block – Erziehung (Block 1)",bereich:"Erziehungsbereich",icon:"🏫"},
  {id:"pr2",start:"2026-10-26",end:"2026-11-20",titel:"Praktikum – B-Block – Erziehung (Block 2)",bereich:"Erziehungsbereich",icon:"🏫"},
  {id:"pr3",start:"2026-12-14",end:"2027-01-15",titel:"Praktikum – B-Block – Erziehung (Block 3)",bereich:"Erziehungsbereich",icon:"🏫"},
- {id:"pr4",start:"2027-02-15",end:"2027-03-05",titel:"Praktikum – Übergang",bereich:"Übergang",icon:"🔄"},
- {id:"pr5",start:"2027-04-12",end:"2027-04-30",titel:"Praktikum – B-Block – Pflege (Block 2)",bereich:"Pflegebereich",icon:"🏥"},
- {id:"pr6",start:"2027-06-07",end:"2027-06-25",titel:"Praktikum – B-Block – Pflege (Block 3)",bereich:"Pflegebereich",icon:"🏥"},
- {id:"pr7",start:"2027-07-19",end:"2027-07-30",titel:"Praktikum – B-Block – Pflege (Block 4)",bereich:"Pflegebereich",icon:"🏥"}
+ {id:"pr4",start:"2027-02-15",end:"2027-03-05",titel:"Praktikum – B-Block – Pflege (Block 1)",bereich:"Pflegebereich",icon:"🏥"},
+ {id:"pr5",start:"2027-04-19",end:"2027-05-07",titel:"Praktikum – B-Block – Pflege (Block 2)",bereich:"Pflegebereich",icon:"🏥"},
+ {id:"pr6",start:"2027-06-14",end:"2027-07-09",titel:"Praktikum – B-Block – Pflege (Block 3)",bereich:"Pflegebereich",icon:"🏥"}
 ];
 
 // Aufträge je Praktikumsphase: von Lehrkräften gepflegt, überall live
@@ -7568,7 +7570,14 @@ async function renderPraktikum(){
  .ki-process .grid strong{font-size:13px;color:var(--blue-dark)}
  .ki-process .grid small{font-size:12px;color:var(--muted);line-height:1.5}
  @media(max-width:850px){.fpa-tools{grid-template-columns:1fr}.ki-grid{grid-template-columns:1fr}}
- .pk-zeitstrahl{position:relative;padding-left:26px;margin:10px 0 22px}
+ .pk-split{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;margin-bottom:22px}
+ .pk-zeitstrahl{position:relative;padding-left:26px;margin:10px 0 0}
+ .pk-kennzahlen{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+ .pk-kz{background:#fff;border:1px solid var(--line,#e2eaf0);border-radius:12px;padding:16px 12px;text-align:center;cursor:pointer;transition:.15s}
+ .pk-kz:hover{transform:translateY(-2px);box-shadow:0 6px 14px rgba(23,56,79,.08)}
+ .pk-kz strong{display:block;font-size:24px;color:var(--blue-dark)}
+ .pk-kz small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+ @media(max-width:800px){.pk-split{grid-template-columns:1fr}}
  .pk-zeitstrahl::before{content:"";position:absolute;left:9px;top:6px;bottom:6px;width:2px;background:var(--line,#e2eaf0)}
  .pk-node{position:relative;display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;background:#fff;border:1px solid var(--line,#e2eaf0);margin-bottom:8px;cursor:pointer;transition:.15s}
  .pk-node:hover{transform:translateX(3px);box-shadow:0 4px 12px rgba(23,56,79,.08)}
@@ -7584,6 +7593,7 @@ async function renderPraktikum(){
  </style>
 
  <div class="kicker">PRAKTIKUMSPHASEN & BLOCKBERICHTE 2026/27</div>
+ <div class="pk-split">
  <div class="pk-zeitstrahl">${PRAKTIKUMSPHASEN.map(p=>{
  const heute=new Date().toISOString().slice(0,10);
  const status=heute>=p.start&&heute<=p.end?"laufend":heute>p.end?"vorbei":"kommend";
@@ -7597,15 +7607,31 @@ async function renderPraktikum(){
  <span class="pk-icon">${p.icon}</span>
  <div class="pk-info">
  <strong>${esc(p.titel)}</strong>
- <small>${esc(fmtDateOnly(p.start))}–${esc(fmtDateOnly(p.end))} · Abgabe bis ${esc(fmtDateOnly(frist))}, 19 Uhr${typen.length>1?" · + Einschätzungsbogen":""}</small>
+ <small>${esc(fmtDateOnly(p.start))}–${esc(fmtDateOnly(p.end))} · Abgabe ${esc(fmtDateOnly(frist))}, 19 Uhr${typen.length>1?" · +EB":""}</small>
  </div>
  ${isTeacher()?`<span class="pill"style="font-size:10px"> Übersicht</span>`:`<div class="pk-ampeln">${eigeneAmpeln}</div>`}
  </div>`;
- }).join("")}</div>
- <p style="font-size:10px;color:var(--muted);margin:-12px 0 22px 26px"> = pünktlich & vollständig · = noch unvollständig · = zu spät/fehlerhaft · = noch nicht hochgeladen/eingeschätzt</p>
+ }).join("")}
+ <p style="font-size:10px;color:var(--muted);margin:8px 0 0 26px"> pünktlich · unvollständig · zu spät · offen ·EB = Einschätzungsbogen zusätzlich fällig</p>
+ </div>
+ <div class="pk-kennzahlen">
+ <button type="button"class="card pk-kz"onclick="closeModal();document.getElementById('fpaAuftraegeAnker')?.scrollIntoView({behavior:'smooth'})">
+ <strong>${assignments.length}</strong><small> Praxisaufträge</small>
+ </button>
+ <button type="button"class="card pk-kz"onclick="openFPAQuestions()">
+ <strong>${questions.length}</strong><small> Fragen aus der Praxis</small>
+ </button>
+ <button type="button"class="card pk-kz"onclick="openFPAProjects()">
+ <strong>${projects.length}</strong><small> Projekte in der Praxis</small>
+ </button>
+ <button type="button"class="card pk-kz"onclick="go('ki')">
+ <strong>${challenges.length}</strong><small> KI-Challenges</small>
+ </button>
+ </div>
+ </div>
 
  <div class="kicker">BEREICH 1 · LEHRKRAFT → SCHÜLER</div>
- <div class="card fpa-main"style="margin-top:8px;background:var(--soft-blue)">
+ <div class="card fpa-main"id="fpaAuftraegeAnker"style="margin-top:8px;background:var(--soft-blue)">
  <h2> Praxisaufträge</h2>
  <p>Hier erscheinen ausschließlich fpA-Praxisaufträge der Lehrkraft: beobachten, bearbeiten, durchführen.</p>
  <div class="grid grid-2">
