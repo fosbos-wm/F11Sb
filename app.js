@@ -2332,7 +2332,7 @@ class="list-item"><div><strong>${esc(p.title||p.text)}</strong>${p.title?`<small
  ${tile(" ","Projekte","Projektteams, Ziele, Fortschritt und Ergebnisse.","projekte")}
  ${tile(" ","Kompetenzwerkstatt","Kompetenzen sichtbar machen und entwickeln.","kompetenz")}
  ${tile(" ","Lernjournal","Lernweg, Reflexionen und nächste Schritte.","journal")}
- ${tile(" ","fpA","Praxisaufträge und Reflexion.","praktikum")}
+ ${tile(" ","fpA","Theorie-Praxis-Transfer-Aufträge und Reflexion.","praktikum")}
  ${tile(" ","KI-Innovationslabor","KI-Ideen und Innovationspartnerschaften.","ki")}</div>
 </div>${footer()}`;
 }
@@ -7527,10 +7527,10 @@ async function renderFragenHilfe(){
 }
 
 function renderPraxisFragen(){
- return Promise.resolve(`${pageHead('fpA · EIGENES TOOL','Fragen aus der Praxis','Fragen aus dem Praktikum – getrennt von Praxisaufträgen.',`<button class="primary"onclick="openFPAQuestionForm()">＋ Frage eintragen</button>`)}<div class="card"><h2> Fragen aus der Praxis</h2><p>Dieses Tool ist vollständig von Praxisaufträgen und KI-Innovationspartnerschaften getrennt.</p><div id="fpaQuestionsPage"class="empty">Lade Einträge …</div></div>${footer()}`);
+ return Promise.resolve(`${pageHead('fpA · EIGENES TOOL','Fragen aus der Praxis','Fragen aus dem Praktikum – getrennt von Theorie-Praxis-Transfer-Aufträgen.',`<button class="primary"onclick="openFPAQuestionForm()">＋ Frage eintragen</button>`)}<div class="card"><h2> Fragen aus der Praxis</h2><p>Dieses Tool ist vollständig von Theorie-Praxis-Transfer-Aufträgen und KI-Innovationspartnerschaften getrennt.</p><div id="fpaQuestionsPage"class="empty">Lade Einträge …</div></div>${footer()}`);
 }
 function renderPraxisProjekte(){
- return Promise.resolve(`${pageHead('fpA · EIGENES TOOL','Projekte in der Praxis','Praxisprojekte – getrennt von Praxisaufträgen.',`<button class="primary"onclick="openFPAProjectForm()">＋ Projekt eintragen</button>`)}<div class="card"><h2> Projekte in der Praxis</h2><p>Dieses Tool ist vollständig eigenständig.</p><div id="fpaProjectsPage"class="empty">Lade Einträge …</div></div>${footer()}`);
+ return Promise.resolve(`${pageHead('fpA · EIGENES TOOL','Projekte in der Praxis','Praxisprojekte – getrennt von Theorie-Praxis-Transfer-Aufträgen.',`<button class="primary"onclick="openFPAProjectForm()">＋ Projekt eintragen</button>`)}<div class="card"><h2> Projekte in der Praxis</h2><p>Dieses Tool ist vollständig eigenständig.</p><div id="fpaProjectsPage"class="empty">Lade Einträge …</div></div>${footer()}`);
 }
 
 async function renderPraktikum(){
@@ -7547,8 +7547,8 @@ async function renderPraktikum(){
  const praktikumsAuftraege=await getPraktikumsAuftraege();
  const meineBerichte=isTeacher()?{}:await getMeinePraktikumsberichte();
 
- return`${pageHead("SCHULE ↔ PRAXIS","fpA","Praxisaufträge und eigenständige Werkzeuge für die fachpraktische Ausbildung.",
- isTeacher()?`<button class="primary"onclick="openPracticeForm()">＋ Praxisauftrag</button>`:"")}
+ return`${pageHead("SCHULE ↔ PRAXIS","fpA","Theorie-Praxis-Transfer-Aufträge und eigenständige Werkzeuge für die fachpraktische Ausbildung.",
+ isTeacher()?`<button class="primary"onclick="openPracticeForm()">＋ Theorie-Praxis-Transfer-Auftrag</button>`:"")}
  <style>
  .fpa-main{margin-bottom:18px}
  .fpa-tools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
@@ -7616,7 +7616,7 @@ async function renderPraktikum(){
  </div>
  <div class="pk-kennzahlen">
  <button type="button"class="card pk-kz"onclick="closeModal();document.getElementById('fpaAuftraegeAnker')?.scrollIntoView({behavior:'smooth'})">
- <strong>${assignments.length}</strong><small> Praxisaufträge</small>
+ <strong>${assignments.length}</strong><small> Theorie-Praxis-Transfer-Aufträge</small>
  </button>
  <button type="button"class="card pk-kz"onclick="openFPAQuestions()">
  <strong>${questions.length}</strong><small> Fragen aus der Praxis</small>
@@ -7632,16 +7632,16 @@ async function renderPraktikum(){
 
  <div class="kicker">BEREICH 1 · LEHRKRAFT → SCHÜLER</div>
  <div class="card fpa-main"id="fpaAuftraegeAnker"style="margin-top:8px;background:var(--soft-blue)">
- <h2> Praxisaufträge</h2>
- <p>Hier erscheinen ausschließlich fpA-Praxisaufträge der Lehrkraft: beobachten, bearbeiten, durchführen.</p>
+ <h2> Theorie-Praxis-Transfer-Aufträge</h2>
+ <p>Hier erscheinen ausschließlich fpA-Theorie-Praxis-Transfer-Aufträge der Lehrkraft: beobachten, bearbeiten, durchführen.</p>
  <div class="grid grid-2">
  ${assignments.map(p=>`<article class="card">
  <span class="pill ${p.state==="offen"?"orange":"green"}">${esc(p.state||"offen")}</span>
- <h3>${esc(p.title||"Praxisauftrag")}</h3>
+ <h3>${esc(p.title||"Theorie-Praxis-Transfer-Auftrag")}</h3>
  <p>${esc(p.text||"")}</p>
  <small>${esc(p.date||"")}</small>
- ${isTeacher()?`<div class="form-actions"style="margin-top:10px"><button class="secondary"onclick="deleteCampusEntry('practice','${p.id}','Praxisauftrag')">Löschen</button></div>`:""}
- </article>`).join("")||`<div class="empty">Noch keine Praxisaufträge vorhanden.</div>`}
+ ${isTeacher()?`<div class="form-actions"style="margin-top:10px"><button class="secondary"onclick="deleteCampusEntry('practice','${p.id}','Theorie-Praxis-Transfer-Auftrag')">Löschen</button></div>`:""}
+ </article>`).join("")||`<div class="empty">Noch keine Theorie-Praxis-Transfer-Aufträge vorhanden.</div>`}
  </div>
  </div>
 
@@ -10577,16 +10577,16 @@ async function addCompetence(){
 }
 
 function openPracticeForm(){
- if(!isTeacher()){toast("Nur Lehrkräfte können Praxisaufträge erstellen.");return}
+ if(!isTeacher()){toast("Nur Lehrkräfte können Theorie-Praxis-Transfer-Aufträge erstellen.");return}
  modal(`<button class="modal-close"onclick="closeModal()">×</button><div class="kicker">PRAXIS</div>
-<h2>Praxisauftrag</h2><div class="form"><label>Titel<input id="rTitle"></label><label>Datum<input id="rDate"type="date"></label>
+<h2>Theorie-Praxis-Transfer-Auftrag</h2><div class="form"><label>Titel<input id="rTitle"></label><label>Datum<input id="rDate"type="date"></label>
 <label>Beschreibung<textarea id="rText"rows="4"></textarea></label><div class="form-actions"><button class="secondary"onclick="closeModal()">Abbrechen</button><button class="primary"onclick="addPractice()">Speichern</button></div></div>`)}
 async function addPractice(){
- if(!isTeacher()){toast("Nur Lehrkräfte können Praxisaufträge erstellen.");return}
+ if(!isTeacher()){toast("Nur Lehrkräfte können Theorie-Praxis-Transfer-Aufträge erstellen.");return}
  try{await addDoc(collection(db,"practice"),
-{module:"fpa",type:"teacherAssignment",title:$("rTitle").value.trim()||"Praxisauftrag",date:cleanDateInput($("rDate").value),state:"offen",text:$("rText").value.trim()
+{module:"fpa",type:"teacherAssignment",title:$("rTitle").value.trim()||"Theorie-Praxis-Transfer-Auftrag",date:cleanDateInput($("rDate").value),state:"offen",text:$("rText").value.trim()
 ||"Beschreibung ergänzen",createdBy:currentUser.uid,createdAt:serverTimestamp()});closeModal();await
-render();toast("fpA-Praxisauftrag gespeichert.")}catch(e){console.error(e);toast("fpA-Praxisauftrag konnte nicht gespeichert werden.")}}
+render();toast("fpA-Theorie-Praxis-Transfer-Auftrag gespeichert.")}catch(e){console.error(e);toast("fpA-Theorie-Praxis-Transfer-Auftrag konnte nicht gespeichert werden.")}}
 
 function openCalendarForm(){
  if(!isTeacher()){toast("Nur Lehrkräfte können Termine eintragen.");return}
