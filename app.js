@@ -7653,31 +7653,23 @@ async function renderPraktikum(){
  <p>Betriebe tragen reale Herausforderungen ein, Schülerteams bearbeiten sie mit KI-Unterstützung, Ergebnisse werden dokumentiert.</p>
  ${isTeacher()?`<div style="margin-top:12px"><button class="primary"onclick="openKIChallengeForm()">＋ Praxisproblem eintragen</button></div>`:""}
  </div>
- <div class="card ki-process">
- <h3>Der Ablauf</h3>
- <div class="grid grid-3">
- <div class="card"><strong style="display:block;margin-bottom:8px">1. Praxisproblem</strong><small style="display:block">Ein realer Bedarf wird beschrieben.</small></div>
- <div class="card"><strong style="display:block;margin-bottom:8px">2. Entwicklung</strong><small style="display:block">Ein Schülerteam bearbeitet die Herausforderung.</small></div>
- <div class="card"><strong style="display:block;margin-bottom:8px">3. Ergebnis</strong><small style="display:block">Die Lösung wird dokumentiert.</small></div>
- </div>
- </div>
  <div class="ki-grid">
  <button class="card ki-card"style="background:var(--soft-blue)"onclick="openKIChallengesLibrary()">
  <div class="ki-step">1</div>
  <h2>Praxisproblem<br>Herausforderungen im Praktikumsbetrieb</h2>
- <p>Betriebe tragen konkrete Herausforderungen ein. Sie werden in einer Bibliothek gesammelt.</p>
+ <p>Ein realer Bedarf wird beschrieben: Betriebe tragen konkrete Herausforderungen ein, gesammelt in einer Bibliothek.</p>
  <div class="ki-action"><span class="pill">${challenges.length} Einträge</span><span class="pill">Öffnen →</span></div>
  </button>
- <button class="card ki-card"style="background:var(--soft-purple)"onclick="openKISolutionsLibrary()">
+ <button class="card ki-card"style="background:var(--soft-teal,#d9f2ee)"onclick="openKISolutionsLibrary()">
  <div class="ki-step">2</div>
  <h2>Schülerteam / Schüler<br>löst Herausforderung</h2>
- <p>Schüler übernehmen eine Herausforderung und dokumentieren Team, Aufgaben und KI-Einsatz.</p>
+ <p>Ein Schülerteam bearbeitet die Herausforderung: Team, Aufgaben und KI-Einsatz werden dokumentiert.</p>
  <div class="ki-action"><span class="pill">${solutions.length} Bearbeitungen</span><span class="pill">Öffnen →</span></div>
  </button>
  <button class="card ki-card"style="background:var(--soft-green)"onclick="openKIResultsLibrary()">
  <div class="ki-step">3</div>
  <h2>Ergebnisse<br>Ideen & Produkte</h2>
- <p>Entstandene Ideen, Konzepte, Prototypen und Produkte werden gesammelt.</p>
+ <p>Die Lösung wird dokumentiert: entstandene Ideen, Konzepte, Prototypen und Produkte werden gesammelt.</p>
  <div class="ki-action"><span class="pill">${results.length} Ergebnisse</span><span class="pill">Öffnen →</span></div>
  </button>
  </div>
@@ -7783,31 +7775,23 @@ async function renderKI(){
  .ki-process .grid small{font-size:12px;color:var(--muted);line-height:1.5}
  @media(max-width:850px){.ki-grid{grid-template-columns:1fr}}
  </style>
- <div class="card ki-process">
- <h3>Der Ablauf</h3>
- <div class="grid grid-3">
- <div class="card"><strong style="display:block;margin-bottom:8px">1. Praxisproblem</strong><small style="display:block">Ein realer Bedarf wird beschrieben.</small></div>
- <div class="card"><strong style="display:block;margin-bottom:8px">2. Entwicklung</strong><small style="display:block">Ein Schülerteam bearbeitet die Herausforderung.</small></div>
- <div class="card"><strong style="display:block;margin-bottom:8px">3. Ergebnis</strong><small style="display:block">Die Lösung wird dokumentiert.</small></div>
- </div>
- </div>
  <div class="ki-grid">
- <button class="card ki-card"onclick="openKIChallengesLibrary()">
+ <button class="card ki-card"style="background:var(--soft-blue)"onclick="openKIChallengesLibrary()">
  <div class="ki-step">1</div>
  <h2>Praxisproblem<br>Herausforderungen im Praktikumsbetrieb</h2>
- <p>Betriebe tragen konkrete Herausforderungen ein. Sie werden in einer Bibliothek gesammelt.</p>
+ <p>Ein realer Bedarf wird beschrieben: Betriebe tragen konkrete Herausforderungen ein, gesammelt in einer Bibliothek.</p>
  <div class="ki-action"><span class="pill">${challenges.length} Einträge</span><span class="pill">Öffnen →</span></div>
  </button>
- <button class="card ki-card"onclick="openKISolutionsLibrary()">
+ <button class="card ki-card"style="background:var(--soft-teal,#d9f2ee)"onclick="openKISolutionsLibrary()">
  <div class="ki-step">2</div>
  <h2>Schülerteam / Schüler<br>löst Herausforderung</h2>
- <p>Schüler übernehmen eine Herausforderung und dokumentieren Team, Aufgaben und KI-Einsatz.</p>
+ <p>Ein Schülerteam bearbeitet die Herausforderung: Team, Aufgaben und KI-Einsatz werden dokumentiert.</p>
  <div class="ki-action"><span class="pill">${solutions.length} Bearbeitungen</span><span class="pill">Öffnen →</span></div>
  </button>
- <button class="card ki-card"onclick="openKIResultsLibrary()">
+ <button class="card ki-card"style="background:var(--soft-green)"onclick="openKIResultsLibrary()">
  <div class="ki-step">3</div>
  <h2>Ergebnisse<br>Ideen & Produkte</h2>
- <p>Entstandene Ideen, Konzepte, Prototypen und Produkte werden gesammelt.</p>
+ <p>Die Lösung wird dokumentiert: entstandene Ideen, Konzepte, Prototypen und Produkte werden gesammelt.</p>
  <div class="ki-action"><span class="pill">${results.length} Ergebnisse</span><span class="pill">Öffnen →</span></div>
  </button>
  </div>${footer()}`;
