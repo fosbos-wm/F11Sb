@@ -3023,13 +3023,13 @@ window.openWocheDetail=openWocheDetail;
 
 async function renderLernwerkstatt(){
  const groups=[
- {title:"Dich selbst einschätzen",color:"var(--soft-blue)",items:[
+ {title:"Dich selbst einschätzen",color:"#4a90d9",items:[
  [" ","Lernstrategien-Check","Kein Lerntyp-Test – dein Strategien-Profil in 25 Fragen.","lernstrategien"],
  [" ","Metakognitive Lernstrategien","Über das eigene Lernen nachdenken – klick dich durch.","metakognition"],
  [" ","Persönlicher Lernpfad","Ziele setzen, Lernschritte planen und Fortschritt erkennen.","lernpfad"],
  [" ","Lernstandsmessung","Kurz prüfen: Wo stehe ich und was ist mein nächster Schritt?","lernstand"]
  ]},
- {title:"Konkret lernen & üben",color:"var(--soft-green)",items:[
+ {title:"Konkret lernen & üben",color:"#3fa66a",items:[
  [" ","Lernmethoden","Planung, Lernen, Zusammenarbeit und Reflexion.","methoden"],
  [" ","Lern-Werkzeuge","Karteikarten, Fokus-Timer und Glossar zum selbstständigen Lernen.","lernwerkzeuge"],
  [" ","Uhr & Timer","Aktuelle Uhrzeit im Blick, plus frei einstellbarer Timer für alle.","uhr-timer"],
@@ -3039,18 +3039,18 @@ async function renderLernwerkstatt(){
  [" ","KI zum Lernen","KI als Lernpartner nutzen – bereitgestellte KI-Angebote der Lehrkräfte.","ki-lernen"],
  [" ","Lernimpulse","Kurze Impulse für Reflexion und Deeper Learning.","impulse"]
  ]},
- {title:"Unterstützung holen",color:"var(--soft-orange)",items:[
+ {title:"Unterstützung holen",color:"#e0a324",items:[
  [" ","Lerncoaching","Individuelle Begleitung und Kontakt zu einer Lehrkraft.","lerncoaching"],
  [" ","Fragen & Hilfe","Antworten rund um die F11Sb und das Lernen.","fragenhilfe"]
  ]}
  ];
  return`${pageHead("SELBSTSTÄNDIG LERNEN","Lernwerkstatt","Der offene Lernraum für Lernaufträge, Methoden, Tools und KI.",`<button class="primary"onclick="openPostForm('idea')">＋ Lernimpuls</button>`)}
  <div class="kicker"style="margin-bottom:10px">LEHRPLAN & LERNINHALTE</div>
- <a class="card tile"href="#faecher"style="background:linear-gradient(135deg,var(--soft-blue),var(--soft-purple));min-height:110px;margin-bottom:22px">
+ <a class="card tile"href="#faecher"style="background:#fff;border:2px solid #4a90d9;min-height:110px;margin-bottom:22px">
  <span class="emoji"></span><strong style="font-size:16px">Fächer 11. Klasse</strong>
  <small>Lehrplan-Zeitstrahl je Fach: Themen, Aufträge, Material, Teams und Produkte – Schritt für Schritt durchs Schuljahr.</small>
  </a>
- ${groups.map(g=>`<div class="kicker"style="margin:22px 0 10px">${g.title}</div><div class="grid grid-4">${g.items.map(x=>`<a class="card tile"style="background:${g.color}"href="#${x[3]}"><span class="emoji">${x[0]}</span>
+ ${groups.map(g=>`<div class="kicker"style="margin:22px 0 10px">${g.title}</div><div class="grid grid-4">${g.items.map(x=>`<a class="card tile"style="background:#fff;border:2px solid ${g.color}"href="#${x[3]}"><span class="emoji">${x[0]}</span>
 <strong>${x[1]}</strong><small>${x[2]}</small></a>`).join("")}</div>`).join("")}
  ${footer()}`;
 }
