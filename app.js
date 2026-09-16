@@ -422,7 +422,7 @@ async function renderRessourcenRoute(){
  };
 
  return`${pageHead("LERNWERKSTATT","Lernressourcen-Bibliothek","Finde passende Lernmaterialien, digitale Angebote und externe Lernwege – zentral für Schüler und Lehrkräfte.",addButton)}
- <div class="card"style="background:var(--soft-green)">
+ <div class="card"style="border-left:4px solid #3fa66a">
  <span class="badge"> DEINE LERNBIBLIOTHEK</span>
  <h2>Passende Ressource auswählen</h2>
  <p>TaskCards, KI-Lernangebote, Videos, ByCS/mebis, Canva und LearningApps sowie weitere Webseiten an einem Ort.</p>
@@ -498,7 +498,7 @@ function lernpfadEntryHTML(e){
  ${e.standort?`<p style="margin:4px 0 0;font-size:13px">${esc(e.standort)}</p>`:""}
  ${e.strategyDetail?`<div class="notice"style="margin-top:4px"><strong>Konkret:</strong> ${esc(e.strategyDetail)}</div>`:""}
  ${lernpfadStrategyLinkHTML(e.strategy)}
- ${e.outcome?`<div class="notice"style="margin-top:6px;background:var(--soft-green)"><strong> Wie ist es gelaufen?</strong> ${esc(e.outcome)}</div>`
+ ${e.outcome?`<div class="notice"style="margin-top:6px;border-left:4px solid #3fa66a"><strong> Wie ist es gelaufen?</strong> ${esc(e.outcome)}</div>`
  :`<button class="secondary"style="align-self:flex-start;margin-top:6px"onclick="openLernpfadOutcomeForm('${e.id}')">Wie ist es gelaufen? (später ergänzen)</button>`}
  </div>`;
 }
@@ -532,7 +532,7 @@ function lernpfadPatternsHTML(entries){
  const p=computeLernpfadPatterns(entries);
  const reflectPct=p.total?Math.round((p.withOutcome/p.total)*100):0;
  const maxCount=Math.max(1,...Object.values(p.strategyCounts));
- return`<div class="card"style="margin-bottom:14px;background:var(--soft-blue)">
+ return`<div class="card"style="margin-bottom:14px;border-left:4px solid #4a90d9">
  <div class="kicker">AUSWERTUNG</div>
  <h3 style="margin:6px 0 4px"> Meine Lernmuster</h3>
  <p style="color:var(--muted);font-size:12px;margin:0 0 12px">Basierend auf ${p.total} Check-ins – gute Gesprächspunkte fürs nächste Lerncoaching, wenn du magst.</p>
@@ -2074,7 +2074,7 @@ async function openPraktikumsblockDetail(phaseId){
  ${auftrag?`<button class="secondary"onclick="deletePraktikumsphaseAuftrag('${phaseId}')">Löschen</button>`:""}
  </div>
  </div>`
- :auftrag?`<div class="card"style="background:var(--soft-blue);margin-bottom:16px"><strong>${esc(auftrag.titel)}</strong>${auftrag.beschreibung?`<p style="margin:6px 0 0;white-space:pre-wrap">${esc(auftrag.beschreibung)}</p>`:""}</div>`
+ :auftrag?`<div class="card"style="border-left:4px solid #4a90d9;margin-bottom:16px"><strong>${esc(auftrag.titel)}</strong>${auftrag.beschreibung?`<p style="margin:6px 0 0;white-space:pre-wrap">${esc(auftrag.beschreibung)}</p>`:""}</div>`
  :""}
 
  <h3 style="margin-bottom:2px"> Blockberichte</h3>
@@ -2384,11 +2384,11 @@ async function renderStart(){
 verbinden wir Lernen, Projekte, Praxis und Gemeinschaft. Alle angemeldeten Mitglieder arbeiten am selben digitalen Campus.</p>
 </div><div class="actions">${isTeacher()?`<button class="primary"onclick="openNewsForm()">＋ News veröffentlichen</button>`:""}<button class="secondary"onclick="go('kompass')">Mein Kompass →</button><button class="secondary"onclick="go('forum')">Campus-Forum</button></div></section>
  <div class="grid grid-3">
- <div class="card card-compact"style="background:var(--soft-blue)"><h3> Campus-News</h3><div class="list">${news.slice(0,3).map(p=>`<div
+ <div class="card card-compact"style="border-left:4px solid #4a90d9"><h3> Campus-News</h3><div class="list">${news.slice(0,3).map(p=>`<div
 class="list-item"><div><strong>${esc(p.title||p.text)}</strong>${p.title?`<small>${esc(p.text)} · ${fmtDate(p.createdAt)}</small>`:`<small>${fmtDate(p.createdAt)}</small>`}</div><div style="display:flex;align-items:center;gap:8px"><span class="pill">Info</span>${isAdmin()?`<button class="secondary"onclick="deleteNews('${p.id}')">Löschen</button>`:""}</div>
 </div>`).join("")||`<div class="empty">Noch keine News.</div>`}</div></div>
- <div class="card card-compact"style="background:var(--soft-purple)"><h3> Nächster Termin</h3><div class="list">${nextCalendar?`<div class="list-item"><div><strong>${esc(nextCalendar.title||nextCalendar.name||"Termin")}</strong><small>${esc(upcomingDateText)}${upcomingTime}</small></div><span class="pill green">Termin</span></div>`:`<div class="empty">Noch keine anstehenden Termine.</div>`}</div></div>
- <div class="card card-compact"style="background:var(--soft-pink)"><h3> Geburtstage</h3>${
+ <div class="card card-compact"style="border-left:4px solid #9b59b6"><h3> Nächster Termin</h3><div class="list">${nextCalendar?`<div class="list-item"><div><strong>${esc(nextCalendar.title||nextCalendar.name||"Termin")}</strong><small>${esc(upcomingDateText)}${upcomingTime}</small></div><span class="pill green">Termin</span></div>`:`<div class="empty">Noch keine anstehenden Termine.</div>`}</div></div>
+ <div class="card card-compact"style="border-left:4px solid #e0629e"><h3> Geburtstage</h3>${
  !birthdayInfo?`<div class="empty">Noch keine Geburtstage eingetragen.</div>`
  :birthdayInfo.isToday?`<p style="margin:6px 0 0;font-weight:800;font-size:14px"> Herzlichen Glückwunsch, ${birthdayInfo.people.map(p=>{const c=personColor(p.uid);return`<span style="color:${c.text}">${esc(p.name)}</span>`}).join(" & ")}!</p>`
  :`<div class="list-item"><div><strong>${birthdayInfo.people.map(p=>{const c=personColor(p.uid);return`<span style="color:${c.text}">${esc(p.name)}</span>`}).join(" & ")}</strong><small>${esc(birthdayInfo.date.toLocaleDateString("de-DE",{day:"2-digit",month:"long"}))} · ${birthdayInfo.days===1?"morgen":`in ${birthdayInfo.days} Tagen`}</small></div><span class="pill"style="background:${personColor(birthdayInfo.people[0].uid).border};color:#fff">Nächste(r)</span></div>`
@@ -2404,13 +2404,13 @@ class="list-item"><div><strong>${esc(p.title||p.text)}</strong>${p.title?`<small
  <h3 style="margin:0 0 8px"> Kalender</h3>
  <div id="miniKalenderWrap">${miniKalender}</div>
  </div>
- ${praktikumsphase?`<a class="card card-compact"href="#praktikum"style="background:var(--soft-orange);display:block;text-decoration:none;color:inherit">
+ ${praktikumsphase?`<a class="card card-compact"href="#praktikum"style="border-left:4px solid #e0a324;display:block;text-decoration:none;color:inherit">
  <h3 style="margin:0 0 6px"> ${praktikumsphase.status==="laufend"?"Praktikum läuft gerade":"Nächstes Praktikum"}</h3>
  <strong style="display:block">${esc(praktikumsphase.titel)}</strong>
  <small style="display:block;margin-top:4px">${esc(fmtDateOnly(praktikumsphase.start))}–${esc(fmtDateOnly(praktikumsphase.end))} · ${esc(praktikumsphase.bereich)}</small>
- </a>`:`<div class="card card-compact"style="background:var(--soft-orange)"><h3 style="margin:0">Praktikum</h3><small>Aktuell keine Phase hinterlegt.</small></div>`}
+ </a>`:`<div class="card card-compact"style="border-left:4px solid #e0a324"><h3 style="margin:0">Praktikum</h3><small>Aktuell keine Phase hinterlegt.</small></div>`}
  </div>
- ${aktuellerPraktikumsauftrag?`<a class="card"href="#praktikum"style="display:block;text-decoration:none;color:inherit;background:var(--soft-orange);margin-bottom:16px">
+ ${aktuellerPraktikumsauftrag?`<a class="card"href="#praktikum"style="display:block;text-decoration:none;color:inherit;border-left:4px solid #e0a324;margin-bottom:16px">
  <span class="pill"style="background:#e8890c;color:#fff">fpA Auftrag</span>
  <strong style="display:block;margin-top:8px;font-size:15px">${esc(aktuellerPraktikumsauftrag.titel)}</strong>
  ${aktuellerPraktikumsauftrag.beschreibung?`<small style="display:block;margin-top:4px;color:var(--muted)">${esc(aktuellerPraktikumsauftrag.beschreibung.slice(0,140))}${aktuellerPraktikumsauftrag.beschreibung.length>140?"…":""}</small>`:""}
@@ -2427,7 +2427,7 @@ class="list-item"><div><strong>${esc(p.title||p.text)}</strong>${p.title?`<small
  </div>
  ${wochenplan.length?`<div class="list"style="margin-top:10px">${wochenplan.filter(w=>!w.done).slice(0,3).map(w=>`<div class="list-item"><div><strong>${esc(w.title)}</strong>${w.subject?`<small>${esc(F11SB_FAECHER.find(f=>f.key===w.subject)?.label||"")}</small>`:""}</div><span class="pill">${w.scope==="monat"?"Monat":"Woche"}</span></div>`).join("")}</div>`:""}
  </div>
- <div class="card"style="margin-bottom:16px;text-align:center;background:var(--soft-green)">
+ <div class="card"style="margin-bottom:16px;text-align:center;border-left:4px solid #3fa66a">
  <h2 style="margin:0 0 8px"> FOSBOS-WM Jahresfokus: Solidarität und Zusammenhalt</h2>
  <p style="margin:0;font-style:italic;color:var(--muted)">„Solidarität lebt von kleinen Taten – heute schon jemandem geholfen?“</p>
  </div>
@@ -2637,13 +2637,13 @@ async function renderKompass(){
 Aufgaben</span></div><div class="card stat"><b>${projects.length}</b><span>Projekte</span></div><div class="card stat">
 <b>${profile?.role==="teacher"?"Lehrkraft":profile?.role==="admin"?"Admin":"Schüler/in"}</b><span>Rolle</span></div></div>
  <div class="grid grid-3"style="margin-top:12px">
- <button type="button"class="card tile-square"style="background:var(--soft-blue)"onclick="openMeineAufgabenModal()">
+ <button type="button"class="card tile-square"style="background:#fff;border:2px solid #4a90d9"onclick="openMeineAufgabenModal()">
  <span class="emoji"></span><strong>Meine Aufgaben</strong><small>${tasks.filter(t=>t.ownerUid===currentUser.uid).length} offen</small>
  </button>
- <button type="button"class="card tile-square"style="background:var(--soft-purple)"onclick="openProjektFristenModal()">
+ <button type="button"class="card tile-square"style="background:#fff;border:2px solid #9b59b6"onclick="openProjektFristenModal()">
  <span class="emoji"></span><strong>Meine Projektfristen</strong><small>${projectDeadlines.length} Termine</small>
  </button>
- <button type="button"class="card tile-square"style="background:var(--soft-teal)"onclick="openAktuelleProjekteModal()">
+ <button type="button"class="card tile-square"style="background:#fff;border:2px solid #1a9b8e"onclick="openAktuelleProjekteModal()">
  <span class="emoji"></span><strong>Meine Projekte</strong><small>${projects.length} Projekte</small>
  </button>
  </div>
@@ -2811,8 +2811,6 @@ async function renderFachDetail(){
  <div class="lp-legende">
  <span class="lp-legende-item"><span class="pill"style="background:#3fa66a;color:#fff;font-size:10px"> Projekt</span></span>
  <span class="lp-legende-item"><span class="pill"style="background:#e0a324;color:#fff;font-size:10px"> Einzelthema</span></span>
- <span class="lp-legende-item"><span class="lp-legende-dot lp-legende-raute"style="background:var(--soft-blue);border-color:#4a90d9"><i>🏫</i></span>Praktikum · Erziehungsbereich</span>
- <span class="lp-legende-item"><span class="lp-legende-dot lp-legende-raute"style="background:var(--soft-blue);border-color:#4a90d9"><i>🏥</i></span>Praktikum · Pflegebereich</span>
  </div>
  <div class="lp-legende"style="margin-top:6px">
  ${[1,2,3,4].map(n=>`<span class="lp-legende-item"><span class="lb-badge"style="background:${LERNBEREICH_FARBEN[n].bg};border-color:${LERNBEREICH_FARBEN[n].border};color:${LERNBEREICH_FARBEN[n].text}">Lernbereich ${n}</span></span>`).join("")}
@@ -2906,7 +2904,7 @@ async function openWocheDetail(fach,wocheId){
  <h2>${esc(woche.thema)}</h2>
  <span class="pill"style="background:${woche.typ==="projekt"?"#3fa66a":"#e0a324"};color:#fff">${woche.typ==="projekt"?"Projektarbeit":"Selbstlern-/Eigenarbeit"}</span>
  <p style="margin-top:10px;color:var(--muted)">${esc(woche.planung)}</p>
- ${woche.praxis?`<div class="card"style="background:var(--soft-blue);margin-top:10px;padding:10px 12px"><strong style="font-size:12px"> Praxistransfer</strong><small style="display:block;margin-top:4px">${esc(woche.praxis)}</small></div>`:""}
+ ${woche.praxis?`<div class="card"style="border-left:4px solid #4a90d9;margin-top:10px;padding:10px 12px"><strong style="font-size:12px"> Praxistransfer</strong><small style="display:block;margin-top:4px">${esc(woche.praxis)}</small></div>`:""}
 
  <div class="wd-stepper">
  ${schritte.map((s,i)=>`<div class="wd-step${s.done?" wd-step-done":""}${i===aktivIdx&&!s.done?" wd-step-aktiv":""}">
@@ -2940,7 +2938,7 @@ async function openWocheDetail(fach,wocheId){
  </div>
  </div>`
  :!auftrag?`<div class="empty">Für diese Woche wurde noch kein Arbeitsauftrag eingetragen.</div>`
- :`<div class="card"style="background:var(--soft-blue)"><strong>${esc(auftrag.titel)}</strong>${auftrag.beschreibung?`<p style="margin:6px 0 0;white-space:pre-wrap">${esc(auftrag.beschreibung)}</p>`:""}</div>`}
+ :`<div class="card"style="border-left:4px solid #4a90d9"><strong>${esc(auftrag.titel)}</strong>${auftrag.beschreibung?`<p style="margin:6px 0 0;white-space:pre-wrap">${esc(auftrag.beschreibung)}</p>`:""}</div>`}
  ${!isTeacher()?`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:14px;font-weight:700;font-size:13px"><input type="checkbox"${fortschritt.auftragGelesen?"checked":""}onchange="toggleAuftragGelesen('${fach}','${wocheId}',this.checked)"><span> Auftrag gelesen, Ziele sind mir klar</span></label>`:""}
  <p style="font-size:11px;color:var(--muted);margin:16px 0 6px">Bevor es losgeht:</p>
  ${miniToolRow([["🧭","Lernpfad","lernpfad"],["🤔","Metakognition","metakognition"]])}
@@ -5607,7 +5605,7 @@ async function openEssayModelCompare(caseId,type){
  <h2>${esc(essayPartLabel(type))} – Vergleich mit dem Musterbeispiel</h2>
  <p style="color:var(--muted);font-size:12px">Lies zuerst deinen eigenen Text nochmal durch, dann das Musterbeispiel. Die Fragen unten helfen dir beim Vergleichen.</p>
  <div class="card"style="background:#f7fafc;margin-bottom:10px"><strong>Dein Text</strong><p style="white-space:pre-wrap;margin:6px 0 0">${esc(myText)||"(kein Text gespeichert)"}</p></div>
- <div class="card"style="background:var(--soft-green,#dcf1c8);margin-bottom:10px"><strong> Musterbeispiel</strong><p style="white-space:pre-wrap;margin:6px 0 0">${esc(model)}</p></div>
+ <div class="card"style="border-left:4px solid #3fa66a;margin-bottom:10px"><strong> Musterbeispiel</strong><p style="white-space:pre-wrap;margin:6px 0 0">${esc(model)}</p></div>
  ${compareQuestions.length?`<div class="notice"><strong>Zum Vergleichen</strong><ul style="margin:8px 0 0;padding-left:18px">${compareQuestions.map(q=>`<li>${esc(q)}</li>`).join("")}</ul></div>`:""}
  <div class="form-actions"><button class="secondary"onclick="closeModal()">Schließen</button></div>`);
  }catch(e){console.error("Musterbeispiel-Vergleich:",e);toast("Der Vergleich konnte nicht geöffnet werden.")}
@@ -5767,7 +5765,7 @@ async function renderKILernen(){
  @media(max-width:800px){.ki-learn-grid{grid-template-columns:1fr}}
  </style>
 
- <div class="card"style="margin-bottom:16px;background:var(--soft-green)">
+ <div class="card"style="margin-bottom:16px;border-left:4px solid #4a90d9">
  <span class="badge"> LEHRKRAFTGESTEUERT</span>
  <h2>KI-Angebote für dein Lernen</h2>
  <p>Hier findest du nur KI-Angebote, die von Lehrkräften für den Campus bereitgestellt wurden. Öffne ein Angebot und nutze es direkt zum Lernen.</p>
@@ -5868,12 +5866,12 @@ async function renderForum(){
  const unread=await getUnreadMessageCount();
  return`${pageHead("GEMEINSCHAFT","Campus-Forum","Wähle einen Bereich: gemeinsamer Austausch im Forum oder persönliche Nachrichten.","")}
  <div class="grid grid-2"style="gap:18px;margin-top:4px">
- <a class="card tile"href="#forum-board"style="min-height:180px;background:var(--soft-blue)">
+ <a class="card tile"href="#forum-board"style="min-height:180px;background:#fff;border:2px solid #4a90d9">
  <span class="emoji"></span>
  <strong>Forum</strong>
  <small>Gemeinsam denken, fragen, austauschen und unterstützen – für die ganze F11Sb sichtbar.</small>
  </a>
- <a class="card tile"href="#forum-nachrichten"style="min-height:180px;background:var(--soft-teal)">
+ <a class="card tile"href="#forum-nachrichten"style="min-height:180px;background:#fff;border:2px solid #1a9b8e">
  <span class="emoji"></span>
  <strong>Persönliche Nachrichten${unread?` <span class="badge">${unread}</span>`:""}</strong>
  <small>Schreibe direkt mit einem Schüler oder einer Lehrkraft – nur ihr beide seht die Unterhaltung.</small>
@@ -5898,7 +5896,7 @@ Infos</span><span class="chip"> Ideen</span><span class="chip"> Projekte</span><
 <input class="search"id="forumSearch"placeholder="Beiträge durchsuchen …"></div>
  <div class="list"id="forumList">${posts.map(postHTML).join("")||`<div class="empty"><strong>Noch keine
 Beiträge</strong>Schreibe den ersten Beitrag.</div>`}</div>
- <div class="card"style="margin-top:12px;background:var(--soft-green)"><h3> Campus hilft</h3><p>Du kannst anderen bei einem
+ <div class="card"style="margin-top:12px;border-left:4px solid #3fa66a"><h3> Campus hilft</h3><p>Du kannst anderen bei einem
 Thema helfen? Teile dein Wissen.</p><button class="secondary"style="margin-top:10px"onclick="openHelpForm()">Hilfe
 anbieten</button></div>${footer()}`;
 }
@@ -6522,7 +6520,7 @@ async function renderKompetenz(){
  </div>
  <div class="competency-grid"id="competencyNetwork">${data.map(c=>competencyCard(c,false)).join("")||`<div class="empty"><strong>Noch keine Kompetenzen im Netzwerk.</strong><p>Sei die erste Person.</p></div>`}</div>
  </div>
- <div class="card"style="margin-top:12px;background:var(--soft-green)"><span class="badge"> UNSER CAMPUS-GEDANKE</span><h2>Wissen teilen ist eine Stärke.</h2><p>Du musst nicht alles können. Vielleicht kannst du etwas, das jemand anderes gerade braucht – und umgekehrt.</p><p><strong>„Ich kann dir helfen. Du kannst mir helfen. Zusammen kommen wir weiter.“</strong></p></div>
+ <div class="card"style="margin-top:12px;border-left:4px solid #3fa66a"><span class="badge"> UNSER CAMPUS-GEDANKE</span><h2>Wissen teilen ist eine Stärke.</h2><p>Du musst nicht alles können. Vielleicht kannst du etwas, das jemand anderes gerade braucht – und umgekehrt.</p><p><strong>„Ich kann dir helfen. Du kannst mir helfen. Zusammen kommen wir weiter.“</strong></p></div>
  ${footer()}`;
 }
 // Ein fester, sanft abgestimmter Farbton pro Kompetenz-Kategorie (gleicher
@@ -7247,7 +7245,7 @@ async function renderResilienz(){
  return`${pageHead(
  "RESILIENZ & RESPRESSI","Resilienz & Respressi","Finde heraus, was dir gerade helfen könnte – und probiere es direkt aus.",`<button class="primary"onclick="resilienzImpuls()"> Impuls für mich</button>`
  )}
- <div class="card" style="background:var(--soft-pink);margin-bottom:16px;text-align:center;padding:22px">
+ <div class="card" style="border-left:4px solid #e0629e;margin-bottom:16px;text-align:center;padding:22px">
  <p style="font-size:21px;font-style:italic;font-weight:700;color:var(--ink);margin:0">„Guck in das Leuchten der Augen des anderen!“</p>
  <p style="margin:8px 0 0;color:var(--muted);font-weight:700">— Dr. Gunther Schmidt</p>
  </div>
@@ -7619,7 +7617,7 @@ async function renderFragenHilfe(){
  ];
 
  return`${pageHead("ORIENTIERUNG","Fragen & Hilfe","Antworten rund um die F11Sb, selbstständiges Lernen und deinen Lernweg.")}
- <div class="card"style="margin-bottom:16px;background:var(--soft-green)">
+ <div class="card"style="margin-bottom:16px;border-left:4px solid #3fa66a">
  <span class="badge"> ORIENTIERUNG</span>
  <h2>Du hast eine Frage?</h2>
  <p>Hier findest du schnelle Antworten zu den wichtigsten Fragen rund um die F11Sb und das Lernen. Nutze die Themen als erste Orientierung.</p>
@@ -7763,7 +7761,7 @@ async function renderPraktikum(){
 
  <details class="noten-collapsible"id="fpaAuftraegeAnker"style="margin-bottom:16px">
  <summary>BEREICH 1 · LEHRKRAFT → SCHÜLER: Theorie-Praxis-Transfer-Aufträge (${assignments.length})</summary>
- <div class="card"style="margin-top:8px;background:var(--soft-yellow,#fff8e2)">
+ <div class="card"style="margin-top:8px;border-left:4px solid #4a90d9">
  <p style="margin-top:0">Hier erscheinen ausschließlich fpA-Theorie-Praxis-Transfer-Aufträge der Lehrkraft: beobachten, bearbeiten, durchführen.</p>
  <div class="grid grid-2">
  ${assignments.map(p=>`<article class="card">
@@ -8434,14 +8432,14 @@ async function renderTeam(){
  @media(max-width:850px){.team-info-grid{grid-template-columns:1fr}}
  </style>
  <div class="team-info-grid">
- <section class="card"style="background:var(--soft-blue)">
+ <section class="card"style="border-left:4px solid #4a90d9">
  <div class="kicker">KLASSENTEAM</div>
  <h2>Interne Informationen</h2>
  <p>Hier können Lehrkräfte wichtige Beobachtungen, Vorkommnisse, Vereinbarungen und Informationen für das Klassenteam dokumentieren.</p>
  <div class="notice"><strong>Nur für Lehrkräfte</strong><p style="margin-bottom:0">Schülerinnen und Schüler haben keinen Zugang zu diesem Bereich.</p></div>
  <div style="margin-top:14px"><button class="primary"onclick="openClassTeamUpdateForm()">＋ Neue Information</button></div>
  </section>
- <section class="card"style="background:var(--soft-green)">
+ <section class="card"style="border-left:4px solid #3fa66a">
  <div class="kicker">BIBLIOTHEK</div><h2>Historie</h2>
  <p>Alle bisherigen Informationen werden chronologisch gesammelt.</p>
  <div class="list">
@@ -8462,7 +8460,7 @@ async function renderTeam(){
  </div>
  </section>
  </div>
- <section class="card"style="margin-top:16px;background:var(--soft-orange)">
+ <section class="card"style="margin-top:16px;border-left:4px solid #e0a324">
  <div class="kicker">MODERATION</div>
  <h2>Gemeldete Inhalte ${openReports.length?`<span class="badge">${openReports.length}</span>`:""}</h2>
  <p>Meldungen aus Campus-Forum, Pinnwand und Team gesucht – nur für Lehrkräfte sichtbar, nicht für die gemeldete Person oder andere Schüler:innen.</p>
