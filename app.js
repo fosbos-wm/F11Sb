@@ -7686,17 +7686,21 @@ async function renderPraktikum(){
  .pk-kz small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
  @media(max-width:800px){.pk-split{grid-template-columns:1fr}}
  .pk-zeitstrahl::before{content:"";position:absolute;left:9px;top:6px;bottom:6px;width:2px;background:var(--line,#e2eaf0)}
- .pk-node{position:relative;display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;background:#fff;border:1px solid var(--line,#e2eaf0);margin-bottom:8px;cursor:pointer;transition:.15s}
- .pk-node:hover{transform:translateX(3px);box-shadow:0 4px 12px rgba(23,56,79,.08)}
- .pk-node::before{content:"";position:absolute;left:-21px;top:50%;transform:translateY(-50%);width:11px;height:11px;border-radius:50%;background:#fff;border:2.5px solid var(--blue)}
+ .pk-node{position:relative;border-radius:10px;background:#fff;border:1px solid var(--line,#e2eaf0);margin-bottom:8px;transition:.15s}
+ .pk-node::before{content:"";position:absolute;left:-21px;top:20px;width:11px;height:11px;border-radius:50%;background:#fff;border:2.5px solid var(--blue);z-index:1}
  .pk-node.pk-laufend::before{border-color:#e8890c}
  .pk-node.pk-vorbei::before{border-color:#3fa66a}
+ .pk-summary{display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;list-style:none}
+ .pk-summary::-webkit-details-marker{display:none}
+ .pk-summary:hover{background:#f7fafc}
  .pk-icon{font-size:18px;flex:0 0 auto}
  .pk-info{flex:1;min-width:0}
  .pk-info strong{display:block;font-size:13px}
  .pk-info small{display:block;color:var(--muted);font-size:11px;margin-top:3px;line-height:1.5}
  .pk-ampeln{display:flex;gap:5px;flex:0 0 auto}
  .pk-ampel-dot{width:13px;height:13px;border-radius:50%;display:inline-block;border:1.5px solid rgba(0,0,0,.08)}
+ .pk-body{padding:0 12px 12px 40px}
+ .pk-body small{display:block;color:var(--muted);font-size:11px;line-height:1.6}
  </style>
 
  <div class="kicker">PRAKTIKUMSPHASEN & BLOCKBERICHTE 2026/27</div>
@@ -7711,18 +7715,22 @@ async function renderPraktikum(){
  return`<span class="pk-ampel-dot"style="background:${ampelFarbe(eintrag?.ampel)}"title="${t.label}: ${eintrag?ampelText(eintrag.ampel):"noch nicht hochgeladen"}"></span>`;
  }).join("");
  const rahmenfarbe=p.bereich==="Erziehungsbereich"?"#3fa66a":p.bereich==="Pflegebereich"?"#4a90d9":"#b8c4cc";
- return`<div class="pk-node pk-${status}"style="border-left:4px solid ${rahmenfarbe}"onclick="${isTeacher()?`openLehrkraftPraktikumsUebersicht('${p.id}')`:`openPraktikumsblockDetail('${p.id}')`}">
+ return`<details class="pk-node pk-${status}"style="border-left:4px solid ${rahmenfarbe}">
+ <summary class="pk-summary">
  <span class="pk-icon">${p.icon}</span>
  <div class="pk-info">
  <strong>${esc(p.titel)}</strong>
  <small>${esc(fmtDateOnly(p.start))}–${esc(fmtDateOnly(p.end))}</small>
- <small>Abgabe Blockbericht + Arbeitszeiten-Nachweis: <strong>${esc(fmtDateOnly(frist))}</strong>, 19 Uhr</small>
- ${typen.length>1?`<small>Abgabe Einschätzungsbogen: <strong>${esc(fmtDateOnly(einschaetzungFrist(p.id)))}</strong>, 19 Uhr</small>`:""}
  </div>
- ${isTeacher()?`<span class="pill"style="font-size:10px"> Übersicht</span>`:`<div class="pk-ampeln">${eigeneAmpeln}</div>`}
- </div>`;
+ ${isTeacher()?"":`<div class="pk-ampeln">${eigeneAmpeln}</div>`}
+ </summary>
+ <div class="pk-body">
+ <small>Abgabe Blockbericht + Arbeitszeiten-Nachweis: <strong>${esc(fmtDateOnly(frist))}, 19 Uhr</strong></small>
+ ${typen.length>1?`<small>Abgabe Einschätzungsbogen: <strong>${esc(fmtDateOnly(einschaetzungFrist(p.id)))}, 19 Uhr</strong></small>`:""}
+ <button class="secondary"style="margin-top:8px;font-size:11px"onclick="${isTeacher()?`openLehrkraftPraktikumsUebersicht('${p.id}')`:`openPraktikumsblockDetail('${p.id}')`}">${isTeacher()?"Klassenübersicht öffnen":"Berichte hochladen/ansehen"} →</button>
+ </div>
+ </details>`;
  }).join("")}
- <p style="font-size:10px;color:var(--muted);margin:8px 0 0 26px"> pünktlich · unvollständig · zu spät · offen · <span style="color:#3fa66a">▍</span>Erziehung <span style="color:#4a90d9">▍</span>Pflege</p>
  ${isTeacher()?`<div style="margin:10px 0 0 26px"><button class="secondary"onclick="openPraktikumsGesamtuebersicht()"style="font-size:11px"> Ampel-Gesamtübersicht (alle Blöcke) & PDF-Export</button></div>`:""}
  </div>
  <div class="pk-kennzahlen">
@@ -7770,25 +7778,24 @@ async function renderPraktikum(){
  </details>
 
  <div class="kicker"style="margin:26px 0 8px">BEREICH 2 · KI-INNOVATIONSPARTNERSCHAFTEN</div>
- <div class="card"style="margin-bottom:16px;background:var(--soft-yellow,#fff8e2)">
- <h2>Praxisproblem → Schülerteam → Ergebnis</h2>
- <p>Betriebe tragen reale Herausforderungen ein, Schülerteams bearbeiten sie mit KI-Unterstützung, Ergebnisse werden dokumentiert.</p>
- ${isTeacher()?`<div style="margin-top:12px"><button class="primary"onclick="openKIChallengeForm()">＋ Praxisproblem eintragen</button></div>`:""}
- </div>
  <div class="ki-grid">
- <button class="card ki-card"style="background:var(--soft-blue)"onclick="openKIChallengesLibrary()">
+ <div class="card ki-card"style="background:#fff;border:2px solid #1688cf">
  <div class="ki-step">1</div>
  <h2>Praxisproblem<br>Herausforderungen im Praktikumsbetrieb</h2>
  <p>Ein realer Bedarf wird beschrieben: Betriebe tragen konkrete Herausforderungen ein, gesammelt in einer Bibliothek.</p>
- <div class="ki-action"><span class="pill">${challenges.length} Einträge</span><span class="pill">Öffnen →</span></div>
- </button>
- <button class="card ki-card"style="background:var(--soft-teal,#d9f2ee)"onclick="openKISolutionsLibrary()">
+ <div class="ki-action">
+ <span class="pill">${challenges.length} Einträge</span>
+ <button type="button"class="secondary"style="font-size:11px"onclick="openKIChallengesLibrary()">Öffnen →</button>
+ ${isTeacher()?`<button type="button"class="primary"style="font-size:11px"onclick="openKIChallengeForm()">＋ Praxisproblem eintragen</button>`:""}
+ </div>
+ </div>
+ <button class="card ki-card"style="background:#fff;border:2px solid #1a9b8e"onclick="openKISolutionsLibrary()">
  <div class="ki-step">2</div>
  <h2>Schülerteam / Schüler<br>löst Herausforderung</h2>
  <p>Ein Schülerteam bearbeitet die Herausforderung: Team, Aufgaben und KI-Einsatz werden dokumentiert.</p>
  <div class="ki-action"><span class="pill">${solutions.length} Bearbeitungen</span><span class="pill">Öffnen →</span></div>
  </button>
- <button class="card ki-card"style="background:var(--soft-green)"onclick="openKIResultsLibrary()">
+ <button class="card ki-card"style="background:#fff;border:2px solid #3fa66a"onclick="openKIResultsLibrary()">
  <div class="ki-step">3</div>
  <h2>Ergebnisse<br>Ideen & Produkte</h2>
  <p>Die Lösung wird dokumentiert: entstandene Ideen, Konzepte, Prototypen und Produkte werden gesammelt.</p>
@@ -7898,19 +7905,19 @@ async function renderKI(){
  @media(max-width:850px){.ki-grid{grid-template-columns:1fr}}
  </style>
  <div class="ki-grid">
- <button class="card ki-card"style="background:var(--soft-blue)"onclick="openKIChallengesLibrary()">
+ <button class="card ki-card"style="background:#fff;border:2px solid #1688cf"onclick="openKIChallengesLibrary()">
  <div class="ki-step">1</div>
  <h2>Praxisproblem<br>Herausforderungen im Praktikumsbetrieb</h2>
  <p>Ein realer Bedarf wird beschrieben: Betriebe tragen konkrete Herausforderungen ein, gesammelt in einer Bibliothek.</p>
  <div class="ki-action"><span class="pill">${challenges.length} Einträge</span><span class="pill">Öffnen →</span></div>
  </button>
- <button class="card ki-card"style="background:var(--soft-teal,#d9f2ee)"onclick="openKISolutionsLibrary()">
+ <button class="card ki-card"style="background:#fff;border:2px solid #1a9b8e"onclick="openKISolutionsLibrary()">
  <div class="ki-step">2</div>
  <h2>Schülerteam / Schüler<br>löst Herausforderung</h2>
  <p>Ein Schülerteam bearbeitet die Herausforderung: Team, Aufgaben und KI-Einsatz werden dokumentiert.</p>
  <div class="ki-action"><span class="pill">${solutions.length} Bearbeitungen</span><span class="pill">Öffnen →</span></div>
  </button>
- <button class="card ki-card"style="background:var(--soft-green)"onclick="openKIResultsLibrary()">
+ <button class="card ki-card"style="background:#fff;border:2px solid #3fa66a"onclick="openKIResultsLibrary()">
  <div class="ki-step">3</div>
  <h2>Ergebnisse<br>Ideen & Produkte</h2>
  <p>Die Lösung wird dokumentiert: entstandene Ideen, Konzepte, Prototypen und Produkte werden gesammelt.</p>
