@@ -2085,7 +2085,10 @@ async function openPraktikumsblockDetail(phaseId){
  return`<div class="card"style="margin-bottom:12px;background:${eintrag?"var(--soft-green)":"#f7fafc"}">
  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
  <strong>${esc(t.label)}</strong>
+ <span style="display:flex;gap:10px">
  <a href="${dateiNamen[t.typ]}"download style="font-size:11px">Formular als PDF herunterladen ↓</a>
+ ${t.typ==="taetigkeit"?`<a href="fehlzeitentabelle.pdf"download style="font-size:11px"> + Anlage Fehlzeitentabelle ↓</a>`:""}
+ </span>
  </div>
  <small style="display:block;color:var(--muted);margin-top:4px">Abgabe: ${esc(fmtDateOnly(terminDieserArt))}, 19:00 Uhr</small>
  ${eintrag?`<div style="margin-top:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
@@ -7729,8 +7732,8 @@ async function renderPraktikum(){
  <a class="card pk-kz"href="einschaetzungsbogen.pdf"download style="text-decoration:none">
  <strong style="font-size:15px"> PDF</strong><small>Einschätzungsbogen</small>
  </a>
- <a class="card pk-kz"href="praktikumsplan.pdf"download style="text-decoration:none">
- <strong style="font-size:15px"> PDF</strong><small>Einteilung Unterrichts-/Praktikumszeit</small>
+ <a class="card pk-kz"href="fehlzeitentabelle.pdf"download style="text-decoration:none">
+ <strong style="font-size:15px"> PDF</strong><small>Fehlzeitentabelle (Anlage zum Tätigkeitsnachweis)</small>
  </a>
  </div>
  </div>
