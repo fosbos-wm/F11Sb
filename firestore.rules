@@ -485,6 +485,12 @@ service cloud.firestore {
       allow read: if isApproved();
       allow create, update, delete: if isTeacher();
     }
+    // Praktikumsbesuche: alle können die Route/Termine einsehen, nur
+    // Lehrkräfte tragen Stationen/Termine ein.
+    match /praktikumsbesuche/{id} {
+      allow read: if isApproved();
+      allow create, update, delete: if isTeacher();
+    }
     // Blockberichte (Tätigkeitsnachweis + Einschätzungsbogen): Schüler:innen
     // laden ihre eigene Datei hoch und dürfen sie erneut hochladen, aber
     // NICHT selbst die Ampel-Bewertung setzen – das bleibt Lehrkräften

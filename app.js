@@ -762,12 +762,11 @@ function fmtDateOnly(v){
  const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(v));
  return m?`${m[3]}.${m[2]}.${m[1]}`:String(v);
 }
-// Letzter Donnerstag am oder vor einem gegebenen Datum (für die
-// Blockberichte-Abgabetermine: letzter Donnerstag jedes Praktikumsblocks).
+// Abgabetermin für Blockberichte: immer der Tag vor Ende des jeweiligen
+// Praktikumsblocks (unabhängig vom Wochentag) – so wie mit der Klasse besprochen.
 function letzterDonnerstagVorOrAm(dateStr){
  const d=new Date(dateStr+"T00:00:00");
- const diff=(d.getDay()-4+7)%7; // Donnerstag = Tag 4
- d.setDate(d.getDate()-diff);
+ d.setDate(d.getDate()-1);
  return d.toISOString().slice(0,10);
 }
 function cleanDateInput(v){return v||"—"}
@@ -2439,7 +2438,7 @@ class="list-item"><div><strong>${esc(p.title||p.text)}</strong>${p.title?`<small
  ${tile(" ","Projekte","Projektteams, Ziele, Fortschritt und Ergebnisse.","projekte")}
  ${tile(" ","Kompetenzwerkstatt","Kompetenzen sichtbar machen und entwickeln.","kompetenz")}
  ${tile(" ","Lernjournal","Lernweg, Reflexionen und nächste Schritte.","journal")}
- ${tile(" ","fpA","Theorie-Praxis-Transfer-Aufträge und Reflexion.","praktikum")}
+ ${tile(" ","fpA","Blockphasen, Theorie-Praxis-Transfer, KI-Partnerschaften und Praktikumsbesuche.","praktikum")}
  ${tile(" ","KI-Innovationslabor","KI-Ideen und Innovationspartnerschaften.","ki")}</div>
 </div>${footer()}`;
 }
@@ -7638,43 +7637,57 @@ function renderPraxisProjekte(){
  return Promise.resolve(`${pageHead('fpA · EIGENES TOOL','Projekte in der Praxis','Praxisprojekte – getrennt von Theorie-Praxis-Transfer-Aufträgen.',`<button class="primary"onclick="openFPAProjectForm()">＋ Projekt eintragen</button>`)}<div class="card"><h2> Projekte in der Praxis</h2><p>Dieses Tool ist vollständig eigenständig.</p><div id="fpaProjectsPage"class="empty">Lade Einträge …</div></div>${footer()}`);
 }
 
-async function renderPraktikum(){
- let assignments=[], questions=[], projects=[];
- let challenges=[],solutions=[],results=[];
+async function renderFpAHub(){
+ let assignments=[],challenges=[],besuche=[];
  try{assignments=await getCollection("practice","createdAt",true)}catch(e){console.error(e)}
+ assignments=assignments.filter(p=>p.module==="fpa" && p.type==="teacherAssignment");
+ try{challenges=await getCollection("kiChallenges","createdAt",true)}catch(e){console.error(e)}
+ try{besuche=await getPraktikumsbesuche()}catch(e){console.error(e)}
+ return`${pageHead("SCHULE ↔ PRAXIS","fpA","Praktikumsphasen, Theorie-Praxis-Transfer, KI-Innovationspartnerschaften und Praktikumsbesuche.","")}
+ <style>
+ .fpa-tools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+ .fpa-tool{min-height:150px;cursor:pointer;transition:.15s;text-align:left;color:var(--ink);font:inherit;background:#fff;border:1px solid var(--line,#e2eaf0);border-radius:14px;padding:18px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+ .fpa-tool:hover{transform:translateY(-2px);box-shadow:0 6px 14px rgba(23,56,79,.08)}
+ .fpa-tool .emoji{font-size:30px;display:block;margin-bottom:10px}
+ .fpa-tool strong{display:block;font-size:16px;color:var(--blue-dark);margin:0 0 6px}
+ .fpa-tool small{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+ .fpa-tool .fpa-count{display:inline-block;margin-top:12px;background:#eef3f8;color:#2c3e50;border-radius:999px;padding:3px 11px;font-size:11.5px;font-weight:700}
+ @media(max-width:800px){.fpa-tools{grid-template-columns:1fr}}
+ </style>
+ <div class="fpa-tools">
+ <button type="button"class="fpa-tool"onclick="go('blockphasen')">
+ <span class="emoji"></span><strong>Blockphasen</strong>
+ <small>Praktikumsphasen, Blockberichte und Ampel-Übersicht.</small>
+ <span class="fpa-count">${PRAKTIKUMSPHASEN.length} Blöcke</span>
+ </button>
+ <button type="button"class="fpa-tool"onclick="go('theorie-praxis-transfer')">
+ <span class="emoji"></span><strong>Theorie-Praxis-Transfer</strong>
+ <small>Aufträge der Lehrkraft: beobachten, bearbeiten, durchführen.</small>
+ <span class="fpa-count">${assignments.length} Aufträge</span>
+ </button>
+ <button type="button"class="fpa-tool"onclick="go('ki-partnerschaften')">
+ <span class="emoji"></span><strong>KI-Innovationspartnerschaften</strong>
+ <small>Praxisproblem → Schülerteam → Ergebnis.</small>
+ <span class="fpa-count">${challenges.length} Praxisprobleme</span>
+ </button>
+ <button type="button"class="fpa-tool"onclick="go('praktikumsbesuche')">
+ <span class="emoji"></span><strong>Praktikumsbesuche</strong>
+ <small>Route und Termine für die Besuche in den Praktikumsstellen.</small>
+ <span class="fpa-count">${besuche.length} Stationen</span>
+ </button>
+ </div>
+ ${footer()}`;
+}
+window.renderFpAHub=renderFpAHub;
+
+async function renderBlockphasen(){
+ let questions=[],projects=[];
  try{questions=await getCollection("fpaQuestions","createdAt",true)}catch(e){console.error(e)}
  try{projects=await getCollection("fpaProjects","createdAt",true)}catch(e){console.error(e)}
- try{challenges=await getCollection("kiChallenges","createdAt",true)}catch(e){console.error(e)}
- try{solutions=await getCollection("kiSolutions","createdAt",true)}catch(e){console.error(e)}
- try{results=await getCollection("kiResults","createdAt",true)}catch(e){console.error(e)}
-
- assignments=assignments.filter(p=>p.module==="fpa" && p.type==="teacherAssignment");
- const praktikumsAuftraege=await getPraktikumsAuftraege();
  const meineBerichte=isTeacher()?{}:await getMeinePraktikumsberichte();
 
- return`${pageHead("SCHULE ↔ PRAXIS","fpA","Theorie-Praxis-Transfer-Aufträge und eigenständige Werkzeuge für die fachpraktische Ausbildung.",
- isTeacher()?`<button class="primary"onclick="openPracticeForm()">＋ Theorie-Praxis-Transfer-Auftrag</button>`:"")}
+ return`${pageHead("SCHULE ↔ PRAXIS","Blockphasen","Praktikumsphasen, Blockberichte und Ampel-Übersicht.","")}
  <style>
- .fpa-main{margin-bottom:18px}
- .fpa-tools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
- .fpa-tool{min-height:185px;cursor:pointer;transition:.15s;text-align:left;color:var(--ink);font:inherit}
- .fpa-tool:hover{transform:translateY(-2px)}
- .fpa-tool .emoji{font-size:30px;display:block;margin-bottom:10px}
- .fpa-tool strong{display:block;font-size:14px;color:var(--blue-dark);margin:0 0 6px}
- .fpa-tool small{display:block;font-size:12px;color:var(--muted);line-height:1.5}
- .fpa-count{margin-top:14px}
- .ki-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
- .ki-card{min-height:255px;cursor:pointer;transition:.15s;text-align:left;color:var(--ink);font:inherit}
- .ki-card:hover{transform:translateY(-2px)}
- .ki-card h2{font-size:16px;line-height:1.3;color:var(--blue-dark);margin:0 0 8px;font-weight:800}
- .ki-card p{font-size:12px;line-height:1.5;color:var(--muted);margin:0}
- .ki-step{font-size:27px;font-weight:800;margin-bottom:10px;color:var(--blue)}
- .ki-action{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:16px}
- .ki-process{margin-bottom:16px}
- .ki-process h3{font-size:16px;color:var(--blue-dark);margin:0 0 4px}
- .ki-process .grid strong{font-size:13px;color:var(--blue-dark)}
- .ki-process .grid small{font-size:12px;color:var(--muted);line-height:1.5}
- @media(max-width:850px){.fpa-tools{grid-template-columns:1fr}.ki-grid{grid-template-columns:1fr}}
  .pk-split{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;margin-bottom:22px}
  .pk-zeitstrahl{position:relative;padding-left:26px;margin:10px 0 0}
  .pk-kennzahlen{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
@@ -7688,7 +7701,7 @@ async function renderPraktikum(){
  .pk-node::before{content:"";position:absolute;left:-21px;top:20px;width:11px;height:11px;border-radius:50%;background:#fff;border:2.5px solid var(--blue);z-index:1}
  .pk-node.pk-laufend::before{border-color:#e8890c}
  .pk-node.pk-vorbei::before{border-color:#3fa66a}
- .pk-summary{display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;list-style:none}
+ .pk-summary{display:flex;align-items:center;gap:10px;padding:12px 16px 12px 20px;cursor:pointer;list-style:none}
  .pk-summary::-webkit-details-marker{display:none}
  .pk-summary:hover{background:#f7fafc}
  .pk-icon{font-size:18px;flex:0 0 auto}
@@ -7723,8 +7736,8 @@ async function renderPraktikum(){
  ${isTeacher()?"":`<div class="pk-ampeln">${eigeneAmpeln}</div>`}
  </summary>
  <div class="pk-body">
- <small>Abgabe Blockbericht + Arbeitszeiten-Nachweis: <strong>${esc(fmtDateOnly(frist))}, 19 Uhr</strong></small>
- ${typen.length>1?`<small>Abgabe Einschätzungsbogen: <strong>${esc(fmtDateOnly(einschaetzungFrist(p.id)))}, 19 Uhr</strong></small>`:""}
+ <small>Abgabe Blockbericht + Arbeitszeiten-Nachweis: <strong>${esc(fmtDateOnly(frist))}, 20 Uhr</strong></small>
+ ${typen.some(t=>t.typ==="einschaetzung")?`<small>Abgabe Einschätzungsbogen: <strong>${esc(fmtDateOnly(frist))}, 20 Uhr</strong></small>`:""}
  <button class="secondary"style="margin-top:8px;font-size:11px"onclick="${isTeacher()?`openLehrkraftPraktikumsUebersicht('${p.id}')`:`openPraktikumsblockDetail('${p.id}')`}">${isTeacher()?"Klassenübersicht öffnen":"Berichte hochladen/ansehen"} →</button>
  </div>
  </details>`;
@@ -7745,8 +7758,8 @@ async function renderPraktikum(){
  </div>
 
  <div class="grid grid-4"style="margin-bottom:22px;gap:10px">
- <button type="button"class="card pk-kz"onclick="closeModal();const el=document.getElementById('fpaAuftraegeAnker');if(el){el.open=true;el.scrollIntoView({behavior:'smooth'})}">
- <strong>${assignments.length}</strong><small> Theorie-Praxis-Transfer-Aufträge</small>
+ <button type="button"class="card pk-kz"onclick="go('theorie-praxis-transfer')">
+ <strong>→</strong><small> Theorie-Praxis-Transfer-Aufträge</small>
  </button>
  <button type="button"class="card pk-kz"onclick="openFPAQuestions()">
  <strong>${questions.length}</strong><small> Fragen aus der Praxis</small>
@@ -7754,15 +7767,21 @@ async function renderPraktikum(){
  <button type="button"class="card pk-kz"onclick="openFPAProjects()">
  <strong>${projects.length}</strong><small> Projekte in der Praxis</small>
  </button>
- <button type="button"class="card pk-kz"onclick="go('ki')">
- <strong>${challenges.length}</strong><small> KI-Challenges</small>
+ <button type="button"class="card pk-kz"onclick="go('ki-partnerschaften')">
+ <strong>→</strong><small> KI-Innovationspartnerschaften</small>
  </button>
  </div>
+ ${footer()}`;
+}
+window.renderBlockphasen=renderBlockphasen;
 
- <details class="noten-collapsible"id="fpaAuftraegeAnker"style="margin-bottom:16px">
- <summary>BEREICH 1 · LEHRKRAFT → SCHÜLER: Theorie-Praxis-Transfer-Aufträge (${assignments.length})</summary>
- <div class="card"style="margin-top:8px;border-left:4px solid #4a90d9">
- <p style="margin-top:0">Hier erscheinen ausschließlich fpA-Theorie-Praxis-Transfer-Aufträge der Lehrkraft: beobachten, bearbeiten, durchführen.</p>
+async function renderTheoriePraxisTransfer(){
+ let assignments=[];
+ try{assignments=await getCollection("practice","createdAt",true)}catch(e){console.error(e)}
+ assignments=assignments.filter(p=>p.module==="fpa" && p.type==="teacherAssignment");
+
+ return`${pageHead("SCHULE ↔ PRAXIS","Theorie-Praxis-Transfer",`${assignments.length} Aufträge der Lehrkraft: beobachten, bearbeiten, durchführen.`,
+ isTeacher()?`<button class="primary"onclick="openPracticeForm()">＋ Theorie-Praxis-Transfer-Auftrag</button>`:"")}
  <div class="grid grid-2">
  ${assignments.map(p=>`<article class="card">
  <span class="pill ${p.state==="offen"?"orange":"green"}">${esc(p.state||"offen")}</span>
@@ -7772,10 +7791,27 @@ async function renderPraktikum(){
  ${isTeacher()?`<div class="form-actions"style="margin-top:10px"><button class="secondary"onclick="deleteCampusEntry('practice','${p.id}','Theorie-Praxis-Transfer-Auftrag')">Löschen</button></div>`:""}
  </article>`).join("")||`<div class="empty">Noch keine Theorie-Praxis-Transfer-Aufträge vorhanden.</div>`}
  </div>
- </div>
- </details>
+ ${footer()}`;
+}
+window.renderTheoriePraxisTransfer=renderTheoriePraxisTransfer;
 
- <div class="kicker"style="margin:26px 0 8px">BEREICH 2 · KI-INNOVATIONSPARTNERSCHAFTEN</div>
+async function renderKIPartnerschaften(){
+ let challenges=[],solutions=[],results=[];
+ try{challenges=await getCollection("kiChallenges","createdAt",true)}catch(e){console.error(e)}
+ try{solutions=await getCollection("kiSolutions","createdAt",true)}catch(e){console.error(e)}
+ try{results=await getCollection("kiResults","createdAt",true)}catch(e){console.error(e)}
+
+ return`${pageHead("SCHULE ↔ PRAXIS","KI-Innovationspartnerschaften","Praxisproblem → Schülerteam → Ergebnis.","")}
+ <style>
+ .ki-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+ .ki-card{min-height:255px;cursor:pointer;transition:.15s;text-align:left;color:var(--ink);font:inherit}
+ .ki-card:hover{transform:translateY(-2px)}
+ .ki-card h2{font-size:16px;line-height:1.3;color:var(--blue-dark);margin:0 0 8px;font-weight:800}
+ .ki-card p{font-size:12px;line-height:1.5;color:var(--muted);margin:0}
+ .ki-step{font-size:27px;font-weight:800;margin-bottom:10px;color:var(--blue)}
+ .ki-action{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:16px}
+ @media(max-width:850px){.ki-grid{grid-template-columns:1fr}}
+ </style>
  <div class="ki-grid">
  <div class="card ki-card"style="background:#fff;border:2px solid #1688cf">
  <div class="ki-step">1</div>
@@ -7802,6 +7838,209 @@ async function renderPraktikum(){
  </div>
  ${footer()}`;
 }
+window.renderKIPartnerschaften=renderKIPartnerschaften;
+
+// ---- Praktikumsbesuche: Lehrkraft plant die Route, trägt Termine ein ----
+async function getPraktikumsbesuche(){
+ try{
+ const snap=await getDocs(query(collection(db,"praktikumsbesuche"),orderBy("reihenfolge","asc")));
+ return snap.docs.map(d=>({id:d.id,...d.data()}));
+ }catch(e){console.error("Praktikumsbesuche laden:",e);return[]}
+}
+async function openPraktikumsbesuchForm(id,presetRoute){
+ const besuche=id?await getPraktikumsbesuche():[];
+ const b=besuche.find(x=>x.id===id)||{};
+ const routeWert=b.route||presetRoute||1;
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+ <div class="kicker">PRAKTIKUMSBESUCH</div>
+ <h2>${id?"Bearbeiten":"Neue Praktikumsstelle"}</h2>
+ <div class="form">
+ <label>Route (Tag)<select id="pbeRoute">${[1,2,3,4].map(r=>`<option value="${r}"${routeWert===r?" selected":""}>Route ${r}</option>`).join("")}</select></label>
+ <label>Reihenfolge (Position auf der Route)<input id="pbeReihenfolge"type="number"min="1"value="${b.reihenfolge??""}"placeholder="z. B. 1"></label>
+ <label>Schüler:in<input id="pbeSchueler"type="text"value="${esc(b.schueler||"")}"placeholder="Name der/des Schüler:in"></label>
+ <label>Praktikumsbetrieb<input id="pbeBetrieb"type="text"value="${esc(b.betrieb||"")}"placeholder="Name der Einrichtung"></label>
+ <label>Adresse<input id="pbeAdresse"type="text"value="${esc(b.adresse||"")}"placeholder="Straße, PLZ Ort"></label>
+ <label>Datum des Besuchs<input id="pbeDatum"type="date"value="${b.datum||""}"></label>
+ <label>Uhrzeit<input id="pbeUhrzeit"type="time"value="${b.uhrzeit||""}"></label>
+ <label>Notiz (optional)<textarea id="pbeNotiz"rows="2"placeholder="z. B. Ansprechpartner, Parkhinweis">${esc(b.notiz||"")}</textarea></label>
+ <div class="form-actions">
+ <button class="primary"onclick="savePraktikumsbesuch('${id||""}')">Speichern</button>
+ ${id?`<button class="secondary"onclick="deletePraktikumsbesuch('${id}')">Löschen</button>`:""}
+ <button class="secondary"onclick="openPraktikumsbesucheUebersicht()">Abbrechen</button>
+ </div>
+ </div>
+ `);
+}
+window.openPraktikumsbesuchForm=openPraktikumsbesuchForm;
+async function savePraktikumsbesuch(id){
+ if(!isTeacher()){toast("Nur Lehrkräfte können Praktikumsbesuche eintragen.");return}
+ const reihenfolge=parseInt($("pbeReihenfolge")?.value,10);
+ const schueler=$("pbeSchueler")?.value.trim();
+ const betrieb=$("pbeBetrieb")?.value.trim();
+ if(!Number.isFinite(reihenfolge)||!schueler||!betrieb){toast("Bitte mindestens Reihenfolge, Schüler:in und Betrieb angeben.");return}
+ const payload={
+ route:parseInt($("pbeRoute")?.value,10)||1,
+ reihenfolge,schueler,betrieb,
+ adresse:$("pbeAdresse")?.value.trim()||"",
+ datum:$("pbeDatum")?.value||"",
+ uhrzeit:$("pbeUhrzeit")?.value||"",
+ notiz:$("pbeNotiz")?.value.trim()||"",
+ updatedAt:serverTimestamp()
+ };
+ try{
+ if(id)await updateDoc(doc(db,"praktikumsbesuche",id),payload);
+ else{payload.createdAt=serverTimestamp();await addDoc(collection(db,"praktikumsbesuche"),payload)}
+ toast("Gespeichert.");
+ await openPraktikumsbesucheUebersicht();
+ }catch(e){console.error("Praktikumsbesuch speichern:",e);toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Konnte nicht gespeichert werden.");}
+}
+window.savePraktikumsbesuch=savePraktikumsbesuch;
+async function deletePraktikumsbesuch(id){
+ if(!confirm("Diesen Praktikumsbesuch wirklich löschen?"))return;
+ try{await deleteDoc(doc(db,"praktikumsbesuche",id));toast("Gelöscht.");await openPraktikumsbesucheUebersicht();}
+ catch(e){console.error(e);toast("Konnte nicht gelöscht werden.")}
+}
+window.deletePraktikumsbesuch=deletePraktikumsbesuch;
+async function openPraktikumsbesucheUebersicht(){
+ closeModal();
+ go("praktikumsbesuche");
+}
+window.openPraktikumsbesucheUebersicht=openPraktikumsbesucheUebersicht;
+
+const ROUTE_CAR_ICON='<svg width="34" height="24" viewBox="0 0 64 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex:0 0 auto"><path d="M4 26 L8 14 Q10 10 16 10 L46 10 Q52 10 54 16 L60 26 Z" fill="#4a90d9"/><rect x="0" y="24" width="64" height="7" rx="3.5" fill="#4a90d9"/><path d="M16 12.5 L21 12.5 Q22.5 12.5 22.5 14.5 L22.5 20 L14.5 20 Z" fill="#eaf3fc"/><path d="M24.5 12.5 L44 12.5 Q46 12.5 47 15 L49 20 L24.5 20 Z" fill="#eaf3fc"/><circle cx="33" cy="15.5" r="2.6" fill="#2f6fb0"/><path d="M29 20 Q29 16.8 33 16.8 Q37 16.8 37 20 Z" fill="#2f6fb0"/><circle cx="16" cy="30" r="5.2" fill="#1c2b39"/><circle cx="16" cy="30" r="2" fill="#fff"/><circle cx="48" cy="30" r="5.2" fill="#1c2b39"/><circle cx="48" cy="30" r="2" fill="#fff"/></svg>';
+async function renderPraktikumsbesuche(){
+ const alleBesuche=await getPraktikumsbesuche();
+ const geplant=alleBesuche.filter(b=>b.datum).length;
+ const routen=[1,2,3,4].map(r=>alleBesuche.filter(b=>(b.route||1)===r).sort((a,b)=>(a.reihenfolge||0)-(b.reihenfolge||0)));
+ return`${pageHead("FPA · TERMINPLANUNG","Praktikumsbesuche",`Route und Termine für die Besuche in den Praktikumsstellen, verteilt auf 4 Routen an unterschiedlichen Tagen. ${geplant} von ${alleBesuche.length} Terminen bereits festgelegt.`,isTeacher()?`<button class="primary"onclick="openPraktikumsbesuchForm()">＋ Praktikumsstelle</button> <button class="secondary"onclick="openPraktikumsbesucheImport()"> Route importieren</button>`:"")}
+ <style>
+ .route-tiles{display:flex;flex-wrap:wrap;gap:16px;margin-top:6px}
+ .route-tile{flex:1 1 calc(50% - 8px);min-width:280px;box-sizing:border-box}
+ @media(max-width:800px){.route-tile{flex-basis:100%}}
+ .route-tile{background:#fff;border:1px solid var(--line,#e2eaf0);border-radius:14px;padding:16px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+ .route-tile-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+ .route-tile-head strong{display:block;font-size:15px}
+ .route-tile-head small{display:block;color:var(--muted,#65758a);font-size:11.5px;margin-top:1px}
+ .route-tile-head .route-tile-add{margin-left:auto;padding:4px 9px;font-size:11px;white-space:nowrap}
+ .route-tile-empty{font-size:12.5px;color:var(--muted,#65758a);padding:6px 2px}
+ .route-list{position:relative;margin-top:2px}
+ .route-item{position:relative;display:flex;gap:11px;padding-bottom:14px}
+ .route-item:last-child{padding-bottom:0}
+ .route-item:not(:last-child)::before{content:"";position:absolute;left:14px;top:30px;bottom:0;width:2px;background:var(--line,#e2eaf0)}
+ .route-num{flex:0 0 auto;width:30px;height:30px;border-radius:50%;background:#fff;border:2px solid var(--line,#dbe4ea);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12.5px;color:var(--muted,#65758a);position:relative;z-index:1}
+ .route-item--mine .route-num{border-color:#3fa66a;background:#eafaf0;color:#2f8a56}
+ .route-item--teacher .route-num{border-color:#4a90d9;background:#eaf3fc;color:#2f6fb0}
+ .route-card{flex:1;min-width:0;background:#fff;border:1px solid var(--line,#e2eaf0);border-radius:11px;padding:10px 12px}
+ .route-item--mine .route-card{border-color:#bfe3cd;background:#f6fbf8}
+ .route-name-row{display:flex;align-items:center;flex-wrap:wrap;gap:7px}
+ .route-name{font-weight:700;font-size:13.5px;color:var(--ink,#1c2b39)}
+ .route-mine-pill{display:inline-block;background:#3fa66a;color:#fff;font-size:9.5px;font-weight:700;letter-spacing:.02em;border-radius:999px;padding:2px 8px}
+ .route-org{color:var(--muted,#65758a);font-size:12px;margin-top:2px;line-height:1.4}
+ .route-meta-row{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:7px}
+ .route-time-pill{display:inline-flex;align-items:center;gap:5px;background:#eef3f8;color:#2c3e50;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:600}
+ .route-time-pill--open{background:#f4f0e0;color:#8a6d1d}
+ .route-note{margin-top:6px;font-size:11.5px;color:var(--muted,#65758a)}
+ .route-edit-row{display:flex;gap:6px;align-items:center;padding-top:9px;margin-top:9px;border-top:1px solid var(--line,#eef2f5);flex-wrap:wrap}
+ .route-edit-row input{font-size:11.5px;padding:4px 6px}
+ </style>
+ <div class="route-tiles">${routen.map((stationen,idx)=>{
+ const r=idx+1;
+ const daten=[...new Set(stationen.filter(b=>b.datum).map(b=>b.datum))];
+ const subtitle=!stationen.length?"Noch keine Stationen":daten.length===0?`${stationen.length} Station${stationen.length===1?"":"en"} · noch kein Termin`:daten.length===1?`${stationen.length} Station${stationen.length===1?"":"en"} · ${fmtDateOnly(daten[0])}`:`${stationen.length} Stationen · verschiedene Termine`;
+ return`<div class="route-tile">
+ <div class="route-tile-head">
+ ${ROUTE_CAR_ICON}
+ <div><strong>Route ${r}</strong><small>${esc(subtitle)}</small></div>
+ ${isTeacher()?`<button type="button"class="secondary route-tile-add"onclick="openPraktikumsbesuchForm('',${r})">＋ Station</button>`:""}
+ </div>
+ ${!stationen.length?`<div class="route-tile-empty">${isTeacher()?"Noch keine Stationen für diese Route eingetragen.":"Für diese Route stehen noch keine Termine fest."}</div>`
+ :`<div class="route-list">${stationen.map(b=>{
+ const istMeins=!isTeacher()&&(b.schueler||"").toLowerCase().trim()===(profile?.displayName||"").toLowerCase().trim();
+ const zeitLabel=b.datum?`${esc(fmtDateOnly(b.datum))}${b.uhrzeit?", "+esc(b.uhrzeit)+" Uhr":""}`:"Termin noch offen";
+ return`<div class="route-item${istMeins?" route-item--mine":""}${isTeacher()?" route-item--teacher":""}">
+ <div class="route-num">${b.reihenfolge}</div>
+ <div class="route-card">
+ <div class="route-name-row">
+ <span class="route-name">${esc(b.schueler)}</span>
+ ${istMeins?`<span class="route-mine-pill">DAS BIST DU</span>`:""}
+ ${isTeacher()?`<button type="button"class="secondary"style="margin-left:auto;padding:3px 9px;font-size:10.5px"onclick="openPraktikumsbesuchForm('${b.id}')">Bearbeiten</button>`:""}
+ </div>
+ <div class="route-org">${esc(b.betrieb)}${b.adresse?` · ${esc(b.adresse)}`:""}</div>
+ <div class="route-meta-row">
+ ${!isTeacher()?`<span class="route-time-pill${b.datum?"":" route-time-pill--open"}"> ${zeitLabel}</span>`:""}
+ </div>
+ ${b.notiz&&isTeacher()?`<div class="route-note"> ${esc(b.notiz)}</div>`:""}
+ ${isTeacher()?`<div class="route-edit-row">
+ <input type="date"id="pbeDatumInline_${b.id}"value="${b.datum||""}">
+ <input type="time"id="pbeUhrzeitInline_${b.id}"value="${b.uhrzeit||""}">
+ <button type="button"class="secondary"style="padding:4px 9px;font-size:10.5px"onclick="saveBesuchTermin('${b.id}')">Termin speichern</button>
+ </div>`:""}
+ </div>
+ </div>`;
+ }).join("")}</div>`}
+ </div>`;
+ }).join("")}</div>
+ ${footer()}`;
+}
+window.renderPraktikumsbesuche=renderPraktikumsbesuche;
+async function saveBesuchTermin(id){
+ if(!isTeacher()){toast("Nur Lehrkräfte können Termine eintragen.");return}
+ const datum=$(`pbeDatumInline_${id}`)?.value||"";
+ const uhrzeit=$(`pbeUhrzeitInline_${id}`)?.value||"";
+ try{
+ await updateDoc(doc(db,"praktikumsbesuche",id),{datum,uhrzeit,updatedAt:serverTimestamp()});
+ toast("Termin gespeichert.");
+ await render();
+ }catch(e){console.error("Termin speichern:",e);toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Konnte nicht gespeichert werden.");}
+}
+window.saveBesuchTermin=saveBesuchTermin;
+// Massen-Import: eine fertig sortierte Route (eine Zeile je Station,
+// "Schüler;Betrieb;Adresse") wird auf einmal angelegt – Reihenfolge
+// ergibt sich aus der Zeilenreihenfolge. Bestehende Einträge werden
+// vorher gelöscht, damit ein erneuter Import nichts verdoppelt.
+function openPraktikumsbesucheImport(presetRoute){
+ if(!isTeacher()){toast("Nur Lehrkräfte können importieren.");return}
+ const routeWert=presetRoute||1;
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+ <div class="kicker">PRAKTIKUMSBESUCHE · IMPORT</div>
+ <h2>Route importieren</h2>
+ <p style="font-size:12px;color:var(--muted)">Eine Zeile pro Station, in der gewünschten Reihenfolge: <code>Schüler;Betrieb;Adresse</code>. Bestehende Einträge dieser Route werden dabei ersetzt, die anderen 3 Routen bleiben unberührt.</p>
+ <div class="form">
+ <label>Route (Tag)<select id="pbImportRoute">${[1,2,3,4].map(r=>`<option value="${r}"${routeWert===r?" selected":""}>Route ${r}</option>`).join("")}</select></label>
+ <textarea id="pbImportText"rows="12"placeholder="Max Mustermann;Kita Sonnenschein;Musterstr. 1, 82362 Weilheim
+Lena Beispiel;AWO Seniorenzentrum;Beispielweg 5, 82362 Weilheim"></textarea>
+ <div class="form-actions">
+ <button class="primary"onclick="importPraktikumsbesuche()">Importieren</button>
+ <button class="secondary"onclick="closeModal()">Abbrechen</button>
+ </div>
+ </div>
+ `);
+}
+window.openPraktikumsbesucheImport=openPraktikumsbesucheImport;
+async function importPraktikumsbesuche(){
+ if(!isTeacher()){toast("Nur Lehrkräfte können importieren.");return}
+ const route=parseInt($("pbImportRoute")?.value,10)||1;
+ const text=$("pbImportText")?.value||"";
+ const zeilen=text.split("\n").map(z=>z.trim()).filter(Boolean);
+ if(!zeilen.length){toast("Bitte mindestens eine Zeile eingeben.");return}
+ try{
+ const bestehend=(await getPraktikumsbesuche()).filter(b=>(b.route||1)===route);
+ for(const b of bestehend)await deleteDoc(doc(db,"praktikumsbesuche",b.id));
+ let reihenfolge=1;
+ for(const zeile of zeilen){
+ const[schueler,betrieb,adresse]=zeile.split(";").map(t=>(t||"").trim());
+ if(!schueler||!betrieb)continue;
+ await addDoc(collection(db,"praktikumsbesuche"),{
+ route,reihenfolge,schueler,betrieb,adresse:adresse||"",datum:"",uhrzeit:"",notiz:"",createdAt:serverTimestamp(),updatedAt:serverTimestamp()
+ });
+ reihenfolge++;
+ }
+ toast(`${reihenfolge-1} Stationen in Route ${route} importiert.`);
+ closeModal();
+ await render();
+ }catch(e){console.error("Import fehlgeschlagen:",e);toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Import fehlgeschlagen.");}
+}
+window.importPraktikumsbesuche=importPraktikumsbesuche;
 
 function openFPAQuestions(){
  let a=[];
@@ -9952,7 +10191,7 @@ async function render(){
  glossar:renderGlossar,
  fachaufsatz:renderFachaufsatzUebersicht,"fachaufsatz-board":renderFachaufsatzBoard,
  projekte:renderProjekte,kompetenz:renderKompetenz,journal:renderLernjournalRoute,
- praktikum:renderPraktikum,resilienz:renderResilienz,praxisfragen:renderPraxisFragen,fragenhilfe:renderFragenHilfe,
+ praktikum:renderFpAHub,blockphasen:renderBlockphasen,"theorie-praxis-transfer":renderTheoriePraxisTransfer,"ki-partnerschaften":renderKIPartnerschaften,praktikumsbesuche:renderPraktikumsbesuche,resilienz:renderResilienz,praxisfragen:renderPraxisFragen,fragenhilfe:renderFragenHilfe,
  praxisprojekte:renderPraxisProjekte,ki:renderKI,kalender:renderKalender,team:renderTeam,
  impulse:renderLernimpulse,lernstand:renderLernstand,
  kompetenzprofil:()=>modulePlaceholder("Kompetenzprofil"),methoden:renderLernmethoden,lernstrategien:renderLernstrategienTest,metakognition:renderMetakognition,
