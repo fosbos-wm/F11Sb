@@ -7646,7 +7646,7 @@ async function renderFpAHub(){
  return`${pageHead("SCHULE ↔ PRAXIS","fpA","Praktikumsphasen, Theorie-Praxis-Transfer, KI-Innovationspartnerschaften und Praktikumsbesuche.","")}
  <style>
  .fpa-tools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
- .fpa-tool{min-height:150px;cursor:pointer;transition:.15s;text-align:left;color:var(--ink);font:inherit;background:#fff;border:1px solid var(--line,#e2eaf0);border-radius:14px;padding:18px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+ .fpa-tool{min-height:150px;cursor:pointer;transition:.15s;text-align:left;color:var(--ink);font:inherit;background:#fff;border:2px solid var(--line,#e2eaf0);border-radius:14px;padding:18px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
  .fpa-tool:hover{transform:translateY(-2px);box-shadow:0 6px 14px rgba(23,56,79,.08)}
  .fpa-tool .emoji{font-size:30px;display:block;margin-bottom:10px}
  .fpa-tool strong{display:block;font-size:16px;color:var(--blue-dark);margin:0 0 6px}
@@ -7655,22 +7655,22 @@ async function renderFpAHub(){
  @media(max-width:800px){.fpa-tools{grid-template-columns:1fr}}
  </style>
  <div class="fpa-tools">
- <button type="button"class="fpa-tool"onclick="go('blockphasen')">
+ <button type="button"class="fpa-tool"style="border-color:#1688cf"onclick="go('blockphasen')">
  <span class="emoji"></span><strong>Blockphasen</strong>
  <small>Praktikumsphasen, Blockberichte und Ampel-Übersicht.</small>
  <span class="fpa-count">${PRAKTIKUMSPHASEN.length} Blöcke</span>
  </button>
- <button type="button"class="fpa-tool"onclick="go('theorie-praxis-transfer')">
+ <button type="button"class="fpa-tool"style="border-color:#e0a324"onclick="go('theorie-praxis-transfer')">
  <span class="emoji"></span><strong>Theorie-Praxis-Transfer</strong>
  <small>Aufträge der Lehrkraft: beobachten, bearbeiten, durchführen.</small>
  <span class="fpa-count">${assignments.length} Aufträge</span>
  </button>
- <button type="button"class="fpa-tool"onclick="go('ki-partnerschaften')">
+ <button type="button"class="fpa-tool"style="border-color:#7c5cbf"onclick="go('ki-partnerschaften')">
  <span class="emoji"></span><strong>KI-Innovationspartnerschaften</strong>
  <small>Praxisproblem → Schülerteam → Ergebnis.</small>
  <span class="fpa-count">${challenges.length} Praxisprobleme</span>
  </button>
- <button type="button"class="fpa-tool"onclick="go('praktikumsbesuche')">
+ <button type="button"class="fpa-tool"style="border-color:#3fa66a"onclick="go('praktikumsbesuche')">
  <span class="emoji"></span><strong>Praktikumsbesuche</strong>
  <small>Route und Termine für die Besuche in den Praktikumsstellen.</small>
  <span class="fpa-count">${besuche.length} Stationen</span>
