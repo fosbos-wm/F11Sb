@@ -485,12 +485,6 @@ service cloud.firestore {
       allow read: if isApproved();
       allow create, update, delete: if isTeacher();
     }
-    // Praktikumsbesuche: alle können die Route/Termine einsehen, nur
-    // Lehrkräfte tragen Stationen/Termine ein.
-    match /praktikumsbesuche/{id} {
-      allow read: if isApproved();
-      allow create, update, delete: if isTeacher();
-    }
     // Blockberichte (Tätigkeitsnachweis + Einschätzungsbogen): Schüler:innen
     // laden ihre eigene Datei hoch und dürfen sie erneut hochladen, aber
     // NICHT selbst die Ampel-Bewertung setzen – das bleibt Lehrkräften
@@ -527,6 +521,20 @@ service cloud.firestore {
       allow create: if isApproved() && request.resource.data.uid == request.auth.uid;
       allow update: if isApproved() && (resource.data.uid == request.auth.uid || isTeacher());
       allow delete: if isApproved() && resource.data.uid == request.auth.uid;
+    }
+
+    // Basis-Check: Fragen legen nur Lehrkräfte an, Versuche gehören der
+    // jeweiligen Person (Lehrkräfte dürfen alle einsehen, für die Live-Übersicht).
+    match /basischeckFragen/{id} {
+      allow read: if isApproved();
+      allow create, update, delete: if isTeacher();
+    }
+    match /basischeckVersuche/{id} {
+      allow read: if isApproved() && (resource.data.uid == request.auth.uid || isTeacher());
+      allow create: if isApproved() && request.resource.data.uid == request.auth.uid;
+      allow update: if isApproved() && resource.data.uid == request.auth.uid
+        && request.resource.data.uid == resource.data.uid;
+      allow delete: if isTeacher();
     }
 
     match /essayEntries/{id} {
