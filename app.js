@@ -1585,18 +1585,40 @@ async function getBasischeckFragen(wocheId){
  return snap.exists()?(snap.data().fragen||[]):[];
  }catch(e){console.error("Basis-Check-Fragen laden:",e);return[]}
 }
+function basischeckTypToggle(i){
+ const typ=$(`bcTyp${i}`)?.value;
+ const mc=$(`bcMcBereich${i}`),kp=$(`bcKprimBereich${i}`),of=$(`bcOffenBereich${i}`);
+ if(mc)mc.style.display=typ==="mc"?"block":"none";
+ if(kp)kp.style.display=typ==="kprim"?"block":"none";
+ if(of)of.style.display=typ==="offen"?"block":"none";
+}
+window.basischeckTypToggle=basischeckTypToggle;
 async function saveBasischeckFragen(fach,wocheId){
  if(!isTeacher()){toast("Nur Lehrkräfte können Basis-Check-Fragen anlegen.");return}
  const fragen=[];
  for(let i=0;i<3;i++){
  const text=$(`bcFrage${i}`)?.value.trim();
  if(!text)continue;
+ const typ=$(`bcTyp${i}`)?.value||"mc";
+ if(typ==="mc"){
  const opts=[0,1,2].map(j=>$(`bcOpt${i}_${j}`)?.value.trim()).filter(Boolean);
  const richtig=parseInt($(`bcRichtig${i}`)?.value,10);
  if(opts.length<2||!Number.isFinite(richtig))continue;
- fragen.push({text,optionen:opts,richtig});
+ fragen.push({typ,text,optionen:opts,richtig});
+ }else if(typ==="kprim"){
+ const statements=[0,1,2,3].map(j=>({
+ text:$(`bcStatement${i}_${j}`)?.value.trim()||"",
+ correct:$(`bcStatementRichtig${i}_${j}`)?.value==="true"
+ })).filter(s=>s.text);
+ if(statements.length<2)continue;
+ fragen.push({typ,text,statements});
+ }else if(typ==="offen"){
+ const stichworte=($(`bcStichworte${i}`)?.value||"").split(",").map(s=>s.trim()).filter(Boolean);
+ if(!stichworte.length)continue;
+ fragen.push({typ,text,stichworte});
  }
- if(!fragen.length){toast("Bitte mindestens eine vollständige Frage (Text + mind. 2 Antworten + richtige Antwort) eingeben.");return}
+ }
+ if(!fragen.length){toast("Bitte mindestens eine vollständige Frage eingeben.");return}
  try{
  await setDoc(doc(db,"basischeckFragen",wocheId),{wocheId,fach,fragen,updatedAt:serverTimestamp(),updatedBy:currentUser.uid});
  toast("Basis-Check gespeichert.");
@@ -1622,16 +1644,37 @@ function basischeckAmpelText(ampel){
  if(ampel==="rot")return"Noch nicht verstanden";
  return"Noch nicht bearbeitet";
 }
+// Wertet eine einzelne Basis-Check-Frage aus, je nach Typ. Alte Fragen ohne
+// "typ"-Feld werden wie Multiple Choice behandelt (Rückwärtskompatibilität).
+function basischeckGradeFrage(f,i){
+ const typ=f.typ||"mc";
+ if(typ==="mc"){
+ const antwort=parseInt(document.querySelector(`input[name="bcQ${i}"]:checked`)?.value,10);
+ return {beantwortet:Number.isFinite(antwort),richtig:antwort===f.richtig,antwort};
+ }
+ if(typ==="kprim"){
+ const checked=f.statements.map((s,j)=>$(`bcKprimAntwort${i}_${j}`)?.checked||false);
+ const {allCorrect}=kprimGrade({statements:f.statements},checked);
+ return {beantwortet:true,richtig:allCorrect,antwort:checked};
+ }
+ if(typ==="offen"){
+ const text=($(`bcOffenAntwort${i}`)?.value||"").trim();
+ if(!text)return{beantwortet:false,richtig:false,antwort:""};
+ const treffer=f.stichworte.some(w=>text.toLowerCase().includes(w.toLowerCase()));
+ return {beantwortet:true,richtig:treffer,antwort:text};
+ }
+ return {beantwortet:false,richtig:false,antwort:null};
+}
 async function submitBasischeck(fach,wocheId){
  const fragen=await getBasischeckFragen(wocheId);
  if(!fragen.length){toast("Keine Fragen vorhanden.");return}
- const antworten=fragen.map((f,i)=>parseInt(document.querySelector(`input[name="bcQ${i}"]:checked`)?.value,10));
- if(antworten.some(a=>!Number.isFinite(a))){toast("Bitte alle Fragen beantworten.");return}
- const richtig=fragen.filter((f,i)=>antworten[i]===f.richtig).length;
+ const ergebnisse=fragen.map((f,i)=>basischeckGradeFrage(f,i));
+ if(ergebnisse.some(e=>!e.beantwortet)){toast("Bitte alle Fragen beantworten.");return}
+ const richtig=ergebnisse.filter(e=>e.richtig).length;
  const ampel=basischeckAmpel(richtig,fragen.length);
  try{
  await setDoc(doc(db,"basischeckVersuche",`${currentUser.uid}_${wocheId}`),{
- uid:currentUser.uid,wocheId,fach,antworten,richtig,gesamt:fragen.length,ampel,
+ uid:currentUser.uid,wocheId,fach,antworten:ergebnisse.map(e=>e.antwort),richtig,gesamt:fragen.length,ampel,
  name:profile?.displayName||currentUser?.email||"Schüler/in",createdAt:serverTimestamp()
  });
  toast(`${richtig} von ${fragen.length} richtig.`);
@@ -1715,7 +1758,7 @@ async function openWochenLiveUebersicht(fach,wocheId){
  <h2>${esc(woche.thema)}</h2>
  <p style="color:var(--muted);font-size:12px">Aktualisiert sich automatisch, sobald Schüler:innen einen Schritt abschließen – kein Neuladen nötig. Rot markiertes Datum = seit 3+ Tagen keine Aktivität.</p>
  <div style="overflow-x:auto"><table class="ls-matrix">
- <thead><tr><th>Schüler:in</th><th>Fortschritt</th><th>Basis-Check</th><th>Lernstand</th><th>Zuletzt aktiv</th></tr></thead>
+ <thead><tr><th>Schüler:in</th><th>Fortschritt</th><th>Basis-Check</th><th>Abschluss-Check</th><th>Zuletzt aktiv</th></tr></thead>
  <tbody id="wochenLiveTbody"><tr><td colspan="5">Lädt …</td></tr></tbody>
  </table></div>
  <div class="form-actions"style="margin-top:14px"><button class="secondary"onclick="closeModal()">Schließen</button></div>
@@ -3042,7 +3085,7 @@ async function openWocheDetail(fach,wocheId){
  ...(basischeckFragen.length?[{label:"Basis-Check",done:!!meinBasischeck,tab:"basischeck"}]:[]),
  ...(woche.typ==="projekt"?[{label:"Team gebildet",done:!!meinTeam,tab:"team"}]:[]),
  {label:"Lernprodukt",done:meinProdukt,tab:"produkte"},
- {label:"Überprüfung",done:lernstandBearbeitet,tab:"lernstand"},
+ {label:"Abschluss-Check",done:lernstandBearbeitet,tab:"lernstand"},
  {label:"Selbsteinschätzung",done:alleErfuellt,tab:"selbsteinschaetzung"},
  {label:"Fertig",done:!!fortschritt.abgeschlossen,tab:"selbsteinschaetzung"}
  ];
@@ -3070,7 +3113,7 @@ async function openWocheDetail(fach,wocheId){
  ${basischeckFragen.length||isTeacher()?`<button type="button"class="wd-tab"data-tab="basischeck"onclick="showWocheTab('basischeck')"> Basis-Check</button>`:""}
  <button type="button"class="wd-tab"data-tab="team"onclick="showWocheTab('team')"> ${woche.typ==="projekt"?"Team":"(Team)"}</button>
  <button type="button"class="wd-tab"data-tab="produkte"onclick="showWocheTab('produkte')"> Lernprodukte</button>
- <button type="button"class="wd-tab"data-tab="lernstand"onclick="showWocheTab('lernstand')"> Überprüfung des Lernstandes</button>
+ <button type="button"class="wd-tab"data-tab="lernstand"onclick="showWocheTab('lernstand')"> Abschluss-Check</button>
  <button type="button"class="wd-tab"data-tab="selbsteinschaetzung"onclick="showWocheTab('selbsteinschaetzung')"> Selbsteinschätzung</button>
  </div>
 
@@ -3116,18 +3159,44 @@ async function openWocheDetail(fach,wocheId){
  </div>
 
  <div class="wd-panel"id="wdPanel_basischeck">
- <p style="color:var(--muted);margin-top:0;font-size:12px">Kurzer Check direkt nach dem Material: 2–3 Fragen, die zeigen, ob die Grundidee angekommen ist.</p>
+ <p style="color:var(--muted);margin-top:0;font-size:12px">Kurzer Check direkt nach dem Material: bis zu 3 Fragen, die zeigen, ob die Grundidee angekommen ist.</p>
  ${isTeacher()?`<div class="form">
  ${[0,1,2].map(i=>{
  const f=basischeckFragen[i]||{};
+ const typ=f.typ||"mc";
  return`<div class="card"style="margin-bottom:10px;background:#f7fafc">
- <label>Frage ${i+1}${i>0?" (optional)":""}<input id="bcFrage${i}"type="text"value="${esc(f.text||"")}"placeholder="z. B. Was versteht man unter …?"></label>
- <div class="grid grid-2"style="margin-top:6px">
+ <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+ <label style="flex:1;min-width:200px">Frage ${i+1}${i>0?" (optional)":""}<input id="bcFrage${i}"type="text"value="${esc(f.text||"")}"placeholder="z. B. Was versteht man unter …?"></label>
+ <label style="width:190px">Fragetyp<select id="bcTyp${i}"onchange="basischeckTypToggle(${i})">
+ <option value="mc"${typ==="mc"?" selected":""}>Multiple Choice</option>
+ <option value="kprim"${typ==="kprim"?" selected":""}>K-Prim (richtig/falsch je Aussage)</option>
+ <option value="offen"${typ==="offen"?" selected":""}>Offene Frage</option>
+ </select></label>
+ </div>
+
+ <div id="bcMcBereich${i}"style="display:${typ==="mc"?"block":"none"};margin-top:8px">
+ <div class="grid grid-2">
  ${[0,1,2].map(j=>`<label>Antwort ${j+1}${j>1?" (optional)":""}<input id="bcOpt${i}_${j}"type="text"value="${esc(f.optionen?.[j]||"")}"></label>`).join("")}
  </div>
  <label style="margin-top:6px">Richtige Antwort<select id="bcRichtig${i}">
  ${[0,1,2].map(j=>`<option value="${j}"${f.richtig===j?" selected":""}>Antwort ${j+1}</option>`).join("")}
  </select></label>
+ </div>
+
+ <div id="bcKprimBereich${i}"style="display:${typ==="kprim"?"block":"none"};margin-top:8px">
+ <p style="font-size:11px;color:var(--muted);margin:0 0 6px">Bis zu 4 Aussagen, jeweils als richtig oder falsch markieren. Nur „alles richtig" zählt als bestanden.</p>
+ ${[0,1,2,3].map(j=>{const s=f.statements?.[j]||{};return`<div style="display:flex;gap:8px;align-items:center;margin-bottom:4px">
+ <input id="bcStatement${i}_${j}"type="text"value="${esc(s.text||"")}"placeholder="Aussage ${j+1}${j>1?" (optional)":""}"style="flex:1">
+ <select id="bcStatementRichtig${i}_${j}"style="width:90px">
+ <option value="true"${s.correct?" selected":""}>richtig</option>
+ <option value="false"${s.correct===false?" selected":""}>falsch</option>
+ </select>
+ </div>`;}).join("")}
+ </div>
+
+ <div id="bcOffenBereich${i}"style="display:${typ==="offen"?"block":"none"};margin-top:8px">
+ <label>Erwartete Stichworte (kommagetrennt – trifft mindestens eines, gilt die Antwort als richtig)<input id="bcStichworte${i}"type="text"value="${esc((f.stichworte||[]).join(", "))}"placeholder="z. B. Sozialisation, Erziehung, Werte"></label>
+ </div>
  </div>`;
  }).join("")}
  <button class="primary"onclick="saveBasischeckFragen('${fach}','${wocheId}')">Basis-Check speichern</button>
@@ -3138,10 +3207,15 @@ async function openWocheDetail(fach,wocheId){
  <p style="margin:6px 0 0;color:var(--muted)">${esc(basischeckAmpelText(meinBasischeck.ampel))}</p>
  </div>`
  :`<div class="form">
- ${basischeckFragen.map((f,i)=>`<div class="card"style="margin-bottom:10px">
+ ${basischeckFragen.map((f,i)=>{
+ const typ=f.typ||"mc";
+ return`<div class="card"style="margin-bottom:10px">
  <strong style="display:block;margin-bottom:8px">${i+1}. ${esc(f.text)}</strong>
- ${f.optionen.map((o,j)=>`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:4px"><input type="radio"name="bcQ${i}"value="${j}"> <span>${esc(o)}</span></label>`).join("")}
- </div>`).join("")}
+ ${typ==="mc"?f.optionen.map((o,j)=>`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:4px"><input type="radio"name="bcQ${i}"value="${j}"> <span>${esc(o)}</span></label>`).join(""):""}
+ ${typ==="kprim"?f.statements.map((s,j)=>`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:4px"><input id="bcKprimAntwort${i}_${j}"type="checkbox"> <span>${esc(s.text)}</span></label>`).join(""):""}
+ ${typ==="offen"?`<textarea id="bcOffenAntwort${i}"rows="3"placeholder="Deine Antwort …"></textarea>`:""}
+ </div>`;
+ }).join("")}
  <button class="primary"onclick="submitBasischeck('${fach}','${wocheId}')">Basis-Check abgeben</button>
  </div>`}
  </div>
