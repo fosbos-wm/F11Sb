@@ -1660,7 +1660,7 @@ function basischeckGradeFrage(f,i){
  if(typ==="offen"){
  const text=($(`bcOffenAntwort${i}`)?.value||"").trim();
  if(!text)return{beantwortet:false,richtig:false,antwort:""};
- const treffer=f.stichworte.some(w=>text.toLowerCase().includes(w.toLowerCase()));
+ const treffer=f.stichworte.every(w=>text.toLowerCase().includes(w.toLowerCase()));
  return {beantwortet:true,richtig:treffer,antwort:text};
  }
  return {beantwortet:false,richtig:false,antwort:null};
@@ -1761,12 +1761,93 @@ async function openWochenLiveUebersicht(fach,wocheId){
  <thead><tr><th>Schüler:in</th><th>Fortschritt</th><th>Basis-Check</th><th>Abschluss-Check</th><th>Zuletzt aktiv</th></tr></thead>
  <tbody id="wochenLiveTbody"><tr><td colspan="5">Lädt …</td></tr></tbody>
  </table></div>
- <div class="form-actions"style="margin-top:14px"><button class="secondary"onclick="closeModal()">Schließen</button></div>
+ <div class="form-actions"style="margin-top:14px">
+ <button class="primary"onclick="openAbschlussCheckQualitaet('${fach}','${wocheId}')"> Qualitäts-Ansicht Abschluss-Check</button>
+ <button class="secondary"onclick="closeModal()">Schließen</button>
+ </div>
  `);
  renderWochenLiveTable(fach,wocheId,woche);
  subscribeWochenLive(fach,wocheId,woche);
 }
 window.openWochenLiveUebersicht=openWochenLiveUebersicht;
+
+// ---- Qualitäts-Ansicht Abschluss-Check: nicht nur wer bestanden hat, sondern
+// echte fachliche Auswertung – Klassenschnitt, Punkte je Person, und welche
+// einzelne Teilaufgabe der Klasse am schwersten fiel.
+async function openAbschlussCheckQualitaet(fach,wocheId){
+ if(!isTeacher()){toast("Nur Lehrkräfte können die Qualitäts-Ansicht öffnen.");return}
+ const woche=lehrplanWocheById(fach,wocheId);
+ if(!woche){toast("Diese Woche wurde nicht gefunden.");return}
+ let students=[],lsTasks=[],lsAttempts=[];
+ try{
+ [students,lsTasks,lsAttempts]=await Promise.all([getAllUsersForLernstand(),getLernstandTasks(),getAllLernstandAttempts()]);
+ }catch(e){console.error("Qualitäts-Ansicht laden:",e);toast("Konnte nicht geladen werden.");return}
+ const wocheLbKeys=(woche.lb||"").match(/\d/g)?.map(n=>"lb"+n)||[];
+ const relevanteTasks=lsTasks.filter(t=>wocheLbKeys.includes(t.learningArea));
+ if(!relevanteTasks.length){
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+ <div class="kicker">QUALITÄTS-ANSICHT · ABSCHLUSS-CHECK</div><h2>${esc(woche.thema)}</h2>
+ <div class="empty">Für diese Woche ist keine Lernstandsmessung hinterlegt.</div>`);
+ return;
+ }
+ // Je Person und Aufgabe nur den jeweils letzten Versuch werten.
+ const zeilen=students.map(s=>{
+ const proAufgabe=relevanteTasks.map(t=>lernstandLatest(lsAttempts.filter(a=>a.uid===s.uid),t.id));
+ const bearbeitet=proAufgabe.filter(Boolean);
+ const summe=bearbeitet.reduce((sum,a)=>sum+(Number(a.total)||0),0);
+ const max=relevanteTasks.reduce((sum,t)=>sum+lernstandMaxPoints(t.id),0);
+ return {name:s.displayName||s.email||"Schüler/in",summe,max,bearbeitet:bearbeitet.length,gesamt:relevanteTasks.length,attempts:bearbeitet};
+ });
+ const bearbeiteteZeilen=zeilen.filter(z=>z.bearbeitet>0);
+ const klassenschnitt=bearbeiteteZeilen.length?(bearbeiteteZeilen.reduce((s,z)=>s+z.summe,0)/bearbeiteteZeilen.length):0;
+ const maxGesamt=relevanteTasks.reduce((sum,t)=>sum+lernstandMaxPoints(t.id),0);
+
+ // Pro Teilkompetenz (z. B. Fachwissen, Anwenden, Analysieren) den
+ // Klassenschnitt berechnen, um Schwachstellen im Stoff sichtbar zu machen.
+ const teilaufgaben=[];
+ relevanteTasks.forEach(t=>{
+ (t.tasks||[]).forEach(sub=>{
+ const werte=[];
+ students.forEach(s=>{
+ const latest=lernstandLatest(lsAttempts.filter(a=>a.uid===s.uid),t.id);
+ if(latest?.competencies?.[sub.id]!==undefined)werte.push(Number(latest.competencies[sub.id])||0);
+ });
+ if(werte.length){
+ const schnitt=werte.reduce((a,b)=>a+b,0)/werte.length;
+ teilaufgaben.push({label:`${t.nr}. ${t.title} – ${sub.label}`,schnitt,max:sub.points,quote:schnitt/(sub.points||1),anzahl:werte.length});
+ }
+ });
+ });
+ teilaufgaben.sort((a,b)=>a.quote-b.quote);
+
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+ <div class="kicker">QUALITÄTS-ANSICHT · ABSCHLUSS-CHECK</div>
+ <h2>${esc(woche.thema)}</h2>
+ <div class="card"style="border-left:4px solid #4a90d9;margin:10px 0 16px">
+ <strong style="font-size:20px">Ø ${klassenschnitt.toFixed(1)} von ${maxGesamt} Punkten</strong>
+ <p style="margin:4px 0 0;color:var(--muted);font-size:12px">${bearbeiteteZeilen.length} von ${students.length} haben bereits bearbeitet.</p>
+ </div>
+
+ <h3 style="margin-bottom:6px"> Wo die Klasse noch Schwierigkeiten hat</h3>
+ <div class="list"style="margin-bottom:16px">
+ ${teilaufgaben.slice(0,5).map(t=>{
+ const farbe=t.quote>=0.8?"#3fa66a":t.quote>=0.53?"#e0a324":"#d9534f";
+ return`<div class="list-item"><div><strong>${esc(t.label)}</strong><small>Klassenschnitt: ${t.schnitt.toFixed(1)} von ${t.max} Punkten (${Math.round(t.quote*100)}%), ${t.anzahl} Bearbeitungen</small></div><span class="pill"style="background:${farbe};color:#fff">${Math.round(t.quote*100)}%</span></div>`;
+ }).join("")||`<div class="empty">Noch keine ausreichenden Daten.</div>`}
+ </div>
+
+ <h3 style="margin-bottom:6px"> Punkte je Person</h3>
+ <div class="list">
+ ${zeilen.map(z=>{
+ const pct=z.max?z.summe/z.max:0;
+ const farbe=z.bearbeitet===0?"#c7d0d6":pct>=0.8?"#3fa66a":pct>=0.53?"#e0a324":"#d9534f";
+ return`<div class="list-item"><div><strong>${esc(z.name)}</strong></div><span class="pill"style="background:${farbe};color:#fff">${z.bearbeitet===0?"noch offen":`${z.summe.toFixed(0)}/${z.max} (${z.bearbeitet}/${z.gesamt} Aufgaben)`}</span></div>`;
+ }).join("")}
+ </div>
+ <div class="form-actions"style="margin-top:14px"><button class="secondary"onclick="closeModal()">Schließen</button></div>
+ `);
+}
+window.openAbschlussCheckQualitaet=openAbschlussCheckQualitaet;
 
 window.toggleMaterialErhalten=toggleMaterialErhalten;
 async function markWocheAbgeschlossen(fach,wocheId){
@@ -3195,7 +3276,7 @@ async function openWocheDetail(fach,wocheId){
  </div>
 
  <div id="bcOffenBereich${i}"style="display:${typ==="offen"?"block":"none"};margin-top:8px">
- <label>Erwartete Stichworte (kommagetrennt – trifft mindestens eines, gilt die Antwort als richtig)<input id="bcStichworte${i}"type="text"value="${esc((f.stichworte||[]).join(", "))}"placeholder="z. B. Sozialisation, Erziehung, Werte"></label>
+ <label>Erwartete Stichworte (kommagetrennt – beliebig viele, ALLE müssen in der Antwort vorkommen, damit sie als richtig gilt)<input id="bcStichworte${i}"type="text"value="${esc((f.stichworte||[]).join(", "))}"placeholder="z. B. Sozialisation, Erziehung, Werte"></label>
  </div>
  </div>`;
  }).join("")}
