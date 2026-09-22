@@ -1274,6 +1274,36 @@ const LEHRPLAN_WOCHEN={
 // Kompetenzerwartungen des LehrplanPLUS FOS 11 Pädagogik/Psychologie
 // (lehrplanplus.bayern.de, LB 1–4). Lehrkräfte sehen diese als Vorschlag
 // beim erstmaligen Anlegen eines Auftrags und können sie frei anpassen.
+// Vier Projektphasen – je Lernbereich ein Projekt, mit "notwendigen" Wochen
+// (werden für das Projekt gebraucht) und "Fachaufsatz-Training"-Wochen
+// (laufen parallel, ohne feste Bindung). Teams werden am projektWocheId
+// verankert (letzte notwendige Woche der Phase). Jedes Projekt hat eigene,
+// zum Projekttyp passende Meilensteine.
+const PROJEKT_PHASEN=[
+ {id:"phase1",lb:"LB 1",titel:"Experiment durchführen",
+ start:"2026-10-05",end:"2026-12-11",
+ notwendigeWochen:["pp01","pp02","pp03"],trainingWochen:[],
+ projektWocheId:"pp03",
+ meilensteine:["Team gebildet","Hypothese formuliert","Experiment durchgeführt","Ergebnisse ausgewertet","Präsentiert"]},
+ {id:"phase2",lb:"LB 2",titel:"Wahrnehmungs-Parcours",
+ start:"2027-01-18",end:"2027-02-12",
+ notwendigeWochen:["pp09"],trainingWochen:["pp10","pp11","pp12"],
+ projektWocheId:"pp09",
+ meilensteine:["Station konzipiert","Material vorbereitet","Parcours durchgeführt","Reflexion abgegeben"]},
+ {id:"phase3",lb:"LB 3",titel:"Praxisbeobachtung: Erziehungsstile erkennen",
+ start:"2027-03-08",end:"2027-04-16",
+ notwendigeWochen:["pp04","pp05","pp06","pp07"],trainingWochen:["pp08"],
+ projektWocheId:"pp07",
+ meilensteine:["Beobachtungen im Praktikum gesammelt","Fachlich eingeordnet","Gruppenvergleich durchgeführt","Analyse präsentiert"]},
+ {id:"phase4",lb:"LB 4",titel:"Konditionierung im Alltag entdecken",
+ start:"2027-05-10",end:"2027-07-27",
+ notwendigeWochen:["pp13","pp14"],trainingWochen:["pp15","pp16"],
+ projektWocheId:"pp14",
+ meilensteine:["Team gebildet","Alltagsbeispiele gesammelt","Beispiele fachlich analysiert","Dokumentation erstellt","Präsentiert"]}
+];
+function projektPhaseById(id){return PROJEKT_PHASEN.find(p=>p.id===id)||null;}
+function projektPhaseByWoche(wocheId){return PROJEKT_PHASEN.find(p=>p.notwendigeWochen.includes(wocheId)||p.trainingWochen.includes(wocheId))||null;}
+
 const LEHRPLAN_ZIELE_VORSCHLAG={
  pp01:["Ich kann die Gegenstandsbereiche der Psychologie und Pädagogik erläutern und ihre Wechselwirkung an Beispielen zeigen.","Ich kann Erleben, Verhalten und Handeln als Gegenstand der Psychologie von Erziehungspraxis und -theorie als Gegenstand der Pädagogik unterscheiden.","Ich kann die Bedeutung von Pädagogik und Psychologie für das Sozialwesen an eigenen Praxisfragen festmachen."],
  pp02:["Ich kann die Wesenszüge einer wissenschaftlichen Pädagogik bzw. Psychologie untersuchen und von alltagspsychologischen Aussagen abgrenzen.","Ich kann Unterschiede zwischen Beschreibung und Erklärung als wissenschaftliche Kriterien erfassen.","Ich kann Merkmale von wissenschaftlicher Theorie und Alltagstheorie an eigenen Beispielen erklären."],
@@ -1465,6 +1495,22 @@ async function createLehrplanTeam(fach,wocheId){
  await openWocheDetail(fach,wocheId);
  toast("Team erstellt – du bist Mitglied!");
  }catch(e){console.error(e);toast("Konnte nicht erstellt werden.")}
+}
+// Projekt-Meilensteine: werden direkt am Team-Dokument gespeichert
+// (meilensteinIndex = Anzahl bereits erreichter Meilensteine, 0 = noch keiner).
+async function setTeamMeilenstein(teamId,index,fach,wocheId){
+ if(!isTeacher()){toast("Nur Lehrkräfte können den Projekt-Fortschritt setzen.");return}
+ try{
+ await updateDoc(doc(db,"lehrplanTeams",teamId),{meilensteinIndex:index,meilensteinUpdatedAt:serverTimestamp()});
+ toast("Fortschritt aktualisiert.");
+ await openWocheDetail(fach,wocheId);
+ }catch(e){console.error("Meilenstein setzen:",e);toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Konnte nicht gespeichert werden.");}
+}
+window.setTeamMeilenstein=setTeamMeilenstein;
+function meilensteinAmpelFarbe(index,gesamt){
+ if(index<=0)return"#c7d0d6";
+ if(index>=gesamt)return"#3fa66a";
+ return"#e0a324";
 }
 async function joinLehrplanTeam(teamId,fach,wocheId){
  try{
@@ -1848,6 +1894,78 @@ async function openAbschlussCheckQualitaet(fach,wocheId){
  `);
 }
 window.openAbschlussCheckQualitaet=openAbschlussCheckQualitaet;
+
+// ---- Phasen-Live-Übersicht: zwei parallele Signale je Person – wie weit sie
+// mit den notwendigen Wochen-Inhalten ist (Ampel A) und wo ihr Team beim
+// Projekt steht (Ampel B, aus den projektspezifischen Meilensteinen).
+let phasenLiveState=null;
+function inhaltsAmpelFarbe(fertig,gesamt){
+ if(gesamt===0)return"#c7d0d6";
+ if(fertig===0)return"#c7d0d6";
+ if(fertig===gesamt)return"#3fa66a";
+ return"#e0a324";
+}
+function renderPhasenLiveTable(phase){
+ const st=phasenLiveState;
+ if(!st)return;
+ const tbody=$("phasenLiveTbody");
+ if(!tbody)return;
+ tbody.innerHTML=st.students.map(s=>{
+ const fertigeWochen=phase.notwendigeWochen.filter(wId=>
+ st.fortschritt.some(f=>f.uid===s.uid&&f.wocheId===wId&&f.abgeschlossen)
+ ).length;
+ const team=st.teams.find(t=>(t.mitgliederUids||[]).includes(s.uid));
+ const idx=team?.meilensteinIndex||0;
+ const meilensteinLabel=idx===0?"noch nicht begonnen":idx>=phase.meilensteine.length?"Projekt abgeschlossen":phase.meilensteine[idx-1];
+ const letzteAktivitaet=st.fortschritt.filter(f=>f.uid===s.uid&&phase.notwendigeWochen.includes(f.wocheId))
+ .map(f=>f.updatedAt?.seconds?new Date(f.updatedAt.seconds*1000):null).filter(Boolean).sort((a,b)=>b-a)[0];
+ const tageInaktiv=letzteAktivitaet?Math.floor((Date.now()-letzteAktivitaet.getTime())/86400000):null;
+ return`<tr>
+ <td>${esc(s.displayName||s.email||"Schüler/in")}</td>
+ <td style="text-align:center"><span class="ampel-dot"style="background:${inhaltsAmpelFarbe(fertigeWochen,phase.notwendigeWochen.length)}"title="${fertigeWochen} von ${phase.notwendigeWochen.length} notwendigen Wochen"></span> ${fertigeWochen}/${phase.notwendigeWochen.length}</td>
+ <td style="text-align:center"><span class="ampel-dot"style="background:${meilensteinAmpelFarbe(idx,phase.meilensteine.length)}"title="${esc(meilensteinLabel)}"></span></td>
+ <td style="font-size:12px;color:var(--muted)">${esc(team?.teamName||"kein Team")}</td>
+ <td style="font-size:11px">${esc(meilensteinLabel)}</td>
+ <td style="font-size:11px;color:${tageInaktiv!==null&&tageInaktiv>=3?"#d9534f":"var(--muted)"}">${letzteAktivitaet?letzteAktivitaet.toLocaleDateString("de-DE"):"noch nicht begonnen"}</td>
+ </tr>`;
+ }).join("")||`<tr><td colspan="6">Keine Schüler:innen gefunden.</td></tr>`;
+}
+function subscribePhasenLive(phase){
+ liveUnsubscribe=onSnapshot(
+ query(collection(db,"lehrplanFortschritt"),where("wocheId","in",phase.notwendigeWochen.length?phase.notwendigeWochen:["_none_"])),
+ snap=>{phasenLiveState.fortschritt=snap.docs.map(d=>d.data());renderPhasenLiveTable(phase);},
+ e=>console.error("Phasen-Live-Update:",e)
+ );
+ onSnapshot(
+ query(collection(db,"lehrplanTeams"),where("wocheId","==",phase.projektWocheId)),
+ snap=>{phasenLiveState.teams=snap.docs.map(d=>({id:d.id,...d.data()}));renderPhasenLiveTable(phase);},
+ e=>console.error("Phasen-Live-Update (Teams):",e)
+ );
+}
+async function openPhasenLiveUebersicht(phaseId){
+ if(!isTeacher()){toast("Nur Lehrkräfte können die Live-Übersicht öffnen.");return}
+ const phase=projektPhaseById(phaseId);
+ if(!phase){toast("Diese Phase wurde nicht gefunden.");return}
+ let students=[],teams=[];
+ try{
+ students=await getAllUsersForLernstand();
+ teams=await getLehrplanTeams(phase.projektWocheId);
+ }catch(e){console.error("Phasen-Live-Übersicht laden:",e);toast("Konnte nicht geladen werden.");return}
+ phasenLiveState={students,teams,fortschritt:[]};
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+ <div class="kicker"> LIVE-ÜBERSICHT · ${esc(phase.lb)} · NUR LEHRKRÄFTE</div>
+ <h2>${esc(phase.titel)}</h2>
+ <p style="color:var(--muted);font-size:12px">Zwei Signale: links der Inhalts-Fortschritt (notwendige Wochen), rechts der Projekt-Meilenstein des Teams. Aktualisiert sich automatisch. Rot markiertes Datum = seit 3+ Tagen keine Aktivität.</p>
+ <div style="overflow-x:auto"><table class="ls-matrix">
+ <thead><tr><th>Schüler:in</th><th>Inhalt</th><th>Projekt</th><th>Team</th><th>Meilenstein</th><th>Zuletzt aktiv</th></tr></thead>
+ <tbody id="phasenLiveTbody"><tr><td colspan="6">Lädt …</td></tr></tbody>
+ </table></div>
+ <div class="form-actions"style="margin-top:14px"><button class="secondary"onclick="closeModal()">Schließen</button></div>
+ `);
+ renderPhasenLiveTable(phase);
+ subscribePhasenLive(phase);
+}
+window.openPhasenLiveUebersicht=openPhasenLiveUebersicht;
 
 window.toggleMaterialErhalten=toggleMaterialErhalten;
 async function markWocheAbgeschlossen(fach,wocheId){
@@ -3186,7 +3304,7 @@ async function openWocheDetail(fach,wocheId){
  <div class="wd-step-dot">${s.done?"✓":i+1}</div><small>${esc(s.label)}</small>
  </div>${i<schritte.length-1?`<div class="wd-step-line${schritte[i+1].done||s.done?" wd-step-line-done":""}"></div>`:""}`).join("")}
  </div>
- ${isTeacher()?`<div style="margin:-10px 0 16px"><button class="secondary"style="font-size:11px"onclick="openWochenLiveUebersicht('${fach}','${wocheId}')"> Live-Übersicht: Wo steht die Klasse gerade?</button></div>`:""}
+ ${isTeacher()?(()=>{const ph=projektPhaseByWoche(wocheId);return`<div style="margin:-10px 0 16px;display:flex;gap:8px;flex-wrap:wrap"><button class="secondary"style="font-size:11px"onclick="openWochenLiveUebersicht('${fach}','${wocheId}')"> Live-Übersicht: Wo steht die Klasse gerade?</button>${ph?`<button class="primary"style="font-size:11px"onclick="openPhasenLiveUebersicht('${ph.id}')"> Projekt-Live-Übersicht (${esc(ph.titel)})</button>`:""}</div>`;})():""}
 
  <div class="wd-tabs">
  <button type="button"class="wd-tab"data-tab="ziele"onclick="showWocheTab('ziele')"> Lernziele und Aufgaben</button>
@@ -3303,7 +3421,18 @@ async function openWocheDetail(fach,wocheId){
 
  <div class="wd-panel"id="wdPanel_team">
  <p style="color:var(--muted);margin-top:0">Team/Gruppe${woche.typ==="projekt"?" – für dieses Projekt vorgesehen":" – freiwillig (deshalb in Klammern)"}. Passende Mitstreiter:innen findest du auch über die Kompetenzwerkstatt.</p>
- <div class="list">${teams.map(t=>{const inTeam=(t.mitgliederUids||[]).includes(currentUser.uid);return`<div class="list-item"><div><strong>${esc(t.teamName)}</strong><small>${esc((t.mitgliederNamen||[]).join(", ")||"Noch niemand")}</small></div><div style="display:flex;gap:6px">${inTeam?`<button class="secondary"onclick="leaveLehrplanTeam('${t.id}','${fach}','${wocheId}')">Verlassen</button>`:`<button class="primary"onclick="joinLehrplanTeam('${t.id}','${fach}','${wocheId}')">Beitreten</button>`}${isTeacher()?`<button class="secondary"onclick="deleteLehrplanTeam('${t.id}','${fach}','${wocheId}')">Auflösen</button>`:""}</div></div>`}).join("")||`<div class="empty">Noch keine Teams gebildet.</div>`}</div>
+ <div class="list">${teams.map(t=>{
+ const inTeam=(t.mitgliederUids||[]).includes(currentUser.uid);
+ const phase=projektPhaseByWoche(wocheId);
+ const zeigtMeilensteine=phase&&phase.projektWocheId===wocheId;
+ const idx=t.meilensteinIndex||0;
+ return`<div class="list-item"style="flex-direction:column;align-items:stretch;gap:8px">
+ <div style="display:flex;justify-content:space-between;align-items:center"><div><strong>${esc(t.teamName)}</strong><small>${esc((t.mitgliederNamen||[]).join(", ")||"Noch niemand")}</small></div><div style="display:flex;gap:6px">${inTeam?`<button class="secondary"onclick="leaveLehrplanTeam('${t.id}','${fach}','${wocheId}')">Verlassen</button>`:`<button class="primary"onclick="joinLehrplanTeam('${t.id}','${fach}','${wocheId}')">Beitreten</button>`}${isTeacher()?`<button class="secondary"onclick="deleteLehrplanTeam('${t.id}','${fach}','${wocheId}')">Auflösen</button>`:""}</div></div>
+ ${zeigtMeilensteine?`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">${phase.meilensteine.map((m,i)=>{
+ const status=i<idx?"#3fa66a":i===idx?"#e0a324":"#c7d0d6";
+ return`<span${isTeacher()?` onclick="setTeamMeilenstein('${t.id}',${i+1},'${fach}','${wocheId}')"style="cursor:pointer"`:""}class="pill"style="background:${status};color:#fff;font-size:10px">${i<idx?"✓ ":""}${esc(m)}</span>`;
+ }).join("")}</div>`:""}
+ </div>`}).join("")||`<div class="empty">Noch keine Teams gebildet.</div>`}</div>
  ${!meinTeam?`<div class="form-actions"style="margin-top:10px"><input id="neuTeamName"type="text"placeholder="Team-Name"style="flex:1"><button class="primary"onclick="createLehrplanTeam('${fach}','${wocheId}')">＋ Team gründen</button></div>`:""}
  ${miniToolRow([["🌟","Kompetenzwerkstatt","kompetenz"],["🤝","Kollaborations-Tools","kollaboration"]])}
  </div>
