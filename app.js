@@ -3150,6 +3150,86 @@ async function renderFaecherUebersicht(){
  ${footer()}`;
 }
 
+// Schuljahresgrenzen für die Jahresleiste (Pädagogik/Psychologie).
+const SCHULJAHR_START="2026-09-15",SCHULJAHR_ENDE="2027-07-27";
+function jahresProzent(dateStr){
+ const start=new Date(SCHULJAHR_START).getTime(),ende=new Date(SCHULJAHR_ENDE).getTime(),d=new Date(dateStr).getTime();
+ return Math.max(0,Math.min(100,Math.round((d-start)/(ende-start)*100)));
+}
+async function renderPaedagogikPhasenZeitstrahl(fach,fortschrittMap,heute){
+ const teamsProPhase={};
+ await Promise.all(PROJEKT_PHASEN.map(async ph=>{teamsProPhase[ph.id]=await getLehrplanTeams(ph.projektWocheId);}));
+ const basischecksProWoche={};
+ const alleTrainingWochen=PROJEKT_PHASEN.flatMap(p=>p.trainingWochen);
+ await Promise.all(alleTrainingWochen.map(async wId=>{basischecksProWoche[wId]=await getMyBasischeckVersuch(wId);}));
+
+ const jahresBalken=`<div style="position:relative;height:54px;margin:8px 0 26px">
+ <div style="position:absolute;left:0;right:0;top:24px;height:4px;background:#e2eaf0;border-radius:2px"></div>
+ ${PROJEKT_PHASEN.map(ph=>{
+ const l=jahresProzent(ph.start),r=jahresProzent(ph.end);
+ const status=heute<ph.start?"kommend":heute>ph.end?"fertig":"laeuft";
+ const farbe=status==="fertig"?"#3fa66a":status==="laeuft"?"#e0a324":"#c7d0d6";
+ return`<div style="position:absolute;left:${l}%;width:${Math.max(r-l,3)}%;top:24px;height:4px;background:${farbe};border-radius:2px"></div>
+ <div style="position:absolute;left:${l}%;top:8px;font-size:10px;font-weight:800;color:${farbe};white-space:nowrap">${esc(ph.lb)}</div>`;
+ }).join("")}
+ <div style="position:absolute;left:${jahresProzent(heute)}%;top:0;bottom:0;width:2px;background:#d9534f"></div>
+ <div style="position:absolute;left:${jahresProzent(heute)}%;bottom:0;transform:translateX(-50%);background:#d9534f;color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:6px;white-space:nowrap">HEUTE</div>
+ </div>`;
+
+ const trainingIconHTML=(aktiv,icon,label)=>`<span style="filter:${aktiv?"none":"grayscale(1) opacity(0.4)"}"title="${esc(label)}">${icon}</span>`;
+
+ const phasenHTML=PROJEKT_PHASEN.map(ph=>{
+ const status=heute<ph.start?"kommend":heute>ph.end?"fertig":"laeuft";
+ const statusLabel=status==="fertig"?"abgeschlossen":status==="laeuft"?"läuft gerade":"kommt noch";
+ const statusFarbe=status==="fertig"?"#3fa66a":status==="laeuft"?"#e0a324":"#c7d0d6";
+ const meinTeam=(teamsProPhase[ph.id]||[]).find(t=>(t.mitgliederUids||[]).includes(currentUser.uid));
+ const idx=meinTeam?.meilensteinIndex||0;
+ const meilensteinLabel=!meinTeam?"noch kein Team":idx===0?"noch nicht begonnen":idx>=ph.meilensteine.length?"Projekt abgeschlossen":ph.meilensteine[idx-1];
+
+ const notwendigHTML=ph.notwendigeWochen.map(wId=>{
+ const w=lehrplanWocheById(fach,wId);if(!w)return"";
+ const f=fortschrittMap[wId]||{};
+ return`<a class="lp-karte"style="border-top:4px solid ${lernbereichAkzentfarbe(w.lb)};display:block;margin-bottom:8px"onclick="openWocheDetail('${fach}','${wId}')">
+ <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><span class="lp-karte-date">${esc(fmtDateOnly(w.start))}–${esc(fmtDateOnly(w.end))}</span>${f.abgeschlossen?`<span class="pill green">✓ fertig</span>`:""}</div>
+ <strong>${esc(w.thema)}</strong>
+ </a>`;
+ }).join("");
+
+ const trainingHTML=ph.trainingWochen.map(wId=>{
+ const w=lehrplanWocheById(fach,wId);if(!w)return"";
+ const f=fortschrittMap[wId]||{};
+ const bc=basischecksProWoche[wId];
+ const alleFertig=f.materialErhalten&&bc&&f.abgeschlossen;
+ return`<div onclick="openWocheDetail('${fach}','${wId}')"style="cursor:pointer;background:#fff;border:1.5px solid ${alleFertig?"#3fa66a":"#e2eaf0"};border-radius:10px;padding:10px 12px;position:relative">
+ ${alleFertig?`<span style="position:absolute;top:6px;right:8px;color:#3fa66a">★</span>`:""}
+ <strong style="display:block;font-size:12.5px;margin-bottom:6px">${esc(w.thema)}</strong>
+ <div style="display:flex;gap:7px;font-size:13px">
+ ${trainingIconHTML(f.materialErhalten,"📖","Fachbegriffe/Material")}
+ ${trainingIconHTML(!!bc,"💡","Basis-Check bearbeitet")}
+ ${trainingIconHTML(f.abgeschlossen,"✍️","Als fertig markiert")}
+ </div>
+ </div>`;
+ }).join("");
+
+ return`<div class="card"style="border-left:4px solid ${statusFarbe}">
+ <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+ <div><div class="kicker">${esc(ph.lb)} · ${esc(fmtDateOnly(ph.start))}–${esc(fmtDateOnly(ph.end))}</div>
+ <h3 style="margin:4px 0 2px"> ${esc(ph.titel)}</h3></div>
+ <span class="pill"style="background:${statusFarbe};color:#fff">${esc(statusLabel)}</span>
+ </div>
+ ${status!=="kommend"?`<p style="font-size:12px;color:var(--muted);margin:4px 0 12px"> Projektstand: <strong>${esc(meilensteinLabel)}</strong></p>`:""}
+
+ ${notwendigHTML?`<div class="kicker"style="margin:14px 0 6px">NOTWENDIG FÜR DIESES PROJEKT</div>${notwendigHTML}`:""}
+ ${trainingHTML?`<div class="kicker"style="margin:14px 0 6px"> FACHAUFSATZ-TRAINING-POOL</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px">${trainingHTML}</div>`:""}
+ </div>`;
+ }).join("");
+
+ return`<button class="secondary"onclick="closeFach()">← Zurück zu den Fächern</button>
+ ${pageHead("LERNPFAD","Pädagogik/Psychologie","Vier Projektphasen, ein Schuljahr – wo du gerade stehst.",isTeacher()?`<button class="secondary"onclick="openLehrplanKlassenuebersicht('${fach}')"> Klassenübersicht</button>`:"")}
+ ${jahresBalken}
+ ${phasenHTML}
+ ${footer()}`;
+}
 async function renderFachDetail(){
  if(!activeFach)return await renderFaecherUebersicht();
  const fach=F11SB_FAECHER.find(f=>f.key===activeFach);
@@ -3162,6 +3242,8 @@ async function renderFachDetail(){
  const erledigtCount=wochenItems.filter(w=>fortschrittMap[w.id]?.abgeschlossen).length;
  const fortschrittProzent=wochenItems.length?Math.round(erledigtCount/wochenItems.length*100):0;
  const naechsteIdx=timeline.findIndex(item=>item.kind==="woche"&&!fortschrittMap[item.id]?.abgeschlossen);
+
+ if(activeFach==="paedagogik")return await renderPaedagogikPhasenZeitstrahl(fach,fortschrittMap,heute);
 
  return`<button class="secondary"onclick="closeFach()">← Zurück zu den Fächern</button>
  ${pageHead("LERNPFAD",fach?.label||"Fach",`Dein Weg durchs Schuljahr – ${erledigtCount} von ${wochenItems.length} Wochen geschafft.`,isTeacher()?`<button class="secondary"onclick="openLehrplanKlassenuebersicht('${activeFach}')"> Klassenübersicht</button>`:"")}
