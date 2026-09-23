@@ -1244,7 +1244,7 @@ const LEHRPLAN_WOCHEN={
  {id:"pp08",start:"2027-01-25",end:"2027-01-29",lb:"LB 3",thema:"Vernetzung: Erziehung, Wahrnehmung, Motivation",typ:"projekt",
  planung:"2 Std.: Fall auswählen; 2 Std.: Wahrnehmung/Attribution/Motivation anwenden; 2 Std.: Handlungsempfehlung + Fallkonferenz.",
  praxis:"Erziehungspraktikum: anonymisierter Praxisfall → Analyse → Handlungsempfehlung."},
- {id:"pp09",start:"2027-02-01",end:"2027-02-05",lb:"LB 2",thema:"Wahrnehmung und Gedächtnis",typ:"einzel",
+ {id:"pp09",start:"2027-02-01",end:"2027-02-05",lb:"LB 2",thema:"Wahrnehmung und Gedächtnis",typ:"projekt",
  planung:"2 Std.: Wahrnehmungsprozess; 2 Std.: individuelle/soziale Einflussfaktoren; 2 Std.: Mehrspeichermodell + Lernstrategien.",
  praxis:"Praxis: Beobachtungsfehler und Erinnerungsverzerrungen reflektieren."},
  {id:"pp10",start:"2027-03-08",end:"2027-03-12",lb:"LB 2",thema:"Emotionen und Emotionsregulation",typ:"projekt",
