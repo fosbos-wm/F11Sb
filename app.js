@@ -1301,7 +1301,7 @@ const PROJEKT_PHASEN=[
  meilensteine:["Beobachtungen im Praktikum gesammelt","Fachlich eingeordnet","Gruppenvergleich durchgeführt","Analyse präsentiert"]},
  {id:"phase4",lb:"LB 4",titel:"Konditionierung im Alltag entdecken",
  start:"2027-05-10",end:"2027-07-27",
- notwendigeWochen:["pp13","pp14"],trainingWochen:["pp15","pp16"],
+ notwendigeWochen:["pp13","pp14","pp17"],trainingWochen:["pp15","pp16"],
  projektWocheId:"pp14",
  meilensteine:["Team gebildet","Alltagsbeispiele gesammelt","Beispiele fachlich analysiert","Dokumentation erstellt","Präsentiert"]}
 ];
