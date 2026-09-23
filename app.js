@@ -3144,7 +3144,7 @@ async function renderFaecherUebersicht(){
  const c=personColor(f.key);
  return`<button class="card tile"style="background:${c.bg};border-left:4px solid ${c.border};text-align:left"onclick="openFach('${f.key}')">
  <strong style="font-size:15px;color:${c.text}">${f.label}</strong>
- <small style="display:block;margin-top:6px">${wochen.length?`${wochen.length} Lehrplan-Wochen hinterlegt`:"Lehrplan-Zeitstrahl folgt"}</small>
+ <small style="display:block;margin-top:6px">${f.key==="paedagogik"?"4 Projektphasen":wochen.length?`${wochen.length} Lehrplan-Wochen hinterlegt`:"Lehrplan-Zeitstrahl folgt"}</small>
  </button>`;
  }).join("")}</div>
  ${footer()}`;
@@ -3187,20 +3187,20 @@ async function renderPaedagogikPhasenZeitstrahl(fach,fortschrittMap,heute){
  const meilensteinLabel=!meinTeam?"noch kein Team":idx===0?"noch nicht begonnen":idx>=ph.meilensteine.length?"Projekt abgeschlossen":ph.meilensteine[idx-1];
 
  const notwendigHTML=ph.notwendigeWochen.map(wId=>{
- const w=lehrplanWocheById(fach,wId);if(!w)return"";
+ const w=lehrplanWocheById(activeFach,wId);if(!w)return"";
  const f=fortschrittMap[wId]||{};
- return`<div class="lp-karte"style="border-top:4px solid ${lernbereichAkzentfarbe(w.lb)};margin-bottom:8px;cursor:pointer"onclick="openWocheDetail('${fach}','${wId}')">
+ return`<div class="lp-karte"style="border-top:4px solid ${lernbereichAkzentfarbe(w.lb)};margin-bottom:8px;cursor:pointer"onclick="openWocheDetail('${activeFach}','${wId}')">
  <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><span class="lp-karte-date">${esc(fmtDateOnly(w.start))}–${esc(fmtDateOnly(w.end))}</span>${f.abgeschlossen?`<span class="pill green">✓ fertig</span>`:""}</div>
  <strong>${esc(w.thema)}</strong>
  </div>`;
  }).join("");
 
  const trainingHTML=ph.trainingWochen.map(wId=>{
- const w=lehrplanWocheById(fach,wId);if(!w)return"";
+ const w=lehrplanWocheById(activeFach,wId);if(!w)return"";
  const f=fortschrittMap[wId]||{};
  const bc=basischecksProWoche[wId];
  const alleFertig=f.materialErhalten&&bc&&f.abgeschlossen;
- return`<div onclick="openWocheDetail('${fach}','${wId}')"style="cursor:pointer;background:#fff;border:1.5px solid ${alleFertig?"#3fa66a":"#e2eaf0"};border-radius:10px;padding:10px 12px;position:relative">
+ return`<div onclick="openWocheDetail('${activeFach}','${wId}')"style="cursor:pointer;background:#fff;border:1.5px solid ${alleFertig?"#3fa66a":"#e2eaf0"};border-radius:10px;padding:10px 12px;position:relative">
  ${alleFertig?`<span style="position:absolute;top:6px;right:8px;color:#3fa66a">★</span>`:""}
  <strong style="display:block;font-size:12.5px;margin-bottom:6px">${esc(w.thema)}</strong>
  <div style="display:flex;gap:7px;font-size:13px">
@@ -3225,7 +3225,7 @@ async function renderPaedagogikPhasenZeitstrahl(fach,fortschrittMap,heute){
  }).join("");
 
  return`<button class="secondary"onclick="closeFach()">← Zurück zu den Fächern</button>
- ${pageHead("LERNPFAD","Pädagogik/Psychologie","Vier Projektphasen, ein Schuljahr – wo du gerade stehst.",isTeacher()?`<button class="secondary"onclick="openLehrplanKlassenuebersicht('${fach}')"> Klassenübersicht</button>`:"")}
+ ${pageHead("LERNPFAD","Pädagogik/Psychologie","Vier Projektphasen, ein Schuljahr – wo du gerade stehst.",isTeacher()?`<button class="secondary"onclick="openLehrplanKlassenuebersicht('${activeFach}')"> Klassenübersicht</button>`:"")}
  ${jahresBalken}
  ${phasenHTML}
  ${footer()}`;
