@@ -3216,9 +3216,11 @@ async function renderPhaseDetailAnsicht(phaseId,fortschrittMap,heute){
  const notwendigHTML=ph.notwendigeWochen.map(wId=>{
  const w=lehrplanWocheById(activeFach,wId);if(!w)return"";
  const f=fortschrittMap[wId]||{};
- return`<div class="lp-karte"style="border-top:4px solid ${lernbereichAkzentfarbe(w.lb)};margin-bottom:8px;cursor:pointer"onclick="openWocheDetail('${activeFach}','${wId}')">
- <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><span class="lp-karte-date">${esc(fmtDateOnly(w.start))}–${esc(fmtDateOnly(w.end))}</span>${f.abgeschlossen?`<span class="pill green">✓ fertig</span>`:""}</div>
- <strong>${esc(w.thema)}</strong>
+ const fertig=!!f.abgeschlossen;
+ return`<div onclick="openWocheDetail('${activeFach}','${wId}')"style="display:flex;align-items:center;gap:10px;cursor:pointer;background:${fertig?"#eaf7ed":"#f7fafc"};border:1px solid ${fertig?"#3fa66a":"#e2eaf0"};border-radius:10px;padding:10px 14px;margin-bottom:8px">
+ <span style="font-size:16px;color:${fertig?"#3fa66a":"#b8c4cc"}">${fertig?"✓":"○"}</span>
+ <span style="flex:1;font-size:13px;color:#17384f">${esc(w.thema)}</span>
+ <span style="font-size:11px;color:${fertig?"#3fa66a":"var(--muted)"};white-space:nowrap">${fertig?"fertig":esc(fmtDateOnly(w.start))+"–"+esc(fmtDateOnly(w.end))}</span>
  </div>`;
  }).join("");
 
