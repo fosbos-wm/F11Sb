@@ -3032,13 +3032,13 @@ async function renderKompass(){
 Aufgaben</span></div><div class="card stat"><b>${projects.length}</b><span>Projekte</span></div><div class="card stat">
 <b>${profile?.role==="teacher"?"Lehrkraft":profile?.role==="admin"?"Admin":"Schüler/in"}</b><span>Rolle</span></div></div>
  <div class="grid grid-3"style="margin-top:12px">
- <button type="button"class="card tile-square"style="background:#fff;border:2px solid #4a90d9"onclick="openMeineAufgabenModal()">
+ <button type="button"class="card tile-square"style="background:#fff;border-left:2px solid #4a90d9"onclick="openMeineAufgabenModal()">
  <span class="emoji"></span><strong>Meine Aufgaben</strong><small>${tasks.filter(t=>t.ownerUid===currentUser.uid).length} offen</small>
  </button>
- <button type="button"class="card tile-square"style="background:#fff;border:2px solid #9b59b6"onclick="openProjektFristenModal()">
+ <button type="button"class="card tile-square"style="background:#fff;border-left:2px solid #9b59b6"onclick="openProjektFristenModal()">
  <span class="emoji"></span><strong>Meine Projektfristen</strong><small>${projectDeadlines.length} Termine</small>
  </button>
- <button type="button"class="card tile-square"style="background:#fff;border:2px solid #1a9b8e"onclick="openAktuelleProjekteModal()">
+ <button type="button"class="card tile-square"style="background:#fff;border-left:2px solid #1a9b8e"onclick="openAktuelleProjekteModal()">
  <span class="emoji"></span><strong>Meine Projekte</strong><small>${projects.length} Projekte</small>
  </button>
  </div>
@@ -3299,7 +3299,7 @@ async function renderFachDetail(){
  .lp-waypoint{position:relative;margin:26px 0}
  .lp-waypoint-punkt{position:absolute;left:-44px;top:0;width:40px;height:40px;border-radius:10px;background:var(--soft-blue);border:3px solid #4a90d9;display:flex;align-items:center;justify-content:center;font-size:17px;transform:rotate(45deg);z-index:2}
  .lp-waypoint-punkt span{transform:rotate(-45deg);display:block}
- .lp-waypoint-karte{background:var(--soft-blue);border-radius:12px;padding:10px 14px;font-size:12px;cursor:pointer;transition:.15s}
+ .lp-waypoint-karte{background:#fff;border-left:4px solid #4a90d9;border-radius:12px;padding:10px 14px;font-size:12px;cursor:pointer;transition:.15s}
  .lp-waypoint-karte:hover{transform:translateX(4px)}
  .lp-waypoint-karte strong{display:block;font-size:12.5px}
  .lp-block-head{position:relative;margin:30px 0 14px;padding-left:2px}
@@ -3629,11 +3629,11 @@ async function renderLernwerkstatt(){
  ];
  return`${pageHead("SELBSTSTÄNDIG LERNEN","Lernwerkstatt","Der offene Lernraum für Lernaufträge, Methoden, Tools und KI.",`<button class="primary"onclick="openPostForm('idea')">＋ Lernimpuls</button>`)}
  <div class="kicker"style="margin-bottom:10px">LEHRPLAN & LERNINHALTE</div>
- <a class="card tile"href="#faecher"style="background:#fff;border:2px solid #4a90d9;min-height:110px;margin-bottom:22px">
+ <a class="card tile"href="#faecher"style="background:#fff;border-left:4px solid #4a90d9;min-height:110px;margin-bottom:22px">
  <span class="emoji"></span><strong style="font-size:16px">Fächer 11. Klasse</strong>
  <small>Lehrplan-Zeitstrahl je Fach: Themen, Aufträge, Material, Teams und Produkte – Schritt für Schritt durchs Schuljahr.</small>
  </a>
- ${groups.map(g=>`<div class="kicker"style="margin:22px 0 10px">${g.title}</div><div class="grid grid-4">${g.items.map(x=>`<a class="card tile"style="background:#fff;border:2px solid ${g.color}"href="#${x[3]}"><span class="emoji">${x[0]}</span>
+ ${groups.map(g=>`<div class="kicker"style="margin:22px 0 10px">${g.title}</div><div class="grid grid-4">${g.items.map(x=>`<a class="card tile"style="background:#fff;border-left:4px solid ${g.color}"href="#${x[3]}"><span class="emoji">${x[0]}</span>
 <strong>${x[1]}</strong><small>${x[2]}</small></a>`).join("")}</div>`).join("")}
  ${footer()}`;
 }
@@ -6449,12 +6449,12 @@ async function renderForum(){
  const unread=await getUnreadMessageCount();
  return`${pageHead("GEMEINSCHAFT","Campus-Forum","Wähle einen Bereich: gemeinsamer Austausch im Forum oder persönliche Nachrichten.","")}
  <div class="grid grid-2"style="gap:18px;margin-top:4px">
- <a class="card tile"href="#forum-board"style="min-height:180px;background:#fff;border:2px solid #4a90d9">
+ <a class="card tile"href="#forum-board"style="min-height:180px;background:#fff;border-left:4px solid #4a90d9">
  <span class="emoji"></span>
  <strong>Forum</strong>
  <small>Gemeinsam denken, fragen, austauschen und unterstützen – für die ganze F11Sb sichtbar.</small>
  </a>
- <a class="card tile"href="#forum-nachrichten"style="min-height:180px;background:#fff;border:2px solid #1a9b8e">
+ <a class="card tile"href="#forum-nachrichten"style="min-height:180px;background:#fff;border-left:4px solid #1a9b8e">
  <span class="emoji"></span>
  <strong>Persönliche Nachrichten${unread?` <span class="badge">${unread}</span>`:""}</strong>
  <small>Schreibe direkt mit einem Schüler oder einer Lehrkraft – nur ihr beide seht die Unterhaltung.</small>
@@ -8360,7 +8360,7 @@ async function renderPraktikum(){
 
  <div class="kicker"style="margin:26px 0 8px">BEREICH 2 · KI-INNOVATIONSPARTNERSCHAFTEN</div>
  <div class="ki-grid">
- <div class="card ki-card"style="background:#fff;border:2px solid #1688cf">
+ <div class="card ki-card"style="background:#fff;border-left:2px solid #1688cf">
  <div class="ki-step">1</div>
  <h2>Praxisproblem<br>Herausforderungen im Praktikumsbetrieb</h2>
  <p>Ein realer Bedarf wird beschrieben: Betriebe tragen konkrete Herausforderungen ein, gesammelt in einer Bibliothek.</p>
@@ -8370,13 +8370,13 @@ async function renderPraktikum(){
  ${isTeacher()?`<button type="button"class="primary"style="font-size:11px"onclick="openKIChallengeForm()">＋ Praxisproblem eintragen</button>`:""}
  </div>
  </div>
- <button class="card ki-card"style="background:#fff;border:2px solid #1a9b8e"onclick="openKISolutionsLibrary()">
+ <button class="card ki-card"style="background:#fff;border-left:2px solid #1a9b8e"onclick="openKISolutionsLibrary()">
  <div class="ki-step">2</div>
  <h2>Schülerteam / Schüler<br>löst Herausforderung</h2>
  <p>Ein Schülerteam bearbeitet die Herausforderung: Team, Aufgaben und KI-Einsatz werden dokumentiert.</p>
  <div class="ki-action"><span class="pill">${solutions.length} Bearbeitungen</span><span class="pill">Öffnen →</span></div>
  </button>
- <button class="card ki-card"style="background:#fff;border:2px solid #3fa66a"onclick="openKIResultsLibrary()">
+ <button class="card ki-card"style="background:#fff;border-left:2px solid #3fa66a"onclick="openKIResultsLibrary()">
  <div class="ki-step">3</div>
  <h2>Ergebnisse<br>Ideen & Produkte</h2>
  <p>Die Lösung wird dokumentiert: entstandene Ideen, Konzepte, Prototypen und Produkte werden gesammelt.</p>
@@ -8486,19 +8486,19 @@ async function renderKI(){
  @media(max-width:850px){.ki-grid{grid-template-columns:1fr}}
  </style>
  <div class="ki-grid">
- <button class="card ki-card"style="background:#fff;border:2px solid #1688cf"onclick="openKIChallengesLibrary()">
+ <button class="card ki-card"style="background:#fff;border-left:2px solid #1688cf"onclick="openKIChallengesLibrary()">
  <div class="ki-step">1</div>
  <h2>Praxisproblem<br>Herausforderungen im Praktikumsbetrieb</h2>
  <p>Ein realer Bedarf wird beschrieben: Betriebe tragen konkrete Herausforderungen ein, gesammelt in einer Bibliothek.</p>
  <div class="ki-action"><span class="pill">${challenges.length} Einträge</span><span class="pill">Öffnen →</span></div>
  </button>
- <button class="card ki-card"style="background:#fff;border:2px solid #1a9b8e"onclick="openKISolutionsLibrary()">
+ <button class="card ki-card"style="background:#fff;border-left:2px solid #1a9b8e"onclick="openKISolutionsLibrary()">
  <div class="ki-step">2</div>
  <h2>Schülerteam / Schüler<br>löst Herausforderung</h2>
  <p>Ein Schülerteam bearbeitet die Herausforderung: Team, Aufgaben und KI-Einsatz werden dokumentiert.</p>
  <div class="ki-action"><span class="pill">${solutions.length} Bearbeitungen</span><span class="pill">Öffnen →</span></div>
  </button>
- <button class="card ki-card"style="background:#fff;border:2px solid #3fa66a"onclick="openKIResultsLibrary()">
+ <button class="card ki-card"style="background:#fff;border-left:2px solid #3fa66a"onclick="openKIResultsLibrary()">
  <div class="ki-step">3</div>
  <h2>Ergebnisse<br>Ideen & Produkte</h2>
  <p>Die Lösung wird dokumentiert: entstandene Ideen, Konzepte, Prototypen und Produkte werden gesammelt.</p>
