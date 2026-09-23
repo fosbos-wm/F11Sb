@@ -12,9 +12,13 @@ const labels={question:"Frage",info:"Info",idea:"Idee",project:"Projekt",practic
 let currentUser=null, profile=null, unsubscribers=[];
 let activeBoardId=null;
 let activeFach=null;
-function openFach(fach){activeFach=fach;go("fach")}
-function closeFach(){activeFach=null;go("faecher")}
+let activePhaseDetail=null;
+function openFach(fach){activeFach=fach;activePhaseDetail=null;go("fach")}
+function closeFach(){activeFach=null;activePhaseDetail=null;go("faecher")}
+function openPhaseDetail(phaseId){activePhaseDetail=phaseId;render()}
+function closePhaseDetail(){activePhaseDetail=null;render()}
 window.openFach=openFach;window.closeFach=closeFach;
+window.openPhaseDetail=openPhaseDetail;window.closePhaseDetail=closePhaseDetail;
 
 function toast(t){const
 x=$("toast");x.textContent=t;x.classList.add("show");clearTimeout(window.tt);window.tt=setTimeout(()=>x.classList.remove("show"),
@@ -3156,35 +3160,58 @@ function jahresProzent(dateStr){
  const start=new Date(SCHULJAHR_START).getTime(),ende=new Date(SCHULJAHR_ENDE).getTime(),d=new Date(dateStr).getTime();
  return Math.max(0,Math.min(100,Math.round((d-start)/(ende-start)*100)));
 }
+function phaseStatus(ph,heute){return heute<ph.start?"kommend":heute>ph.end?"fertig":"laeuft";}
+function phaseThemenFortschritt(ph,fortschrittMap){
+ const alle=[...ph.notwendigeWochen,...ph.trainingWochen];
+ const fertig=alle.filter(wId=>fortschrittMap[wId]?.abgeschlossen).length;
+ return {fertig,gesamt:alle.length};
+}
 async function renderPaedagogikPhasenZeitstrahl(fach,fortschrittMap,heute){
- const teamsProPhase={};
- await Promise.all(PROJEKT_PHASEN.map(async ph=>{teamsProPhase[ph.id]=await getLehrplanTeams(ph.projektWocheId);}));
+ if(activePhaseDetail)return await renderPhaseDetailAnsicht(activePhaseDetail,fortschrittMap,heute);
+ return await renderPhasenJahresuebersicht(fortschrittMap,heute);
+}
+
+// ---- Ebene 1: kompakte Jahresübersicht – die 4 Projekte im Vordergrund ----
+async function renderPhasenJahresuebersicht(fortschrittMap,heute){
+ return`${pageHead("LERNPFAD","Pädagogik/Psychologie","Vier Projektphasen, ein Schuljahr – klicke eine Phase für die Details.",isTeacher()?`<button class="secondary"onclick="openLehrplanKlassenuebersicht('${activeFach}')"> Klassenübersicht</button>`:"")}
+ <div class="card"style="padding:24px 18px;margin-bottom:18px">
+ <div style="display:flex;align-items:flex-start;position:relative">
+ ${PROJEKT_PHASEN.map((ph,i)=>`${i>0?`<div style="flex:0 0 40px;height:3px;background:${phaseStatus(PROJEKT_PHASEN[i-1],heute)!=="kommend"?"#3fa66a":"#e2eaf0"};margin-top:26px"></div>`:""}${(()=>{
+ const status=phaseStatus(ph,heute);
+ const {fertig,gesamt}=phaseThemenFortschritt(ph,fortschrittMap);
+ const farbe=status==="fertig"?"#3fa66a":status==="laeuft"?"#4a90d9":"#c7d0d6";
+ const kreisInhalt=status==="fertig"?"✓":`${i+1}`;
+ return`<button type="button"onclick="openPhaseDetail('${ph.id}')"style="text-align:center;background:none;border:none;cursor:pointer;flex:1;min-width:110px;padding:0">
+ <div style="width:52px;height:52px;border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:${status==="kommend"?farbe:"#fff"};background:${status==="kommend"?"#fff":farbe};border:2.5px solid ${farbe}">${kreisInhalt}</div>
+ <div style="font-size:10px;font-weight:800;color:${farbe};text-transform:uppercase;letter-spacing:.02em">${esc(ph.lb)}${status==="laeuft"?" · JETZT":""}</div>
+ <div style="font-size:12.5px;font-weight:700;color:var(--ink);margin:3px 0;line-height:1.3">${esc(ph.titel)}</div>
+ <div style="font-size:11px;color:var(--muted);margin-bottom:4px">${fertig}/${gesamt} Themen</div>
+ <div style="background:#e2eaf0;border-radius:999px;height:5px;overflow:hidden;max-width:90px;margin:0 auto"><div style="background:${farbe};height:100%;width:${gesamt?Math.round(fertig/gesamt*100):0}%"></div></div>
+ </button>`;
+ })()}`).join("")}
+ </div>
+ </div>
+ ${footer()}`;
+}
+
+// ---- Ebene 2: Detailansicht einer einzelnen Phase ----
+async function renderPhaseDetailAnsicht(phaseId,fortschrittMap,heute){
+ const ph=projektPhaseById(phaseId);
+ if(!ph){activePhaseDetail=null;return await renderPhasenJahresuebersicht(fortschrittMap,heute);}
+ const teams=await getLehrplanTeams(ph.projektWocheId);
  const basischecksProWoche={};
- const alleTrainingWochen=PROJEKT_PHASEN.flatMap(p=>p.trainingWochen);
- await Promise.all(alleTrainingWochen.map(async wId=>{basischecksProWoche[wId]=await getMyBasischeckVersuch(wId);}));
+ await Promise.all(ph.trainingWochen.map(async wId=>{basischecksProWoche[wId]=await getMyBasischeckVersuch(wId);}));
 
- const jahresBalken=`<div style="position:relative;height:54px;margin:8px 0 26px">
- <div style="position:absolute;left:0;right:0;top:24px;height:4px;background:#e2eaf0;border-radius:2px"></div>
- ${PROJEKT_PHASEN.map(ph=>{
- const l=jahresProzent(ph.start),r=jahresProzent(ph.end);
- const status=heute<ph.start?"kommend":heute>ph.end?"fertig":"laeuft";
- const farbe=status==="fertig"?"#3fa66a":status==="laeuft"?"#e0a324":"#c7d0d6";
- return`<div style="position:absolute;left:${l}%;width:${Math.max(r-l,3)}%;top:24px;height:4px;background:${farbe};border-radius:2px"></div>
- <div style="position:absolute;left:${l}%;top:8px;font-size:10px;font-weight:800;color:${farbe};white-space:nowrap">${esc(ph.lb)}</div>`;
- }).join("")}
- <div style="position:absolute;left:${jahresProzent(heute)}%;top:0;bottom:0;width:2px;background:#d9534f"></div>
- <div style="position:absolute;left:${jahresProzent(heute)}%;bottom:0;transform:translateX(-50%);background:#d9534f;color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:6px;white-space:nowrap">HEUTE</div>
- </div>`;
-
- const trainingIconHTML=(aktiv,icon,label)=>`<span style="filter:${aktiv?"none":"grayscale(1) opacity(0.4)"}"title="${esc(label)}">${icon}</span>`;
-
- const phasenHTML=PROJEKT_PHASEN.map(ph=>{
- const status=heute<ph.start?"kommend":heute>ph.end?"fertig":"laeuft";
+ const status=phaseStatus(ph,heute);
  const statusLabel=status==="fertig"?"abgeschlossen":status==="laeuft"?"läuft gerade":"kommt noch";
- const statusFarbe=status==="fertig"?"#3fa66a":status==="laeuft"?"#e0a324":"#c7d0d6";
- const meinTeam=(teamsProPhase[ph.id]||[]).find(t=>(t.mitgliederUids||[]).includes(currentUser.uid));
+ const statusFarbe=status==="fertig"?"#3fa66a":status==="laeuft"?"#4a90d9":"#c7d0d6";
+ const meinTeam=teams.find(t=>(t.mitgliederUids||[]).includes(currentUser.uid));
  const idx=meinTeam?.meilensteinIndex||0;
  const meilensteinLabel=!meinTeam?"noch kein Team":idx===0?"noch nicht begonnen":idx>=ph.meilensteine.length?"Projekt abgeschlossen":ph.meilensteine[idx-1];
+ const {fertig,gesamt}=phaseThemenFortschritt(ph,fortschrittMap);
+ const prozent=gesamt?Math.round(fertig/gesamt*100):0;
+
+ const trainingIconHTML=(aktiv,icon,label)=>`<span style="filter:${aktiv?"none":"grayscale(1) opacity(0.4)"}"title="${esc(label)}">${icon}</span>`;
 
  const notwendigHTML=ph.notwendigeWochen.map(wId=>{
  const w=lehrplanWocheById(activeFach,wId);if(!w)return"";
@@ -3211,23 +3238,21 @@ async function renderPaedagogikPhasenZeitstrahl(fach,fortschrittMap,heute){
  </div>`;
  }).join("");
 
- return`<div class="card"style="border-left:4px solid ${statusFarbe}">
+ return`<button class="secondary"onclick="closePhaseDetail()">← Zurück zur Jahresübersicht</button>
+ <div class="card"style="border-left:4px solid ${statusFarbe};margin-top:12px">
  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
- <div><div class="kicker">${esc(ph.lb)} · ${esc(fmtDateOnly(ph.start))}–${esc(fmtDateOnly(ph.end))}</div>
- <h3 style="margin:4px 0 2px"> ${esc(ph.titel)}</h3></div>
+ <div><div class="kicker">PHASE ${PROJEKT_PHASEN.indexOf(ph)+1} · ${esc(ph.lb)} · ${esc(fmtDateOnly(ph.start))}–${esc(fmtDateOnly(ph.end))}</div>
+ <h2 style="margin:4px 0 2px"> ${esc(ph.titel)}</h2></div>
  <span class="pill"style="background:${statusFarbe};color:#fff">${esc(statusLabel)}</span>
  </div>
- ${status!=="kommend"?`<p style="font-size:12px;color:var(--muted);margin:4px 0 12px"> Projektstand: <strong>${esc(meilensteinLabel)}</strong></p>`:""}
+ ${status!=="kommend"?`<p style="font-size:12px;color:var(--muted);margin:4px 0 4px"> Projektstand: <strong>${esc(meilensteinLabel)}</strong></p>`:""}
 
- ${notwendigHTML?`<div class="kicker"style="margin:14px 0 6px">NOTWENDIG FÜR DIESES PROJEKT</div>${notwendigHTML}`:""}
+ <div style="margin:14px 0 4px;display:flex;justify-content:space-between;font-size:12px;color:var(--muted)"><span>Fortschritt dieser Phase</span><span>${fertig} von ${gesamt} Themen · ${prozent}%</span></div>
+ <div style="background:#e2eaf0;border-radius:999px;height:10px;overflow:hidden"><div style="background:${statusFarbe};height:100%;width:${prozent}%;border-radius:999px;transition:width .3s"></div></div>
+
+ ${notwendigHTML?`<div class="kicker"style="margin:20px 0 6px">NOTWENDIG FÜR DIESES PROJEKT</div>${notwendigHTML}`:""}
  ${trainingHTML?`<div class="kicker"style="margin:14px 0 6px"> FACHAUFSATZ-TRAINING-POOL</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px">${trainingHTML}</div>`:""}
- </div>`;
- }).join("");
-
- return`<button class="secondary"onclick="closeFach()">← Zurück zu den Fächern</button>
- ${pageHead("LERNPFAD","Pädagogik/Psychologie","Vier Projektphasen, ein Schuljahr – wo du gerade stehst.",isTeacher()?`<button class="secondary"onclick="openLehrplanKlassenuebersicht('${activeFach}')"> Klassenübersicht</button>`:"")}
- ${jahresBalken}
- ${phasenHTML}
+ </div>
  ${footer()}`;
 }
 async function renderFachDetail(){
