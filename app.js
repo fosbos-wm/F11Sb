@@ -3146,7 +3146,7 @@ async function renderFaecherUebersicht(){
  <div class="grid grid-4">${F11SB_FAECHER.map(f=>{
  const wochen=LEHRPLAN_WOCHEN[f.key]||[];
  const c=personColor(f.key);
- return`<button class="card tile"style="background:${c.bg};border-left:4px solid ${c.border};text-align:left"onclick="openFach('${f.key}')">
+ return`<button class="card tile"style="background:#fff;border-left:4px solid ${c.border};text-align:left"onclick="openFach('${f.key}')">
  <strong style="font-size:15px;color:${c.text}">${f.label}</strong>
  <small style="display:block;margin-top:6px">${f.key==="paedagogik"?"4 Projektphasen":wochen.length?`${wochen.length} Lehrplan-Wochen hinterlegt`:"Lehrplan-Zeitstrahl folgt"}</small>
  </button>`;
