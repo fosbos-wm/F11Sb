@@ -3197,7 +3197,11 @@ async function renderFachDetail(){
  .lp-block-head::before{content:"";position:absolute;left:-44px;top:50%;width:24px;height:2px;background:#b8c4cc}
  .lp-block-head strong{font-size:13px;color:#17384f;text-transform:uppercase;letter-spacing:.03em}
  .lp-block-head small{color:var(--muted);margin-left:6px}
- @media(max-width:600px){.lernpfad{padding-left:38px}.lp-punkt,.lp-waypoint-punkt{left:-38px;width:34px;height:34px}.lp-block-head::before{left:-38px;width:20px}}
+ .lp-heute{position:relative;margin:6px 0 24px;display:flex;align-items:center;gap:10px}
+ .lp-heute::before{content:"";position:absolute;left:-44px;top:50%;width:34px;height:3px;background:#d9534f}
+ .lp-heute-pill{background:#d9534f;color:#fff;font-size:11px;font-weight:800;padding:4px 12px;border-radius:999px;letter-spacing:.02em}
+ .lp-heute-linie{flex:1;height:2px;background:repeating-linear-gradient(90deg,#d9534f 0 6px,transparent 6px 12px)}
+ @media(max-width:600px){.lernpfad{padding-left:38px}.lp-punkt,.lp-waypoint-punkt{left:-38px;width:34px;height:34px}.lp-block-head::before,.lp-heute::before{left:-38px;width:20px}}
  </style>
  <div class="lp-legende">
  <span class="lp-legende-item"><span class="pill"style="background:#3fa66a;color:#fff;font-size:10px"> Projekt</span></span>
@@ -3209,10 +3213,12 @@ async function renderFachDetail(){
  <div class="lernpfad">
  <div class="lp-linie-hinter"></div>
  <div class="lp-linie-vorne"style="height:${fortschrittProzent}%"></div>
- ${(()=>{let lastBlock=null;return timeline.map((item,idx)=>{
+ ${(()=>{let lastBlock=null;let heuteEingefuegt=false;const heuteHTML=`<div class="lp-heute"><span class="lp-heute-pill"> HEUTE</span><span class="lp-heute-linie"></span></div>`;return timeline.map((item,idx)=>{
+ let heuteMarkerHTML="";
+ if(!heuteEingefuegt&&item.start>=heute){heuteMarkerHTML=heuteHTML;heuteEingefuegt=true;}
  if(item.kind==="praktikum"){
  const auftrag=praktikumsAuftraege[item.id];
- return`<div class="lp-waypoint">
+ return`${heuteMarkerHTML}<div class="lp-waypoint">
  <div class="lp-waypoint-punkt"><span>${item.icon||"🏥"}</span></div>
  <div class="lp-waypoint-karte"onclick="openPraktikumsphaseAuftragForm('${item.id}')">
  <span class="lp-karte-date">${esc(fmtDateOnly(item.start))}–${esc(fmtDateOnly(item.end))}</span>
@@ -3229,7 +3235,7 @@ async function renderFachDetail(){
  }
  const fortschritt=fortschrittMap[item.id]||{abgeschlossen:false};
  const aktuell=idx===naechsteIdx;
- return`${blockHeadHTML}<div class="lp-node">
+ return`${heuteMarkerHTML}${blockHeadHTML}<div class="lp-node">
  <div class="lp-punkt lp-${item.typ}${fortschritt.abgeschlossen?" lp-done":""}${aktuell?" lp-aktuell":""}">${fortschritt.abgeschlossen?"✓":item.typ==="projekt"?"":""}</div>
  <div class="lp-karte"style="border-top:4px solid ${lernbereichAkzentfarbe(item.lb)}"onclick="openWocheDetail('${activeFach}','${item.id}')">
  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
@@ -3241,7 +3247,7 @@ async function renderFachDetail(){
  <span class="pill lp-typ-pill"style="background:${item.typ==="projekt"?"#3fa66a":"#e0a324"};color:#fff">${item.typ==="projekt"?" Projekt":" Einzelthema"}</span>
  </div>
  </div>`;
- }).join("")})()||`<div class="empty"><strong>Für dieses Fach ist noch kein Lernpfad hinterlegt.</strong>Sobald die Jahresplanung vorliegt, erscheinen hier die einzelnen Stationen.</div>`}
+ }).join("")+(heuteEingefuegt?"":heuteHTML)})()||`<div class="empty"><strong>Für dieses Fach ist noch kein Lernpfad hinterlegt.</strong>Sobald die Jahresplanung vorliegt, erscheinen hier die einzelnen Stationen.</div>`}
  </div>
  ${footer()}`;
 }
