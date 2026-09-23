@@ -3189,10 +3189,10 @@ async function renderPaedagogikPhasenZeitstrahl(fach,fortschrittMap,heute){
  const notwendigHTML=ph.notwendigeWochen.map(wId=>{
  const w=lehrplanWocheById(fach,wId);if(!w)return"";
  const f=fortschrittMap[wId]||{};
- return`<a class="lp-karte"style="border-top:4px solid ${lernbereichAkzentfarbe(w.lb)};display:block;margin-bottom:8px"onclick="openWocheDetail('${fach}','${wId}')">
+ return`<div class="lp-karte"style="border-top:4px solid ${lernbereichAkzentfarbe(w.lb)};margin-bottom:8px;cursor:pointer"onclick="openWocheDetail('${fach}','${wId}')">
  <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><span class="lp-karte-date">${esc(fmtDateOnly(w.start))}–${esc(fmtDateOnly(w.end))}</span>${f.abgeschlossen?`<span class="pill green">✓ fertig</span>`:""}</div>
  <strong>${esc(w.thema)}</strong>
- </a>`;
+ </div>`;
  }).join("");
 
  const trainingHTML=ph.trainingWochen.map(wId=>{
