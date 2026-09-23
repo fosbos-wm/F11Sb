@@ -3243,7 +3243,7 @@ async function renderPhaseDetailAnsicht(phaseId,fortschrittMap,heute){
  return`<button class="secondary"onclick="closePhaseDetail()">← Zurück zur Jahresübersicht</button>
  <div class="card"style="border-left:4px solid ${statusFarbe};margin-top:12px">
  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
- <div><div class="kicker">PHASE ${PROJEKT_PHASEN.indexOf(ph)+1} · ${esc(ph.lb)} · ${esc(fmtDateOnly(ph.start))}–${esc(fmtDateOnly(ph.end))}</div>
+ <div><div class="kicker">${esc(ph.lb)} · ${esc(fmtDateOnly(ph.start))}–${esc(fmtDateOnly(ph.end))}</div>
  <h2 style="margin:4px 0 2px"> ${esc(ph.titel)}</h2></div>
  <span class="pill"style="background:${statusFarbe};color:#fff">${esc(statusLabel)}</span>
  </div>
