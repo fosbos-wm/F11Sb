@@ -1971,6 +1971,93 @@ async function openPhasenLiveUebersicht(phaseId){
 }
 window.openPhasenLiveUebersicht=openPhasenLiveUebersicht;
 
+// ---- Projekt-Gesamtcheck: alle 4 Projekte auf einen Blick, statt einzeln
+// durchklicken zu müssen. Zeigt je Person den Meilenstein-Stand pro Projekt.
+async function openProjektGesamtcheck(){
+ if(!isTeacher()){toast("Nur Lehrkräfte können den Projekt-Gesamtcheck öffnen.");return}
+ let students=[];
+ try{students=await getAllUsersForLernstand();}catch(e){console.error(e);toast("Konnte nicht geladen werden.");return}
+ const teamsProPhase={};
+ await Promise.all(PROJEKT_PHASEN.map(async ph=>{teamsProPhase[ph.id]=await getLehrplanTeams(ph.projektWocheId);}));
+ const heute=new Date().toISOString().slice(0,10);
+
+ const rows=students.map(s=>{
+ const zellen=PROJEKT_PHASEN.map(ph=>{
+ const status=phaseStatus(ph,heute);
+ const team=(teamsProPhase[ph.id]||[]).find(t=>(t.mitgliederUids||[]).includes(s.uid));
+ const idx=team?.meilensteinIndex||0;
+ if(status==="kommend")return{farbe:"#e2eaf0",text:"–"};
+ if(!team)return{farbe:"#c7d0d6",text:"kein Team"};
+ if(idx>=ph.meilensteine.length)return{farbe:"#3fa66a",text:"abgeschlossen"};
+ if(idx===0)return{farbe:"#c7d0d6",text:"noch nicht begonnen"};
+ return{farbe:"#e0a324",text:ph.meilensteine[idx-1]};
+ });
+ return`<tr>
+ <td style="padding:8px">${esc(s.displayName||s.email||"Schüler/in")}</td>
+ ${zellen.map(z=>`<td style="padding:8px;text-align:center"><span class="ampel-dot"style="background:${z.farbe}"title="${esc(z.text)}"></span></td>`).join("")}
+ </tr>`;
+ }).join("");
+
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+ <div class="kicker"> PROJEKT-GESAMTCHECK · NUR LEHRKRÄFTE</div>
+ <h2>Alle vier Projekte auf einen Blick</h2>
+ <p style="color:var(--muted);font-size:12px">Farbe = Meilenstein-Stand des jeweiligen Teams. Für Details eine Zeile antippen oder die einzelne Projekt-Live-Übersicht öffnen.</p>
+ <div style="overflow-x:auto"><table class="ls-matrix">
+ <thead><tr><th>Schüler:in</th>${PROJEKT_PHASEN.map(ph=>`<th>${esc(ph.lb)}</th>`).join("")}</tr></thead>
+ <tbody>${rows||`<tr><td colspan="5">Keine Schüler:innen gefunden.</td></tr>`}</tbody>
+ </table></div>
+ <div class="form-actions"style="margin-top:14px"><button class="secondary"onclick="closeModal()">Schließen</button></div>
+ `);
+}
+window.openProjektGesamtcheck=openProjektGesamtcheck;
+
+// ---- Fachaufsatz-Training-Gesamtcheck: aggregiert über alle 6
+// Training-Pool-Themen (verteilt über die 4 Phasen), unabhängig vom
+// aktuellen Projektstand.
+async function openFachaufsatzTrainingCheck(){
+ if(!isTeacher()){toast("Nur Lehrkräfte können den Trainings-Check öffnen.");return}
+ let students=[];
+ try{students=await getAllUsersForLernstand();}catch(e){console.error(e);toast("Konnte nicht geladen werden.");return}
+ const alleTrainingWochen=PROJEKT_PHASEN.flatMap(p=>p.trainingWochen);
+ const [fortschrittSnap,basischeckSnap]=await Promise.all([
+ getDocs(query(collection(db,"lehrplanFortschritt"),where("wocheId","in",alleTrainingWochen))),
+ getDocs(query(collection(db,"basischeckVersuche"),where("wocheId","in",alleTrainingWochen)))
+ ]);
+ const fortschritt=fortschrittSnap.docs.map(d=>d.data());
+ const basischeck=basischeckSnap.docs.map(d=>d.data());
+
+ const rows=students.map(s=>{
+ const offen=[];
+ let fertig=0;
+ alleTrainingWochen.forEach(wId=>{
+ const w=lehrplanWocheById(activeFach,wId);
+ const f=fortschritt.find(x=>x.uid===s.uid&&x.wocheId===wId)||{};
+ const bc=basischeck.some(x=>x.uid===s.uid&&x.wocheId===wId);
+ const alleFertig=f.materialErhalten&&bc&&f.abgeschlossen;
+ if(alleFertig)fertig++;
+ else offen.push(w?.thema||wId);
+ });
+ const farbe=fertig===alleTrainingWochen.length?"#3fa66a":fertig>0?"#e0a324":"#c7d0d6";
+ return`<tr>
+ <td style="padding:8px">${esc(s.displayName||s.email||"Schüler/in")}</td>
+ <td style="padding:8px;text-align:center"><span class="ampel-dot"style="background:${farbe}"></span> ${fertig}/${alleTrainingWochen.length}</td>
+ <td style="padding:8px;font-size:11px;color:var(--muted)">${offen.length?esc(offen.join(", ")):"alles fertig"}</td>
+ </tr>`;
+ }).join("");
+
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+ <div class="kicker"> FACHAUFSATZ-TRAINING · GESAMTCHECK · NUR LEHRKRÄFTE</div>
+ <h2>Trainingsstand über alle Phasen</h2>
+ <p style="color:var(--muted);font-size:12px">„Fertig" = Material gesichtet + Basis-Check bearbeitet + als fertig markiert. ${alleTrainingWochen.length} Trainingsthemen insgesamt.</p>
+ <div style="overflow-x:auto"><table class="ls-matrix">
+ <thead><tr><th>Schüler:in</th><th>Fertig</th><th>Noch offen</th></tr></thead>
+ <tbody>${rows||`<tr><td colspan="3">Keine Schüler:innen gefunden.</td></tr>`}</tbody>
+ </table></div>
+ <div class="form-actions"style="margin-top:14px"><button class="secondary"onclick="closeModal()">Schließen</button></div>
+ `);
+}
+window.openFachaufsatzTrainingCheck=openFachaufsatzTrainingCheck;
+
 window.toggleMaterialErhalten=toggleMaterialErhalten;
 async function markWocheAbgeschlossen(fach,wocheId){
  const fortschritt=await getLehrplanFortschritt(wocheId);
@@ -3173,7 +3260,7 @@ async function renderPaedagogikPhasenZeitstrahl(fach,fortschrittMap,heute){
 
 // ---- Ebene 1: kompakte Jahresübersicht – die 4 Projekte im Vordergrund ----
 async function renderPhasenJahresuebersicht(fortschrittMap,heute){
- return`${pageHead("LERNPFAD","Pädagogik/Psychologie","Vier Projektphasen, ein Schuljahr – klicke eine Phase für die Details.",isTeacher()?`<button class="secondary"onclick="openLehrplanKlassenuebersicht('${activeFach}')"> Klassenübersicht</button>`:"")}
+ return`${pageHead("LERNPFAD","Pädagogik/Psychologie","Vier Projektphasen, ein Schuljahr – klicke eine Phase für die Details.",isTeacher()?`<button class="secondary"onclick="openProjektGesamtcheck()"> Projekt-Gesamtcheck</button> <button class="secondary"onclick="openFachaufsatzTrainingCheck()"> Trainings-Gesamtcheck</button>`:"")}
  <div class="card"style="padding:24px 18px;margin-bottom:18px">
  <div style="display:flex;align-items:flex-start;position:relative">
  ${PROJEKT_PHASEN.map((ph,i)=>`${i>0?`<div style="flex:0 0 40px;height:3px;background:${phaseStatus(PROJEKT_PHASEN[i-1],heute)!=="kommend"?"#3fa66a":"#e2eaf0"};margin-top:26px"></div>`:""}${(()=>{
