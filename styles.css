@@ -593,3 +593,21 @@ main#content{flex:1;min-width:0;padding:28px 34px 60px;max-width:1500px}
 .co-wahl{cursor:pointer;gap:10px}
 .pg-matrix th,.pg-matrix td,.co-erg-matrix th,.co-erg-matrix td,.apt-matrix th,.apt-matrix td{padding:7px 12px}
 .pg-matrix th,.co-erg-matrix th{text-align:center}
+
+/* ---- K-Prim als Tabelle (Aussage | richtig | falsch) ---- */
+.form input[type=checkbox],.form input[type=radio]{width:auto}
+.kp-stamm{display:block;font-size:15px;line-height:1.4;margin-bottom:8px}
+.kp-vignette{background:#f7fafc;border-left:4px solid var(--blue);border-radius:8px;padding:10px 14px;margin:0 0 10px;white-space:pre-wrap;line-height:1.55;font-size:14px}
+.kp-anleitung{font-size:14px;line-height:1.5;margin:0 0 8px;color:var(--ink)}
+.kp-tabelle{width:100%;border-collapse:collapse;font-size:14px}
+.kp-tabelle th{text-align:left;font-weight:700;padding:8px 6px;border-bottom:1.5px solid var(--line)}
+.kp-tabelle td{padding:12px 6px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.45}
+.kp-tabelle tbody tr:last-child td{border-bottom:0}
+.kp-tabelle .kp-rf{width:84px;text-align:center}
+.kp-tabelle td.kp-rf{padding:0}
+.kp-nr{margin-right:4px}
+.kp-klick{display:flex;align-items:flex-start;justify-content:center;padding:12px 6px;cursor:pointer;height:100%}
+.kp-klick input{width:18px!important;height:18px;margin:2px 0 0;cursor:pointer;accent-color:var(--blue-dark)}
+.kp-tabelle tbody tr:hover td{background:#f7fafc}
+.kp-tabelle tbody tr:has(input:checked) td:first-child{color:var(--ink)}
+@media(max-width:560px){.kp-tabelle .kp-rf{width:58px}.kp-tabelle th{font-size:12px}.kp-tabelle{font-size:13.5px}}

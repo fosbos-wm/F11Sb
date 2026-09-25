@@ -2072,7 +2072,8 @@ async function saveBasischeckFragen(fach,wocheId){
  correct:$(`bcStatementRichtig${i}_${j}`)?.value==="true"
  })).filter(s=>s.text);
  if(statements.length<2)continue;
- fragen.push({typ,text,statements});
+ const vignette=$(`bcVignette${i}`)?.value.trim()||"";
+ fragen.push({typ,text,statements,...(vignette?{vignette}:{})});
  }else if(typ==="offen"){
  const stichworte=($(`bcStichworte${i}`)?.value||"").split(",").map(s=>s.trim()).filter(Boolean);
  if(!stichworte.length)continue;
@@ -2114,9 +2115,11 @@ function basischeckGradeFrage(f,i){
  return {beantwortet:Number.isFinite(antwort),richtig:antwort===f.richtig,antwort};
  }
  if(typ==="kprim"){
- const checked=f.statements.map((s,j)=>$(`bcKprimAntwort${i}_${j}`)?.checked||false);
- const {allCorrect}=kprimGrade({statements:f.statements},checked);
- return {beantwortet:true,richtig:allCorrect,antwort:checked};
+ const werte=f.statements.map((s,j)=>document.querySelector(`input[name="bcKp${i}_${j}"]:checked`)?.value||"");
+ const alleBeantwortet=werte.every(Boolean);
+ const {allCorrect}=kprimGrade({statements:f.statements},werte.map(w=>w==="r"));
+ // als Text speichern ("rfrf"), weil Firestore keine verschachtelten Listen erlaubt
+ return {beantwortet:alleBeantwortet,richtig:alleBeantwortet&&allCorrect,antwort:werte.map(w=>w||"-").join("")};
  }
  if(typ==="offen"){
  const text=($(`bcOffenAntwort${i}`)?.value||"").trim();
@@ -4036,6 +4039,20 @@ function aptKprimAufgaben(inhalt,e){return(inhalt.kprim&&inhalt.kprim.length)?in
 
 // Basis-Check-Bereich (Lehrkraft-Editor bzw. Schüler-Test) – gemeinsam
 // genutzt von Projektinhalten und APT-Inhalten.
+// ---- K-Prim als Tabelle: Aussage | richtig | falsch (wie in der Prüfung) ----
+const KPRIM_ANLEITUNG="<b>Kreuzen Sie für jede Aussage an, ob sie richtig oder falsch ist.</b>";
+// name: Präfix der Radio-Gruppen (je Aussage name_j). antworten: {j:"r"|"f"}.
+// onchange: optionaler Aufruf, %J und %V werden durch Aussage und Wert ersetzt.
+function kprimTabelleHTML(name,aussagen,antworten={},onchange=""){
+ return`<table class="kp-tabelle"><thead><tr><th>Aussage</th><th class="kp-rf">richtig</th><th class="kp-rf">falsch</th></tr></thead><tbody>
+  ${aussagen.map((t,j)=>`<tr><td><b class="kp-nr">${j+1}</b> ${esc(t)}</td>${["r","f"].map(v=>`<td class="kp-rf"><label class="kp-klick"><input type="radio"name="${name}_${j}"value="${v}"aria-label="Aussage ${j+1}: ${v==="r"?"richtig":"falsch"}"${antworten[j]===v?" checked":""}${onchange?` onchange="${onchange.replace(/%J/g,j).replace(/%V/g,v)}"`:""}></label></td>`).join("")}</tr>`).join("")}
+ </tbody></table>`;
+}
+function kprimFrageKopfHTML(nr,stamm,vignette){
+ return`<strong class="kp-stamm">${nr?nr+". ":""}${esc(stamm||"")}</strong>
+  ${vignette?`<div class="kp-vignette">${esc(vignette)}</div>`:""}
+  <p class="kp-anleitung">${/beurteilen sie/i.test(stamm||"")?"":"Beurteilen Sie die folgenden Aussagen. "}${KPRIM_ANLEITUNG}</p>`;
+}
 function basischeckPanelHTML(fach,wocheId,basischeckFragen,meinBasischeck,extraSchueler=""){
  if(isTeacher())return`<div class="form">
   ${[0,1,2].map(i=>{
@@ -4055,7 +4072,8 @@ function basischeckPanelHTML(fach,wocheId,basischeckFragen,meinBasischeck,extraS
      <label style="margin-top:6px">Richtige Antwort<select id="bcRichtig${i}">${[0,1,2].map(j=>`<option value="${j}"${f.richtig===j?" selected":""}>Antwort ${j+1}</option>`).join("")}</select></label>
     </div>
     <div id="bcKprimBereich${i}"style="display:${typ==="kprim"?"block":"none"};margin-top:8px">
-     <p style="font-size:11px;color:var(--muted);margin:0 0 6px">Bis zu 4 Aussagen, jeweils als richtig oder falsch markieren. Nur „alles richtig" zählt als bestanden.</p>
+     <label style="margin-bottom:8px">Fallvignette / Einleitungstext (optional – steht über der Tabelle)<textarea id="bcVignette${i}"rows="3"placeholder="z. B. kurze Fallbeschreibung, auf die sich die Aussagen beziehen">${esc(f.vignette||"")}</textarea></label>
+<p style="font-size:11px;color:var(--muted);margin:0 0 6px">Bis zu 4 Aussagen, jeweils als richtig oder falsch markieren. Nur „alles richtig" zählt als bestanden.</p>
      ${[0,1,2,3].map(j=>{const s=f.statements?.[j]||{};return`<div style="display:flex;gap:8px;align-items:center;margin-bottom:4px">
       <input id="bcStatement${i}_${j}"type="text"value="${esc(s.text||"")}"placeholder="Aussage ${j+1}${j>1?" (optional)":""}"style="flex:1">
       <select id="bcStatementRichtig${i}_${j}"style="width:90px"><option value="true"${s.correct?" selected":""}>richtig</option><option value="false"${s.correct===false?" selected":""}>falsch</option></select>
@@ -4077,9 +4095,9 @@ function basischeckPanelHTML(fach,wocheId,basischeckFragen,meinBasischeck,extraS
   ${basischeckFragen.map((f,i)=>{
    const typ=f.typ||"mc";
    return`<div class="card"style="margin-bottom:10px">
-    <strong style="display:block;margin-bottom:8px">${i+1}. ${esc(f.text)}</strong>
+    ${typ==="kprim"?kprimFrageKopfHTML(i+1,f.text,f.vignette):`<strong style="display:block;margin-bottom:8px">${i+1}. ${esc(f.text)}</strong>`}
     ${typ==="mc"?f.optionen.map((o,j)=>`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:4px"><input type="radio"name="bcQ${i}"value="${j}"> <span>${esc(o)}</span></label>`).join(""):""}
-    ${typ==="kprim"?f.statements.map((s,j)=>`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:4px"><input id="bcKprimAntwort${i}_${j}"type="checkbox"> <span>${esc(s.text)}</span></label>`).join(""):""}
+    ${typ==="kprim"?kprimTabelleHTML(`bcKp${i}`,f.statements.map(x=>x.text)):""}
     ${typ==="offen"?`<textarea id="bcOffenAntwort${i}"rows="3"placeholder="Deine Antwort …"></textarea>`:""}
    </div>`;
   }).join("")}
@@ -4764,11 +4782,9 @@ async function openCheckoutTest(id){
   <div class="kicker"style="color:${c}">🏁 CHECK-OUT · LB ${esc(co.lbNum)} · ${coDatum(co.datum)}</div>
   <h2>${esc(co.titel)}</h2>
   <div class="co-vignette"style="border-left-color:${c}">${co.vignette?.titel?`<b>${esc(co.vignette.titel)}</b>`:""}<p>${esc(co.vignette?.text||"")}</p></div>
-  <p style="font-size:12px;color:var(--muted)">Entscheide bei jeder Aussage: richtig oder falsch. Deine Antworten werden automatisch gespeichert.</p>
-  ${(co.aufgaben||[]).map((q,i)=>`<div class="card co-aufgabe"><b>${i+1}. ${esc(q.stamm)}</b>
-   ${(q.aussagen||[]).map((t,j)=>`<div class="co-aussage"><span>${String.fromCharCode(97+j)}) ${esc(t)}</span>
-    <label><input type="radio"name="coT${i}_${j}"value="r"${ant[`${i}_${j}`]==="r"?" checked":""} onchange="coAntwort('${id}','${i}_${j}','r')"> richtig</label>
-    <label><input type="radio"name="coT${i}_${j}"value="f"${ant[`${i}_${j}`]==="f"?" checked":""} onchange="coAntwort('${id}','${i}_${j}','f')"> falsch</label></div>`).join("")}
+  <p style="font-size:12px;color:var(--muted)">Deine Antworten werden automatisch gespeichert. Nicht beantwortete Aussagen zählen als Fehler.</p>
+  ${(co.aufgaben||[]).map((q,i)=>`<div class="card co-aufgabe">${kprimFrageKopfHTML(i+1,q.stamm,"")}
+   ${kprimTabelleHTML(`coT${i}`,q.aussagen||[],Object.fromEntries([0,1,2,3].map(j=>[j,ant[`${i}_${j}`]])),`coAntwort('${id}','${i}_%J','%V')`)}
   </div>`).join("")}
   <div class="co-test-fuss"><span id="coStand"></span><button class="primary"onclick="coAbgeben('${id}')">Abgeben</button></div>
  </div>`);
@@ -4781,7 +4797,7 @@ async function openCheckoutTest(id){
  });
 }
 function coStandAktualisieren(co){
- const n=(co?.aufgaben||[]).length*4||document.querySelectorAll("#coTest .co-aussage").length;
+ const n=(co?.aufgaben||[]).length*4||document.querySelectorAll("#coTest .kp-tabelle tbody tr").length;
  const k=document.querySelectorAll('#coTest input[type="radio"]:checked').length;
  const el=$("coStand");if(el)el.textContent=`${k} von ${n} Aussagen beantwortet`;
 }
@@ -4792,7 +4808,7 @@ async function coAntwort(id,key,wert){
  }catch(e){console.error("Antwort speichern:",e);toast(e?.code==="permission-denied"?"Der Check-out ist nicht mehr freigeschaltet – Antwort nicht gespeichert.":"Antwort konnte nicht gespeichert werden – Verbindung prüfen.");}
 }
 async function coAbgeben(id){
- const alle=document.querySelectorAll("#coTest .co-aussage").length;
+ const alle=document.querySelectorAll("#coTest .kp-tabelle tbody tr").length;
  const k=document.querySelectorAll('#coTest input[type="radio"]:checked').length;
  if(k<alle&&!confirm(`Du hast ${alle-k} Aussage(n) noch nicht beantwortet – diese zählen als Fehler. Trotzdem abgeben?`))return;
  if(k===alle&&!confirm("Jetzt endgültig abgeben? Danach kannst du nichts mehr ändern."))return;
@@ -5222,7 +5238,8 @@ async function openWocheDetail(fach,wocheId,startTabOverride){
  </div>
 
  <div id="bcKprimBereich${i}"style="display:${typ==="kprim"?"block":"none"};margin-top:8px">
- <p style="font-size:11px;color:var(--muted);margin:0 0 6px">Bis zu 4 Aussagen, jeweils als richtig oder falsch markieren. Nur „alles richtig" zählt als bestanden.</p>
+ <label style="margin-bottom:8px">Fallvignette / Einleitungstext (optional – steht über der Tabelle)<textarea id="bcVignette${i}"rows="3"placeholder="z. B. kurze Fallbeschreibung, auf die sich die Aussagen beziehen">${esc(f.vignette||"")}</textarea></label>
+<p style="font-size:11px;color:var(--muted);margin:0 0 6px">Bis zu 4 Aussagen, jeweils als richtig oder falsch markieren. Nur „alles richtig" zählt als bestanden.</p>
  ${[0,1,2,3].map(j=>{const s=f.statements?.[j]||{};return`<div style="display:flex;gap:8px;align-items:center;margin-bottom:4px">
  <input id="bcStatement${i}_${j}"type="text"value="${esc(s.text||"")}"placeholder="Aussage ${j+1}${j>1?" (optional)":""}"style="flex:1">
  <select id="bcStatementRichtig${i}_${j}"style="width:90px">
@@ -5248,9 +5265,9 @@ async function openWocheDetail(fach,wocheId,startTabOverride){
  ${basischeckFragen.map((f,i)=>{
  const typ=f.typ||"mc";
  return`<div class="card"style="margin-bottom:10px">
- <strong style="display:block;margin-bottom:8px">${i+1}. ${esc(f.text)}</strong>
+ ${typ==="kprim"?kprimFrageKopfHTML(i+1,f.text,f.vignette):`<strong style="display:block;margin-bottom:8px">${i+1}. ${esc(f.text)}</strong>`}
  ${typ==="mc"?f.optionen.map((o,j)=>`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:4px"><input type="radio"name="bcQ${i}"value="${j}"> <span>${esc(o)}</span></label>`).join(""):""}
- ${typ==="kprim"?f.statements.map((s,j)=>`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:4px"><input id="bcKprimAntwort${i}_${j}"type="checkbox"> <span>${esc(s.text)}</span></label>`).join(""):""}
+ ${typ==="kprim"?kprimTabelleHTML(`bcKp${i}`,f.statements.map(x=>x.text)):""}
  ${typ==="offen"?`<textarea id="bcOffenAntwort${i}"rows="3"placeholder="Deine Antwort …"></textarea>`:""}
  </div>`;
  }).join("")}
