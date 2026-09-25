@@ -4570,7 +4570,7 @@ function checkoutSektionHTML(d){
    <div class="co-aktion">${d.einst.auswahlOffen?`<button class="primary"onclick="openCheckoutAuswahl()">${d.auswahl?"Auswahl ändern":`${d.einst.anzahlWaehlen} auswählen`}</button>`:`<small style="color:var(--muted)">Auswahl wird von deiner Lehrkraft freigeschaltet</small>`}${d.auswahl?`<button class="secondary"onclick="coPdfErsatzSchueler()">PDF</button>`:""}</div></div>`;
  }
  return`<div class="card co-karte">
-  <div class="co-kopf"><div><h3>🏁 Check-out – K-Prim-Test zum Wochenabschluss</h3><small>Am Ende der Woche schaltet deine Lehrkraft den Check-out live frei: eine Fallvignette mit 3–5 K-Prim-Aufgaben. Ausgewertet wird automatisch in FOSBOS-Notenpunkten.</small></div>
+  <div class="co-kopf"><div><h3>🏁 Check-out – K-Prim-Test zum Wochenabschluss</h3><small>Am Ende der Woche schaltet deine Lehrkraft den Check-Out-Test live frei: eine Fallvignette mit 3–5 K-Prim-Aufgaben. Ausgewertet wird automatisch in FOSBOS-Notenpunkten.</small></div>
    ${lehrer?`<button class="primary"onclick="openCheckoutEditor()">＋ Neuer Check-out</button>`:""}</div>
   <div class="co-liste">${zeilen||`<div class="empty">${lehrer?"Noch kein Check-out angelegt.":"Noch kein Check-out freigeschaltet."}</div>`}</div>
   ${ersatz}
