@@ -13,6 +13,7 @@ let currentUser=null, profile=null, unsubscribers=[];
 let activeBoardId=null;
 let activeFach=null;
 let activePhaseDetail=null;
+let ppDirty=false; // Zeitstrahl nach Änderungen im Modal neu zeichnen
 function openFach(fach){activeFach=fach;activePhaseDetail=null;go("fach")}
 function closeFach(){activeFach=null;activePhaseDetail=null;go("faecher")}
 function openPhaseDetail(phaseId){activePhaseDetail=phaseId;render()}
@@ -30,7 +31,7 @@ function authError(err){
  $("authError").textContent=map[err?.code]||"Anmeldung konnte nicht durchgeführt werden.";
 }
 function modal(html){$("modal").innerHTML=html;$("modalBackdrop").hidden=false}
-function closeModal(){$("modalBackdrop").hidden=true}
+function closeModal(){$("modalBackdrop").hidden=true;if(ppDirty){ppDirty=false;if(activeFach==="paedagogik")render();}}
 function pageHead(k,h,p,actions=""){return`<div class="page-head"><div><div class="kicker">${k}</div><h1>${h}</h1><p>${p}</p>
 </div><div class="actions">${actions}</div></div>`}
 function footer(){return`<div class="footer"><span>F11Sb 26/27 · FOSBOS Weilheim</span><span>Gemeinsam · offen ·
@@ -1214,129 +1215,273 @@ window.openPraktikumsphaseAuftragForm=openPraktikumsphaseAuftragForm;
 window.savePraktikumsphaseAuftrag=savePraktikumsphaseAuftrag;
 window.deletePraktikumsphaseAuftrag=deletePraktikumsphaseAuftrag;
 
-// Lehrplan-Zeitstrahl je Fach. "typ": "projekt" | "einzel". Aktuell mit
-// echten Inhalten für Pädagogik/Psychologie befüllt (Jahresverlaufsplanung
-// FOS 11 Sozialwesen, B-Block 2026/27); die übrigen Fächer sind als leere,
-// erweiterbare Struktur angelegt.
-const LEHRPLAN_WOCHEN={
- paedagogik:[
- {id:"pp01",start:"2026-10-05",end:"2026-10-09",lb:"LB 1",thema:"Grundlagen: Pädagogik und Psychologie",typ:"einzel",
- planung:"2 Std.: Gegenstandsbereiche P/P; 2 Std.: Erziehung, Erleben und Verhalten unterscheiden; 2 Std.: Bedeutung für Sozialwesen + erste Praxisfragen.",
- praxis:"Erziehungspraktikum: Begriffe an realen Situationen wiedererkennen; kurze Beobachtungsnotizen sammeln."},
- {id:"pp02",start:"2026-10-12",end:"2026-10-16",lb:"LB 1",thema:"Wissenschaftlichkeit und Alltagspsychologie",typ:"einzel",
- planung:"2 Std.: wissenschaftliche Aussagen vs. Alltagswissen; 2 Std.: Systematik, Überprüfbarkeit, Allgemeingültigkeit, Objektivität; 2 Std.: Aussagen prüfen und sichern.",
- praxis:"Praxisbeobachtung mit Kriterienraster: Was ist Beobachtung, was ist Interpretation?"},
- {id:"pp03",start:"2026-10-19",end:"2026-10-23",lb:"LB 1",thema:"Experiment als wissenschaftliche Methode",typ:"projekt",
- planung:"2 Std.: Methode/Fragestellung; 2 Std.: Durchführung; 2 Std.: Auswertung, Kurzbericht und Präsentation.",
- praxis:"Erziehungsbereich: kleines Beobachtungs-/Mini-Experiment zu Aufmerksamkeit, Erinnerung oder Lernverhalten; Datenschutz und Ethik beachten."},
- {id:"pp04",start:"2026-11-23",end:"2026-11-27",lb:"LB 3",thema:"Erziehung: Begriff und Merkmale",typ:"einzel",
- planung:"2 Std.: Begriff; 2 Std.: beabsichtigte Lernhilfe; 2 Std.: soziale Kommunikation/Interaktion + Abgrenzung zu Betreuung/Versorgung.",
- praxis:"Erziehungspraktikum: reale Situationen anhand der Erziehungsmerkmale analysieren."},
- {id:"pp05",start:"2026-11-30",end:"2026-12-04",lb:"LB 3",thema:"Erziehungsmaßnahmen und Erziehungsstile",typ:"projekt",
- planung:"2 Std.: Erziehungsmaßnahmen; 2 Std.: Baumrind; 2 Std.: anonymisierter Praxisfall, Alternativen und Produkt.",
- praxis:"Erziehungspraktikum: Fallvignette erstellen; pädagogisches Handeln und Alternativen begründen."},
- {id:"pp06",start:"2026-12-07",end:"2026-12-11",lb:"LB 3",thema:"Mündigkeit nach Roth",typ:"einzel",
- planung:"2 Std.: Mündigkeit; 2 Std.: Selbst-, Sach-, Sozialkompetenz; 2 Std.: kompetenzorientierte Erziehungsziele + Sicherung.",
- praxis:"Erziehungsbereich: beobachten, welche Kompetenzen gefördert werden; Reflexion im Portfolio."},
- {id:"pp07",start:"2027-01-18",end:"2027-01-22",lb:"LB 3",thema:"Erziehungsstile vertiefen und frühe Bildung",typ:"projekt",
- planung:"2 Std.: Stile vertiefen; 2 Std.: BayBEP-Bildungs-/Erziehungsbereiche; 2 Std.: Praxisprodukt/Präsentation.",
- praxis:"Erziehungspraktikum: Einrichtung analysieren – welche Bildungs-/Erziehungsziele werden sichtbar?"},
- {id:"pp08",start:"2027-01-25",end:"2027-01-29",lb:"LB 3",thema:"Vernetzung: Erziehung, Wahrnehmung, Motivation",typ:"projekt",
- planung:"2 Std.: Fall auswählen; 2 Std.: Wahrnehmung/Attribution/Motivation anwenden; 2 Std.: Handlungsempfehlung + Fallkonferenz.",
- praxis:"Erziehungspraktikum: anonymisierter Praxisfall → Analyse → Handlungsempfehlung."},
- {id:"pp09",start:"2027-02-01",end:"2027-02-05",lb:"LB 2",thema:"Wahrnehmung und Gedächtnis",typ:"projekt",
- planung:"2 Std.: Wahrnehmungsprozess; 2 Std.: individuelle/soziale Einflussfaktoren; 2 Std.: Mehrspeichermodell + Lernstrategien.",
- praxis:"Praxis: Beobachtungsfehler und Erinnerungsverzerrungen reflektieren."},
- {id:"pp10",start:"2027-03-08",end:"2027-03-12",lb:"LB 2",thema:"Emotionen und Emotionsregulation",typ:"projekt",
- planung:"2 Std.: Emotionen/Komponenten; 2 Std.: Regulationsstrategien; 2 Std.: Praxisfall, Projektprodukt und Reflexion.",
- praxis:"Pflege-/Erziehungsbereich: emotionale Situationen beobachten; Regulationsmöglichkeiten professionell analysieren."},
- {id:"pp11",start:"2027-03-15",end:"2027-03-19",lb:"LB 2",thema:"Motivation und Attribution nach Weiner",typ:"einzel",
- planung:"2 Std.: Motivation; 2 Std.: Attribution internal/external, stabil/variabel; 2 Std.: Folgen für Emotion/Erfolgserwartung/Motivation.",
- praxis:"Pflegepraxis: Aussagen zu Erfolg/Misserfolg analysieren und Attributionsmuster erkennen."},
- {id:"pp12",start:"2027-04-05",end:"2027-04-09",lb:"LB 2",thema:"Lernen und Gedächtnis – Praxisprojekt",typ:"projekt",
- planung:"2 Std.: Strategien vergleichen; 2 Std.: Lernsetting planen; 2 Std.: Lernhilfe/Infografik/Anleitung erstellen und reflektieren.",
- praxis:"Pflegebereich: Lern-/Orientierungssituation analysieren; Barrieren und Ressourcen berücksichtigen."},
- {id:"pp13",start:"2027-05-03",end:"2027-05-07",lb:"LB 4",thema:"Klassisches Konditionieren",typ:"einzel",
- planung:"2 Std.: Pawlow; 2 Std.: Reiz/Reaktion und Konditionierung; 2 Std.: Generalisierung/höhere Ordnung + Anwendung.",
- praxis:"Pflege: Routinen, Signale und situative Auslöser beobachten; keine personenbezogenen Diagnosen."},
- {id:"pp14",start:"2027-05-10",end:"2027-05-14",lb:"LB 4",thema:"Operantes Konditionieren",typ:"projekt",
- planung:"2 Std.: Thorndike/Skinner; 2 Std.: Verstärkung/Verstärkerarten; 2 Std.: Praxisfall + professionell-ethische Alternativen.",
- praxis:"Pflege: Verstärkung in Anleitung/Alltagsbegleitung analysieren; Alternativen entwickeln."},
- {id:"pp15",start:"2027-06-28",end:"2027-07-02",lb:"LB 4",thema:"Sozial-kognitive Lerntheorie nach Bandura",typ:"einzel",
- planung:"2 Std.: Beobachtungslernen; 2 Std.: Aufmerksamkeit/Gedächtnis/Reproduktion/Motivation; 2 Std.: Selbstwirksamkeit + Transfer.",
- praxis:"Pflege: Lernen am Modell in Anleitung, Team und Alltag beobachten."},
- {id:"pp16",start:"2027-07-05",end:"2027-07-09",lb:"LB 4",thema:"Medien als Einflussfaktor auf Lernprozesse",typ:"einzel",
- planung:"2 Std.: Medien und Lernen; 2 Std.: Chancen/Risiken; 2 Std.: lernförderliche digitale Angebote beurteilen.",
- praxis:"Pflege: digitale Anleitung/Dokumentation/Informationsangebote untersuchen."},
- {id:"pp17",start:"2027-07-12",end:"2027-07-16",lb:"LB 1–4",thema:"Abschlussprojekt: Theorie-Praxis-Vernetzung",typ:"projekt",
- planung:"2 Std.: Praxisfall auswählen; 2 Std.: Erziehung/Wahrnehmung/Emotion/Motivation/Gedächtnis/Lernen vernetzen; 2 Std.: Produkt, Präsentation und Jahresreflexion.",
- praxis:"Pflegeeinrichtung: anonymisierte Fallsituation → Theorieanalyse → Handlungsvorschlag → Präsentation; Vergleich mit dem Erziehungspraktikum."}
- ],
- deutsch:[],englisch:[],geschichte:[],mathematik:[],sozialwirtschaft:[],chemie:[]
-};
-// Lernziel-Vorschläge je Woche, abgeleitet aus den offiziellen
-// Kompetenzerwartungen des LehrplanPLUS FOS 11 Pädagogik/Psychologie
-// (lehrplanplus.bayern.de, LB 1–4). Lehrkräfte sehen diese als Vorschlag
-// beim erstmaligen Anlegen eines Auftrags und können sie frei anpassen.
-// Vier Projektphasen – je Lernbereich ein Projekt, mit "notwendigen" Wochen
-// (werden für das Projekt gebraucht) und "Fachaufsatz-Training"-Wochen
-// (laufen parallel, ohne feste Bindung). Teams werden am projektWocheId
-// verankert (letzte notwendige Woche der Phase). Jedes Projekt hat eigene,
-// zum Projekttyp passende Meilensteine.
-const PROJEKT_PHASEN=[
- {id:"phase1",lb:"LB 1",titel:"Experiment durchführen",
- start:"2026-10-05",end:"2026-12-11",
- notwendigeWochen:["pp01","pp02","pp03"],trainingWochen:[],
- projektWocheId:"pp03",
- meilensteine:["Team gebildet","Hypothese formuliert","Experiment durchgeführt","Ergebnisse ausgewertet","Präsentiert"]},
- {id:"phase2",lb:"LB 2",titel:"Wahrnehmungs-Parcours",
- start:"2027-01-18",end:"2027-02-12",
- notwendigeWochen:["pp09"],trainingWochen:["pp10","pp11","pp12"],
- projektWocheId:"pp09",
- meilensteine:["Station konzipiert","Material vorbereitet","Parcours durchgeführt","Reflexion abgegeben"]},
- {id:"phase3",lb:"LB 3",titel:"Praxisbeobachtung: Erziehungsstile erkennen",
- start:"2027-03-08",end:"2027-04-16",
- notwendigeWochen:["pp04","pp05","pp06","pp07"],trainingWochen:["pp08"],
- projektWocheId:"pp07",
- meilensteine:["Beobachtungen im Praktikum gesammelt","Fachlich eingeordnet","Gruppenvergleich durchgeführt","Analyse präsentiert"]},
- {id:"phase4",lb:"LB 4",titel:"Konditionierung im Alltag entdecken",
- start:"2027-05-10",end:"2027-07-27",
- notwendigeWochen:["pp13","pp14","pp17"],trainingWochen:["pp15","pp16"],
- projektWocheId:"pp14",
- meilensteine:["Team gebildet","Alltagsbeispiele gesammelt","Beispiele fachlich analysiert","Dokumentation erstellt","Präsentiert"]}
+// ============================================================
+// PÄDAGOGIK/PSYCHOLOGIE · ZEITSTRAHL MIT ZEITBUDGET (Umbau 26/27)
+// ------------------------------------------------------------
+// Aufbau: 4 Lernbereiche = 4 Blöcke im Zeitstrahl. Jeder Block besteht aus
+//   (1) dem PROJEKT (Projektinhalte + Team-Meilensteine) und danach
+//   (2) dem ABSCHLUSSPRÜFUNGS-TRAINING (APT) mit den übrigen Lehrplan-
+//       inhalten des Lernbereichs, je Inhalt in 5 Bereichen:
+//       Prüfungsfrage → Inhalte & Aufgabeneingrenzung → Basis-Check →
+//       Lernprodukt & Vorkorrektur → Abschluss-Check (K-Prim).
+// Die Zeitbudgets rechnen in echten Schulwochen (siehe SCHULWOCHEN_PP).
+// ============================================================
+
+// Bayerische Ferien 2026/27 (BayMBl. 2022 Nr. 747).
+const FERIEN_2026_27=[
+ {start:"2026-11-02",end:"2026-11-06",titel:"Herbstferien"},
+ {start:"2026-12-24",end:"2027-01-08",titel:"Weihnachtsferien"},
+ {start:"2027-02-08",end:"2027-02-12",titel:"Frühjahrsferien"},
+ {start:"2027-03-22",end:"2027-04-02",titel:"Osterferien"},
+ {start:"2027-05-18",end:"2027-05-28",titel:"Pfingstferien"}
 ];
+// P/P-Schulwochen = alle Wochen außerhalb der B-Block-Praktika und der
+// Ferien. Ändert sich der Blockplan, nur HIER anpassen – Zeitbudget,
+// Zeitstrahl und Fortschritt rechnen sich automatisch neu.
+const SCHULWOCHEN_PP=[
+ {id:"sw01",start:"2026-10-05",end:"2026-10-09"},
+ {id:"sw02",start:"2026-10-12",end:"2026-10-16"},
+ {id:"sw03",start:"2026-10-19",end:"2026-10-23"},
+ {id:"sw04",start:"2026-11-23",end:"2026-11-27"},
+ {id:"sw05",start:"2026-11-30",end:"2026-12-04"},
+ {id:"sw06",start:"2026-12-07",end:"2026-12-11"},
+ {id:"sw07",start:"2027-01-18",end:"2027-01-22"},
+ {id:"sw08",start:"2027-01-25",end:"2027-01-29"},
+ {id:"sw09",start:"2027-02-01",end:"2027-02-05"},
+ {id:"sw10",start:"2027-03-08",end:"2027-03-12"},
+ {id:"sw11",start:"2027-03-15",end:"2027-03-19"},
+ {id:"sw12",start:"2027-04-05",end:"2027-04-09"},
+ {id:"sw13",start:"2027-04-12",end:"2027-04-16"},
+ {id:"sw14",start:"2027-05-10",end:"2027-05-14"},
+ {id:"sw15",start:"2027-05-31",end:"2027-06-04"},
+ {id:"sw16",start:"2027-06-07",end:"2027-06-11"},
+ {id:"sw17",start:"2027-07-12",end:"2027-07-16"},
+ {id:"sw18",start:"2027-07-19",end:"2027-07-23"},
+ {id:"sw19",start:"2027-07-26",end:"2027-07-30"}
+];
+function swById(id){return SCHULWOCHEN_PP.find(w=>w.id===id)||null;}
+
+// Vier ausbalancierte Lernbereichsfarben (gleiche Helligkeit/Sättigung,
+// nur der Farbton wechselt) – Blau, Violett, Grün, Terrakotta.
+const PP_FARBEN={1:"#3F7FC1",2:"#8A64B8",3:"#3C9A6B",4:"#C9773A"};
+
+// Reihenfolge = zeitliche Reihenfolge im Schuljahr. LB 3 (Erziehung) liegt
+// bewusst direkt nach dem letzten Erziehungspraktikums-Block, damit die
+// Praxisbeobachtungen frisch sind; LB 4 (Lernen) fällt in die Pflegephase.
+const PROJEKT_PHASEN_ROH=[
+ {id:"lb1",lb:"LB 1",lbNum:1,titel:"Experiment durchführen",lbTitel:"Wissenschaft & Erziehung",
+  projektSchulwochen:["sw01","sw02","sw03"],aptSchulwochen:["sw04","sw05","sw06"],
+  notwendigeWochen:["pp01","pp02","pp03"],trainingWochen:["pp1a1","pp1a2","pp1a3","pp1a4"],
+  meilensteine:["Team gebildet","Hypothese formuliert","Versuchsplan steht (UV/AV, Kontrollgruppe)","Experiment durchgeführt","Ergebnisse ausgewertet","Präsentiert"]},
+ {id:"lb3",lb:"LB 3",lbNum:3,titel:"Praxisbeobachtung: Erziehung und Erziehungsstile erkennen",lbTitel:"Erziehung",
+  projektSchulwochen:["sw07","sw08"],aptSchulwochen:["sw09"],
+  notwendigeWochen:["pp04","pp05"],trainingWochen:["pp06","pp07"],
+  meilensteine:["Team gebildet","Beobachtungen aus dem Praktikum gesammelt (anonymisiert)","Merkmale von Erziehung nachgewiesen","Erziehungsstile nach Baumrind zugeordnet","Analyse präsentiert"]},
+ {id:"lb2",lb:"LB 2",lbNum:2,titel:"Wahrnehmungs- und Gedächtnis-Parcours",lbTitel:"Wahrnehmung, Gedächtnis, Emotion, Motivation",
+  projektSchulwochen:["sw10","sw11","sw12"],aptSchulwochen:["sw13","sw14","sw15"],
+  notwendigeWochen:["pp09","pp2p2","pp12"],trainingWochen:["pp2a1","pp10","pp11"],
+  meilensteine:["Team gebildet","Station konzipiert (Wahrnehmung oder Gedächtnis)","Material vorbereitet","Parcours durchgeführt","Reflexion abgegeben"]},
+ {id:"lb4",lb:"LB 4",lbNum:4,titel:"Konditionierung im Alltag entdecken",lbTitel:"Lernen",
+  projektSchulwochen:["sw16","sw17"],aptSchulwochen:["sw18","sw19"],
+  notwendigeWochen:["pp4p1","pp13","pp14"],trainingWochen:["pp15","pp16"],
+  meilensteine:["Team gebildet","Alltagsbeispiele gesammelt","Beispiele fachlich analysiert (klassisch/operant)","Dokumentation erstellt","Präsentiert"]}
+];
+// Teams hängen am Projekt (nicht an einem einzelnen Inhalt) – ein Team pro
+// Projekt, sichtbar in allen Projektinhalten.
+const PROJEKT_PHASEN=PROJEKT_PHASEN_ROH.map(ph=>{
+ const pw=ph.projektSchulwochen.map(swById),aw=ph.aptSchulwochen.map(swById);
+ return {...ph,projektWocheId:"team_"+ph.id,
+  projektStart:pw[0].start,projektEnde:pw[pw.length-1].end,
+  aptStart:aw[0].start,aptEnde:aw[aw.length-1].end,
+  start:pw[0].start,end:aw[aw.length-1].end};
+});
 function projektPhaseById(id){return PROJEKT_PHASEN.find(p=>p.id===id)||null;}
 function projektPhaseByWoche(wocheId){return PROJEKT_PHASEN.find(p=>p.notwendigeWochen.includes(wocheId)||p.trainingWochen.includes(wocheId))||null;}
+function teamAnchorFor(wocheId){const ph=PROJEKT_PHASEN.find(p=>p.notwendigeWochen.includes(wocheId));return ph?ph.projektWocheId:wocheId;}
 
-const LEHRPLAN_ZIELE_VORSCHLAG={
- pp01:["Ich kann die Gegenstandsbereiche der Psychologie und Pädagogik erläutern und ihre Wechselwirkung an Beispielen zeigen.","Ich kann Erleben, Verhalten und Handeln als Gegenstand der Psychologie von Erziehungspraxis und -theorie als Gegenstand der Pädagogik unterscheiden.","Ich kann die Bedeutung von Pädagogik und Psychologie für das Sozialwesen an eigenen Praxisfragen festmachen."],
- pp02:["Ich kann die Wesenszüge einer wissenschaftlichen Pädagogik bzw. Psychologie untersuchen und von alltagspsychologischen Aussagen abgrenzen.","Ich kann Unterschiede zwischen Beschreibung und Erklärung als wissenschaftliche Kriterien erfassen.","Ich kann Merkmale von wissenschaftlicher Theorie und Alltagstheorie an eigenen Beispielen erklären."],
- pp03:["Ich kann Prinzipien wissenschaftlichen Beschreibens und Erklärens auf ein eigenes kleines Experiment anwenden.","Ich kann Fragestellung, Durchführung und Auswertung eines Mini-Experiments nachvollziehbar dokumentieren.","Ich kann meine Ergebnisse sachlich und wissenschaftlich korrekt präsentieren."],
- pp04:["Ich kann Erziehung als Anregung zur Bildung verstehen und den Erziehungs- und Bildungsbegriff auf Handlungssituationen anwenden.","Ich kann Merkmale von Erziehung (z. B. soziale Beziehung, bewusste Zielvorgaben) und von Bildung (z. B. mündiger Mensch, individuelle Zielsetzungen) unterscheiden.","Ich kann Erziehung von Betreuung und Versorgung abgrenzen."],
- pp05:["Ich kann unterschiedliche Erziehungs- und Bildungsziele entwerfen und passende Erziehungsmaßnahmen ableiten.","Ich kann die Erziehungsstile nach Baumrind unterscheiden und ihre Eignung für unterschiedliche Situationen beurteilen.","Ich kann anhand eines Praxisfalls pädagogisches Handeln begründen und Alternativen entwickeln."],
- pp06:["Ich kann das übergreifende Erziehungs- und Bildungsziel Selbst-, Sach- und Sozialkompetenz erläutern.","Ich kann Mündigkeit nach Heinrich Roth mit den drei Kompetenzbereichen beschreiben.","Ich kann Erziehungsziele kompetenzorientiert formulieren."],
- pp07:["Ich kann die Dimensionen von Erziehungs- und Führungsstilen (autoritär, laissez-faire, sozialintegrativ) nach Tausch/Tausch erläutern.","Ich kann Aufgaben und Ziele einer Kindertageseinrichtung nach dem Bayerischen Bildungs- und Erziehungsplan (BayBEP) beschreiben.","Ich kann diese Erziehungs- und Bildungsziele in einer realen Einrichtung wiedererkennen."],
- pp08:["Ich kann Probleme und Schwierigkeiten einer Erziehungs- oder Bildungsinstitution an einem Praxisfall reflektieren.","Ich kann Erziehung mit Wahrnehmung und Motivation vernetzt betrachten und eine Handlungsempfehlung ableiten.","Ich kann Werthaltungen zu meinem pädagogischen Handeln entwickeln."],
- pp09:["Ich kann den Wahrnehmungsprozess nach Zimbardo erläutern und Wahrnehmung als subjektive Konstruktion der Wirklichkeit begreifen.","Ich kann das Mehrspeicher-Modell des Gedächtnisses nach Markowitsch erklären.","Ich kann Kontrollprozesse des Gedächtnisses nutzen, um Phänomene aus Schule und Beruf zu erklären."],
- pp10:["Ich kann Emotion als Begriff mit ihren Komponenten am Beispiel Angst verdeutlichen.","Ich kann Strategien zur Selbstregulation von Emotionen entwickeln und anwenden.","Ich kann emotionale Situationen aus der Praxis professionell analysieren."],
- pp11:["Ich kann den Prozesscharakter der Motivation am Beispiel der Leistungsmotivation aufzeigen.","Ich kann Attributionsmuster (internal/external, stabil/variabel) nach Weiner erkennen und deren Folgen für Emotion und Erfolgserwartung erklären.","Ich kann daraus Konsequenzen für mein eigenes Selbstmanagement ableiten."],
- pp12:["Ich kann anhand der Gedächtnisforschung effektive Lernstrategien entwickeln und für meinen eigenen Wissenserwerb nutzen.","Ich kann Wechselwirkungen zwischen Kognition, Emotion und Motivation an einem konkreten Beispiel erläutern.","Ich kann eine Lernhilfe oder Anleitung für eine reale Lern-/Orientierungssituation erstellen."],
- pp13:["Ich kann Reifungs- und Lernprozesse unterscheiden und Fremd- sowie Selbststeuerungsprozesse an Beispielen aufzeigen.","Ich kann den Konditionierungsprozess nach Pawlow erklären, inklusive Reizgeneralisierung und Löschung.","Ich kann klassisches Konditionieren in Alltagssituationen wiedererkennen."],
- pp14:["Ich kann das Verstärkungslernen nach Skinner (Verstärkerarten, Löschung, Shaping) erklären.","Ich kann die Entstehung und Veränderung von Verhalten mithilfe des operanten Konditionierens erklären und zielgerichtet anwenden.","Ich kann anhand eines Praxisfalls professionell-ethische Handlungsalternativen entwickeln."],
- pp15:["Ich kann Phasen und Teilprozesse der sozial-kognitiven Theorie nach Bandura beschreiben.","Ich kann die Entwicklung von der behavioristischen zur kognitiven Sichtweise reflektieren.","Ich kann Selbstwirksamkeit nach Bandura (Erwartungshaltungen, Selbstbewertung, Selbstregulation) erläutern."],
- pp16:["Ich kann die Wirkung von Medien auf das Lernen emotionaler Reaktionen und aggressiven Verhaltens auf Basis einer Lerntheorie einordnen.","Ich kann lernförderliche digitale Angebote reflektiert beurteilen.","Ich kann mit medialen Einflüssen bewusst und reflektiert umgehen."],
- pp17:["Ich kann Erziehung, Wahrnehmung, Emotion, Motivation, Gedächtnis und Lernen an einem Praxisfall vernetzt anwenden.","Ich kann eine anonymisierte Fallsituation theoriegeleitet analysieren und einen Handlungsvorschlag entwickeln.","Ich kann meine Ergebnisse präsentieren und mein Praxisjahr reflektieren."]
+// Inhalte (Nr. = Nummer aus der Inhaltsliste Jgst. 11). typ "projekt" =
+// Projektinhalt, typ "apt" = Abschlussprüfungs-Training. "bezug" verlinkt
+// APT-Inhalte quer mit den Projektinhalten, auf denen sie aufbauen.
+// IDs bestehender Wochen (pp01 …) wurden beibehalten, wo das Thema passt –
+// bereits eingetragene Aufträge/Materialien bleiben so erhalten.
+const PP_EINHEITEN=[
+ // ---------- LB 1 · Projekt ----------
+ {id:"pp01",phase:"lb1",typ:"projekt",nr:"1",thema:"Gegenstand der Psychologie: Erleben und Verhalten",
+  planung:"Erleben (innere, nur der Person selbst zugängliche Vorgänge) und Verhalten (von außen beobachtbar) unterscheiden und festlegen, was ihr in eurem Experiment beobachtet und was ihr erfragt.",
+  praxis:"Im Praktikum Beispiele sammeln: Was ist beobachtbares Verhalten, was lässt sich nur erschließen oder erfragen?",
+  ziele:["Ich kann Erleben und Verhalten als Gegenstand der Psychologie definieren und voneinander abgrenzen.","Ich kann an Alltags- und Praxisbeispielen zeigen, welche Anteile beobachtbar (Verhalten) und welche nur erschließbar bzw. erfragbar (Erleben) sind.","Ich kann für unser Experiment festlegen, welches Verhalten wir beobachten und wie wir das Erleben erfassen (z. B. Befragung)."]},
+ {id:"pp02",phase:"lb1",typ:"projekt",nr:"7, 8",thema:"Wissenschaftliche und alltagspsychologische Aussagen",
+  planung:"Merkmale wissenschaftlicher Aussagen (systematische Gewinnung, Überprüfbarkeit, Allgemeingültigkeit, Objektivität) den Merkmalen alltagspsychologischer Aussagen (zufällige Erkenntnisgewinnung, fehlende Überprüfbarkeit, unzulässige Verallgemeinerung, Subjektivität) gegenüberstellen; eure Alltagsvermutung in eine überprüfbare Hypothese umformulieren.",
+  praxis:"Praxisbeobachtung mit Kriterienraster: Was ist Beobachtung, was ist Interpretation?",
+  ziele:["Ich kann die Merkmale wissenschaftlicher Aussagen – systematische Gewinnung, Überprüfbarkeit, Allgemeingültigkeit und Objektivität – erläutern.","Ich kann die Merkmale alltagspsychologischer Aussagen – zufällige Erkenntnisgewinnung, fehlende Überprüfbarkeit, unzulässige Verallgemeinerung und Subjektivität – an Beispielen aufzeigen.","Ich kann eine Alltagsvermutung in eine wissenschaftlich überprüfbare Hypothese umformulieren."]},
+ {id:"pp03",phase:"lb1",typ:"projekt",nr:"9, 10",thema:"Das Experiment als wissenschaftliche Methode",
+  planung:"Aufbau eines Experiments (Hypothese, unabhängige/abhängige Variable, Versuchs- und Kontrollgruppe) und seine Kennzeichen Willkürlichkeit, Variierbarkeit und Wiederholbarkeit; euer Mini-Experiment planen, durchführen, auswerten und präsentieren.",
+  praxis:"Kleines Mini-Experiment zu Aufmerksamkeit, Erinnerung oder Lernverhalten; Datenschutz und Ethik beachten.",
+  ziele:["Ich kann das Experiment als wissenschaftliche Methode beschreiben (Hypothese, unabhängige und abhängige Variable, Versuchs- und Kontrollgruppe).","Ich kann die Kennzeichen Willkürlichkeit, Variierbarkeit und Wiederholbarkeit erklären und in unserer Versuchsplanung umsetzen.","Ich kann Durchführung und Ergebnisse unseres Experiments nachvollziehbar dokumentieren und sachlich präsentieren."]},
+ // ---------- LB 1 · Abschlussprüfungs-Training ----------
+ {id:"pp1a1",phase:"lb1",typ:"apt",nr:"2, 6",bezug:["pp01","pp02"],thema:"Gegenstand der Pädagogik: Erziehungswissenschaft, Erziehungspraxis, Erziehung und Bildung",
+  planung:"Erziehungswissenschaft (Theorie) und Erziehungspraxis unterscheiden und aufeinander beziehen; Erziehung und Bildung definieren und abgrenzen.",
+  ziele:["Ich kann Erziehungswissenschaft und Erziehungspraxis als Gegenstand der Pädagogik unterscheiden und ihren Zusammenhang erläutern.","Ich kann die Begriffe Erziehung und Bildung definieren und voneinander abgrenzen.","Ich kann den Gegenstand der Pädagogik von dem der Psychologie abgrenzen und Wechselwirkungen aufzeigen."],
+  pruefung:"Grenzen Sie die Erziehungswissenschaft von der Erziehungspraxis ab und erläutern Sie an einem Beispiel aus Ihrem Praktikum, wie sich beide Bereiche gegenseitig beeinflussen. Unterscheiden Sie dabei die Begriffe Erziehung und Bildung.",
+  kprim:[{frage:"Welche Aussagen zum Gegenstand der Pädagogik treffen zu?",statements:[
+   {text:"Die Erziehungswissenschaft beschreibt, erklärt und reflektiert Erziehungsvorgänge systematisch.",correct:true},
+   {text:"Erziehungspraxis meint das konkrete erzieherische Handeln, z. B. in Familie oder Kita.",correct:true},
+   {text:"Bildung ist ausschließlich das, was von außen durch Erziehende bewirkt wird.",correct:false},
+   {text:"Die Pädagogik befasst sich ausschließlich mit dem Erleben und Verhalten einzelner Personen.",correct:false}]}]},
+ {id:"pp1a2",phase:"lb1",typ:"apt",nr:"3",bezug:[],thema:"Ziele und Handlungen der Erziehung",
+  planung:"Erziehungsziele (Herkunft, Funktion) und Erziehungshandlungen bzw. -maßnahmen aufeinander beziehen.",
+  ziele:["Ich kann erklären, was Erziehungsziele sind und wovon sie abhängen (z. B. Gesellschaft, Werte, Einrichtung).","Ich kann Erziehungshandlungen (z. B. Lob, Ermutigung, Vorbild, Grenzen setzen) beschreiben und einem Erziehungsziel zuordnen.","Ich kann an einem Praxisbeispiel begründen, ob eine Erziehungshandlung zum angestrebten Ziel passt."],
+  pruefung:"Erläutern Sie an einem Beispiel aus Ihrem Erziehungspraktikum den Zusammenhang zwischen einem Erziehungsziel und den dazu passenden Erziehungshandlungen. Beurteilen Sie, ob die gewählten Handlungen zielführend sind.",
+  kprim:[{frage:"Welche Aussagen zu Zielen und Handlungen der Erziehung treffen zu?",statements:[
+   {text:"Erziehungsziele beschreiben erwünschte Eigenschaften bzw. Verhaltensweisen, die Zu-Erziehende erreichen sollen.",correct:true},
+   {text:"Erziehungsziele sind von gesellschaftlichen Werten und Normen unabhängig.",correct:false},
+   {text:"Erziehungshandlungen sollten auf ein Erziehungsziel ausgerichtet sein.",correct:true},
+   {text:"Eine Erziehungsmaßnahme wirkt unabhängig von Situation und Person immer gleich.",correct:false}]}]},
+ {id:"pp1a3",phase:"lb1",typ:"apt",nr:"4",bezug:["pp01"],thema:"Beziehung zwischen Erziehenden und Zu-Erziehenden",
+  planung:"Die pädagogische Beziehung als Grundlage von Erziehung; Merkmale einer förderlichen Beziehung und ihre Wirkung.",
+  ziele:["Ich kann die pädagogische Beziehung als Grundlage von Erziehung beschreiben.","Ich kann Merkmale einer förderlichen Beziehung (z. B. Wertschätzung, Echtheit, Einfühlungsvermögen, Verlässlichkeit) erläutern.","Ich kann an einem Praxisbeispiel zeigen, wie sich die Beziehung auf Erleben und Verhalten des Zu-Erziehenden auswirkt."],
+  pruefung:"Beschreiben Sie Merkmale einer förderlichen Beziehung zwischen Erziehenden und Zu-Erziehenden und erläutern Sie an einem Beispiel aus Ihrem Praktikum, welche Auswirkungen diese Beziehung auf das Kind bzw. den Jugendlichen hat.",
+  kprim:[{frage:"Welche Aussagen zur Beziehung zwischen Erziehenden und Zu-Erziehenden treffen zu?",statements:[
+   {text:"Eine tragfähige Beziehung ist eine wichtige Voraussetzung dafür, dass Erziehung wirken kann.",correct:true},
+   {text:"Wertschätzung bedeutet, dass jedes Verhalten des Kindes gutgeheißen werden muss.",correct:false},
+   {text:"Die pädagogische Beziehung ist in der Regel asymmetrisch, z. B. hinsichtlich Verantwortung und Erfahrung.",correct:true},
+   {text:"Verlässlichkeit und Echtheit der Erziehenden spielen für die Beziehung keine Rolle.",correct:false}]}]},
+ {id:"pp1a4",phase:"lb1",typ:"apt",nr:"5",bezug:[],thema:"Einrichtungen der Erziehung",
+  planung:"Einrichtungen der Erziehung nach Zielgruppe, Auftrag und Funktion (familienergänzend/-ersetzend) ordnen – am Beispiel der eigenen Praktikumseinrichtung.",
+  ziele:["Ich kann Einrichtungen der Erziehung (z. B. Familie, Krippe, Kindergarten, Hort, Schule, Jugendarbeit, Heim) benennen und nach Zielgruppe ordnen.","Ich kann Aufgaben und Ziele einer Einrichtung beschreiben, z. B. meiner Praktikumseinrichtung.","Ich kann familienergänzende und familienersetzende Einrichtungen unterscheiden."],
+  pruefung:"Stellen Sie Ihre Praktikumseinrichtung als Einrichtung der Erziehung vor. Beschreiben Sie Zielgruppe, Aufgaben und Ziele und grenzen Sie sie von einer weiteren Einrichtung der Erziehung ab.",
+  kprim:[{frage:"Welche Aussagen zu Einrichtungen der Erziehung treffen zu?",statements:[
+   {text:"Die Familie gilt als erste und grundlegende Erziehungsinstanz.",correct:true},
+   {text:"Kindertageseinrichtungen haben einen eigenen Bildungs- und Erziehungsauftrag.",correct:true},
+   {text:"Ein Heim der Kinder- und Jugendhilfe ist familienergänzend, weil die Kinder abends immer nach Hause gehen.",correct:false},
+   {text:"Schule hat ausschließlich einen Bildungs- und keinen Erziehungsauftrag.",correct:false}]}]},
+ // ---------- LB 3 · Projekt ----------
+ {id:"pp04",phase:"lb3",typ:"projekt",nr:"18",thema:"Merkmale von Erziehung",
+  planung:"Erziehung als beabsichtigte Lernhilfe, als soziale Kommunikation und Interaktion und als soziales Handeln; Abgrenzung zu Betreuung und Versorgung.",
+  praxis:"Beobachtungen aus dem Erziehungspraktikum (anonymisiert) anhand der Merkmale von Erziehung analysieren.",
+  ziele:["Ich kann Erziehung als beabsichtigte (intentionale) Lernhilfe erläutern.","Ich kann Erziehung als soziale Kommunikation und Interaktion sowie als soziales Handeln beschreiben.","Ich kann in beobachteten Praxissituationen die Merkmale von Erziehung nachweisen und Erziehung von Betreuung/Versorgung abgrenzen."]},
+ {id:"pp05",phase:"lb3",typ:"projekt",nr:"20",thema:"Erziehungsstile nach Baumrind",
+  planung:"Autoritativ, autoritär, permissiv, vernachlässigend – anhand der Dimensionen Lenkung/Anforderung und Zuwendung/Responsivität; beobachtete Situationen begründet zuordnen.",
+  praxis:"Anonymisierte Fallvignetten aus dem Erziehungspraktikum einem Stil zuordnen und Alternativen begründen.",
+  ziele:["Ich kann die Erziehungsstile nach Baumrind (autoritativ, autoritär, permissiv, vernachlässigend) anhand von Lenkung/Anforderung und Zuwendung/Responsivität beschreiben.","Ich kann beobachtete Erziehungssituationen begründet einem Erziehungsstil zuordnen.","Ich kann mögliche Auswirkungen der Stile auf die Entwicklung von Kindern und Jugendlichen erläutern."]},
+ // ---------- LB 3 · Abschlussprüfungs-Training ----------
+ {id:"pp06",phase:"lb3",typ:"apt",nr:"19",bezug:["pp04","pp05"],thema:"Mündigkeit nach Roth",
+  planung:"Mündigkeit als Erziehungsziel mit Selbst-, Sach- und Sozialkompetenz; Möglichkeiten der Umsetzung durch Erziehungsmaßnahmen.",
+  ziele:["Ich kann Mündigkeit nach Heinrich Roth als Erziehungsziel erklären.","Ich kann Selbst-, Sach- und Sozialkompetenz beschreiben und mit Beispielen belegen.","Ich kann Erziehungsmaßnahmen ableiten, die Mündigkeit fördern, und begründen, welcher Erziehungsstil dies unterstützt."],
+  pruefung:"Erläutern Sie das Erziehungsziel Mündigkeit nach Roth mit seinen drei Kompetenzbereichen. Zeigen Sie an einem Beispiel aus dem Erziehungspraktikum auf, durch welche Erziehungsmaßnahmen Mündigkeit gefördert werden kann.",
+  kprim:[{frage:"Welche Aussagen zur Mündigkeit nach Roth treffen zu?",statements:[
+   {text:"Nach Roth umfasst Mündigkeit Selbst-, Sach- und Sozialkompetenz.",correct:true},
+   {text:"Sachkompetenz bedeutet, für sich selbst verantwortlich handeln zu können.",correct:false},
+   {text:"Sozialkompetenz meint u. a. die Fähigkeit, in sozialen Situationen verantwortlich zu handeln.",correct:true},
+   {text:"Mündigkeit wird am besten durch einen autoritären Erziehungsstil gefördert.",correct:false}]}]},
+ {id:"pp07",phase:"lb3",typ:"apt",nr:"21",bezug:["pp04"],thema:"Bildungs- und Erziehungsbereiche des BayBEP",
+  planung:"Themenbezogene Bildungs- und Erziehungsbereiche: digitale Medien und Technologien, Umwelt, Gesundheit sowie ein weiterer Bereich (z. B. Mathematik oder Naturwissenschaften und Technik).",
+  ziele:["Ich kann den Bayerischen Bildungs- und Erziehungsplan (BayBEP) als Orientierungsrahmen für Kindertageseinrichtungen einordnen.","Ich kann die Bereiche digitale Medien und Technologien, Umwelt, Gesundheit und einen weiteren Bereich mit Zielen und Praxisbeispielen beschreiben.","Ich kann Angebote meiner Praktikumseinrichtung einem Bildungs- und Erziehungsbereich zuordnen."],
+  pruefung:"Beschreiben Sie zwei themenbezogene Bildungs- und Erziehungsbereiche des BayBEP und erläutern Sie für einen davon ein konkretes Angebot aus Ihrer Praktikumseinrichtung, das die dort genannten Ziele umsetzt.",
+  kprim:[{frage:"Welche Aussagen zum BayBEP treffen zu?",statements:[
+   {text:"Der BayBEP ist ein Orientierungsrahmen für Bildung und Erziehung in bayerischen Kindertageseinrichtungen.",correct:true},
+   {text:"Umwelt und Gesundheit gehören zu den themenbezogenen Bildungs- und Erziehungsbereichen.",correct:true},
+   {text:"Digitale Medien sollen laut BayBEP in Kindertageseinrichtungen grundsätzlich nicht vorkommen.",correct:false},
+   {text:"Die Bildungsbereiche werden in der Kita streng getrennt in festen Unterrichtsstunden umgesetzt.",correct:false}]}]},
+ // ---------- LB 2 · Projekt ----------
+ {id:"pp09",phase:"lb2",typ:"projekt",nr:"11",thema:"Wahrnehmung: Begriff, Prozess und Einflussfaktoren",
+  planung:"Wahrnehmungsprozess (Reizaufnahme, Weiterleitung und Verarbeitung, Bewertung/Empfindung, Reaktion) sowie individuelle und soziale Einflussfaktoren – daraus eine Parcours-Station entwickeln.",
+  praxis:"Beobachtungsfehler und Wahrnehmungsverzerrungen im Praxisalltag reflektieren.",
+  ziele:["Ich kann Wahrnehmung definieren und den Wahrnehmungsprozess (Reizaufnahme, Weiterleitung und Verarbeitung, Bewertung/Empfindung, Reaktion) beschreiben.","Ich kann individuelle (z. B. Bedürfnisse, Erwartungen, Erfahrungen) und soziale Einflussfaktoren (z. B. Gruppendruck, Vorurteile) erläutern.","Ich kann eine Parcours-Station entwickeln, die einen Wahrnehmungseffekt erlebbar macht und fachlich erklärt."]},
+ {id:"pp2p2",phase:"lb2",typ:"projekt",nr:"12",thema:"Gedächtnis: Mehrspeichermodell und Kontrollprozesse",
+  planung:"Ultrakurzzeit-, Kurzzeit- und Langzeitgedächtnis; Kontrollprozesse Organisation, Elaboration und Wiederholung – als Parcours-Station erlebbar machen.",
+  praxis:"Erinnerungsleistungen im Alltag (z. B. Namen, Abläufe) beobachten und mit dem Modell erklären.",
+  ziele:["Ich kann Gedächtnis definieren und das Modell mit Ultrakurzzeit-, Kurzzeit- und Langzeitgedächtnis beschreiben.","Ich kann die Kontrollprozesse Organisation, Elaboration und Wiederholung erklären.","Ich kann an einer Parcours-Station zeigen, wie Kontrollprozesse das Behalten verbessern."]},
+ {id:"pp12",phase:"lb2",typ:"projekt",nr:"14",thema:"Strategien zum Wissenserwerb",
+  planung:"Mindmap, Karteikarten & Co.: Welche Kontrollprozesse nutzen sie? Eine Strategie als Parcours-Station ausprobieren lassen.",
+  praxis:"Eigene Lernstrategie für die Abschlussprüfung auswählen und begründen.",
+  ziele:["Ich kann Strategien zum Wissenserwerb (z. B. Mindmap, Karteikarten) beschreiben.","Ich kann erklären, welche Kontrollprozesse des Gedächtnisses diese Strategien nutzen.","Ich kann eine Strategie für mein eigenes Lernen auswählen und begründen."]},
+ // ---------- LB 2 · Abschlussprüfungs-Training ----------
+ {id:"pp2a1",phase:"lb2",typ:"apt",nr:"13",bezug:["pp2p2","pp12"],thema:"Speichersysteme des Langzeitgedächtnisses nach Markowitsch",
+  planung:"Deklarative (episodisch-autobiographisches Gedächtnis, Wissenssystem) und nicht-deklarative Systeme (prozedurales Gedächtnis, Priming, perzeptuelles Gedächtnis) mit Beispielen.",
+  ziele:["Ich kann die Speichersysteme des Langzeitgedächtnisses nach Markowitsch in deklarative und nicht-deklarative Systeme einteilen.","Ich kann jedem Speichersystem passende Beispiele aus Alltag und Praxis zuordnen.","Ich kann Folgen für das Lernen und die pädagogische bzw. pflegerische Praxis ableiten."],
+  pruefung:"Stellen Sie die Speichersysteme des Langzeitgedächtnisses nach Markowitsch dar und ordnen Sie jedem ein Beispiel aus Ihrem Praktikum zu. Erläutern Sie eine Konsequenz für die Gestaltung von Lernprozessen.",
+  kprim:[{frage:"Welche Aussagen zu den Speichersystemen nach Markowitsch treffen zu?",statements:[
+   {text:"Das episodisch-autobiographische Gedächtnis gehört zu den deklarativen Speichersystemen.",correct:true},
+   {text:"Fahrradfahren ist typischerweise im prozeduralen Gedächtnis gespeichert.",correct:true},
+   {text:"Deklarative Inhalte sind dem Bewusstsein nicht zugänglich und lassen sich nicht in Worte fassen.",correct:false},
+   {text:"Priming zählt zum Wissenssystem (semantisches Gedächtnis).",correct:false}]}]},
+ {id:"pp10",phase:"lb2",typ:"apt",nr:"15",bezug:["pp09"],thema:"Emotion: Begriff, Komponenten und Emotionsregulation",
+  planung:"Emotion und ihre Komponenten an einem konkreten Beispiel; je eine antezedenzfokussierte und eine reaktionsfokussierte Regulationsstrategie.",
+  ziele:["Ich kann Emotion definieren und ihre Komponenten (z. B. subjektives Erleben, physiologische Veränderung, Ausdruck, kognitive Bewertung, Handlungstendenz) beschreiben.","Ich kann die Komponenten an einem konkreten Beispiel (z. B. Prüfungsangst) aufzeigen.","Ich kann je eine antezedenzfokussierte (z. B. Neubewertung) und eine reaktionsfokussierte Strategie (z. B. Atemtechnik) erklären und bewerten."],
+  pruefung:"Erläutern Sie die Komponenten einer Emotion am Beispiel der Angst vor einer Prüfung. Stellen Sie je eine antezedenzfokussierte und eine reaktionsfokussierte Strategie der Emotionsregulation dar und beurteilen Sie deren Wirksamkeit.",
+  kprim:[{frage:"Welche Aussagen zu Emotion und Emotionsregulation treffen zu?",statements:[
+   {text:"Antezedenzfokussierte Strategien setzen an, bevor die emotionale Reaktion voll entstanden ist, z. B. durch Neubewertung.",correct:true},
+   {text:"Das Unterdrücken des Gesichtsausdrucks ist eine reaktionsfokussierte Strategie.",correct:true},
+   {text:"Physiologische Veränderungen wie Herzklopfen gehören nicht zu den Komponenten einer Emotion.",correct:false},
+   {text:"Emotionen bestehen ausschließlich aus dem subjektiven Gefühlserleben.",correct:false}]}]},
+ {id:"pp11",phase:"lb2",typ:"apt",nr:"16, 17",bezug:["pp09","pp12"],thema:"Motivation und Attributionstheorie nach Weiner",
+  planung:"Motivation: Begriff und Merkmale; ergebnis- und attributionsabhängige Emotionen; Folgen von internal/external für die Emotion und von stabil/variabel für Erfolgserwartung und Motivation.",
+  ziele:["Ich kann Motivation definieren und ihre Merkmale (z. B. Aktivierung, Richtung, Ausdauer/Intensität) beschreiben.","Ich kann ergebnisabhängige (z. B. Freude) und attributionsabhängige Emotionen (z. B. Stolz) nach Weiner unterscheiden.","Ich kann die Folgen von internal/external für die Emotion und von stabil/variabel für Erfolgserwartung und Motivation erklären."],
+  pruefung:"Erläutern Sie mithilfe der Attributionstheorie nach Weiner, wie sich die Ursachenzuschreibung eines Misserfolgs in einer Klassenarbeit auf Emotion, Erfolgserwartung und Motivation einer Schülerin auswirkt. Unterscheiden Sie dabei ergebnis- und attributionsabhängige Emotionen.",
+  kprim:[{frage:"Welche Aussagen zur Attributionstheorie nach Weiner treffen zu?",statements:[
+   {text:"Freude über einen Erfolg ist eine ergebnisabhängige Emotion.",correct:true},
+   {text:"Stolz entsteht vor allem, wenn ein Erfolg internal, z. B. auf eigene Anstrengung, zurückgeführt wird.",correct:true},
+   {text:"Die Dimension stabil/variabel beeinflusst vor allem die Erfolgserwartung.",correct:true},
+   {text:"Wird Misserfolg auf mangelnde Begabung (internal, stabil) zurückgeführt, steigt meist die Erfolgserwartung.",correct:false}]}]},
+ // ---------- LB 4 · Projekt ----------
+ {id:"pp4p1",phase:"lb4",typ:"projekt",nr:"22",thema:"Merkmale des Begriffs Lernen",
+  planung:"Verhaltensaufbau oder -änderung, relativ dauerhaft, keine Reifung, beruht auf Erfahrung und Übung, nicht direkt beobachtbar.",
+  praxis:"Pflege: Welche Veränderungen im Verhalten sind Lernen – und welche nicht?",
+  ziele:["Ich kann Lernen als relativ dauerhaften Verhaltensaufbau oder Verhaltensänderung definieren.","Ich kann Lernen von Reifung abgrenzen und erklären, dass Lernen auf Erfahrung und Übung beruht.","Ich kann erklären, warum Lernen nicht direkt beobachtbar ist, sondern aus Verhaltensänderungen erschlossen wird."]},
+ {id:"pp13",phase:"lb4",typ:"projekt",nr:"23",thema:"Klassisches Konditionieren nach Pawlow",
+  planung:"Konditionierungsprozess (vor, während, nach der Konditionierung; neutraler, unkonditionierter und konditionierter Reiz; unkonditionierte und konditionierte Reaktion), Reizgeneralisierung, Konditionierung höherer Ordnung.",
+  praxis:"Pflege: Routinen, Signale und situative Auslöser beobachten; keine personenbezogenen Diagnosen.",
+  ziele:["Ich kann den Konditionierungsprozess nach Pawlow mit den zugehörigen Reizen und Reaktionen beschreiben.","Ich kann Reizgeneralisierung und Konditionierung höherer Ordnung erklären.","Ich kann klassisches Konditionieren an Alltags- und Praxisbeispielen nachweisen."]},
+ {id:"pp14",phase:"lb4",typ:"projekt",nr:"24",thema:"Operantes Konditionieren nach Thorndike und Skinner",
+  planung:"Lerngesetze nach Thorndike, Lernen durch Verstärkung nach Skinner, Verstärkerarten, Relativität von Verstärkern.",
+  praxis:"Pflege: Verstärkung in Anleitung und Alltagsbegleitung analysieren; ethisch vertretbare Alternativen entwickeln.",
+  ziele:["Ich kann die Lerngesetze nach Thorndike (u. a. Gesetz des Effekts) erklären.","Ich kann Lernen durch Verstärkung nach Skinner mit den Verstärkerarten (positive/negative, primäre/sekundäre Verstärker) beschreiben.","Ich kann die Relativität von Verstärkern (Premack-Prinzip) erläutern und an Praxisbeispielen anwenden."]},
+ // ---------- LB 4 · Abschlussprüfungs-Training ----------
+ {id:"pp15",phase:"lb4",typ:"apt",nr:"25",bezug:["pp14"],thema:"Sozial-kognitive Theorie nach Bandura",
+  planung:"Phasen und Teilprozesse: Aufmerksamkeitsprozesse (Bedingungen der Aufmerksamkeit), Gedächtnisprozesse, motorische Reproduktionsprozesse, Motivationsprozesse (Erwartungshaltungen, Formen der Bekräftigung).",
+  ziele:["Ich kann die Phasen (Aneignung, Ausführung) und Teilprozesse der sozial-kognitiven Theorie nach Bandura beschreiben.","Ich kann Bedingungen der Aufmerksamkeit (Merkmale von Modell, Beobachter, Situation) sowie Gedächtnis- und Reproduktionsprozesse erläutern.","Ich kann Motivationsprozesse mit Erwartungshaltungen und Formen der Bekräftigung (direkt, stellvertretend, Selbstbekräftigung) erklären."],
+  pruefung:"Erläutern Sie an einem Beispiel aus Ihrem Praktikum die Phasen und Teilprozesse des Modelllernens nach Bandura. Gehen Sie dabei besonders auf die Bedingungen der Aufmerksamkeit und die Formen der Bekräftigung ein.",
+  kprim:[{frage:"Welche Aussagen zur sozial-kognitiven Theorie nach Bandura treffen zu?",statements:[
+   {text:"Bandura unterscheidet zwischen einer Aneignungs- und einer Ausführungsphase.",correct:true},
+   {text:"Stellvertretende Bekräftigung: Der Beobachter nimmt wahr, dass das Modell für sein Verhalten belohnt wird.",correct:true},
+   {text:"Ein in der Aneignungsphase gelerntes Verhalten wird immer auch sofort ausgeführt.",correct:false},
+   {text:"Merkmale des Modells (z. B. Sympathie, Ansehen) beeinflussen die Aufmerksamkeit des Beobachters nicht.",correct:false}]}]},
+ {id:"pp16",phase:"lb4",typ:"apt",nr:"26",bezug:["pp13","pp14"],thema:"Medien als Einflussfaktor für Lernprozesse",
+  planung:"Einfluss von Medien auf Lernprozesse auf Basis einer Lerntheorie (z. B. Bandura oder operantes Konditionieren) erklären und pädagogische Konsequenzen ableiten.",
+  ziele:["Ich kann den Einfluss von Medien auf Lernprozesse auf Basis einer Lerntheorie erklären.","Ich kann an einem Beispiel (z. B. Social Media, Games, Werbung) aufzeigen, welche Verhaltensweisen durch Medien gelernt werden können.","Ich kann Konsequenzen für einen reflektierten pädagogischen Umgang mit Medien ableiten."],
+  pruefung:"Erläutern Sie auf Basis der sozial-kognitiven Theorie nach Bandura, wie Kinder und Jugendliche durch Medien (z. B. Influencer:innen in Social Media) Verhaltensweisen lernen können. Leiten Sie daraus zwei pädagogische Konsequenzen ab.",
+  kprim:[{frage:"Welche Aussagen zu Medien als Einflussfaktor auf Lernprozesse treffen zu?",statements:[
+   {text:"Influencer:innen können für Jugendliche als Modelle im Sinne Banduras wirken.",correct:true},
+   {text:"Likes und positive Kommentare können aus Sicht des operanten Konditionierens als Verstärker wirken.",correct:true},
+   {text:"Medien haben lerntheoretisch keinen Einfluss auf Verhalten, weil es sich nur um Fiktion handelt.",correct:false},
+   {text:"Beobachter übernehmen jedes gesehene Verhalten, unabhängig von den beobachteten Konsequenzen.",correct:false}]}]}
+].map(e=>{
+ const ph=PROJEKT_PHASEN_ROH.find(p=>p.id===e.phase);
+ const wochen=(e.typ==="projekt"?ph.projektSchulwochen:ph.aptSchulwochen).map(swById);
+ return {...e,lb:ph.lb,start:wochen[0].start,end:wochen[wochen.length-1].end,praxis:e.praxis||""};
+});
+
+// Lehrplan-Zeitstrahl je Fach. Pädagogik/Psychologie nutzt die Einheiten
+// oben (typ "projekt" | "apt"); die übrigen Fächer sind als leere,
+// erweiterbare Struktur angelegt (typ "projekt" | "einzel").
+const LEHRPLAN_WOCHEN={
+ paedagogik:PP_EINHEITEN,
+ deutsch:[],englisch:[],geschichte:[],mathematik:[],sozialwirtschaft:[],chemie:[]
 };
+// Lernziele je Einheit (aus den Kompetenzerwartungen des LehrplanPLUS FOS 11
+// und der Inhaltsliste Jgst. 11 abgeleitet).
+const LEHRPLAN_ZIELE_VORSCHLAG=Object.fromEntries(PP_EINHEITEN.map(e=>[e.id,e.ziele]));
 function lehrplanWocheById(fach,wocheId){
  return (LEHRPLAN_WOCHEN[fach]||[]).find(w=>w.id===wocheId)||null;
 }
 // Farbcodierung je Lernbereich (unabhängig von Projekt/Einzelthema),
 // dieselbe Nummerierung wie bei der Lernstandsmessung (LB1–LB4).
 const LERNBEREICH_FARBEN={
- 1:{bg:"#dbeafe",border:"#4a90d9",text:"#1f5a8a"},
- 2:{bg:"#f0e0fb",border:"#9b59b6",text:"#6c3483"},
- 3:{bg:"#dcf3d1",border:"#3fa66a",text:"#1f6b3d"},
- 4:{bg:"#fde8c2",border:"#e0a324",text:"#8a6512"}
+ 1:{bg:"#E3EDF8",border:"#3F7FC1",text:"#24507F"},
+ 2:{bg:"#EEE7F6",border:"#8A64B8",text:"#5A3D7E"},
+ 3:{bg:"#E1F2EA",border:"#3C9A6B",text:"#236246"},
+ 4:{bg:"#F8EADF",border:"#C9773A",text:"#8A4E21"}
 };
 function lernbereichNummern(lbText){
  return (lbText||"").match(/\d/g)||[];
@@ -1430,13 +1575,13 @@ async function saveLehrplanAuftrag(fach,wocheId){
  const payload={wocheId,fach,titel,beschreibung,updatedAt:serverTimestamp(),updatedBy:currentUser.uid};
  if(existing)await updateDoc(doc(db,"lehrplanAuftraege",existing.id),payload);
  else{payload.createdAt=serverTimestamp();await addDoc(collection(db,"lehrplanAuftraege"),payload)}
- await openWocheDetail(fach,wocheId);
+ await reopenDetail(fach,wocheId);
  toast("Arbeitsauftrag gespeichert.");
  }catch(e){console.error("Auftrag speichern:",e);toast("Konnte nicht gespeichert werden.")}
 }
 async function deleteLehrplanAuftrag(id,fach,wocheId){
  if(!confirm("Diesen Arbeitsauftrag wirklich löschen?"))return;
- try{await deleteDoc(doc(db,"lehrplanAuftraege",id));await openWocheDetail(fach,wocheId);toast("Arbeitsauftrag gelöscht.")}
+ try{await deleteDoc(doc(db,"lehrplanAuftraege",id));await reopenDetail(fach,wocheId);toast("Arbeitsauftrag gelöscht.")}
  catch(e){console.error(e);toast("Konnte nicht gelöscht werden.")}
 }
 
@@ -1460,13 +1605,13 @@ async function addLehrplanMaterial(fach,wocheId){
  if(!titel){toast("Bitte einen Titel eingeben.");return}
  try{
  await addDoc(collection(db,"lehrplanMaterialien"),{wocheId,fach,kategorie,titel,url,createdBy:currentUser.uid,createdAt:serverTimestamp()});
- await openWocheDetail(fach,wocheId);
+ await reopenDetail(fach,wocheId);
  toast("Material hinzugefügt.");
  }catch(e){console.error("Material speichern:",e);toast("Konnte nicht gespeichert werden.")}
 }
 async function deleteLehrplanMaterial(id,fach,wocheId){
  if(!confirm("Dieses Material wirklich löschen?"))return;
- try{await deleteDoc(doc(db,"lehrplanMaterialien",id));await openWocheDetail(fach,wocheId);toast("Gelöscht.")}
+ try{await deleteDoc(doc(db,"lehrplanMaterialien",id));await reopenDetail(fach,wocheId);toast("Gelöscht.")}
  catch(e){console.error(e);toast("Konnte nicht gelöscht werden.")}
 }
 function materialEmbedHTML(m){
@@ -1495,19 +1640,19 @@ async function createLehrplanTeam(fach,wocheId){
  const teamName=$("neuTeamName")?.value.trim();
  if(!teamName){toast("Bitte einen Team-Namen eingeben.");return}
  try{
- await addDoc(collection(db,"lehrplanTeams"),{wocheId,fach,teamName,mitgliederUids:[currentUser.uid],mitgliederNamen:[profile?.displayName||"Ich"],createdBy:currentUser.uid,createdAt:serverTimestamp()});
- await openWocheDetail(fach,wocheId);
+ await addDoc(collection(db,"lehrplanTeams"),{wocheId:teamAnchorFor(wocheId),fach,teamName,mitgliederUids:[currentUser.uid],mitgliederNamen:[profile?.displayName||"Ich"],createdBy:currentUser.uid,createdAt:serverTimestamp()});
+ await reopenDetail(fach,wocheId);
  toast("Team erstellt – du bist Mitglied!");
  }catch(e){console.error(e);toast("Konnte nicht erstellt werden.")}
 }
 // Projekt-Meilensteine: werden direkt am Team-Dokument gespeichert
 // (meilensteinIndex = Anzahl bereits erreichter Meilensteine, 0 = noch keiner).
 async function setTeamMeilenstein(teamId,index,fach,wocheId){
- if(!isTeacher()){toast("Nur Lehrkräfte können den Projekt-Fortschritt setzen.");return}
+ if(!isTeacher()&&!MEILENSTEINE_SCHUELER_DUERFEN_ABHAKEN){toast("Nur Lehrkräfte können den Projekt-Fortschritt setzen.");return}
  try{
  await updateDoc(doc(db,"lehrplanTeams",teamId),{meilensteinIndex:index,meilensteinUpdatedAt:serverTimestamp()});
  toast("Fortschritt aktualisiert.");
- await openWocheDetail(fach,wocheId);
+ await reopenDetail(fach,wocheId);
  }catch(e){console.error("Meilenstein setzen:",e);toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Konnte nicht gespeichert werden.");}
 }
 window.setTeamMeilenstein=setTeamMeilenstein;
@@ -1524,7 +1669,7 @@ async function joinLehrplanTeam(teamId,fach,wocheId){
  const d=snap.data();
  if((d.mitgliederUids||[]).includes(currentUser.uid)){toast("Du bist schon in diesem Team.");return}
  await updateDoc(ref,{mitgliederUids:[...(d.mitgliederUids||[]),currentUser.uid],mitgliederNamen:[...(d.mitgliederNamen||[]),profile?.displayName||"Mitglied"]});
- await openWocheDetail(fach,wocheId);
+ await reopenDetail(fach,wocheId);
  toast("Team beigetreten!");
  }catch(e){console.error(e);toast("Konnte nicht beitreten.")}
 }
@@ -1538,13 +1683,13 @@ async function leaveLehrplanTeam(teamId,fach,wocheId){
  const idx=uids.indexOf(currentUser.uid);
  if(idx>-1){uids.splice(idx,1);namen.splice(idx,1)}
  await updateDoc(ref,{mitgliederUids:uids,mitgliederNamen:namen});
- await openWocheDetail(fach,wocheId);
+ await reopenDetail(fach,wocheId);
  toast("Team verlassen.");
  }catch(e){console.error(e);toast("Konnte nicht verlassen werden.")}
 }
 async function deleteLehrplanTeam(teamId,fach,wocheId){
  if(!confirm("Dieses Team wirklich auflösen?"))return;
- try{await deleteDoc(doc(db,"lehrplanTeams",teamId));await openWocheDetail(fach,wocheId);toast("Team aufgelöst.")}
+ try{await deleteDoc(doc(db,"lehrplanTeams",teamId));await reopenDetail(fach,wocheId);toast("Team aufgelöst.")}
  catch(e){console.error(e);toast("Konnte nicht gelöscht werden.")}
 }
 
@@ -1569,13 +1714,20 @@ async function addLehrplanProdukt(fach,wocheId){
  dateiUrl=up.url;dateiName=up.name;
  }
  await addDoc(collection(db,"lehrplanProdukte"),{wocheId,fach,uid:currentUser.uid,name:profile?.displayName||"Campus-Mitglied",titel,inhalt,dateiUrl,dateiName,createdAt:serverTimestamp()});
- await openWocheDetail(fach,wocheId);
+ if(lehrplanWocheById(fach,wocheId)?.typ==="apt"&&!isTeacher()){await aptSetzen(wocheId,{produktHochgeladen:true},{tab:"produkt"});return}
+ await reopenDetail(fach,wocheId);
  showMotivationsBild();
  }catch(e){console.error("Lernprodukt hochladen:",e);toast("Fehler: "+(e?.message||e));}
 }
 async function deleteLehrplanProdukt(id,fach,wocheId){
  if(!confirm("Dieses Produkt wirklich löschen?"))return;
- try{await deleteDoc(doc(db,"lehrplanProdukte",id));await openWocheDetail(fach,wocheId);toast("Gelöscht.")}
+ try{
+ await deleteDoc(doc(db,"lehrplanProdukte",id));
+ if(lehrplanWocheById(fach,wocheId)?.typ==="apt"&&!isTeacher()){
+  const rest=(await getLehrplanProdukte(wocheId)).filter(p=>p.uid===currentUser.uid);
+  if(!rest.length){await aptSetzen(wocheId,{produktHochgeladen:false},{tab:"produkt"});toast("Gelöscht.");return}
+ }
+ await reopenDetail(fach,wocheId);toast("Gelöscht.")}
  catch(e){console.error(e);toast("Konnte nicht gelöscht werden.")}
 }
 
@@ -1597,7 +1749,7 @@ async function toggleZielErfuellt(fach,wocheId,zielId,erfuellt){
  data.zieleErfuellt[zielId]=erfuellt;
  data.updatedAt=serverTimestamp();
  await setDoc(ref,data);
- await openWocheDetail(fach,wocheId);
+ await reopenDetail(fach,wocheId);
  if(erfuellt)showMotivationsToast();
  }catch(e){console.error("Ziel-Status:",e);toast("Konnte nicht gespeichert werden.")}
 }
@@ -1609,7 +1761,7 @@ async function toggleAuftragGelesen(fach,wocheId,erledigt){
  data.auftragGelesen=erledigt;
  data.updatedAt=serverTimestamp();
  await setDoc(ref,data);
- await openWocheDetail(fach,wocheId);
+ await reopenDetail(fach,wocheId);
  if(erledigt)showMotivationsToast();
  }catch(e){console.error("Auftrag-gelesen-Status:",e);toast("Konnte nicht gespeichert werden.")}
 }
@@ -1621,7 +1773,7 @@ async function toggleMaterialErhalten(fach,wocheId,erledigt){
  data.materialErhalten=erledigt;
  data.updatedAt=serverTimestamp();
  await setDoc(ref,data);
- await openWocheDetail(fach,wocheId);
+ await reopenDetail(fach,wocheId);
  if(erledigt)showMotivationsToast();
  }catch(e){console.error("Material-erhalten-Status:",e);toast("Konnte nicht gespeichert werden.")}
 }
@@ -1672,7 +1824,7 @@ async function saveBasischeckFragen(fach,wocheId){
  try{
  await setDoc(doc(db,"basischeckFragen",wocheId),{wocheId,fach,fragen,updatedAt:serverTimestamp(),updatedBy:currentUser.uid});
  toast("Basis-Check gespeichert.");
- await openWocheDetail(fach,wocheId);
+ await reopenDetail(fach,wocheId);
  }catch(e){console.error("Basis-Check speichern:",e);toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Konnte nicht gespeichert werden.");}
 }
 window.saveBasischeckFragen=saveBasischeckFragen;
@@ -1728,7 +1880,9 @@ async function submitBasischeck(fach,wocheId){
  name:profile?.displayName||currentUser?.email||"Schüler/in",createdAt:serverTimestamp()
  });
  toast(`${richtig} von ${fragen.length} richtig.`);
- await openWocheDetail(fach,wocheId);
+ if(lehrplanWocheById(fach,wocheId)?.typ==="apt"){await aptSetzen(wocheId,{basischeckErledigt:true},{tab:"basischeck"});return}
+ await setDoc(doc(db,"lehrplanFortschritt",`${currentUser.uid}_${wocheId}`),{uid:currentUser.uid,wocheId,fach,basischeckErledigt:true,updatedAt:serverTimestamp()},{merge:true}).catch(e=>console.error(e));
+ await reopenDetail(fach,wocheId);
  if(ampel==="gruen")showMotivationsToast();
  }catch(e){console.error("Basis-Check abgeben:",e);toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Konnte nicht gespeichert werden.");}
 }
@@ -1796,7 +1950,7 @@ async function openWochenLiveUebersicht(fach,wocheId){
  let students=[],teams=[],produkte=[],lsTasks=[],lsAttempts=[],basischeckFragen=[];
  try{
  [students,teams,produkte,lsTasks,lsAttempts,basischeckFragen]=await Promise.all([
- getAllUsersForLernstand(),getLehrplanTeams(wocheId),getLehrplanProdukte(wocheId),
+ getAllUsersForLernstand(),getLehrplanTeams(teamAnchorFor(wocheId)),getLehrplanProdukte(wocheId),
  getLernstandTasks(),getAllLernstandAttempts(),getBasischeckFragen(wocheId)
  ]);
  }catch(e){console.error("Live-Übersicht laden:",e);toast("Konnte nicht geladen werden.");return}
@@ -2011,50 +2165,43 @@ async function openProjektGesamtcheck(){
 }
 window.openProjektGesamtcheck=openProjektGesamtcheck;
 
-// ---- Fachaufsatz-Training-Gesamtcheck: aggregiert über alle 6
-// Training-Pool-Themen (verteilt über die 4 Phasen), unabhängig vom
-// aktuellen Projektstand.
+// ---- APT-Gesamtcheck (Abschlussprüfungs-Training): Schritte je Person und
+// Lernbereich + Liste der Lernprodukte, die noch auf Vorkorrektur warten.
 async function openFachaufsatzTrainingCheck(){
- if(!isTeacher()){toast("Nur Lehrkräfte können den Trainings-Check öffnen.");return}
- let students=[];
- try{students=await getAllUsersForLernstand();}catch(e){console.error(e);toast("Konnte nicht geladen werden.");return}
- const alleTrainingWochen=PROJEKT_PHASEN.flatMap(p=>p.trainingWochen);
- const [fortschrittSnap,basischeckSnap]=await Promise.all([
- getDocs(query(collection(db,"lehrplanFortschritt"),where("wocheId","in",alleTrainingWochen))),
- getDocs(query(collection(db,"basischeckVersuche"),where("wocheId","in",alleTrainingWochen)))
- ]);
- const fortschritt=fortschrittSnap.docs.map(d=>d.data());
- const basischeck=basischeckSnap.docs.map(d=>d.data());
-
+ if(!isTeacher()){toast("Nur Lehrkräfte können den APT-Gesamtcheck öffnen.");return}
+ let students=[],fortschritt=[],produkte=[];
+ const alleIds=PROJEKT_PHASEN.flatMap(p=>p.trainingWochen);
+ try{
+  students=await getAllUsersForLernstand();
+  const [fs,ps]=await Promise.all([
+   getDocs(query(collection(db,"lehrplanFortschritt"),where("wocheId","in",alleIds))),
+   getDocs(query(collection(db,"lehrplanProdukte"),where("wocheId","in",alleIds)))
+  ]);
+  fortschritt=fs.docs.map(d=>d.data());produkte=ps.docs.map(d=>({id:d.id,...d.data()}));
+ }catch(e){console.error("APT-Gesamtcheck:",e);toast("Konnte nicht geladen werden.");return}
+ const heute=new Date().toISOString().slice(0,10);
  const rows=students.map(s=>{
- const offen=[];
- let fertig=0;
- alleTrainingWochen.forEach(wId=>{
- const w=lehrplanWocheById(activeFach,wId);
- const f=fortschritt.find(x=>x.uid===s.uid&&x.wocheId===wId)||{};
- const bc=basischeck.some(x=>x.uid===s.uid&&x.wocheId===wId);
- const alleFertig=f.materialErhalten&&bc&&f.abgeschlossen;
- if(alleFertig)fertig++;
- else offen.push(w?.thema||wId);
- });
- const farbe=fertig===alleTrainingWochen.length?"#3fa66a":fertig>0?"#e0a324":"#c7d0d6";
- return`<tr>
- <td style="padding:8px">${esc(s.displayName||s.email||"Schüler/in")}</td>
- <td style="padding:8px;text-align:center"><span class="ampel-dot"style="background:${farbe}"></span> ${fertig}/${alleTrainingWochen.length}</td>
- <td style="padding:8px;font-size:11px;color:var(--muted)">${offen.length?esc(offen.join(", ")):"alles fertig"}</td>
- </tr>`;
+  const zellen=PROJEKT_PHASEN.map(ph=>{
+   const n=ph.trainingWochen.reduce((sum,id)=>sum+aptSchritte(fortschritt.find(f=>f.uid===s.uid&&f.wocheId===id)).filter(Boolean).length,0);
+   const g=ph.trainingWochen.length*5;
+   const kommend=heute<ph.aptStart;
+   const farbe=n===g?"#3fa66a":n>0?"#e0a324":kommend?"#e2eaf0":"#c7d0d6";
+   return`<td style="text-align:center;padding:8px"><span class="ampel-dot"style="background:${farbe}"></span> <small>${n}/${g}</small></td>`;
+  }).join("");
+  return`<tr><td style="padding:8px">${esc(s.displayName||s.email||"Schüler/in")}</td>${zellen}</tr>`;
  }).join("");
-
+ const warten=produkte.filter(p=>!p.vorkorrektur);
  modal(`<button class="modal-close"onclick="closeModal()">×</button>
- <div class="kicker"> FACHAUFSATZ-TRAINING · GESAMTCHECK · NUR LEHRKRÄFTE</div>
- <h2>Trainingsstand über alle Phasen</h2>
- <p style="color:var(--muted);font-size:12px">„Fertig" = Material gesichtet + Basis-Check bearbeitet + als fertig markiert. ${alleTrainingWochen.length} Trainingsthemen insgesamt.</p>
- <div style="overflow-x:auto"><table class="ls-matrix">
- <thead><tr><th>Schüler:in</th><th>Fertig</th><th>Noch offen</th></tr></thead>
- <tbody>${rows||`<tr><td colspan="3">Keine Schüler:innen gefunden.</td></tr>`}</tbody>
- </table></div>
- <div class="form-actions"style="margin-top:14px"><button class="secondary"onclick="closeModal()">Schließen</button></div>
- `);
+  <div class="kicker">🎓 ABSCHLUSSPRÜFUNGS-TRAINING · GESAMTCHECK · NUR LEHRKRÄFTE</div>
+  <h2>Trainingsstand der Klasse</h2>
+  <p style="color:var(--muted);font-size:12px">Je Lernbereich: erledigte Schritte (5 je Inhalt: Prüfungsfrage, Inhalte & Eingrenzung, Basis-Check, Lernprodukt, K-Prim-Check).</p>
+  <div style="overflow-x:auto"><table class="ls-matrix">
+   <thead><tr><th>Schüler:in</th>${PROJEKT_PHASEN.map(ph=>`<th style="color:${ppFarbe(ph)}">${esc(ph.lb)}</th>`).join("")}</tr></thead>
+   <tbody>${rows||`<tr><td colspan="5">Keine Schüler:innen gefunden.</td></tr>`}</tbody>
+  </table></div>
+  <h3 style="margin:18px 0 6px">✍️ Warten auf Vorkorrektur (${warten.length})</h3>
+  <div class="list">${warten.map(p=>{const e=lehrplanWocheById("paedagogik",p.wocheId);return`<div class="list-item"style="cursor:pointer"onclick="openAptDetail('${p.wocheId}','produkt')"><div><strong>${esc(p.name||"")}</strong><small>${esc(e?.lb||"")} · ${esc(e?.thema||p.wocheId)} · ${esc(p.titel||"")}</small></div><span>→</span></div>`;}).join("")||`<div class="empty">Alles vorkorrigiert.</div>`}</div>
+  <div class="form-actions"style="margin-top:14px"><button class="secondary"onclick="closeModal()">Schließen</button></div>`);
 }
 window.openFachaufsatzTrainingCheck=openFachaufsatzTrainingCheck;
 
@@ -3235,115 +3382,651 @@ async function renderFaecherUebersicht(){
  const c=personColor(f.key);
  return`<button class="card tile"style="background:#fff;border-left:4px solid ${c.border};text-align:left"onclick="openFach('${f.key}')">
  <strong style="font-size:15px;color:${c.text}">${f.label}</strong>
- <small style="display:block;margin-top:6px">${f.key==="paedagogik"?"4 Projektphasen":wochen.length?`${wochen.length} Lehrplan-Wochen hinterlegt`:"Lehrplan-Zeitstrahl folgt"}</small>
+ <small style="display:block;margin-top:6px">${f.key==="paedagogik"?"4 Lernbereiche · Projekt + Abschlussprüfungs-Training":wochen.length?`${wochen.length} Lehrplan-Wochen hinterlegt`:"Lehrplan-Zeitstrahl folgt"}</small>
  </button>`;
  }).join("")}</div>
  ${footer()}`;
 }
 
-// Schuljahresgrenzen für die Jahresleiste (Pädagogik/Psychologie).
-const SCHULJAHR_START="2026-09-15",SCHULJAHR_ENDE="2027-07-27";
-function jahresProzent(dateStr){
- const start=new Date(SCHULJAHR_START).getTime(),ende=new Date(SCHULJAHR_ENDE).getTime(),d=new Date(dateStr).getTime();
- return Math.max(0,Math.min(100,Math.round((d-start)/(ende-start)*100)));
-}
+// ============================================================
+// PÄDAGOGIK/PSYCHOLOGIE · ZEITSTRAHL (Ebene 1), TEILANSICHT (Ebene 2),
+// APT-INHALT (Ebene 3)
+// ============================================================
+const SCHULJAHR_START="2026-09-15",SCHULJAHR_ENDE="2027-07-30";
 function phaseStatus(ph,heute){return heute<ph.start?"kommend":heute>ph.end?"fertig":"laeuft";}
-function phaseThemenFortschritt(ph,fortschrittMap){
- const alle=[...ph.notwendigeWochen,...ph.trainingWochen];
- const fertig=alle.filter(wId=>fortschrittMap[wId]?.abgeschlossen).length;
- return {fertig,gesamt:alle.length};
+function fmtKurz(d){const m=/^\d{4}-(\d{2})-(\d{2})/.exec(d||"");return m?`${m[2]}.${m[1]}.`:String(d||"")}
+function ppHexRgb(h){h=String(h).replace("#","");return [0,2,4].map(i=>parseInt(h.slice(i,i+2),16))}
+// Mischt die Lernbereichsfarbe mit einem hellen Grau – t=0 fast farblos,
+// t=1 volle Farbe. So "sättigt" sich eine Kachel mit dem Fortschritt.
+function ppMix(hex,t){const a=ppHexRgb("#EEF2F6"),b=ppHexRgb(hex),k=Math.max(0,Math.min(1,t));return`rgb(${a.map((v,i)=>Math.round(v+(b[i]-v)*k)).join(",")})`;}
+function ppFarbe(ph){return PP_FARBEN[ph.lbNum]||"#8a99a3";}
+function ppSaettigung(prozent){return 0.08+0.92*(prozent/100);}
+const APT_SCHRITT_LABELS=["Prüfungsfrage","Inhalte & Eingrenzung","Basis-Check","Lernprodukt & Vorkorrektur","Abschluss-Check"];
+const APT_TABS=["frage","inhalte","basischeck","produkt","abschluss"];
+function aptSchritte(f){f=f||{};return[!!f.frageGelesen,!!(f.materialBearbeitet&&f.eingrenzung),!!f.basischeckErledigt,!!f.produktHochgeladen,!!f.kprim];}
+function ppTeilWochen(ph,teil){return(teil==="projekt"?ph.projektSchulwochen:ph.aptSchulwochen).map(swById);}
+function ppTeilName(teil){return teil==="projekt"?"Projekt":"Abschlussprüfungs-Training";}
+function ppTeilIcon(teil){return teil==="projekt"?"🔬":"🎓";}
+
+function ppTeilFortschritt(ph,teil,fortschrittMap,meinTeam){
+ if(teil==="projekt"){
+  const inhalteFertig=ph.notwendigeWochen.filter(id=>fortschrittMap[id]?.abgeschlossen).length;
+  const ms=Math.min(meinTeam?.meilensteinIndex||0,ph.meilensteine.length);
+  const gesamt=ph.notwendigeWochen.length+ph.meilensteine.length;
+  return{erledigt:inhalteFertig+ms,gesamt,prozent:gesamt?Math.round((inhalteFertig+ms)/gesamt*100):0,inhalteFertig,inhalteGesamt:ph.notwendigeWochen.length,ms,msGesamt:ph.meilensteine.length};
+ }
+ const schritte=ph.trainingWochen.reduce((s,id)=>s+aptSchritte(fortschrittMap[id]).filter(Boolean).length,0);
+ const gesamt=ph.trainingWochen.length*5;
+ const inhalteFertig=ph.trainingWochen.filter(id=>aptSchritte(fortschrittMap[id]).every(Boolean)).length;
+ return{erledigt:schritte,gesamt,prozent:gesamt?Math.round(schritte/gesamt*100):0,inhalteFertig,inhalteGesamt:ph.trainingWochen.length};
 }
-async function renderPaedagogikPhasenZeitstrahl(fach,fortschrittMap,heute){
- if(activePhaseDetail)return await renderPhaseDetailAnsicht(activePhaseDetail,fortschrittMap,heute);
- return await renderPhasenJahresuebersicht(fortschrittMap,heute);
+// Zeitbudget in Schulwochen: wie viele sind noch übrig, wo "sollte" man
+// ungefähr stehen (für die Tempo-Anzeige)?
+function ppZeitbudget(wochen,heute){
+ const gesamt=wochen.length,pl=gesamt>1?"n":"";
+ const vergangen=wochen.filter(w=>w.end<heute).length;
+ const laufend=wochen.find(w=>w.start<=heute&&heute<=w.end)||null;
+ const rest=gesamt-vergangen;
+ let soll=vergangen/gesamt;
+ if(laufend){const tag=Math.round((new Date(heute)-new Date(laufend.start))/86400000);soll=(vergangen+Math.min(1,(tag+1)/5))/gesamt;}
+ const naechste=wochen.find(w=>w.start>heute)||null;
+ let text,zustand;
+ if(heute<wochen[0].start){zustand="kommend";text=`startet am ${fmtKurz(wochen[0].start)} · ${gesamt} Schulwoche${pl}`;}
+ else if(rest<=0){zustand="vorbei";text=`Zeitbudget aufgebraucht (${gesamt} Schulwoche${pl})`;}
+ else{zustand=laufend?"laeuft":"pause";text=`noch ${rest} von ${gesamt} Schulwoche${pl}${laufend?" · diese Woche läuft":naechste?` · weiter ab ${fmtKurz(naechste.start)}`:""}`;}
+ return{gesamt,vergangen,rest,laufend,soll:Math.max(0,Math.min(1,soll)),text,zustand};
+}
+function ppTempo(prozent,budget){
+ if(prozent>=100)return{txt:"✓ geschafft",farbe:"#3fa66a"};
+ if(budget.zustand==="kommend")return prozent>0?{txt:"Vorsprung",farbe:"#3fa66a"}:null;
+ if(budget.zustand==="vorbei")return{txt:"Zeitbudget überschritten",farbe:"#d9534f"};
+ const soll=Math.round(budget.soll*100);
+ if(prozent>=soll-10)return{txt:"im Zeitplan",farbe:"#3fa66a"};
+ if(prozent>=soll-30)return{txt:"etwas hinterher",farbe:"#e0a324"};
+ return{txt:"deutlich hinterher",farbe:"#d9534f"};
+}
+async function ladePPTeams(){
+ const res={};
+ await Promise.all(PROJEKT_PHASEN.map(async ph=>{
+  const teams=await getLehrplanTeams(ph.projektWocheId);
+  res[ph.id]=teams.find(t=>(t.mitgliederUids||[]).includes(currentUser?.uid))||null;
+ }));
+ return res;
+}
+function ppWochenZellenHTML(wochen,farbe,heute){
+ return`<div class="pp-wz-reihe">${wochen.map(w=>{
+  const st=w.end<heute?"vorbei":(w.start<=heute&&heute<=w.end)?"jetzt":"kommend";
+  const stil=st==="vorbei"?`background:${ppMix(farbe,.45)};border-color:${ppMix(farbe,.45)};color:#fff`:st==="jetzt"?`border-color:${farbe};color:${farbe};font-weight:800`:"";
+  return`<span class="pp-wz pp-wz-${st}"style="${stil}"title="Schulwoche ${fmtKurz(w.start)}–${fmtKurz(w.end)}">${fmtKurz(w.start)}</span>`;
+ }).join("")}</div>`;
 }
 
-// ---- Ebene 1: kompakte Jahresübersicht – die 4 Projekte im Vordergrund ----
-async function renderPhasenJahresuebersicht(fortschrittMap,heute){
- return`${pageHead("LERNPFAD","Pädagogik/Psychologie","Vier Projektphasen, ein Schuljahr – klicke eine Phase für die Details.",isTeacher()?`<button class="secondary"onclick="openProjektGesamtcheck()"> Projekt-Gesamtcheck</button> <button class="secondary"onclick="openFachaufsatzTrainingCheck()"> Trainings-Gesamtcheck</button>`:"")}
- <div class="card"style="padding:24px 18px;margin-bottom:18px">
- <div style="display:flex;align-items:flex-start;position:relative">
- ${PROJEKT_PHASEN.map((ph,i)=>`${i>0?`<div style="flex:0 0 40px;height:3px;background:${phaseStatus(PROJEKT_PHASEN[i-1],heute)!=="kommend"?"#3fa66a":"#e2eaf0"};margin-top:26px"></div>`:""}${(()=>{
- const status=phaseStatus(ph,heute);
- const {fertig,gesamt}=phaseThemenFortschritt(ph,fortschrittMap);
- const farbe=status==="fertig"?"#3fa66a":status==="laeuft"?"#4a90d9":"#c7d0d6";
- const kreisInhalt=status==="fertig"?"✓":`${i+1}`;
- return`<button type="button"onclick="openPhaseDetail('${ph.id}')"style="text-align:center;background:none;border:none;cursor:pointer;flex:1;min-width:110px;padding:0">
- <div style="width:52px;height:52px;border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:${status==="kommend"?farbe:"#fff"};background:${status==="kommend"?"#fff":farbe};border:2.5px solid ${farbe}">${kreisInhalt}</div>
- <div style="font-size:10px;font-weight:800;color:${farbe};text-transform:uppercase;letter-spacing:.02em">${esc(ph.lb)}${status==="laeuft"?" · JETZT":""}</div>
- <div style="font-size:12.5px;font-weight:700;color:var(--ink);margin:3px 0;line-height:1.3">${esc(ph.titel)}</div>
- <div style="font-size:11px;color:var(--muted);margin-bottom:4px">${fertig}/${gesamt} Themen</div>
- <div style="background:#e2eaf0;border-radius:999px;height:5px;overflow:hidden;max-width:90px;margin:0 auto"><div style="background:${farbe};height:100%;width:${gesamt?Math.round(fertig/gesamt*100):0}%"></div></div>
+// ---- Jahresleiste: das ganze Schuljahr, Schulwochen farbig, Praktika
+// schraffiert, Ferien gestrichelt, rote Linie = heute ----
+function ppJahresleisteHTML(heute){
+ const t0=new Date(SCHULJAHR_START).getTime(),t1=new Date(SCHULJAHR_ENDE).getTime()+86400000;
+ const pos=d=>(new Date(d).getTime()-t0)/(t1-t0)*100;
+ const breite=(a,b)=>Math.max(0.4,pos(b)-pos(a)+86400000/(t1-t0)*100);
+ const seg=(a,b,stil,titel,inner="",attr="")=>`<div class="pp-jl-seg"style="left:${pos(a).toFixed(2)}%;width:${breite(a,b).toFixed(2)}%;${stil}"title="${esc(titel)}"${attr}>${inner}</div>`;
+ const prakt=PRAKTIKUMSPHASEN.map(p=>seg(p.start,p.end,"background:repeating-linear-gradient(135deg,#dde3e8 0 4px,#eef2f5 4px 8px)",`${p.titel} · ${fmtKurz(p.start)}–${fmtKurz(p.end)}`,`<span class="pp-jl-icon">${p.icon||""}</span>`)).join("");
+ const ferien=FERIEN_2026_27.map(f=>seg(f.start,f.end,"background:#fff;border:1px dashed #c7d0d6",`${f.titel} · ${fmtKurz(f.start)}–${fmtKurz(f.end)}`)).join("");
+ const wochen=PROJEKT_PHASEN.flatMap(ph=>["projekt","apt"].flatMap(teil=>ppTeilWochen(ph,teil).map(w=>{
+  const c=ppFarbe(ph);
+  const bg=teil==="projekt"?c:`repeating-linear-gradient(135deg,${c} 0 5px,${ppMix(c,.5)} 5px 10px)`;
+  return seg(w.start,w.end,`background:${bg};cursor:pointer`,`${ph.lb} · ${ppTeilName(teil)} · ${fmtKurz(w.start)}–${fmtKurz(w.end)}`,"",` onclick="openPhaseDetail('${ph.id}:${teil}')"`);
+ }))).join("");
+ const monate=["2026-10-01","2026-11-01","2026-12-01","2027-01-01","2027-02-01","2027-03-01","2027-04-01","2027-05-01","2027-06-01","2027-07-01"];
+ const mNamen=["Okt","Nov","Dez","Jan","Feb","Mär","Apr","Mai","Jun","Jul"];
+ const heuteHTML=heute>=SCHULJAHR_START&&heute<=SCHULJAHR_ENDE?`<div class="pp-jl-heute"style="left:${pos(heute).toFixed(2)}%"title="Heute"></div>`:"";
+ return`<div class="pp-jl-wrap">
+  <div class="pp-jl">${prakt}${ferien}${wochen}${heuteHTML}</div>
+  <div class="pp-jl-monate">${monate.map((m,i)=>`<span style="left:${pos(m).toFixed(2)}%">${mNamen[i]}</span>`).join("")}</div>
+ </div>`;
+}
+
+// ---- Eine Teil-Kachel (Projekt oder APT) mit Sättigung + Zeitbudget ----
+function ppTeilKachelHTML(ph,teil,fortschrittMap,meinTeam,heute){
+ const c=ppFarbe(ph);
+ const fs=ppTeilFortschritt(ph,teil,fortschrittMap,meinTeam);
+ const wochen=ppTeilWochen(ph,teil);
+ const budget=ppZeitbudget(wochen,heute);
+ const tempo=ppTempo(fs.prozent,budget);
+ const t=ppSaettigung(fs.prozent);
+ const textFarbe=t>0.55?"#fff":"#17384f";
+ const muster=teil==="apt"?";background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.16) 0 6px,transparent 6px 12px)":"";
+ const jetzt=budget.zustand==="laeuft";
+ const detail=teil==="projekt"?`${fs.inhalteFertig}/${fs.inhalteGesamt} Inhalte · ${fs.ms}/${fs.msGesamt} Meilensteine`:`${fs.inhalteFertig}/${fs.inhalteGesamt} Inhalte · ${fs.erledigt}/${fs.gesamt} Schritte`;
+ return`<button type="button"class="pp-teil${jetzt?" pp-teil-jetzt":""}"style="--c:${c};border-color:${jetzt?c:ppMix(c,.35)}"onclick="openPhaseDetail('${ph.id}:${teil}')">
+  <div class="pp-teil-farbfeld"style="background-color:${ppMix(c,t)}${muster};color:${textFarbe}">
+   <span class="pp-teil-icon">${ppTeilIcon(teil)}</span>
+   <span class="pp-teil-prozent">${fs.prozent}%</span>
+  </div>
+  <div class="pp-teil-body">
+   <div class="pp-teil-art"style="color:${c}">${ppTeilName(teil)}${jetzt?" · JETZT":""}</div>
+   <div class="pp-teil-titel">${esc(teil==="projekt"?ph.titel:"Prüfungsinhalte "+ph.lb)}</div>
+   <div class="pp-teil-meta">${detail}</div>
+   <div class="pp-budget">⏳ ${esc(budget.text)}</div>
+   ${tempo?`<span class="pp-tempo"style="background:${tempo.farbe}">${esc(tempo.txt)}</span>`:""}
+   ${ppWochenZellenHTML(wochen,c,heute)}
+  </div>
  </button>`;
- })()}`).join("")}
- </div>
+}
+
+// ---- Kompakter Zeitstrahl für Ebene 2 (oben am Rand) ----
+function ppMiniZeitstrahlHTML(fortschrittMap,meineTeams,heute,aktivKey){
+ return`<div class="pp-mini">${PROJEKT_PHASEN.map(ph=>{
+  const c=ppFarbe(ph);
+  return`<div class="pp-mini-block"style="flex:${ph.projektSchulwochen.length+ph.aptSchulwochen.length} 1 0">
+   <div class="pp-mini-lb"style="color:${c}">${esc(ph.lb)}</div>
+   <div class="pp-mini-teile">${["projekt","apt"].map(teil=>{
+    const fs=ppTeilFortschritt(ph,teil,fortschrittMap,meineTeams[ph.id]);
+    const key=`${ph.id}:${teil}`;
+    const n=teil==="projekt"?ph.projektSchulwochen.length:ph.aptSchulwochen.length;
+    const t=ppSaettigung(fs.prozent);
+    return`<button type="button"class="pp-mini-teil${key===aktivKey?" aktiv":""}"style="flex:${n} 1 0;background:${ppMix(c,t)};color:${t>0.55?"#fff":"#17384f"};--c:${c}"onclick="openPhaseDetail('${key}')"title="${esc(ph.lb+" · "+ppTeilName(teil)+" · "+fs.prozent+" %")}">${teil==="projekt"?"P":"A"} ${fs.prozent}%</button>`;
+   }).join("")}</div>
+  </div>`;
+ }).join("")}</div>`;
+}
+
+// ---- Nächster Schritt für Schüler:innen ----
+function ppNaechsterSchrittHTML(fortschrittMap,heute){
+ const teile=PROJEKT_PHASEN.flatMap(ph=>[{ph,teil:"projekt"},{ph,teil:"apt"}]);
+ const offen=x=>x.teil==="projekt"?x.ph.notwendigeWochen.filter(id=>!fortschrittMap[id]?.abgeschlossen):x.ph.trainingWochen.filter(id=>!aptSchritte(fortschrittMap[id]).every(Boolean));
+ let idx=teile.findIndex(x=>{const w=ppTeilWochen(x.ph,x.teil);return heute<=w[w.length-1].end;});
+ if(idx===-1)idx=teile.length-1;
+ const aktuell=teile[idx];
+ const rueckstand=teile.slice(0,idx).filter(x=>offen(x).length);
+ const naechsteId=offen(aktuell)[0];
+ const e=naechsteId?lehrplanWocheById("paedagogik",naechsteId):null;
+ const c=ppFarbe(aktuell.ph);
+ return`<div class="card pp-next"style="border-left:4px solid ${c}">
+  <div class="kicker">DEIN NÄCHSTER SCHRITT</div>
+  ${e?`<button type="button"class="pp-next-btn"onclick="openLehrplanEinheit('paedagogik','${e.id}')"><span>${ppTeilIcon(aktuell.teil)}</span><span><small>${esc(aktuell.ph.lb)} · ${ppTeilName(aktuell.teil)}</small><strong>${esc(e.thema)}</strong></span><span>→</span></button>`
+   :`<p style="margin:6px 0 0">Im aktuellen Abschnitt (${esc(aktuell.ph.lb)} · ${ppTeilName(aktuell.teil)}) ist alles erledigt. Stark!</p>`}
+  ${rueckstand.length?`<p style="font-size:12px;color:#b3541e;margin:10px 0 0">⚠︎ Noch offen aus früheren Abschnitten: ${rueckstand.map(x=>`<a href="javascript:void 0"onclick="openPhaseDetail('${x.ph.id}:${x.teil}')">${esc(x.ph.lb)} ${ppTeilName(x.teil)} (${offen(x).length})</a>`).join(", ")}</p>`:""}
+ </div>`;
+}
+
+async function renderPaedagogikPhasenZeitstrahl(fach,fortschrittMap,heute){
+ const meineTeams=await ladePPTeams();
+ if(activePhaseDetail){
+  const [phId,teil]=String(activePhaseDetail).split(":");
+  const ph=projektPhaseById(phId);
+  if(ph)return renderPPTeilAnsicht(ph,teil==="apt"?"apt":"projekt",fortschrittMap,meineTeams,heute);
+  activePhaseDetail=null;
+ }
+ return renderPPJahresuebersicht(fortschrittMap,meineTeams,heute);
+}
+
+// ---- Ebene 1: Jahresübersicht ----
+function renderPPJahresuebersicht(fortschrittMap,meineTeams,heute){
+ const gesamt=PROJEKT_PHASEN.reduce((s,ph)=>{["projekt","apt"].forEach(t=>{const f=ppTeilFortschritt(ph,t,fortschrittMap,meineTeams[ph.id]);s.e+=f.erledigt;s.g+=f.gesamt;});return s},{e:0,g:0});
+ const gesamtProzent=gesamt.g?Math.round(gesamt.e/gesamt.g*100):0;
+ return`<button class="secondary"onclick="closeFach()">← Zurück zu den Fächern</button>
+ ${pageHead("LERNPFAD","Pädagogik/Psychologie",`Vier Lernbereiche, je ein Projekt und ein Abschlussprüfungs-Training – ${gesamtProzent} % deines Jahres geschafft.`,isTeacher()?`<button class="secondary"onclick="openProjektGesamtcheck()">🔬 Projekt-Gesamtcheck</button> <button class="secondary"onclick="openFachaufsatzTrainingCheck()">🎓 APT-Gesamtcheck</button>`:"")}
+ ${!isTeacher()?ppNaechsterSchrittHTML(fortschrittMap,heute):""}
+ <div class="card pp-zeitstrahl-card">
+  <div class="pp-zs-kopf"><strong>Dein Schuljahr in Schulwochen</strong><small>farbig = P/P-Schulwochen · schraffiert = Praktikum · gestrichelt = Ferien · rote Linie = heute</small></div>
+  ${ppJahresleisteHTML(heute)}
+  <div class="pp-bloecke">
+   ${PROJEKT_PHASEN.map(ph=>{
+    const c=ppFarbe(ph);
+    const status=phaseStatus(ph,heute);
+    return`<div class="pp-block${status==="laeuft"?" pp-block-jetzt":""}"style="border-top-color:${c}">
+     <div class="pp-block-kopf"><span class="lb-badge"style="background:${ppMix(c,.15)};border-color:${c};color:${c}">Lernbereich ${ph.lbNum}</span><small>${esc(ph.lbTitel)} · ${fmtKurz(ph.start)}–${fmtKurz(ph.end)}</small></div>
+     <div class="pp-teile">${ppTeilKachelHTML(ph,"projekt",fortschrittMap,meineTeams[ph.id],heute)}${ppTeilKachelHTML(ph,"apt",fortschrittMap,meineTeams[ph.id],heute)}</div>
+    </div>`;
+   }).join("")}
+  </div>
+  <div class="pp-legende">
+   <span>🔬 <b>Projekt</b> – Projektinhalte abhaken + Team-Meilensteine</span>
+   <span>🎓 <b>Abschlussprüfungs-Training</b> – je Inhalt 5 Schritte (Prüfungsfrage bis K-Prim-Check)</span>
+   <span>Je kräftiger die Farbe, desto mehr hast du geschafft.</span>
+  </div>
  </div>
  ${footer()}`;
 }
 
-// ---- Ebene 2: Detailansicht einer einzelnen Phase ----
-async function renderPhaseDetailAnsicht(phaseId,fortschrittMap,heute){
- const ph=projektPhaseById(phaseId);
- if(!ph){activePhaseDetail=null;return await renderPhasenJahresuebersicht(fortschrittMap,heute);}
- const teams=await getLehrplanTeams(ph.projektWocheId);
- const basischecksProWoche={};
- await Promise.all(ph.trainingWochen.map(async wId=>{basischecksProWoche[wId]=await getMyBasischeckVersuch(wId);}));
-
- const status=phaseStatus(ph,heute);
- const statusLabel=status==="fertig"?"abgeschlossen":status==="laeuft"?"läuft gerade":"kommt noch";
- const statusFarbe=status==="fertig"?"#3fa66a":status==="laeuft"?"#4a90d9":"#c7d0d6";
- const meinTeam=teams.find(t=>(t.mitgliederUids||[]).includes(currentUser.uid));
- const idx=meinTeam?.meilensteinIndex||0;
- const meilensteinLabel=!meinTeam?"noch kein Team":idx===0?"noch nicht begonnen":idx>=ph.meilensteine.length?"Projekt abgeschlossen":ph.meilensteine[idx-1];
- const {fertig,gesamt}=phaseThemenFortschritt(ph,fortschrittMap);
- const prozent=gesamt?Math.round(fertig/gesamt*100):0;
-
- const trainingIconHTML=(aktiv,icon,label)=>`<span style="filter:${aktiv?"none":"grayscale(1) opacity(0.4)"}"title="${esc(label)}">${icon}</span>`;
-
- const notwendigHTML=ph.notwendigeWochen.map(wId=>{
- const w=lehrplanWocheById(activeFach,wId);if(!w)return"";
- const f=fortschrittMap[wId]||{};
- const fertig=!!f.abgeschlossen;
- return`<div onclick="openWocheDetail('${activeFach}','${wId}')"style="display:flex;align-items:center;gap:10px;cursor:pointer;background:${fertig?"#eaf7ed":"#f7fafc"};border:1px solid ${fertig?"#3fa66a":"#e2eaf0"};border-radius:10px;padding:10px 14px;margin-bottom:8px">
- <span style="font-size:16px;color:${fertig?"#3fa66a":"#b8c4cc"}">${fertig?"✓":"○"}</span>
- <span style="flex:1;font-size:13px;color:#17384f">${esc(w.thema)}</span>
- <span style="font-size:11px;color:${fertig?"#3fa66a":"var(--muted)"};white-space:nowrap">${fertig?"fertig":esc(fmtDateOnly(w.start))+"–"+esc(fmtDateOnly(w.end))}</span>
+// ---- Ebene 2: Projekt- oder APT-Ansicht eines Lernbereichs ----
+function renderPPTeilAnsicht(ph,teil,fortschrittMap,meineTeams,heute){
+ const c=ppFarbe(ph);
+ const meinTeam=meineTeams[ph.id];
+ const fs=ppTeilFortschritt(ph,teil,fortschrittMap,meinTeam);
+ const wochen=ppTeilWochen(ph,teil);
+ const budget=ppZeitbudget(wochen,heute);
+ const tempo=ppTempo(fs.prozent,budget);
+ const t=ppSaettigung(fs.prozent);
+ const anderer=teil==="projekt"?"apt":"projekt";
+ const kopf=`<div class="card pp-teilkopf"style="border-left:5px solid ${c}">
+  <div class="pp-teilkopf-farbe"style="background-color:${ppMix(c,t)};color:${t>0.55?"#fff":"#17384f"}${teil==="apt"?";background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.16) 0 6px,transparent 6px 12px)":""}"><span>${ppTeilIcon(teil)}</span><b>${fs.prozent}%</b></div>
+  <div style="flex:1;min-width:220px">
+   <div class="kicker"style="color:${c}">${esc(ph.lb)} · ${ppTeilName(teil).toUpperCase()} · ${fmtKurz(wochen[0].start)}–${fmtKurz(wochen[wochen.length-1].end)}</div>
+   <h2 style="margin:4px 0">${esc(teil==="projekt"?ph.titel:"Abschlussprüfungs-Training "+ph.lb)}</h2>
+   <div class="pp-budget"style="font-size:13px">⏳ ${esc(budget.text)} ${tempo?`<span class="pp-tempo"style="background:${tempo.farbe}">${esc(tempo.txt)}</span>`:""}</div>
+   <div class="pp-balken"><div style="width:${fs.prozent}%;background:${c}"></div><i style="left:${Math.round(budget.soll*100)}%"title="Hier solltest du laut Zeitbudget ungefähr stehen"></i></div>
+   <small style="color:var(--muted)">Balken = dein Fortschritt · Strich = Soll laut Zeitbudget</small>
+   ${ppWochenZellenHTML(wochen,c,heute)}
+  </div>
  </div>`;
- }).join("");
+ const quer=`<button type="button"class="pp-quer"style="--c:${ppFarbe(ph)}"onclick="openPhaseDetail('${ph.id}:${anderer}')">${ppTeilIcon(anderer)} Zum ${anderer==="apt"?"Abschlussprüfungs-Training":"Projekt"} ${esc(ph.lb)} wechseln →</button>`;
 
- const trainingHTML=ph.trainingWochen.map(wId=>{
- const w=lehrplanWocheById(activeFach,wId);if(!w)return"";
- const f=fortschrittMap[wId]||{};
- const bc=basischecksProWoche[wId];
- const alleFertig=f.materialErhalten&&bc&&f.abgeschlossen;
- return`<div onclick="openWocheDetail('${activeFach}','${wId}')"style="cursor:pointer;background:#fff;border:1.5px solid ${alleFertig?"#3fa66a":"#e2eaf0"};border-radius:10px;padding:10px 12px;position:relative">
- ${alleFertig?`<span style="position:absolute;top:6px;right:8px;color:#3fa66a">★</span>`:""}
- <strong style="display:block;font-size:12.5px;margin-bottom:6px">${esc(w.thema)}</strong>
- <div style="display:flex;gap:7px;font-size:13px">
- ${trainingIconHTML(f.materialErhalten,"📖","Fachbegriffe/Material")}
- ${trainingIconHTML(!!bc,"💡","Basis-Check bearbeitet")}
- ${trainingIconHTML(f.abgeschlossen,"✍️","Als fertig markiert")}
- </div>
- </div>`;
- }).join("");
-
- return`<button class="secondary"onclick="closePhaseDetail()">← Zurück zur Jahresübersicht</button>
- <div class="card"style="border-left:4px solid ${statusFarbe};margin-top:12px">
- <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
- <div><div class="kicker">${esc(ph.lb)} · ${esc(fmtDateOnly(ph.start))}–${esc(fmtDateOnly(ph.end))}</div>
- <h2 style="margin:4px 0 2px"> ${esc(ph.titel)}</h2></div>
- <span class="pill"style="background:${statusFarbe};color:#fff">${esc(statusLabel)}</span>
- </div>
- ${status!=="kommend"?`<p style="font-size:12px;color:var(--muted);margin:4px 0 4px"> Projektstand: <strong>${esc(meilensteinLabel)}</strong></p>`:""}
-
- <div style="margin:14px 0 4px;display:flex;justify-content:space-between;font-size:12px;color:var(--muted)"><span>Fortschritt dieser Phase</span><span>${fertig} von ${gesamt} Themen · ${prozent}%</span></div>
- <div style="background:#e2eaf0;border-radius:999px;height:10px;overflow:hidden"><div style="background:${statusFarbe};height:100%;width:${prozent}%;border-radius:999px;transition:width .3s"></div></div>
-
- ${notwendigHTML?`<div class="kicker"style="margin:20px 0 6px">NOTWENDIG FÜR DIESES PROJEKT</div>${notwendigHTML}`:""}
- ${trainingHTML?`<div class="kicker"style="margin:14px 0 6px"> FACHAUFSATZ-TRAINING-POOL</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px">${trainingHTML}</div>`:""}
- </div>
+ let inhalt="";
+ if(teil==="projekt"){
+  const idx=Math.min(meinTeam?.meilensteinIndex||0,ph.meilensteine.length);
+  const darfAbhaken=!!meinTeam&&(isTeacher()||MEILENSTEINE_SCHUELER_DUERFEN_ABHAKEN);
+  inhalt=`<div class="kicker"style="margin:18px 0 8px">PROJEKTINHALTE – bearbeiten und abhaken</div>
+  ${ph.notwendigeWochen.map((id,i)=>{
+   const e=lehrplanWocheById("paedagogik",id);if(!e)return"";
+   const f=fortschrittMap[id]||{};
+   const fertig=!!f.abgeschlossen;
+   const begonnen=!fertig&&(f.auftragGelesen||f.materialErhalten||Object.values(f.zieleErfuellt||{}).some(Boolean));
+   const apt=PP_EINHEITEN.filter(a=>a.typ==="apt"&&(a.bezug||[]).includes(id));
+   return`<div class="pp-einheit${fertig?" fertig":""}"style="--c:${c}"onclick="openLehrplanEinheit('paedagogik','${id}')">
+    <span class="pp-einheit-haken">${fertig?"✓":i+1}</span>
+    <div style="flex:1"><strong>${esc(e.thema)}</strong><small>Inhalt Nr. ${esc(e.nr)} · ${fertig?"abgeschlossen":begonnen?"in Arbeit":"noch offen"}</small>
+    ${apt.length?`<small class="pp-bezug">🎓 wird vertieft im Abschlussprüfungs-Training: ${apt.map(a=>`<a href="javascript:void 0"onclick="event.stopPropagation();openAptDetail('${a.id}')">${esc(a.thema)}</a>`).join(" · ")}</small>`:""}</div>
+    <span>→</span>
+   </div>`;}).join("")}
+  <div class="kicker"style="margin:18px 0 8px">PROJEKT-MEILENSTEINE ${meinTeam?`· TEAM „${esc(meinTeam.teamName)}“`:""}</div>
+  ${meinTeam?`<div class="pp-meilensteine">${ph.meilensteine.map((m,i)=>{
+    const done=i<idx;
+    const neu=done&&i===idx-1?i:i+1;
+    return`<button type="button"class="pp-ms${done?" done":""}"style="--c:${c}"${darfAbhaken?`onclick="ppMeilensteinSetzen('${meinTeam.id}',${neu})"`:"disabled"}>${done?"✓":"○"} ${esc(m)}</button>`;
+   }).join("")}</div>
+   <small style="color:var(--muted)">${darfAbhaken?"Tippe einen Meilenstein an, sobald euer Team ihn erreicht hat (nochmal tippen = zurücknehmen).":"Die Meilensteine setzt eure Lehrkraft."}</small>`
+  :`<div class="empty">Du bist noch in keinem Projektteam. <button class="primary"style="margin-top:8px"onclick="openWocheDetail('paedagogik','${ph.notwendigeWochen[0]}','team')">Team gründen oder beitreten</button></div>`}`;
+ }else{
+  inhalt=`<div class="kicker"style="margin:18px 0 8px">PRÜFUNGSINHALTE – je Inhalt 5 Schritte</div>
+  <div class="pp-apt-grid">${ph.trainingWochen.map(id=>{
+   const e=lehrplanWocheById("paedagogik",id);if(!e)return"";
+   const s=aptSchritte(fortschrittMap[id]);
+   const n=s.filter(Boolean).length;
+   return`<div class="pp-apt-karte${n===5?" fertig":""}"style="--c:${c};border-color:${n===5?c:ppMix(c,.3)}"onclick="openLehrplanEinheit('paedagogik','${id}')">
+    <div class="pp-apt-farbe"style="background:${ppMix(c,ppSaettigung(n/5*100))}"></div>
+    <small style="color:${c};font-weight:800">Inhalt Nr. ${esc(e.nr)} · ${n}/5</small>
+    <strong>${esc(e.thema)}</strong>
+    <div class="pp-schritte">${s.map((d,i)=>`<span class="${d?"done":""}"style="${d?`background:${c};border-color:${c}`:""}"title="${esc(APT_SCHRITT_LABELS[i])}">${d?"✓":i+1}</span>`).join("")}</div>
+    ${(e.bezug||[]).length?`<small class="pp-bezug">🔗 baut auf dem Projekt auf: ${(e.bezug||[]).map(b=>`<a href="javascript:void 0"onclick="event.stopPropagation();openWocheDetail('paedagogik','${b}')">${esc(lehrplanWocheById("paedagogik",b)?.thema||b)}</a>`).join(" · ")}</small>`:""}
+   </div>`;}).join("")}</div>
+  <p style="font-size:11px;color:var(--muted);margin-top:10px">① Prüfungsfrage · ② Inhalte & Aufgabeneingrenzung · ③ Basis-Check · ④ Lernprodukt & Vorkorrektur · ⑤ Abschluss-Check (K-Prim)</p>`;
+ }
+ return`<button class="secondary"onclick="closePhaseDetail()">← Zurück zum Zeitstrahl</button>
+ ${ppMiniZeitstrahlHTML(fortschrittMap,meineTeams,heute,`${ph.id}:${teil}`)}
+ ${kopf}
+ <div class="card"style="margin-top:14px">${quer}${inhalt}</div>
  ${footer()}`;
 }
+
+// Schüler:innen dürfen die Meilensteine ihres eigenen Teams selbst abhaken
+// (auf false setzen, wenn das wieder nur Lehrkräfte dürfen sollen).
+const MEILENSTEINE_SCHUELER_DUERFEN_ABHAKEN=true;
+async function ppMeilensteinSetzen(teamId,index){
+ try{
+  await updateDoc(doc(db,"lehrplanTeams",teamId),{meilensteinIndex:index,meilensteinUpdatedAt:serverTimestamp()});
+  await render();
+  if(index>0)showMotivationsBild();
+ }catch(e){console.error("Meilenstein setzen:",e);toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Konnte nicht gespeichert werden.");}
+}
+window.ppMeilensteinSetzen=ppMeilensteinSetzen;
+
+// Öffnet eine Einheit passend zu ihrem Typ.
+function openLehrplanEinheit(fach,id){
+ const e=lehrplanWocheById(fach,id);
+ if(e?.typ==="apt")return openAptDetail(id);
+ return openWocheDetail(fach,id);
+}
+window.openLehrplanEinheit=openLehrplanEinheit;
+// Nach jeder Änderung im Modal: dasselbe Modal neu laden und beim
+// Schließen den Zeitstrahl aktualisieren (Sättigung/Zeitbudget).
+async function reopenDetail(fach,wocheId){
+ ppDirty=true;
+ const e=lehrplanWocheById(fach,wocheId);
+ if(e?.typ==="apt")return openAptDetail(wocheId);
+ return openWocheDetail(fach,wocheId);
+}
+
+// Kleiner Fortschrittskopf in den Inhalts-Fenstern (Ebene 3).
+async function ppEinheitKopfHTML(wocheId){
+ const ph=projektPhaseByWoche(wocheId);
+ if(!ph)return"";
+ const teil=ph.notwendigeWochen.includes(wocheId)?"projekt":"apt";
+ const ids=teil==="projekt"?ph.notwendigeWochen:ph.trainingWochen;
+ const [fs,teams]=await Promise.all([
+  Promise.all(ids.map(async id=>[id,await getLehrplanFortschritt(id)])),
+  teil==="projekt"?getLehrplanTeams(ph.projektWocheId):Promise.resolve([])
+ ]);
+ const map=Object.fromEntries(fs);
+ const meinTeam=teams.find(t=>(t.mitgliederUids||[]).includes(currentUser?.uid));
+ const f=ppTeilFortschritt(ph,teil,map,meinTeam);
+ const heute=new Date().toISOString().slice(0,10);
+ const budget=ppZeitbudget(ppTeilWochen(ph,teil),heute);
+ const c=ppFarbe(ph);
+ return`<div class="pp-modal-kopf"style="--c:${c}">
+  <span class="pp-modal-kopf-farbe"style="background:${ppMix(c,ppSaettigung(f.prozent))}">${ppTeilIcon(teil)}</span>
+  <span style="flex:1;min-width:0"><b style="color:${c}">${esc(ph.lb)} · ${ppTeilName(teil)}</b> · ${f.prozent}% · ${esc(budget.text)}
+   <span class="pp-balken klein"><span style="width:${f.prozent}%;background:${c}"></span></span></span>
+ </div>`;
+}
+
+// ============================================================
+// ABSCHLUSSPRÜFUNGS-TRAINING · Detailfenster eines Inhalts
+// ============================================================
+let aptAktiverTab=null,aptLetzteEinheit=null,aptKprimWiederholen=false;
+const APT_OPERATOREN=[["nennen","I"],["beschreiben","I"],["darstellen","I–II"],["erklären","II"],["erläutern","II"],["vergleichen","II"],["anwenden","II"],["analysieren","II–III"],["beurteilen","III"],["bewerten","III"],["Stellung nehmen","III"],["entwickeln","III"]];
+function showAptTab(tab){
+ aptAktiverTab=tab;
+ document.querySelectorAll(".apt-panel").forEach(el=>el.style.display=el.id===`aptPanel_${tab}`?"block":"none");
+ document.querySelectorAll(".apt-tab").forEach(el=>el.classList.toggle("wd-tab-active",el.dataset.tab===tab));
+}
+window.showAptTab=showAptTab;
+async function getAptInhalt(id){
+ try{const s=await getDoc(doc(db,"aptInhalte",id));return s.exists()?s.data():{};}
+ catch(e){console.error("APT-Inhalt laden:",e);return{};}
+}
+function aptKprimAufgaben(inhalt,e){return(inhalt.kprim&&inhalt.kprim.length)?inhalt.kprim:(e.kprim||[]);}
+
+// Basis-Check-Bereich (Lehrkraft-Editor bzw. Schüler-Test) – gemeinsam
+// genutzt von Projektinhalten und APT-Inhalten.
+function basischeckPanelHTML(fach,wocheId,basischeckFragen,meinBasischeck,extraSchueler=""){
+ if(isTeacher())return`<div class="form">
+  ${[0,1,2].map(i=>{
+   const f=basischeckFragen[i]||{};
+   const typ=f.typ||"mc";
+   return`<div class="card"style="margin-bottom:10px;background:#f7fafc">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+     <label style="flex:1;min-width:200px">Frage ${i+1}${i>0?" (optional)":""}<input id="bcFrage${i}"type="text"value="${esc(f.text||"")}"placeholder="z. B. Was versteht man unter …?"></label>
+     <label style="width:190px">Fragetyp<select id="bcTyp${i}"onchange="basischeckTypToggle(${i})">
+      <option value="mc"${typ==="mc"?" selected":""}>Multiple Choice</option>
+      <option value="kprim"${typ==="kprim"?" selected":""}>K-Prim (richtig/falsch je Aussage)</option>
+      <option value="offen"${typ==="offen"?" selected":""}>Offene Frage</option>
+     </select></label>
+    </div>
+    <div id="bcMcBereich${i}"style="display:${typ==="mc"?"block":"none"};margin-top:8px">
+     <div class="grid grid-2">${[0,1,2].map(j=>`<label>Antwort ${j+1}${j>1?" (optional)":""}<input id="bcOpt${i}_${j}"type="text"value="${esc(f.optionen?.[j]||"")}"></label>`).join("")}</div>
+     <label style="margin-top:6px">Richtige Antwort<select id="bcRichtig${i}">${[0,1,2].map(j=>`<option value="${j}"${f.richtig===j?" selected":""}>Antwort ${j+1}</option>`).join("")}</select></label>
+    </div>
+    <div id="bcKprimBereich${i}"style="display:${typ==="kprim"?"block":"none"};margin-top:8px">
+     <p style="font-size:11px;color:var(--muted);margin:0 0 6px">Bis zu 4 Aussagen, jeweils als richtig oder falsch markieren. Nur „alles richtig" zählt als bestanden.</p>
+     ${[0,1,2,3].map(j=>{const s=f.statements?.[j]||{};return`<div style="display:flex;gap:8px;align-items:center;margin-bottom:4px">
+      <input id="bcStatement${i}_${j}"type="text"value="${esc(s.text||"")}"placeholder="Aussage ${j+1}${j>1?" (optional)":""}"style="flex:1">
+      <select id="bcStatementRichtig${i}_${j}"style="width:90px"><option value="true"${s.correct?" selected":""}>richtig</option><option value="false"${s.correct===false?" selected":""}>falsch</option></select>
+     </div>`;}).join("")}
+    </div>
+    <div id="bcOffenBereich${i}"style="display:${typ==="offen"?"block":"none"};margin-top:8px">
+     <label>Erwartete Stichworte (kommagetrennt – ALLE müssen in der Antwort vorkommen)<input id="bcStichworte${i}"type="text"value="${esc((f.stichworte||[]).join(", "))}"placeholder="z. B. Sozialisation, Erziehung, Werte"></label>
+    </div>
+   </div>`;
+  }).join("")}
+  <button class="primary"onclick="saveBasischeckFragen('${fach}','${wocheId}')">Basis-Check speichern</button>
+ </div>`;
+ if(!basischeckFragen.length)return`<div class="empty">Für diesen Inhalt wurde noch kein Basis-Check eingerichtet.</div>${extraSchueler}`;
+ if(meinBasischeck)return`<div class="card"style="background:${ampelFarbe(meinBasischeck.ampel)}1a;border-left:4px solid ${ampelFarbe(meinBasischeck.ampel)}">
+  <strong>${meinBasischeck.richtig} von ${meinBasischeck.gesamt} richtig</strong>
+  <p style="margin:6px 0 0;color:var(--muted)">${esc(basischeckAmpelText(meinBasischeck.ampel))}</p>
+ </div>`;
+ return`<div class="form">
+  ${basischeckFragen.map((f,i)=>{
+   const typ=f.typ||"mc";
+   return`<div class="card"style="margin-bottom:10px">
+    <strong style="display:block;margin-bottom:8px">${i+1}. ${esc(f.text)}</strong>
+    ${typ==="mc"?f.optionen.map((o,j)=>`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:4px"><input type="radio"name="bcQ${i}"value="${j}"> <span>${esc(o)}</span></label>`).join(""):""}
+    ${typ==="kprim"?f.statements.map((s,j)=>`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:4px"><input id="bcKprimAntwort${i}_${j}"type="checkbox"> <span>${esc(s.text)}</span></label>`).join(""):""}
+    ${typ==="offen"?`<textarea id="bcOffenAntwort${i}"rows="3"placeholder="Deine Antwort …"></textarea>`:""}
+   </div>`;
+  }).join("")}
+  <button class="primary"onclick="submitBasischeck('${fach}','${wocheId}')">Basis-Check abgeben</button>
+ </div>`;
+}
+
+async function openAptDetail(wocheId,tab){
+ const fach="paedagogik";
+ const e=lehrplanWocheById(fach,wocheId);
+ if(!e){toast("Dieser Inhalt wurde nicht gefunden.");return}
+ const ph=projektPhaseByWoche(wocheId);
+ const c=ph?ppFarbe(ph):"#4a90d9";
+ const [inhalt,materialien,produkteAlle,fortschritt,bcFragen,meinBc,kopf]=await Promise.all([
+  getAptInhalt(wocheId),getLehrplanMaterialien(wocheId),getLehrplanProdukte(wocheId),
+  getLehrplanFortschritt(wocheId),getBasischeckFragen(wocheId),getMyBasischeckVersuch(wocheId),
+  ppEinheitKopfHTML(wocheId)
+ ]);
+ const lehrer=isTeacher();
+ const produkte=lehrer?produkteAlle:produkteAlle.filter(p=>p.uid===currentUser.uid);
+ const schritte=aptSchritte(fortschritt);
+ const offenIdx=schritte.findIndex(s=>!s);
+ if(tab)aptAktiverTab=tab;
+ else if(aptLetzteEinheit!==wocheId||!aptAktiverTab)aptAktiverTab=APT_TABS[offenIdx===-1?4:offenIdx];
+ if(aptLetzteEinheit!==wocheId)aptKprimWiederholen=false;
+ aptLetzteEinheit=wocheId;
+ const eg=fortschritt.eingrenzung||{};
+ const kprim=aptKprimAufgaben(inhalt,e);
+ const kprimVonLehrkraft=!!(inhalt.kprim&&inhalt.kprim.length);
+ const erg=fortschritt.kprim;
+ const bezug=(e.bezug||[]).map(b=>lehrplanWocheById(fach,b)).filter(Boolean);
+
+ // ① Prüfungsfrage
+ const panelFrage=lehrer?`<div class="form">
+   <p style="font-size:12px;color:var(--muted);margin:0">Lade die Prüfungsfrage hoch (Text und/oder Datei). ${inhalt.pruefungsfrage?"":"<b>Vorschlag aus der App ist bereits eingetragen – anpassen und speichern.</b>"}</p>
+   <label>Prüfungsfrage<textarea id="aptFrageText"rows="5">${esc(inhalt.pruefungsfrage||e.pruefung||"")}</textarea></label>
+   <label>Datei (optional, z. B. PDF/Bild, max. 15 MB)<input id="aptFrageDatei"type="file"></label>
+   ${inhalt.frageDateiUrl?`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${dateiEmbedHTML(inhalt.frageDateiUrl,inhalt.frageDateiName)}<button class="secondary"onclick="aptFrageDateiEntfernen('${wocheId}')">Datei entfernen</button></div>`:""}
+   <div class="form-actions"><button class="primary"onclick="saveAptFrage('${wocheId}')">Prüfungsfrage speichern</button></div>
+  </div>`
+ :!(inhalt.pruefungsfrage||inhalt.frageDateiUrl)?`<div class="empty">Deine Lehrkraft stellt die Prüfungsfrage hier bereit.</div>`
+ :`<div class="card apt-frage"style="border-left:4px solid ${c}">
+   <div class="kicker">PRÜFUNGSFRAGE</div>
+   ${inhalt.pruefungsfrage?`<p style="white-space:pre-wrap;font-size:15px;line-height:1.5;margin:6px 0">${esc(inhalt.pruefungsfrage)}</p>`:""}
+   ${inhalt.frageDateiUrl?dateiEmbedHTML(inhalt.frageDateiUrl,inhalt.frageDateiName):""}
+  </div>
+  <label class="apt-check"><input type="checkbox"${fortschritt.frageGelesen?" checked":""} onchange="aptSetzen('${wocheId}',{frageGelesen:this.checked},{tab:'frage'})"><span>Prüfungsfrage gelesen – ich weiß, worum es geht</span></label>`;
+
+ // ② Inhalte & Aufgabeneingrenzung
+ const operatorHilfe=`<details class="apt-hilfe"><summary>Operatoren & Anforderungsbereiche</summary><div class="apt-op-liste">${APT_OPERATOREN.map(([o,a])=>`<span><b>${esc(o)}</b> AFB ${a}</span>`).join("")}</div></details>`;
+ const panelInhalte=`
+  <h3 class="apt-h3">Inhalte zur Bearbeitung</h3>
+  <p style="font-size:12px;color:var(--muted);margin:0 0 8px">${esc(e.planung)}</p>
+  ${lehrer?`<div class="form"style="margin-bottom:12px"><div style="display:flex;gap:8px;flex-wrap:wrap">
+   <select id="matKategorie">${MATERIAL_KATEGORIEN.map(k=>`<option value="${k.key}">${k.label}</option>`).join("")}</select>
+   <input id="matTitel"type="text"placeholder="Titel"style="flex:1;min-width:140px">
+   <input id="matUrl"type="url"placeholder="Link/URL"style="flex:1;min-width:160px">
+   <button class="primary"onclick="addLehrplanMaterial('${fach}','${wocheId}')">＋ Hinzufügen</button></div></div>`:""}
+  <div class="list">${materialien.map(m=>`<div class="list-item"style="flex-direction:column;align-items:stretch;gap:8px">
+   <div style="display:flex;justify-content:space-between;align-items:center"><strong>${esc(MATERIAL_KATEGORIEN.find(k=>k.key===m.kategorie)?.label||m.kategorie)}: ${esc(m.titel)}</strong>${lehrer?`<button class="secondary"onclick="deleteLehrplanMaterial('${m.id}','${fach}','${wocheId}')">Löschen</button>`:""}</div>
+   ${m.url?materialEmbedHTML(m):""}</div>`).join("")||`<div class="empty">Noch keine Inhalte eingestellt.</div>`}</div>
+  ${bezug.length?`<div class="pp-bezug-box"style="--c:${c}">🔗 <b>Baut auf deinem Projekt auf:</b> ${bezug.map(b=>`<a href="javascript:void 0"onclick="openWocheDetail('paedagogik','${b.id}')">${esc(b.thema)}</a>`).join(" · ")} – nutze deine Projektergebnisse als Praxisbeispiel!</div>`:""}
+  ${miniToolRow([["🗂️","Karteikarten & Timer","lernwerkzeuge"],["🤖","KI zum Lernen","ki-lernen"],["✍️","Fachaufsatz-Training","fachaufsatz"]])}
+  ${!lehrer?`<label class="apt-check"><input type="checkbox"${fortschritt.materialBearbeitet?" checked":""} onchange="aptSetzen('${wocheId}',{materialBearbeitet:this.checked},{tab:'inhalte'})"><span>Inhalte bearbeitet</span></label>`:""}
+  <h3 class="apt-h3">Aufgabeneingrenzung</h3>
+  ${lehrer?`<div class="form"><label>Hinweise der Lehrkraft zur Eingrenzung (optional)<textarea id="aptHinweis"rows="3"placeholder="z. B. Worauf liegt der Schwerpunkt? Was gehört NICHT dazu?">${esc(inhalt.eingrenzungHinweis||"")}</textarea></label><div class="form-actions"><button class="primary"onclick="saveAptHinweis('${wocheId}')">Hinweis speichern</button></div></div>`
+  :`${inhalt.eingrenzungHinweis?`<div class="card"style="border-left:4px solid #e0a324;padding:10px 12px;margin-bottom:8px"><small><b>Hinweis der Lehrkraft:</b> ${esc(inhalt.eingrenzungHinweis)}</small></div>`:""}
+   <p style="font-size:12px;color:var(--muted);margin:0 0 6px">Bevor du schreibst: Was genau verlangt die Prüfungsfrage – und was nicht?</p>
+   <div class="form">
+    <label>Operator(en) – was sollst du tun?<input id="aptEgOperator"list="aptOperatorListe"value="${esc(eg.operator||"")}"placeholder="z. B. erläutern, beurteilen"></label>
+    <datalist id="aptOperatorListe">${APT_OPERATOREN.map(([o])=>`<option value="${esc(o)}">`).join("")}</datalist>
+    <label>Gegenstand – welche Theorie / welcher Fachbegriff?<input id="aptEgGegenstand"value="${esc(eg.gegenstand||"")}"placeholder="z. B. Attributionstheorie nach Weiner"></label>
+    <label>Teilaufgaben & Gliederung<textarea id="aptEgTeile"rows="3"placeholder="1. … 2. … 3. …">${esc(eg.teile||"")}</textarea></label>
+    <label>Praxisbezug / Beispiel<input id="aptEgPraxis"value="${esc(eg.praxis||"")}"placeholder="z. B. Situation aus meinem Praktikum"></label>
+    <div class="form-actions"><button class="primary"onclick="aptEingrenzungSpeichern('${wocheId}')">${fortschritt.eingrenzung?"✓ Eingrenzung aktualisieren":"Eingrenzung speichern"}</button></div>
+   </div>`}
+  ${operatorHilfe}`;
+
+ // ③ Basis-Check
+ const panelBasis=`<p style="color:var(--muted);margin-top:0;font-size:12px">Kurzer Check: Sitzt die fachliche Basis, bevor du deine Antwort schreibst?</p>
+  ${basischeckPanelHTML(fach,wocheId,bcFragen,meinBc,!lehrer&&!fortschritt.basischeckErledigt?`<div class="form-actions"style="margin-top:8px"><button class="secondary"onclick="aptSetzen('${wocheId}',{basischeckErledigt:true,basischeckUebersprungen:true},{tab:'basischeck'})">Weiter ohne Basis-Check</button></div>`:"")}`;
+
+ // ④ Lernprodukt & Vorkorrektur
+ const vkLabel={gruen:"passt – so prüfungstauglich",orange:"überarbeiten",rot:"grundlegend überarbeiten"};
+ const panelProdukt=`
+  ${!lehrer?`<div class="card"style="background:#f7fafc;padding:10px 14px;margin-bottom:10px"><strong style="font-size:12px">Checkliste vor dem Hochladen</strong>
+   <ul style="margin:6px 0 0;font-size:12px;color:var(--muted);padding-left:18px"><li>Operator erfüllt (z. B. wirklich „erläutert“ statt nur „genannt“)?</li><li>Fachbegriffe korrekt und vollständig?</li><li>Praxisbeispiel eingebunden und fachlich verknüpft?</li><li>Klare Gliederung: Einleitung – Hauptteil – Schluss?</li></ul></div>`:""}
+  <div class="list">${produkte.map(p=>`<div class="list-item"style="flex-direction:column;align-items:stretch;gap:8px">
+   <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div><strong>${esc(p.titel)}</strong><small>${esc(p.name)}${p.inhalt?" · "+esc(p.inhalt.slice(0,80)):""}</small></div>${(p.uid===currentUser.uid||lehrer)?`<button class="secondary"onclick="deleteLehrplanProdukt('${p.id}','${fach}','${wocheId}')">Löschen</button>`:""}</div>
+   ${p.dateiUrl?dateiEmbedHTML(p.dateiUrl,p.dateiName):""}
+   ${lehrer?`<div class="form"style="background:#f7fafc;border-radius:10px;padding:10px">
+     <label>Vorkorrektur<textarea id="vk_${p.id}"rows="3"placeholder="Rückmeldung: Was gelingt schon, was muss noch rein?">${esc(p.vorkorrektur||"")}</textarea></label>
+     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><select id="vkA_${p.id}">${Object.entries(vkLabel).map(([k,v])=>`<option value="${k}"${p.vorkorrekturAmpel===k?" selected":""}>${v}</option>`).join("")}</select>
+     <button class="primary"onclick="saveAptVorkorrektur('${p.id}','${wocheId}')">Vorkorrektur speichern</button></div></div>`
+   :p.vorkorrektur?`<div class="card"style="border-left:4px solid ${ampelFarbe(p.vorkorrekturAmpel||"orange")};padding:10px 12px"><div class="kicker">VORKORREKTUR · ${esc(vkLabel[p.vorkorrekturAmpel]||"")}</div><p style="margin:4px 0 0;white-space:pre-wrap;font-size:13px">${esc(p.vorkorrektur)}</p></div>`
+   :`<small style="color:var(--muted)">⏳ Vorkorrektur durch die Lehrkraft steht noch aus.</small>`}
+  </div>`).join("")||`<div class="empty">${lehrer?"Noch keine Lernprodukte hochgeladen.":"Noch kein Lernprodukt hochgeladen."}</div>`}</div>
+  ${!lehrer?`<div class="form-actions"style="margin-top:10px;flex-wrap:wrap">
+   <input id="produktTitel"type="text"placeholder="Titel, z. B. Antwort Prüfungsfrage"style="flex:1;min-width:140px">
+   <input id="produktInhalt"type="text"placeholder="Link oder kurze Notiz (optional)"style="flex:1;min-width:160px"></div>
+  <div class="form-actions"style="margin-top:8px;flex-wrap:wrap;align-items:center">
+   <label style="font-weight:700;font-size:12px">Datei (optional, max. 15 MB)<input id="produktDatei"type="file"style="display:block;margin-top:4px"></label>
+   <button class="primary"onclick="addLehrplanProdukt('${fach}','${wocheId}')">＋ Hochladen</button></div>`:""}`;
+
+ // ⑤ Abschluss-Check (K-Prim)
+ let panelAbschluss;
+ if(lehrer){
+  panelAbschluss=`<p style="font-size:12px;color:var(--muted);margin-top:0">Bis zu 3 K-Prim-Aufgaben mit je 4 Aussagen. ${kprimVonLehrkraft?"":"<b>Aktuell sehen die Schüler:innen den Vorschlag aus der App</b> – anpassen und speichern, um ihn zu ersetzen."} Wertung je Aufgabe: 0 Fehler = 3 P., 1 Fehler = 2 P., 2 Fehler = 1 P.</p>
+  <div class="form">${[0,1,2].map(i=>{const a=kprim[i]||{};return`<div class="card"style="margin-bottom:10px;background:#f7fafc">
+   <label>Aufgabe ${i+1}${i>0?" (optional)":""}<input id="aptKpFrage${i}"value="${esc(a.frage||"")}"placeholder="Welche Aussagen treffen zu?"></label>
+   ${[0,1,2,3].map(j=>{const s=a.statements?.[j]||{};return`<div style="display:flex;gap:8px;align-items:center;margin-top:4px">
+    <input id="aptKpS${i}_${j}"value="${esc(s.text||"")}"placeholder="Aussage ${j+1}"style="flex:1">
+    <select id="aptKpR${i}_${j}"style="width:90px"><option value="true"${s.correct?" selected":""}>richtig</option><option value="false"${s.correct===false?" selected":""}>falsch</option></select></div>`;}).join("")}
+  </div>`;}).join("")}
+  <div class="form-actions"><button class="primary"onclick="saveAptKprim('${wocheId}')">K-Prim-Aufgaben speichern</button></div></div>`;
+ }else if(!kprim.length){
+  panelAbschluss=`<div class="empty">Für diesen Inhalt sind noch keine K-Prim-Aufgaben hinterlegt.</div>`;
+ }else if(erg&&!aptKprimWiederholen){
+  const pct=erg.max?erg.punkte/erg.max:0;
+  const farbe=pct>=0.8?"#3fa66a":pct>=0.5?"#e0a324":"#d9534f";
+  panelAbschluss=`<div class="card"style="border-left:4px solid ${farbe};background:${farbe}14">
+   <strong style="font-size:18px">${erg.punkte} von ${erg.max} Punkten</strong>
+   <p style="margin:4px 0 0;color:var(--muted);font-size:12px">${(erg.aufgaben||[]).map((a,i)=>`Aufgabe ${i+1}: ${a.fehler===0?"alles richtig ✓":a.fehler+" Fehler"}`).join(" · ")}</p>
+  </div>
+  <div class="form-actions"style="margin-top:10px"><button class="secondary"onclick="aptKprimNochmal('${wocheId}')">Nochmal versuchen</button></div>`;
+ }else{
+  panelAbschluss=`<p style="font-size:12px;color:var(--muted);margin-top:0">Entscheide bei jeder Aussage: richtig oder falsch? Nur wenn alle vier stimmen, gibt es die volle Punktzahl.</p>
+  <div class="form">${kprim.map((a,i)=>`<div class="card"style="margin-bottom:10px"><strong style="display:block;margin-bottom:8px">${i+1}. ${esc(a.frage||"Welche Aussagen treffen zu?")}</strong>
+   ${(a.statements||[]).map((s,j)=>`<div class="apt-kp-zeile"><span>${esc(s.text)}</span>
+    <label><input type="radio"name="aptKpA${i}_${j}"value="r"> richtig</label>
+    <label><input type="radio"name="aptKpA${i}_${j}"value="f"> falsch</label></div>`).join("")}
+  </div>`).join("")}
+  <div class="form-actions"><button class="primary"onclick="aptKprimAbgeben('${wocheId}')">Abschluss-Check abgeben</button></div></div>`;
+ }
+
+ const tabs=[["frage","① Prüfungsfrage"],["inhalte","② Inhalte & Eingrenzung"],["basischeck","③ Basis-Check"],["produkt","④ Lernprodukt & Vorkorrektur"],["abschluss","⑤ Abschluss-Check"]];
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+  ${kopf}
+  <div class="kicker">PÄDAGOGIK/PSYCHOLOGIE · ${esc(e.lb)} · ABSCHLUSSPRÜFUNGS-TRAINING · INHALT NR. ${esc(e.nr)}</div>
+  <h2>${esc(e.thema)}</h2>
+  <div class="wd-ziele-info"style="margin-top:8px"><strong>Das sollst du am Ende können</strong><ul>${(e.ziele||[]).map(z=>`<li>${esc(z)}</li>`).join("")}</ul></div>
+  <div class="wd-stepper">
+   ${schritte.map((d,i)=>`<div class="wd-step${d?" wd-step-done":""}${i===offenIdx?" wd-step-aktiv":""}"onclick="showAptTab('${APT_TABS[i]}')"style="cursor:pointer">
+    <div class="wd-step-dot"style="${d?`background:${c};border-color:${c}`:""}">${d?"✓":i+1}</div><small>${esc(APT_SCHRITT_LABELS[i])}</small>
+   </div>${i<4?`<div class="wd-step-line${d?" wd-step-line-done":""}"></div>`:""}`).join("")}
+  </div>
+  ${lehrer&&ph?`<div style="margin:-10px 0 14px;display:flex;gap:8px;flex-wrap:wrap"><button class="secondary"style="font-size:11px"onclick="openFachaufsatzTrainingCheck()">🎓 APT-Gesamtcheck der Klasse</button></div>`:""}
+  <div class="wd-tabs">${tabs.map(([k,l])=>`<button type="button"class="wd-tab apt-tab"data-tab="${k}"onclick="showAptTab('${k}')">${l}</button>`).join("")}</div>
+  <div class="apt-panel"id="aptPanel_frage">${panelFrage}</div>
+  <div class="apt-panel"id="aptPanel_inhalte">${panelInhalte}</div>
+  <div class="apt-panel"id="aptPanel_basischeck">${panelBasis}</div>
+  <div class="apt-panel"id="aptPanel_produkt">${panelProdukt}</div>
+  <div class="apt-panel"id="aptPanel_abschluss">${panelAbschluss}</div>
+  <div class="wd-footer">
+   <button class="secondary"onclick="closeModal()">Schließen</button>
+   <span style="flex:1"></span>
+   ${ph?`<button class="secondary"onclick="closeModal();openPhaseDetail('${ph.id}:projekt')">🔬 Zum Projekt ${esc(ph.lb)}</button>`:""}
+   ${!lehrer?`<button class="primary"onclick="closeModal();go('forum-nachrichten')">Lehrkraft fragen</button>`:""}
+  </div>`);
+ showAptTab(aptAktiverTab);
+}
+window.openAptDetail=openAptDetail;
+
+// ---- Speichern: Schüler:innen-Fortschritt ----
+async function aptSetzen(wocheId,patch,opts={}){
+ try{
+  const alt=await getLehrplanFortschritt(wocheId);
+  const neu={...alt,...patch,uid:currentUser.uid,wocheId,fach:"paedagogik",updatedAt:serverTimestamp()};
+  const fertig=aptSchritte(neu).every(Boolean);
+  const warFertig=!!alt.abgeschlossen;
+  neu.abgeschlossen=fertig;
+  await setDoc(doc(db,"lehrplanFortschritt",`${currentUser.uid}_${wocheId}`),neu);
+  ppDirty=true;
+  await openAptDetail(wocheId,opts.tab);
+  if(fertig&&!warFertig)showMotivationsBild(true);
+  else if(opts.motiv||Object.values(patch).some(v=>v===true))showMotivationsBild();
+ }catch(e){console.error("APT-Fortschritt speichern:",e);toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Konnte nicht gespeichert werden.");}
+}
+window.aptSetzen=aptSetzen;
+async function aptEingrenzungSpeichern(wocheId){
+ const eingrenzung={operator:$("aptEgOperator")?.value.trim()||"",gegenstand:$("aptEgGegenstand")?.value.trim()||"",teile:$("aptEgTeile")?.value.trim()||"",praxis:$("aptEgPraxis")?.value.trim()||""};
+ if(!eingrenzung.operator||!eingrenzung.gegenstand){toast("Bitte mindestens Operator und Gegenstand eintragen.");return}
+ await aptSetzen(wocheId,{eingrenzung},{tab:"inhalte",motiv:true});
+}
+window.aptEingrenzungSpeichern=aptEingrenzungSpeichern;
+async function aptKprimAbgeben(wocheId){
+ const e=lehrplanWocheById("paedagogik",wocheId);
+ const kprim=aptKprimAufgaben(await getAptInhalt(wocheId),e);
+ const antworten=[],aufgaben=[];
+ let punkte=0,max=0,offen=false;
+ kprim.forEach((a,i)=>{
+  const checked=(a.statements||[]).map((s,j)=>{const v=document.querySelector(`input[name="aptKpA${i}_${j}"]:checked`)?.value;if(!v)offen=true;return v==="r";});
+  const g=kprimGrade({statements:a.statements,points:3},checked);
+  punkte+=g.points;max+=3;
+  aufgaben.push({fehler:g.errors,punkte:g.points});
+  antworten.push(checked.map(x=>x?"r":"f").join(""));
+ });
+ if(offen){toast("Bitte bei jeder Aussage richtig oder falsch wählen.");return}
+ aptKprimWiederholen=false;
+ await aptSetzen(wocheId,{kprim:{punkte,max,aufgaben,antworten,am:new Date().toISOString()}},{tab:"abschluss",motiv:punkte===max});
+ toast(`${punkte} von ${max} Punkten.`);
+}
+window.aptKprimAbgeben=aptKprimAbgeben;
+function aptKprimNochmal(wocheId){aptKprimWiederholen=true;openAptDetail(wocheId,"abschluss");}
+window.aptKprimNochmal=aptKprimNochmal;
+
+// ---- Speichern: Lehrkraft ----
+async function saveAptFrage(wocheId){
+ if(!isTeacher()){toast("Nur Lehrkräfte können die Prüfungsfrage einstellen.");return}
+ const text=$("aptFrageText")?.value.trim()||"";
+ const file=$("aptFrageDatei")?.files?.[0]||null;
+ if(!text&&!file){toast("Bitte Text eingeben oder eine Datei wählen.");return}
+ try{
+  const patch={pruefungsfrage:text,updatedAt:serverTimestamp(),updatedBy:currentUser.uid};
+  if(file){toast("Datei wird hochgeladen …");const up=await uploadCampusDatei(file,`aptInhalte/${wocheId}`);patch.frageDateiUrl=up.url;patch.frageDateiName=up.name;}
+  await setDoc(doc(db,"aptInhalte",wocheId),patch,{merge:true});
+  toast("Prüfungsfrage gespeichert.");
+  await openAptDetail(wocheId,"frage");
+ }catch(e){console.error("Prüfungsfrage speichern:",e);toast("Fehler: "+(e?.message||e));}
+}
+async function aptFrageDateiEntfernen(wocheId){
+ if(!confirm("Datei wirklich von der Prüfungsfrage entfernen?"))return;
+ try{await setDoc(doc(db,"aptInhalte",wocheId),{frageDateiUrl:"",frageDateiName:"",updatedAt:serverTimestamp()},{merge:true});await openAptDetail(wocheId,"frage");}
+ catch(e){console.error(e);toast("Konnte nicht gespeichert werden.");}
+}
+async function saveAptHinweis(wocheId){
+ if(!isTeacher())return;
+ try{await setDoc(doc(db,"aptInhalte",wocheId),{eingrenzungHinweis:$("aptHinweis")?.value.trim()||"",updatedAt:serverTimestamp(),updatedBy:currentUser.uid},{merge:true});toast("Hinweis gespeichert.");await openAptDetail(wocheId,"inhalte");}
+ catch(e){console.error(e);toast("Konnte nicht gespeichert werden.");}
+}
+async function saveAptKprim(wocheId){
+ if(!isTeacher())return;
+ const kprim=[];
+ for(let i=0;i<3;i++){
+  const frage=$(`aptKpFrage${i}`)?.value.trim()||"";
+  const statements=[0,1,2,3].map(j=>({text:$(`aptKpS${i}_${j}`)?.value.trim()||"",correct:$(`aptKpR${i}_${j}`)?.value==="true"})).filter(s=>s.text);
+  if(!frage&&!statements.length)continue;
+  if(statements.length!==4){toast(`Aufgabe ${i+1}: Bitte genau 4 Aussagen eintragen.`);return}
+  kprim.push({frage:frage||"Welche Aussagen treffen zu?",statements});
+ }
+ if(!kprim.length){toast("Bitte mindestens eine vollständige Aufgabe eingeben.");return}
+ try{await setDoc(doc(db,"aptInhalte",wocheId),{kprim,updatedAt:serverTimestamp(),updatedBy:currentUser.uid},{merge:true});toast("K-Prim-Aufgaben gespeichert.");await openAptDetail(wocheId,"abschluss");}
+ catch(e){console.error(e);toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Konnte nicht gespeichert werden.");}
+}
+async function saveAptVorkorrektur(produktId,wocheId){
+ if(!isTeacher())return;
+ try{
+  await updateDoc(doc(db,"lehrplanProdukte",produktId),{vorkorrektur:$(`vk_${produktId}`)?.value.trim()||"",vorkorrekturAmpel:$(`vkA_${produktId}`)?.value||"orange",vorkorrekturAm:serverTimestamp(),vorkorrekturVon:currentUser.uid});
+  toast("Vorkorrektur gespeichert.");
+  await openAptDetail(wocheId,"produkt");
+ }catch(e){console.error(e);toast("Konnte nicht gespeichert werden.");}
+}
+window.saveAptFrage=saveAptFrage;window.aptFrageDateiEntfernen=aptFrageDateiEntfernen;
+window.saveAptHinweis=saveAptHinweis;window.saveAptKprim=saveAptKprim;window.saveAptVorkorrektur=saveAptVorkorrektur;
+
 async function renderFachDetail(){
  if(!activeFach)return await renderFaecherUebersicht();
  const fach=F11SB_FAECHER.find(f=>f.key===activeFach);
@@ -3456,11 +4139,11 @@ function showWocheTab(tabId){
 }
 window.showWocheTab=showWocheTab;
 
-async function openWocheDetail(fach,wocheId){
+async function openWocheDetail(fach,wocheId,startTabOverride){
  const woche=lehrplanWocheById(fach,wocheId);
  if(!woche){toast("Diese Woche wurde nicht gefunden.");return}
  const [auftrag,materialien,teams,produkte,fortschritt,lsTasks,lsAttempts,basischeckFragen,meinBasischeck]=await Promise.all([
- getLehrplanAuftrag(wocheId),getLehrplanMaterialien(wocheId),getLehrplanTeams(wocheId),
+ getLehrplanAuftrag(wocheId),getLehrplanMaterialien(wocheId),getLehrplanTeams(teamAnchorFor(wocheId)),
  getLehrplanProdukte(wocheId),getLehrplanFortschritt(wocheId),
  getLernstandTasks().catch(()=>[]),getMyLernstandAttempts().catch(()=>[]),
  getBasischeckFragen(wocheId),getMyBasischeckVersuch(wocheId)
@@ -3492,14 +4175,19 @@ async function openWocheDetail(fach,wocheId){
  ];
  let aktivIdx=schritte.findIndex(s=>!s.done);
  if(aktivIdx===-1)aktivIdx=schritte.length-1;
- const startTab=schritte[Math.min(aktivIdx,schritte.length-1)].tab;
+ const startTab=startTabOverride||schritte[Math.min(aktivIdx,schritte.length-1)].tab;
+ // Pädagogik/Psychologie: kleiner Fortschrittskopf + Querverlinkung ins APT
+ const ppKopf=fach==="paedagogik"?await ppEinheitKopfHTML(wocheId):"";
+ const aptLinks=fach==="paedagogik"?PP_EINHEITEN.filter(a=>a.typ==="apt"&&(a.bezug||[]).includes(wocheId)):[];
 
  modal(`<button class="modal-close"onclick="closeModal()">×</button>
+ ${ppKopf}
  <div class="kicker">${esc(fachLbl)} · ${esc(woche.lb)} · ${esc(fmtDateOnly(woche.start))}–${esc(fmtDateOnly(woche.end))}</div>
  <h2>${esc(woche.thema)}</h2>
  <span class="pill"style="background:${woche.typ==="projekt"?"#3fa66a":"#e0a324"};color:#fff">${woche.typ==="projekt"?"Projektarbeit":"Selbstlern-/Eigenarbeit"}</span>
  <p style="margin-top:10px;color:var(--muted)">${esc(woche.planung)}</p>
  ${woche.praxis?`<div class="card"style="border-left:4px solid #4a90d9;margin-top:10px;padding:10px 12px"><strong style="font-size:12px"> Praxistransfer</strong><small style="display:block;margin-top:4px">${esc(woche.praxis)}</small></div>`:""}
+ ${aptLinks.length?`<div class="pp-bezug-box"style="--c:${lernbereichAkzentfarbe(woche.lb)}">🎓 <b>Wird im Abschlussprüfungs-Training vertieft:</b> ${aptLinks.map(a=>`<a href="javascript:void 0"onclick="openAptDetail('${a.id}')">${esc(a.thema)}</a>`).join(" · ")}</div>`:""}
 
  <div class="wd-stepper">
  ${schritte.map((s,i)=>`<div class="wd-step${s.done?" wd-step-done":""}${i===aktivIdx&&!s.done?" wd-step-aktiv":""}">
@@ -3536,7 +4224,7 @@ async function openWocheDetail(fach,wocheId){
  </div>`
  :!auftrag?`<div class="empty">Für diese Woche wurde noch kein Arbeitsauftrag eingetragen.</div>`
  :`<div class="card"style="border-left:4px solid #4a90d9"><strong>${esc(auftrag.titel)}</strong>${auftrag.beschreibung?`<p style="margin:6px 0 0;white-space:pre-wrap">${esc(auftrag.beschreibung)}</p>`:""}</div>`}
- ${!isTeacher()?`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:14px;font-weight:700;font-size:13px"><input type="checkbox"${fortschritt.auftragGelesen?"checked":""}onchange="toggleAuftragGelesen('${fach}','${wocheId}',this.checked)"><span> Auftrag gelesen, Ziele sind mir klar</span></label>`:""}
+ ${!isTeacher()?`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:14px;font-weight:700;font-size:13px"><input type="checkbox"${fortschritt.auftragGelesen?"checked":""} onchange="toggleAuftragGelesen('${fach}','${wocheId}',this.checked)"><span> Auftrag gelesen, Ziele sind mir klar</span></label>`:""}
  <p style="font-size:11px;color:var(--muted);margin:16px 0 6px">Bevor es losgeht:</p>
  ${miniToolRow([["🧭","Lernpfad","lernpfad"],["🤔","Metakognition","metakognition"]])}
  </div>
@@ -3556,7 +4244,7 @@ async function openWocheDetail(fach,wocheId){
  </div>`).join("")||`<div class="empty">Noch keine Lernmaterialien eingestellt.</div>`}</div>
  <p style="font-size:11px;color:var(--muted);margin-top:12px">Zum Bearbeiten des Materials:</p>
  ${miniToolRow([["🗂️","Karteikarten & Timer","lernwerkzeuge"],["🤖","KI zum Lernen","ki-lernen"],["🔗","Lernressourcen","ressourcen"],["⏱️","Uhr & Timer","uhr-timer"]])}
- ${!isTeacher()?`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:14px;font-weight:700;font-size:13px"><input type="checkbox"${fortschritt.materialErhalten?"checked":""}onchange="toggleMaterialErhalten('${fach}','${wocheId}',this.checked)"><span> Materialien erhalten/gesichtet</span></label>`:""}
+ ${!isTeacher()?`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:14px;font-weight:700;font-size:13px"><input type="checkbox"${fortschritt.materialErhalten?"checked":""} onchange="toggleMaterialErhalten('${fach}','${wocheId}',this.checked)"><span> Materialien erhalten/gesichtet</span></label>`:""}
  </div>
 
  <div class="wd-panel"id="wdPanel_basischeck">
@@ -3626,13 +4314,13 @@ async function openWocheDetail(fach,wocheId){
  <div class="list">${teams.map(t=>{
  const inTeam=(t.mitgliederUids||[]).includes(currentUser.uid);
  const phase=projektPhaseByWoche(wocheId);
- const zeigtMeilensteine=phase&&phase.projektWocheId===wocheId;
+ const zeigtMeilensteine=phase&&phase.notwendigeWochen.includes(wocheId);
  const idx=t.meilensteinIndex||0;
  return`<div class="list-item"style="flex-direction:column;align-items:stretch;gap:8px">
  <div style="display:flex;justify-content:space-between;align-items:center"><div><strong>${esc(t.teamName)}</strong><small>${esc((t.mitgliederNamen||[]).join(", ")||"Noch niemand")}</small></div><div style="display:flex;gap:6px">${inTeam?`<button class="secondary"onclick="leaveLehrplanTeam('${t.id}','${fach}','${wocheId}')">Verlassen</button>`:`<button class="primary"onclick="joinLehrplanTeam('${t.id}','${fach}','${wocheId}')">Beitreten</button>`}${isTeacher()?`<button class="secondary"onclick="deleteLehrplanTeam('${t.id}','${fach}','${wocheId}')">Auflösen</button>`:""}</div></div>
  ${zeigtMeilensteine?`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">${phase.meilensteine.map((m,i)=>{
  const status=i<idx?"#3fa66a":i===idx?"#e0a324":"#c7d0d6";
- return`<span${isTeacher()?` onclick="setTeamMeilenstein('${t.id}',${i+1},'${fach}','${wocheId}')"style="cursor:pointer"`:""}class="pill"style="background:${status};color:#fff;font-size:10px">${i<idx?"✓ ":""}${esc(m)}</span>`;
+ return`<span${(isTeacher()||(inTeam&&MEILENSTEINE_SCHUELER_DUERFEN_ABHAKEN))?` onclick="setTeamMeilenstein('${t.id}',${i<idx&&i===idx-1?i:i+1},'${fach}','${wocheId}')"style="cursor:pointer"`:""}class="pill"style="background:${status};color:#fff;font-size:10px">${i<idx?"✓ ":""}${esc(m)}</span>`;
  }).join("")}</div>`:""}
  </div>`}).join("")||`<div class="empty">Noch keine Teams gebildet.</div>`}</div>
  ${!meinTeam?`<div class="form-actions"style="margin-top:10px"><input id="neuTeamName"type="text"placeholder="Team-Name"style="flex:1"><button class="primary"onclick="createLehrplanTeam('${fach}','${wocheId}')">＋ Team gründen</button></div>`:""}
@@ -3672,9 +4360,9 @@ async function openWocheDetail(fach,wocheId){
 
  <div class="wd-panel"id="wdPanel_selbsteinschaetzung">
  <p style="color:var(--muted);margin-top:0">Schätz dich jetzt zum Schluss selbst ein: Welche Lernziele hast du wirklich erreicht?</p>
- <div class="list">${ziele.map(z=>`<div class="list-item"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;flex:1"><input type="checkbox"${fortschritt.zieleErfuellt?.[z.id]?"checked":""}onchange="toggleZielErfuellt('${fach}','${wocheId}','${z.id}',this.checked)"><span>${esc(z.text)}</span></label></div>`).join("")||`<div class="empty">Für dieses Fach/diese Woche sind noch keine Lehrplan-Ziele hinterlegt.</div>`}</div>
+ <div class="list">${ziele.map(z=>`<div class="list-item"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;flex:1"><input type="checkbox"${fortschritt.zieleErfuellt?.[z.id]?"checked":""} onchange="toggleZielErfuellt('${fach}','${wocheId}','${z.id}',this.checked)"><span>${esc(z.text)}</span></label></div>`).join("")||`<div class="empty">Für dieses Fach/diese Woche sind noch keine Lehrplan-Ziele hinterlegt.</div>`}</div>
  ${ziele.length?`<div class="form-actions"style="margin-top:12px">
- <button class="primary"${fortschritt.abgeschlossen?"disabled":""}onclick="markWocheAbgeschlossen('${fach}','${wocheId}')">${fortschritt.abgeschlossen?"✓ Woche abgeschlossen":alleErfuellt?"✓ Woche als abgeschlossen markieren":" Erst alle Ziele erfüllen"}</button>
+ <button class="primary"${fortschritt.abgeschlossen?"disabled":""} onclick="markWocheAbgeschlossen('${fach}','${wocheId}')">${fortschritt.abgeschlossen?"✓ Woche abgeschlossen":alleErfuellt?"✓ Woche als abgeschlossen markieren":" Erst alle Ziele erfüllen"}</button>
  </div>`:""}
  <p style="font-size:11px;color:var(--muted);margin-top:16px">Zur Vertiefung deiner Reflexion:</p>
  ${miniToolRow([["🤔","Metakognition","metakognition"],["🧭","Lernpfad aktualisieren","lernpfad"],["💬","Lerncoaching","lerncoaching"]])}

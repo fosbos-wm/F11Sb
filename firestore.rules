@@ -529,6 +529,13 @@ service cloud.firestore {
       allow read: if isApproved();
       allow create, update, delete: if isTeacher();
     }
+    // Abschlussprüfungs-Training (Pädagogik/Psychologie): Prüfungsfrage,
+    // Eingrenzungshinweis und K-Prim-Aufgaben je Inhalt – nur Lehrkräfte
+    // schreiben, alle Freigeschalteten lesen.
+    match /aptInhalte/{id} {
+      allow read: if isApproved();
+      allow create, update, delete: if isTeacher();
+    }
     match /basischeckVersuche/{id} {
       allow read: if isApproved() && (resource.data.uid == request.auth.uid || isTeacher());
       allow create: if isApproved() && request.resource.data.uid == request.auth.uid;

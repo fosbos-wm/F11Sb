@@ -18,6 +18,14 @@ service firebase.storage {
       allow delete: if isApproved();
     }
 
+    // Prüfungsfragen im Abschlussprüfungs-Training – nur Lehrkräfte laden hoch.
+    match /aptInhalte/{einheitId}/{fileName} {
+      allow read: if isApproved();
+      allow write, delete: if isApproved()
+        && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role in ['teacher','admin']
+        && (request.resource == null || request.resource.size < 15 * 1024 * 1024);
+    }
+
     // Pinnwand-Notizen – max. 15 MB je Datei.
     match /boardPosts/{boardId}/{fileName} {
       allow read: if isApproved();
