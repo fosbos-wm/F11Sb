@@ -1722,7 +1722,10 @@ async function addLehrplanProdukt(fach,wocheId){
 async function deleteLehrplanProdukt(id,fach,wocheId){
  if(!confirm("Dieses Produkt wirklich löschen?"))return;
  try{
+ const alt=await getDoc(doc(db,"lehrplanProdukte",id));
+ const altUrl=alt.exists()?alt.data().dateiUrl:"";
  await deleteDoc(doc(db,"lehrplanProdukte",id));
+ await deleteCampusDatei(altUrl);
  if(lehrplanWocheById(fach,wocheId)?.typ==="apt"&&!isTeacher()){
   const rest=(await getLehrplanProdukte(wocheId)).filter(p=>p.uid===currentUser.uid);
   if(!rest.length){await aptSetzen(wocheId,{produktHochgeladen:false},{tab:"produkt"});toast("Gelöscht.");return}
@@ -2651,6 +2654,24 @@ async function uploadPraktikumsbericht(phaseId,typ){
  }catch(e){console.error("Bericht hochladen:",e);toast("Fehler: "+(e?.message||e));}
 }
 window.uploadPraktikumsbericht=uploadPraktikumsbericht;
+// Eigenen Blockbericht wieder löschen (z. B. falsche Datei hochgeladen).
+// Lehrkräfte dürfen ebenfalls löschen. Danach kann neu hochgeladen werden.
+async function deletePraktikumsbericht(phaseId,typ,uid){
+ uid=uid||currentUser.uid;
+ if(uid!==currentUser.uid&&!isTeacher())return;
+ const ref=doc(db,"praktikumsberichte",`${uid}_${phaseId}_${typ}`);
+ try{
+  const alt=await getDoc(ref);
+  if(!alt.exists()){toast("Datei ist schon gelöscht.");return}
+  const d=alt.data();
+  if(!confirm(d.ampel?"Diese Datei wurde schon bewertet. Trotzdem löschen? Die Bewertung geht dabei verloren.":"Diese Datei wirklich löschen?"))return;
+  await deleteDoc(ref);
+  await deleteCampusDatei(d.dateiUrl);
+  toast("Datei gelöscht – du kannst jetzt eine neue hochladen.");
+  if(uid===currentUser.uid)await openPraktikumsblockDetail(phaseId);else await openLehrkraftPraktikumsUebersicht(phaseId);
+ }catch(e){console.error("Bericht löschen:",e);toast(e?.code==="permission-denied"?"Firebase verweigert das Löschen. Bitte die Firestore-Regeln prüfen.":"Konnte nicht gelöscht werden.");}
+}
+window.deletePraktikumsbericht=deletePraktikumsbericht;
 async function saveAmpelBewertung(uid,phaseId,typ){
  if(!isTeacher()){toast("Nur Lehrkräfte können bewerten.");return}
  const ub=$(`amp_ub_${uid}_${phaseId}_${typ}`)?.checked||false;
@@ -2722,7 +2743,8 @@ async function openPraktikumsblockDetail(phaseId){
  <small style="display:block;color:var(--muted);margin-top:4px">Abgabe: ${esc(fmtDateOnly(terminDieserArt))}, 19:00 Uhr</small>
  ${eintrag?`<div style="margin-top:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
  <a href="${esc(eintrag.dateiUrl)}"target="_blank"rel="noopener"class="pill"> ${esc(eintrag.dateiName)}</a>
- <span class="pill"style="background:${ampelFarbe(eintrag.ampel)};color:#fff">${esc(ampelText(eintrag.ampel))}</span>
+ <span style="display:flex;gap:8px;align-items:center"><span class="pill"style="background:${ampelFarbe(eintrag.ampel)};color:#fff">${esc(ampelText(eintrag.ampel))}</span>
+ <button class="secondary"onclick="deletePraktikumsbericht('${phaseId}','${t.typ}')">Löschen</button></span>
  </div>`
  :`<div class="form-actions"style="margin-top:8px">
  <input id="pbFile_${phaseId}_${t.typ}"type="file"accept="image/*,.pdf"style="flex:1;min-width:160px">
@@ -4087,15 +4109,24 @@ async function saveAptFrage(wocheId){
  if(!text&&!file){toast("Bitte Text eingeben oder eine Datei wählen.");return}
  try{
   const patch={pruefungsfrage:text,updatedAt:serverTimestamp(),updatedBy:currentUser.uid};
-  if(file){toast("Datei wird hochgeladen …");const up=await uploadCampusDatei(file,`aptInhalte/${wocheId}`);patch.frageDateiUrl=up.url;patch.frageDateiName=up.name;}
+  let altUrl="";
+  if(file){
+   const alt=await getDoc(doc(db,"aptInhalte",wocheId));altUrl=alt.exists()?alt.data().frageDateiUrl||"":"";
+   toast("Datei wird hochgeladen …");const up=await uploadCampusDatei(file,`aptInhalte/${wocheId}`);patch.frageDateiUrl=up.url;patch.frageDateiName=up.name;
+  }
   await setDoc(doc(db,"aptInhalte",wocheId),patch,{merge:true});
+  if(altUrl)await deleteCampusDatei(altUrl);
   toast("Prüfungsfrage gespeichert.");
   await openAptDetail(wocheId,"frage");
  }catch(e){console.error("Prüfungsfrage speichern:",e);toast("Fehler: "+(e?.message||e));}
 }
 async function aptFrageDateiEntfernen(wocheId){
  if(!confirm("Datei wirklich von der Prüfungsfrage entfernen?"))return;
- try{await setDoc(doc(db,"aptInhalte",wocheId),{frageDateiUrl:"",frageDateiName:"",updatedAt:serverTimestamp()},{merge:true});await openAptDetail(wocheId,"frage");}
+ try{
+  const alt=await getDoc(doc(db,"aptInhalte",wocheId));const altUrl=alt.exists()?alt.data().frageDateiUrl||"":"";
+  await setDoc(doc(db,"aptInhalte",wocheId),{frageDateiUrl:"",frageDateiName:"",updatedAt:serverTimestamp()},{merge:true});
+  await deleteCampusDatei(altUrl);
+  toast("Datei gelöscht.");await openAptDetail(wocheId,"frage");}
  catch(e){console.error(e);toast("Konnte nicht gespeichert werden.");}
 }
 async function saveAptHinweis(wocheId){
@@ -6482,6 +6513,16 @@ async function uploadCampusDatei(file,pfadPrefix){
  throw new Error(`Upload fehlgeschlagen (${e?.code||e?.message||"unbekannter Fehler"}).`);
  }
 }
+// Löscht eine hochgeladene Datei wieder aus Firebase Storage. Nimmt die
+// Download-URL (so steht sie in den Firestore-Dokumenten). Fehler werden
+// nur protokolliert, damit das Löschen des Eintrags nicht daran scheitert.
+async function deleteCampusDatei(url){
+ if(!url||!/firebasestorage\.googleapis\.com|\.firebasestorage\.app|appspot\.com/.test(url))return;
+ try{
+  if(!storage)await loadFirebase();
+  await deleteObject(storageRef(storage,url));
+ }catch(e){if(e?.code!=="storage/object-not-found")console.warn("Datei aus Storage löschen:",e);}
+}
 function dateiIstBild(name){return /\.(jpe?g|png|gif|webp|svg)$/i.test(name||"")}
 function dateiIstVideo(name){return /\.(mp4|webm|mov|m4v)$/i.test(name||"")}
 function dateiIstAudio(name){return /\.(mp3|wav|ogg|m4a)$/i.test(name||"")}
@@ -7806,6 +7847,7 @@ async function deleteBoard(id){
  try{
  const posts=await getBoardPosts(id);
  await Promise.all(posts.map(p=>deleteDoc(doc(db,"boardPosts",p.id))));
+ await Promise.all(posts.map(p=>deleteCampusDatei(p.url)));
  await deleteDoc(doc(db,"boards",id));
  if(activeBoardId===id)activeBoardId=null;
  go("pinnwand");
@@ -7904,7 +7946,12 @@ async function addBoardPost(){
 async function deleteBoardPost(id){
  if(!isApproved())return;
  if(!confirm("Diese Notiz wirklich entfernen?"))return;
- try{await deleteDoc(doc(db,"boardPosts",id));await render();toast("Notiz entfernt.");}
+ try{
+  const alt=await getDoc(doc(db,"boardPosts",id));
+  const altUrl=alt.exists()?alt.data().url:"";
+  await deleteDoc(doc(db,"boardPosts",id));
+  await deleteCampusDatei(altUrl);
+  await render();toast("Notiz entfernt.");}
  catch(e){console.error("Notiz löschen:",e);toast("Notiz konnte nicht entfernt werden.")}
 }
 
