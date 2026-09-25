@@ -431,3 +431,71 @@ main#content{flex:1;min-width:0;padding:28px 34px 60px;max-width:1500px}
 .apt-kp-zeile span{flex:1}
 .apt-kp-zeile label{display:flex;align-items:center;gap:4px;font-size:12px;white-space:nowrap;cursor:pointer}
 @media(max-width:520px){.apt-kp-zeile{flex-wrap:wrap}.apt-kp-zeile span{flex-basis:100%}}
+
+/* ---- P/P Lernweg (Ebene 1): 8 Stationen mit Fortschrittsringen ---- */
+.pp-weg-card{padding:20px 22px}
+.pp-weg-lbs{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:34px}
+.pp-weg-lbs div{display:flex;flex-direction:column;align-items:center;text-align:center;padding:7px 8px;border-radius:9px;font-size:12px;line-height:1.3}
+.pp-weg-lbs span{font-weight:600;font-size:11.5px}
+.pp-weg{display:grid;grid-template-columns:repeat(8,1fr)}
+.pp-weg-station{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;background:none;border:0;padding:0 5px 6px;cursor:pointer;font-family:inherit;color:var(--ink);min-width:0}
+.pp-weg-station:focus-visible{outline:3px solid var(--blue);outline-offset:4px;border-radius:10px}
+.pp-weg-linie{position:absolute;top:41px;left:50%;width:100%;height:6px;border-radius:3px;z-index:0}
+.pp-weg-pause{position:absolute;top:32px;left:100%;transform:translateX(-50%);z-index:2;width:24px;height:24px;border-radius:50%;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:13px}
+.pp-weg-ring{position:relative;z-index:1;width:88px;height:88px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:transform .15s}
+.pp-weg-ring>span{width:70px;height:70px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:16px;line-height:1.15}
+.pp-weg-ring small{font-size:18px}
+.pp-weg-station:hover .pp-weg-ring{transform:scale(1.05)}
+.pp-weg-station.hier .pp-weg-ring{box-shadow:0 0 0 5px #fff,0 0 0 8px var(--ink)}
+.pp-weg-hier{position:absolute;top:-28px;z-index:3;background:var(--ink);color:#fff;font-size:11px;font-weight:800;border-radius:6px;padding:3px 8px;white-space:nowrap}
+.pp-weg-text{display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:10px}
+.pp-weg-typ{font-size:11.5px;font-weight:800}
+.pp-weg-lbmobil{display:none}
+.pp-weg-titel{font-size:13px;font-weight:700;line-height:1.25;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.pp-weg-zeit{font-size:11.5px;color:var(--muted);margin-top:2px}
+.pp-weg-text .pp-tempo{align-self:center;margin:4px 0 0}
+.pp-weg-karten{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:16px;margin-top:16px}
+.pp-weg-karten.lehrkraft{grid-template-columns:1fr}
+.pp-weg-karten .card{margin:0}
+.pp-dw-kopf{font-size:12.5px;font-weight:800;color:var(--muted)}
+.pp-dw h3,.pp-ok h3{margin:4px 0 10px;font-size:17px}
+.pp-dw-zeile{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:10px 0;cursor:pointer;font-family:inherit;color:var(--ink);font-size:14px;line-height:1.35}
+.pp-dw-zeile small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.pp-dw-zeile:hover b{text-decoration:underline}
+.pp-dw-box{width:20px;height:20px;flex:0 0 auto;border:2px solid #b9c8d3;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff;margin-top:1px}
+.pp-dw-box.x{background:var(--c);border-color:var(--c)}
+.pp-dw-ms{border-top:1px solid var(--line);padding:10px 0 0;font-size:13.5px}
+.pp-dw-ms small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.pp-dw-aktion{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.pp-tk-zahl{display:flex;align-items:center;gap:10px;margin:10px 0 6px}
+.pp-tk-zahl>span:first-child{font-size:38px;font-weight:900;line-height:1}
+.pp-tk-zahl .pp-tempo{font-size:11px;padding:3px 10px}
+.pp-tk-info{font-size:12.5px;color:var(--muted)}
+.pp-tk-danach{font-size:13px;color:var(--muted);line-height:1.45;margin:14px 0 0}
+.pp-ok-eintrag{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}
+.pp-dw-kopf+.pp-ok-eintrag{border-top:0;margin-top:4px;padding-top:0}
+.pp-ok-eintrag small{display:block;color:var(--muted);font-size:12.5px;line-height:1.4;margin-bottom:10px}
+.pp-ok-leer{color:#3e7a2a;font-weight:700;margin:12px 0 0}
+@media(max-width:980px){.pp-weg-karten{grid-template-columns:1fr 1fr}.pp-weg-karten .pp-dw{grid-column:1/-1}}
+/* Handy: Lernweg senkrecht */
+@media(max-width:700px){
+ .pp-weg-lbs{display:none}
+ .pp-weg{grid-template-columns:1fr;gap:0}
+ .pp-weg-station{flex-direction:row;align-items:center;text-align:left;gap:14px;padding:8px 0 18px}
+ .pp-weg-linie{top:50%;left:34px;width:5px!important;height:100%;background-size:auto!important}
+ .pp-weg-pause-linie{background:repeating-linear-gradient(180deg,#c3cfd8 0 8px,transparent 8px 14px)!important}
+ .pp-weg-pause{top:auto;bottom:-14px;left:24px;transform:none}
+ .pp-weg-ring{width:72px;height:72px;flex:0 0 auto}
+ .pp-weg-ring>span{width:56px;height:56px;font-size:14px}
+ .pp-weg-ring small{font-size:15px}
+ .pp-weg-text{align-items:flex-start;margin-top:0}
+ .pp-weg-text .pp-tempo{align-self:flex-start}
+ .pp-weg-lbmobil{display:inline}
+ .pp-weg-hier{position:static;order:-1;display:none}
+ .pp-weg-station.hier .pp-weg-ring{box-shadow:0 0 0 4px #fff,0 0 0 7px var(--ink)}
+ .pp-weg-station.hier .pp-weg-text::before{content:"Du bist hier";background:var(--ink);color:#fff;font-size:10.5px;font-weight:800;border-radius:5px;padding:2px 7px;margin-bottom:3px}
+ .pp-weg-karten{grid-template-columns:1fr}
+}
+@media(max-width:700px){.pp-weg-station.hier.lk .pp-weg-text::before{content:"Jetzt im Plan"}}
+.pp-weg-karten.lehrkraft .pp-dw-box{display:none}
+.pp-weg-ring small.pp-weg-wo{font-size:12px;font-weight:800}

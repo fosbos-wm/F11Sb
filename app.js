@@ -3559,31 +3559,132 @@ async function renderPaedagogikPhasenZeitstrahl(fach,fortschrittMap,heute){
  return renderPPJahresuebersicht(fortschrittMap,meineTeams,heute);
 }
 
-// ---- Ebene 1: Jahresübersicht ----
+// Kurznamen der Inhalte für die kompakte Lernweg-Ansicht.
+const PP_KURZ={pp01:"Erleben und Verhalten",pp02:"Wissenschaftliche Aussagen",pp03:"Das Experiment",pp1a1:"Erziehung und Bildung",pp1a2:"Ziele der Erziehung",pp1a3:"Erziehungsbeziehung",pp1a4:"Einrichtungen",pp04:"Merkmale von Erziehung",pp05:"Baumrind",pp06:"Mündigkeit (Roth)",pp07:"BayBEP",pp09:"Wahrnehmung",pp2p2:"Mehrspeichermodell",pp12:"Lernstrategien",pp2a1:"Gedächtnis (Markowitsch)",pp10:"Emotion",pp11:"Motivation (Weiner)",pp4p1:"Begriff Lernen",pp13:"Pawlow",pp14:"Thorndike und Skinner",pp15:"Bandura",pp16:"Medien und Lernen"};
+function ppKurz(e){return e?(PP_KURZ[e.id]||e.thema):"";}
+// ---- Ebene 1: Lernweg mit 8 Stationen ----
+// Alle Teile in Zeitreihenfolge (Projekt, APT je Lernbereich).
+function ppAlleTeile(){return PROJEKT_PHASEN.flatMap(ph=>[{ph,teil:"projekt"},{ph,teil:"apt"}]);}
+function ppOffeneIds(x,fortschrittMap){return x.teil==="projekt"?x.ph.notwendigeWochen.filter(id=>!fortschrittMap[id]?.abgeschlossen):x.ph.trainingWochen.filter(id=>!aptSchritte(fortschrittMap[id]).every(Boolean));}
+// Index des Teils, der gerade dran ist (läuft oder als Nächstes kommt).
+function ppAktuellerIndex(heute){
+ const teile=ppAlleTeile();
+ const i=teile.findIndex(x=>{const w=ppTeilWochen(x.ph,x.teil);return heute<=w[w.length-1].end;});
+ return i===-1?teile.length-1:i;
+}
+// Liegen zwischen zwei Teilen Praktika oder Ferien? -> Symbol für die Pause.
+function ppPauseZwischen(nachDatum,vorDatum){
+ const p=PRAKTIKUMSPHASEN.find(x=>x.start>nachDatum&&x.start<vorDatum);
+ const f=FERIEN_2026_27.find(x=>x.start>nachDatum&&x.start<vorDatum);
+ if(!p&&!f)return null;
+ const titel=[p&&p.titel.replace("Praktikum – B-Block – ","Praktikum "),f&&f.titel].filter(Boolean).join(" + ");
+ return{icon:p?(p.icon||"🏥"):"🌴",titel};
+}
+function ppStationHTML(x,i,teile,fortschrittMap,meineTeams,heute,aktIdx){
+ const {ph,teil}=x,c=ppFarbe(ph);
+ const fs=ppTeilFortschritt(ph,teil,fortschrittMap,meineTeams[ph.id]);
+ const wochen=ppTeilWochen(ph,teil),n=wochen.length;
+ const budget=ppZeitbudget(wochen,heute);
+ const tempo=isTeacher()?null:ppTempo(fs.prozent,budget);
+ const hier=i===aktIdx;
+ const fertig=fs.prozent>=100;
+ const winkel=Math.round(fs.prozent*3.6);
+ const ring=isTeacher()?(hier?c:ppMix(c,.35)):`conic-gradient(${c} ${winkel}deg,${ppMix(c,.16)} 0)`;
+ let linie="";
+ if(i<teile.length-1){
+  const y=teile[i+1],yw=ppTeilWochen(y.ph,y.teil);
+  const pause=ppPauseZwischen(wochen[n-1].end,yw[0].start);
+  const c2=ppFarbe(y.ph);
+  const bg=pause?"repeating-linear-gradient(90deg,#c3cfd8 0 8px,transparent 8px 14px)":(c===c2?c:`linear-gradient(90deg,${c},${c2})`);
+  linie=`<span class="pp-weg-linie${pause?" pp-weg-pause-linie":""}"style="background:${bg}"></span>${pause?`<span class="pp-weg-pause"title="${esc(pause.titel)}">${pause.icon}</span>`:""}`;
+ }
+ const zeigTempo=tempo&&(hier||(budget.zustand==="vorbei"&&!fertig));
+ return`<button type="button"class="pp-weg-station${hier?" hier":""}${isTeacher()?" lk":""}${fertig?" fertig":""}"style="--c:${c}"onclick="openPhaseDetail('${ph.id}:${teil}')"title="${esc(ph.lb+" · "+ppTeilName(teil)+" · "+fs.prozent+" %")}">
+  ${linie}
+  ${hier?`<span class="pp-weg-hier">${isTeacher()?"Jetzt im Plan":"Du bist hier"}</span>`:""}
+  <span class="pp-weg-ring"style="background:${ring}"><span style="color:${isTeacher()||fs.prozent?c:"#9fb0bd"}"><small>${ppTeilIcon(teil)}</small>${isTeacher()?`<small class="pp-weg-wo">${n} Wo</small>`:fertig?"✓":fs.prozent+" %"}</span></span>
+  <span class="pp-weg-text">
+   <span class="pp-weg-typ"style="color:${c}"><span class="pp-weg-lbmobil">LB ${ph.lbNum} · </span>${teil==="projekt"?"Projekt":"Prüfungstraining"}</span>
+   <span class="pp-weg-titel">${esc(teil==="projekt"?ph.titel:ppAptKurztitel(ph))}</span>
+   <span class="pp-weg-zeit">${fmtKurz(wochen[0].start)}–${fmtKurz(wochen[n-1].end)} · ${n} Schulwoche${n>1?"n":""}</span>
+   ${zeigTempo?`<span class="pp-tempo"style="background:${tempo.farbe}">${esc(tempo.txt)}</span>`:""}
+  </span>
+ </button>`;
+}
+// Kurztitel fürs Prüfungstraining: die Themen statt "Prüfungsinhalte LB x".
+function ppAptKurztitel(ph){
+ const t=ph.trainingWochen.map(id=>lehrplanWocheById("paedagogik",id)).filter(Boolean).map(ppKurz);
+ const s=t.join(", ");
+ return s||("Prüfungsinhalte "+ph.lb);
+}
+// Karte "Diese Woche": Inhalte des aktuellen Teils zum Weiterarbeiten.
+function ppDieseWocheHTML(x,fortschrittMap,meineTeams,heute){
+ const {ph,teil}=x,c=ppFarbe(ph),wochen=ppTeilWochen(ph,teil);
+ const lauf=wochen.find(w=>w.start<=heute&&heute<=w.end);
+ const kopf=lauf?`Diese Woche · ${fmtKurz(lauf.start)}–${fmtKurz(lauf.end)}`:`Als Nächstes · ab ${fmtKurz(wochen.find(w=>w.start>heute)?.start||wochen[0].start)}`;
+ const ids=teil==="projekt"?ph.notwendigeWochen:ph.trainingWochen;
+ const zeilen=ids.map(id=>{
+  const e=lehrplanWocheById("paedagogik",id);if(!e)return"";
+  let fertig,info;
+  if(teil==="projekt"){fertig=!!fortschrittMap[id]?.abgeschlossen;info=fertig?"abgeschlossen":"";}
+  else{const s=aptSchritte(fortschrittMap[id]),k=s.filter(Boolean).length;fertig=k===5;info=fertig?"alle 5 Schritte":`${k}/5 Schritte · nächster: ${APT_SCHRITT_LABELS[s.indexOf(false)]}`;}
+  return`<button type="button"class="pp-dw-zeile"onclick="openLehrplanEinheit('paedagogik','${id}')"><span class="pp-dw-box${fertig?" x":""}"style="--c:${c}">${fertig?"✓":""}</span><span><b>${esc(e.thema)}</b>${isTeacher()?`<small>Inhalt Nr. ${esc(e.nr||"")}</small>`:info?`<small>${esc(info)}</small>`:""}</span></button>`;
+ }).join("");
+ let ms="";
+ if(teil==="projekt"&&!isTeacher()){
+  const team=meineTeams[ph.id],idx=Math.min(team?.meilensteinIndex||0,ph.meilensteine.length);
+  ms=team?(idx<ph.meilensteine.length?`<div class="pp-dw-ms">★ Meilenstein ${idx+1}/${ph.meilensteine.length}: „${esc(ph.meilensteine[idx])}“<small>Team „${esc(team.teamName||"")}“</small></div>`:`<div class="pp-dw-ms">★ Alle Meilensteine erreicht</div>`)
+   :`<div class="pp-dw-ms">★ Noch kein Team – bilde im Projekt ein Team, um die Meilensteine abzuhaken.</div>`;
+ }
+ const naechste=isTeacher()?null:ppOffeneIds(x,fortschrittMap)[0];
+ const ne=naechste?lehrplanWocheById("paedagogik",naechste):null;
+ return`<div class="card pp-dw">
+  <div class="pp-dw-kopf"style="color:${c}">${kopf}</div>
+  <h3>${ppTeilIcon(teil)} ${esc(teil==="projekt"?ph.titel:"Prüfungstraining "+ph.lb)}</h3>
+  ${zeilen}${ms}
+  <div class="pp-dw-aktion">${ne?`<button class="primary"onclick="openLehrplanEinheit('paedagogik','${ne.id}')">Weiter: ${esc(ppKurz(ne))}</button>`:""}<button class="secondary"onclick="openPhaseDetail('${ph.id}:${teil}')">Zur Übersicht</button></div>
+ </div>`;
+}
+function ppTempoKarteHTML(x,fortschrittMap,meineTeams,heute,teile,aktIdx){
+ const {ph,teil}=x,c=ppFarbe(ph);
+ const fs=ppTeilFortschritt(ph,teil,fortschrittMap,meineTeams[ph.id]);
+ const budget=ppZeitbudget(ppTeilWochen(ph,teil),heute);
+ const tempo=ppTempo(fs.prozent,budget);
+ const soll=Math.round(budget.soll*100);
+ const next=teile[aktIdx+1];
+ const nw=next?ppTeilWochen(next.ph,next.teil):null;
+ return`<div class="card pp-tk">
+  <div class="pp-dw-kopf">Dein Tempo</div>
+  <div class="pp-tk-zahl"><span>${fs.prozent} %</span>${tempo?`<span class="pp-tempo"style="background:${tempo.farbe}">${esc(tempo.txt)}</span>`:""}</div>
+  <div class="pp-tk-info">${budget.zustand==="kommend"?"":`Soll heute: ${soll} % · `}${esc(budget.text)}</div>
+  <div class="pp-balken"><div style="width:${fs.prozent}%;background:${c}"></div>${budget.zustand==="kommend"?"":`<i style="left:${soll}%"></i>`}</div>
+  <div class="pp-tk-info"style="margin-top:4px">Balken = geschafft · Strich = Soll laut Zeitbudget</div>
+  ${next?`<p class="pp-tk-danach">Danach: ${ppTeilIcon(next.teil)} ${esc(next.ph.lb)} ${ppTeilName(next.teil)} ab ${fmtKurz(nw[0].start)} (${nw.length} Schulwoche${nw.length>1?"n":""}).</p>`:""}
+ </div>`;
+}
+function ppOffenKarteHTML(teile,fortschrittMap,aktIdx){
+ const rueck=teile.slice(0,aktIdx).map(x=>({x,ids:ppOffeneIds(x,fortschrittMap)})).filter(r=>r.ids.length);
+ if(!rueck.length)return`<div class="card pp-ok"><div class="pp-dw-kopf">Noch offen</div><p class="pp-ok-leer">✓ Nichts offen aus früheren Etappen.</p></div>`;
+ return`<div class="card pp-ok"><div class="pp-dw-kopf">Noch offen</div>${rueck.map(({x,ids})=>`<div class="pp-ok-eintrag">
+  <h3>${ppTeilIcon(x.teil)} ${esc(x.ph.lb)} ${ppTeilName(x.teil)}</h3>
+  <small>${ids.length} Inhalt${ids.length>1?"e":""} offen: ${ids.map(id=>esc(ppKurz(lehrplanWocheById("paedagogik",id)))).join(", ")}</small>
+  <button class="secondary"onclick="openLehrplanEinheit('paedagogik','${ids[0]}')">Nachholen</button></div>`).join("")}</div>`;
+}
 function renderPPJahresuebersicht(fortschrittMap,meineTeams,heute){
  const gesamt=PROJEKT_PHASEN.reduce((s,ph)=>{["projekt","apt"].forEach(t=>{const f=ppTeilFortschritt(ph,t,fortschrittMap,meineTeams[ph.id]);s.e+=f.erledigt;s.g+=f.gesamt;});return s},{e:0,g:0});
  const gesamtProzent=gesamt.g?Math.round(gesamt.e/gesamt.g*100):0;
+ const teile=ppAlleTeile(),aktIdx=ppAktuellerIndex(heute),akt=teile[aktIdx];
+ const unter=isTeacher()?"Acht Stationen durchs Schuljahr: je Lernbereich ein Projekt und ein Prüfungstraining.":`Acht Stationen durchs Schuljahr. Der Ring zeigt, wie viel du geschafft hast – ${gesamtProzent} % deines Jahres.`;
  return`<button class="secondary"onclick="closeFach()">← Zurück zu den Fächern</button>
- ${pageHead("LERNPFAD","Pädagogik/Psychologie",`Vier Lernbereiche, je ein Projekt und ein Abschlussprüfungs-Training – ${gesamtProzent} % deines Jahres geschafft.`,isTeacher()?`<button class="secondary"onclick="openProjektGesamtcheck()">🔬 Projekt-Gesamtcheck</button> <button class="secondary"onclick="openFachaufsatzTrainingCheck()">🎓 APT-Gesamtcheck</button>`:"")}
- ${!isTeacher()?ppNaechsterSchrittHTML(fortschrittMap,heute):""}
- <div class="card pp-zeitstrahl-card">
-  <div class="pp-zs-kopf"><strong>Dein Schuljahr in Schulwochen</strong><small>farbig = P/P-Schulwochen · schraffiert = Praktikum · gestrichelt = Ferien · rote Linie = heute</small></div>
-  ${ppJahresleisteHTML(heute)}
-  <div class="pp-bloecke">
-   ${PROJEKT_PHASEN.map(ph=>{
-    const c=ppFarbe(ph);
-    const status=phaseStatus(ph,heute);
-    return`<div class="pp-block${status==="laeuft"?" pp-block-jetzt":""}"style="border-top-color:${c}">
-     <div class="pp-block-kopf"><span class="lb-badge"style="background:${ppMix(c,.15)};border-color:${c};color:${c}">Lernbereich ${ph.lbNum}</span><small>${esc(ph.lbTitel)} · ${fmtKurz(ph.start)}–${fmtKurz(ph.end)}</small></div>
-     <div class="pp-teile">${ppTeilKachelHTML(ph,"projekt",fortschrittMap,meineTeams[ph.id],heute)}${ppTeilKachelHTML(ph,"apt",fortschrittMap,meineTeams[ph.id],heute)}</div>
-    </div>`;
-   }).join("")}
-  </div>
-  <div class="pp-legende">
-   <span>🔬 <b>Projekt</b> – Projektinhalte abhaken + Team-Meilensteine</span>
-   <span>🎓 <b>Abschlussprüfungs-Training</b> – je Inhalt 5 Schritte (Prüfungsfrage bis K-Prim-Check)</span>
-   <span>Je kräftiger die Farbe, desto mehr hast du geschafft.</span>
-  </div>
+ ${pageHead("LERNPFAD","Pädagogik/Psychologie",unter,isTeacher()?`<button class="secondary"onclick="openProjektGesamtcheck()">🔬 Projekt-Gesamtcheck</button> <button class="secondary"onclick="openFachaufsatzTrainingCheck()">🎓 APT-Gesamtcheck</button>`:"")}
+ <div class="card pp-weg-card">
+  <div class="pp-weg-lbs">${PROJEKT_PHASEN.map(ph=>{const c=ppFarbe(ph);return`<div style="background:${ppMix(c,.14)};color:${c}"><b>Lernbereich ${ph.lbNum}</b><span>${esc(ph.lbTitel)}</span></div>`}).join("")}</div>
+  <div class="pp-weg">${teile.map((x,i)=>ppStationHTML(x,i,teile,fortschrittMap,meineTeams,heute,aktIdx)).join("")}</div>
+  <div class="pp-legende"><span>🔬 Projekt: Inhalte abhaken und Team-Meilensteine</span><span>🎓 Prüfungstraining: je Inhalt 5 Schritte bis zum K-Prim-Check</span><span>- - - Pause durch Praktikum 🏫🏥 oder Ferien 🌴</span></div>
+ </div>
+ <div class="pp-weg-karten${isTeacher()?" lehrkraft":""}">
+  ${ppDieseWocheHTML(akt,fortschrittMap,meineTeams,heute)}
+  ${isTeacher()?"":ppTempoKarteHTML(akt,fortschrittMap,meineTeams,heute,teile,aktIdx)+ppOffenKarteHTML(teile,fortschrittMap,aktIdx)}
  </div>
  ${footer()}`;
 }
