@@ -50,6 +50,14 @@ service firebase.storage {
       allow delete: if isTeacher();
     }
 
+    // Beiträge zu Projekt-Meilensteinen – max. 15 MB je Datei.
+    // Löschen: wer hochgeladen hat, oder eine Lehrkraft.
+    match /meilensteinBeitraege/{teamId}/{fileName} {
+      allow read: if isApproved();
+      allow create, update: if isApproved() && isUploader(fileName) && sizeOk();
+      allow delete: if isApproved() && (isUploader(fileName) || isTeacher());
+    }
+
     // Pinnwand-Notizen – max. 15 MB je Datei.
     // Löschen: wer hochgeladen hat, oder eine Lehrkraft.
     match /boardPosts/{boardId}/{fileName} {

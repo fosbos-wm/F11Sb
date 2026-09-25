@@ -501,19 +501,91 @@ service cloud.firestore {
         || (isApproved() && resource.data.uid == request.auth.uid);
     }
     // Teams/Gruppen je Woche: Schüler:innen bilden sie selbst.
+    // Die Meilenstein-Prüfung (msPruefung) setzt ausschließlich die Lehrkraft.
+    // Nicht-Mitglieder dürfen nur sich selbst hinzufügen (Beitreten).
     match /lehrplanTeams/{id} {
       allow read: if isApproved();
-      allow create: if isApproved() && request.resource.data.createdBy == request.auth.uid;
+      allow create: if isApproved() && request.resource.data.createdBy == request.auth.uid
+        && !request.resource.data.keys().hasAny(['msPruefung']);
       allow update: if isTeacher()
-        || (isApproved() && request.auth.uid in resource.data.get('mitgliederUids',[]))
-        || (isApproved() && resource.data.createdBy == request.auth.uid);
+        || (isApproved()
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['msPruefung'])
+          && (request.auth.uid in resource.data.get('mitgliederUids',[])
+            || resource.data.createdBy == request.auth.uid
+            || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['mitgliederUids','mitgliederNamen'])
+              && request.auth.uid in request.resource.data.mitgliederUids)));
       allow delete: if isTeacher() || (isApproved() && resource.data.createdBy == request.auth.uid);
     }
+    // Persönliche Beiträge zu Projekt-Meilensteinen (ID <teamId>_<index>_<uid>):
+    // jede Person schreibt nur ihren eigenen Beitrag, alle Freigeschalteten
+    // lesen (Team sieht den Stand, Lehrkraft prüft).
+    match /meilensteinBeitraege/{id} {
+      allow read: if isApproved();
+      allow create, update: if isApproved()
+        && request.resource.data.uid == request.auth.uid
+        && id == request.resource.data.teamId + '_' + string(request.resource.data.index) + '_' + request.auth.uid;
+      allow delete: if isTeacher() || (isApproved() && resource.data.uid == request.auth.uid);
+    }
     // Produkte/Ergebnisse je Woche: Schüler:innen laden hoch, Lehrkraft sieht alles.
+    // Die Vorkorrektur-Felder setzt nur die Lehrkraft.
     match /lehrplanProdukte/{id} {
       allow read: if isApproved();
-      allow create: if isApproved() && request.resource.data.uid == request.auth.uid;
-      allow update, delete: if isTeacher() || (isApproved() && resource.data.uid == request.auth.uid);
+      allow create: if isApproved() && request.resource.data.uid == request.auth.uid
+        && !request.resource.data.keys().hasAny(['vorkorrektur','vorkorrekturAmpel','vorkorrekturAm','vorkorrekturVon']);
+      allow update: if isTeacher()
+        || (isApproved() && resource.data.uid == request.auth.uid
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['vorkorrektur','vorkorrekturAmpel','vorkorrekturAm','vorkorrekturVon','uid']));
+      allow delete: if isTeacher() || (isApproved() && resource.data.uid == request.auth.uid);
+    }
+
+    // ---------------------------------------------------------
+    // CHECK-OUT (K-Prim-Test zum Wochenabschluss, live durch die Lehrkraft)
+    // ---------------------------------------------------------
+    function checkoutIstLive(coId) {
+      return get(/databases/$(database)/documents/checkouts/$(coId)).data.status == 'live';
+    }
+    // Aufgaben: Schüler:innen sehen nur freigeschaltete oder beendete Tests.
+    match /checkouts/{id} {
+      allow read: if isTeacher()
+        || (isApproved() && resource.data.status in ['live', 'beendet']);
+      allow create, update, delete: if isTeacher();
+    }
+    // Lösungen: ausschließlich Lehrkräfte (Auswertung im Browser der Lehrkraft).
+    match /checkoutLoesungen/{id} {
+      allow read, write: if isTeacher();
+    }
+    // Abgaben (ID <checkoutId>_<uid>): nur solange der Test live ist und noch
+    // nicht abgegeben wurde. Punkte/Noten schreibt nur die Lehrkraft.
+    match /checkoutAbgaben/{id} {
+      allow read: if isApproved() && (resource.data.uid == request.auth.uid || isTeacher());
+      allow create: if isApproved()
+        && request.resource.data.uid == request.auth.uid
+        && id == request.resource.data.checkoutId + '_' + request.auth.uid
+        && checkoutIstLive(request.resource.data.checkoutId)
+        && request.resource.data.keys().hasOnly(['checkoutId','uid','name','antworten','abgegeben','abgegebenAt','updatedAt']);
+      allow update: if isTeacher()
+        || (isApproved()
+          && resource.data.uid == request.auth.uid
+          && resource.data.get('abgegeben', false) == false
+          && checkoutIstLive(resource.data.checkoutId)
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['antworten','abgegeben','abgegebenAt','updatedAt','name']));
+      allow delete: if isTeacher();
+    }
+    // Einstellungen Kurzarbeit-Ersatz (z. B. 7 aus 10, Auswahl offen?).
+    match /checkoutEinstellungen/{id} {
+      allow read: if isApproved();
+      allow write: if isTeacher();
+    }
+    // Auswahl der Schüler:innen für den Kurzarbeit-Ersatz – nur solange die
+    // Lehrkraft die Auswahl geöffnet hat.
+    match /checkoutAuswahl/{uid} {
+      allow read: if isApproved() && (uid == request.auth.uid || isTeacher());
+      allow create, update: if isTeacher()
+        || (isApproved() && uid == request.auth.uid
+          && request.resource.data.uid == request.auth.uid
+          && get(/databases/$(database)/documents/checkoutEinstellungen/pp).data.auswahlOffen == true);
+      allow delete: if isTeacher();
     }
     // Persönlicher Fortschritt je Woche (Ziele erfüllt, Häkchen): privat,
     // aber für Lehrkräfte einsehbar (z. B. für die Ampel-Übersicht).

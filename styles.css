@@ -499,3 +499,97 @@ main#content{flex:1;min-width:0;padding:28px 34px 60px;max-width:1500px}
 @media(max-width:700px){.pp-weg-station.hier.lk .pp-weg-text::before{content:"Jetzt im Plan"}}
 .pp-weg-karten.lehrkraft .pp-dw-box{display:none}
 .pp-weg-ring small.pp-weg-wo{font-size:12px;font-weight:800}
+
+/* ---- Projekt-Meilensteine mit persönlichen Beiträgen ---- */
+.ms-info{font-size:13px;color:var(--muted);margin:0 0 10px;line-height:1.45}
+.ms-liste{display:flex;flex-direction:column;gap:0}
+.ms-zeile{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line)}
+.ms-zeile:first-child{border-top:0}
+.ms-icon{width:28px;height:28px;flex:0 0 auto;border-radius:50%;border:2px solid;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900}
+.ms-body{flex:1;min-width:0}
+.ms-kopf{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:14px}
+.ms-tag{font-size:10.5px;font-weight:800;border:1px solid #e0a324;color:#8a5a00;background:#fff8e6;border-radius:999px;padding:1px 8px}
+.ms-status{display:block;font-size:12px;margin-top:2px}
+.ms-personen{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ms-person{font-size:11.5px;border-radius:999px;padding:2px 9px;background:#f1f4f7;color:var(--muted)}
+.ms-person.ok{background:#dcf1c8;color:#3e6b12;font-weight:700}
+.ms-person.fokus{outline:2px solid var(--ink)}
+.ms-kommentar{margin-top:6px;font-size:13px;background:#fdecec;border-left:4px solid #d9534f;border-radius:6px;padding:6px 10px}
+.ms-meiner{margin-top:6px;font-size:13px;background:#f7fafc;border-radius:8px;padding:6px 10px}
+.ms-beitraege{margin-top:6px;font-size:13px;display:flex;flex-direction:column;gap:4px}
+.ms-beitraege>div{background:#f7fafc;border-radius:8px;padding:6px 10px}
+.ms-beitraege>div.fokus{background:#eaf4fd;outline:1px solid #b8d7f0}
+.ms-aktion{display:flex;flex-direction:column;gap:6px;flex:0 0 auto}
+.ms-aktion button{white-space:nowrap}
+@media(max-width:600px){.ms-zeile{flex-wrap:wrap}.ms-aktion{flex-direction:row;width:100%;padding-left:40px}}
+.pg-zelle{text-align:center;cursor:pointer;padding:6px 8px!important}
+.pg-zelle:hover{background:#f2f7fb}
+.pg-zelle small{display:block;font-size:10.5px;line-height:1.35;color:var(--muted)}
+.pg-zelle.kommend{color:#b9c6d0;cursor:default}
+
+/* ---- APT-Gesamtcheck (Matrix) ---- */
+.apt-check-tabs{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0}
+.apt-check-tabs>button:not(.secondary){border:2px solid var(--c);color:var(--c);background:#fff;border-radius:999px;padding:5px 14px;font-weight:800;cursor:pointer;font-family:inherit}
+.apt-check-tabs>button.aktiv{background:var(--c);color:#fff}
+.apt-check-tabs select{margin-left:auto;padding:6px 8px;border-radius:8px;border:1px solid var(--line);font-family:inherit}
+.apt-zelle{cursor:pointer;text-align:center}
+.apt-zelle:hover{background:#f2f7fb}
+.apt-dots{display:inline-flex;gap:3px}
+.apt-dot{width:20px;height:20px;border-radius:50%;border:2px solid #c7d0d6;color:#9fb0bd;font-size:10px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;background:#fff}
+.apt-dot.an{color:#fff}
+.apt-dot.halb{border-color:#e0a324;background:#fff8e6;font-size:10px}
+.apt-dot.umsetzen{border-color:#d9534f;color:#d9534f}
+.apt-hinweis-checkout{margin-top:14px;padding:10px 14px;background:#f2f7fb;border-radius:10px;font-size:13px;color:var(--ink)}
+
+/* ---- Check-out (K-Prim-Test zum Wochenabschluss) ---- */
+.co-banner{display:flex;align-items:center;gap:14px;background:#e9f7ee;border:2px solid #3fa66a;border-radius:14px;padding:12px 16px;margin:0 0 16px}
+.co-banner>div{flex:1}
+.co-banner b{display:block;font-size:15px}
+.co-banner small{color:var(--muted)}
+.co-live-punkt{width:12px;height:12px;border-radius:50%;background:#3fa66a;flex:0 0 auto;animation:coPuls 1.4s ease-in-out infinite}
+@keyframes coPuls{0%,100%{box-shadow:0 0 0 0 rgba(63,166,106,.55)}50%{box-shadow:0 0 0 7px rgba(63,166,106,0)}}
+@media(prefers-reduced-motion:reduce){.co-live-punkt{animation:none}}
+.co-karte{margin-top:16px}
+.co-kopf{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.co-kopf h3{margin:0 0 4px}
+.co-kopf small{color:var(--muted);font-size:12.5px;line-height:1.45;display:block;max-width:640px}
+.co-liste{display:flex;flex-direction:column}
+.co-zeile{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+.co-lb{background:var(--c);color:#fff;font-size:11px;font-weight:800;border-radius:6px;padding:3px 8px;flex:0 0 auto}
+.co-titel{flex:1;min-width:180px}
+.co-titel b{display:block;font-size:14px}
+.co-titel small{color:var(--muted);font-size:12px}
+.co-chip{font-size:11px;font-weight:800;border-radius:999px;padding:3px 10px;display:inline-flex;align-items:center;gap:6px}
+.co-chip.live{background:#e9f7ee;color:#2d7a4f}
+.co-chip.live .co-live-punkt{width:8px;height:8px}
+.co-chip.fertig{background:#eef3f7;color:var(--muted)}
+.co-chip.entwurf{background:#fff8e6;color:#8a5a00}
+.co-aktion{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.co-np{font-size:14px;color:var(--ink)}
+.co-ersatz{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px;padding:12px 14px;background:#f7fafc;border-radius:12px}
+.co-ersatz small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+.co-vignette{border-left:5px solid;background:#f7fafc;border-radius:10px;padding:12px 16px;margin:10px 0 14px}
+.co-vignette p{margin:6px 0 0;white-space:pre-wrap;line-height:1.55}
+.co-aufgabe{margin-bottom:12px}
+.co-aussage{display:flex;align-items:center;gap:12px;padding:8px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+.co-aussage>span{flex:1;min-width:200px;font-size:14px;line-height:1.4}
+.co-aussage label{display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer;white-space:nowrap}
+.co-test-fuss{position:sticky;bottom:-1px;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0 4px;margin-top:10px}
+.co-test-fuss span{font-size:13px;color:var(--muted)}
+.co-summe{font-size:16px;margin:6px 0 10px;padding:10px 14px;background:#e9f7ee;border-radius:10px}
+.co-erg-tab th,.co-erg-tab td{padding:5px 6px;border-bottom:1px solid var(--line);font-size:13px}
+.co-erg-matrix td,.co-erg-matrix th{white-space:nowrap}
+.co-gewaehlt{background:#dcf1c8;font-weight:800}
+.co-monitor{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px}
+.co-mon-zeile{display:flex;flex-direction:column;border-radius:8px;padding:6px 10px;background:#f1f4f7;font-size:13px}
+.co-mon-zeile small{color:var(--muted);font-size:11.5px}
+.co-mon-zeile.ab{background:#dcf1c8}
+.co-mon-zeile.lauf{background:#fff8e6}
+.co-ed-aufgabe{margin:10px 0;background:#f7fafc}
+.co-ed-aussage{display:flex;gap:8px;align-items:center;margin-top:6px}
+.co-ed-aussage span{font-weight:800;color:var(--muted);width:16px}
+.co-ed-aussage input{flex:1}
+.co-ed-aussage select{width:96px}
+.co-wahl{cursor:pointer;gap:10px}
+.pg-matrix th,.pg-matrix td,.co-erg-matrix th,.co-erg-matrix td,.apt-matrix th,.apt-matrix td{padding:7px 12px}
+.pg-matrix th,.co-erg-matrix th{text-align:center}

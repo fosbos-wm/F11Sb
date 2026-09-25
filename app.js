@@ -31,7 +31,7 @@ function authError(err){
  $("authError").textContent=map[err?.code]||"Anmeldung konnte nicht durchgeführt werden.";
 }
 function modal(html){$("modal").innerHTML=html;$("modalBackdrop").hidden=false}
-function closeModal(){$("modalBackdrop").hidden=true;if(ppDirty){ppDirty=false;if(activeFach==="paedagogik")render();}}
+function closeModal(){$("modalBackdrop").hidden=true;if(window.__coUnsub){try{window.__coUnsub()}catch(e){}window.__coUnsub=null;}if(ppDirty){ppDirty=false;if(activeFach==="paedagogik")render();}}
 function pageHead(k,h,p,actions=""){return`<div class="page-head"><div><div class="kicker">${k}</div><h1>${h}</h1><p>${p}</p>
 </div><div class="actions">${actions}</div></div>`}
 function footer(){return`<div class="footer"><span>F11Sb 26/27 · FOSBOS Weilheim</span><span>Gemeinsam · offen ·
@@ -1223,7 +1223,8 @@ window.deletePraktikumsphaseAuftrag=deletePraktikumsphaseAuftrag;
 //   (2) dem ABSCHLUSSPRÜFUNGS-TRAINING (APT) mit den übrigen Lehrplan-
 //       inhalten des Lernbereichs, je Inhalt in 5 Bereichen:
 //       Prüfungsfrage → Inhalte & Aufgabeneingrenzung → Basis-Check →
-//       Lernprodukt & Vorkorrektur → Abschluss-Check (K-Prim).
+//       Lernprodukt & Vorkorrektur (umgesetzt). Der K-Prim-Test läuft
+//       separat als „Check-out“ am Ende der Woche (live durch die Lehrkraft).
 // Die Zeitbudgets rechnen in echten Schulwochen (siehe SCHULWOCHEN_PP).
 // ============================================================
 
@@ -1272,19 +1273,23 @@ const PROJEKT_PHASEN_ROH=[
  {id:"lb1",lb:"LB 1",lbNum:1,titel:"Experiment durchführen",lbTitel:"Wissenschaft & Erziehung",
   projektSchulwochen:["sw01","sw02","sw03"],aptSchulwochen:["sw04","sw05","sw06"],
   notwendigeWochen:["pp01","pp02","pp03"],trainingWochen:["pp1a1","pp1a2","pp1a3","pp1a4"],
-  meilensteine:["Team gebildet","Hypothese formuliert","Versuchsplan steht (UV/AV, Kontrollgruppe)","Experiment durchgeführt","Ergebnisse ausgewertet","Präsentiert"]},
+  meilensteine:["Team gebildet","Hypothese formuliert","Versuchsplan steht (UV/AV, Kontrollgruppe)","Experiment durchgeführt","Ergebnisse ausgewertet","Präsentiert"],
+  bestaetigung:[2,5]},
  {id:"lb3",lb:"LB 3",lbNum:3,titel:"Praxisbeobachtung: Erziehung und Erziehungsstile erkennen",lbTitel:"Erziehung",
   projektSchulwochen:["sw07","sw08"],aptSchulwochen:["sw09"],
   notwendigeWochen:["pp04","pp05"],trainingWochen:["pp06","pp07"],
-  meilensteine:["Team gebildet","Beobachtungen aus dem Praktikum gesammelt (anonymisiert)","Merkmale von Erziehung nachgewiesen","Erziehungsstile nach Baumrind zugeordnet","Analyse präsentiert"]},
+  meilensteine:["Team gebildet","Beobachtungen aus dem Praktikum gesammelt (anonymisiert)","Merkmale von Erziehung nachgewiesen","Erziehungsstile nach Baumrind zugeordnet","Analyse präsentiert"],
+  bestaetigung:[1,4]},
  {id:"lb2",lb:"LB 2",lbNum:2,titel:"Wahrnehmungs- und Gedächtnis-Parcours",lbTitel:"Wahrnehmung, Gedächtnis, Emotion, Motivation",
   projektSchulwochen:["sw10","sw11","sw12"],aptSchulwochen:["sw13","sw14","sw15"],
   notwendigeWochen:["pp09","pp2p2","pp12"],trainingWochen:["pp2a1","pp10","pp11"],
-  meilensteine:["Team gebildet","Station konzipiert (Wahrnehmung oder Gedächtnis)","Material vorbereitet","Parcours durchgeführt","Reflexion abgegeben"]},
+  meilensteine:["Team gebildet","Station konzipiert (Wahrnehmung oder Gedächtnis)","Material vorbereitet","Parcours durchgeführt","Reflexion abgegeben"],
+  bestaetigung:[1,4]},
  {id:"lb4",lb:"LB 4",lbNum:4,titel:"Konditionierung im Alltag entdecken",lbTitel:"Lernen",
   projektSchulwochen:["sw16","sw17"],aptSchulwochen:["sw18","sw19"],
   notwendigeWochen:["pp4p1","pp13","pp14"],trainingWochen:["pp15","pp16"],
-  meilensteine:["Team gebildet","Alltagsbeispiele gesammelt","Beispiele fachlich analysiert (klassisch/operant)","Dokumentation erstellt","Präsentiert"]}
+  meilensteine:["Team gebildet","Alltagsbeispiele gesammelt","Beispiele fachlich analysiert (klassisch/operant)","Dokumentation erstellt","Präsentiert"],
+  bestaetigung:[2,4]}
 ];
 // Teams hängen am Projekt (nicht an einem einzelnen Inhalt) – ein Team pro
 // Projekt, sichtbar in allen Projektinhalten.
@@ -1693,6 +1698,257 @@ async function deleteLehrplanTeam(teamId,fach,wocheId){
  catch(e){console.error(e);toast("Konnte nicht gelöscht werden.")}
 }
 
+
+// ============================================================
+// PROJEKT-MEILENSTEINE MIT PERSÖNLICHEN BEITRÄGEN
+// ------------------------------------------------------------
+// • Meilenstein 0 („Team gebildet") gilt, sobald das Team existiert.
+// • Jeder weitere Meilenstein: JEDES Teammitglied trägt seinen eigenen
+//   Beitrag ein (Text, optional Link/Datei). Erst wenn alle Mitglieder
+//   etwas eingetragen haben, ist der Meilenstein erreicht.
+// • Meilensteine aus ph.bestaetigung brauchen zusätzlich das OK der
+//   Lehrkraft (Bestätigen oder mit Kommentar zurückgeben).
+// Beiträge: Collection „meilensteinBeitraege", ID <teamId>_<index>_<uid>.
+// Prüfung durch die Lehrkraft: Feld „msPruefung" am Team-Dokument.
+// ============================================================
+let msKontext=null,pgDaten=null;
+async function getMeilensteinBeitraege(teamIds){
+ const ids=(teamIds||[]).filter(Boolean);
+ if(!ids.length)return[];
+ const out=[];
+ try{
+  for(let i=0;i<ids.length;i+=10){
+   const snap=await getDocs(query(collection(db,"meilensteinBeitraege"),where("teamId","in",ids.slice(i,i+10))));
+   snap.docs.forEach(d=>out.push({id:d.id,...d.data()}));
+  }
+ }catch(e){console.error("Meilenstein-Beiträge laden:",e);}
+ return out;
+}
+function tsSek(t){return t?.seconds||0;}
+function msBrauchtBestaetigung(ph,i){return(ph.bestaetigung||[]).includes(i);}
+function msStatus(ph,team,beitraege,i){
+ if(!team)return{zustand:"offen",fehlend:[],beitraege:[]};
+ if(i===0)return{zustand:"erreicht",fehlend:[],beitraege:[],auto:true};
+ const uids=team.mitgliederUids||[],namen=team.mitgliederNamen||[];
+ const bs=(beitraege||[]).filter(b=>b.teamId===team.id&&Number(b.index)===i&&uids.includes(b.uid));
+ const fehlend=uids.map((u,k)=>({uid:u,name:namen[k]||"Mitglied"})).filter(m=>!bs.some(b=>b.uid===m.uid));
+ const pr=(team.msPruefung||{})[i]||null;
+ let zustand;
+ if(fehlend.length)zustand="offen";
+ else if(!msBrauchtBestaetigung(ph,i))zustand="erreicht";
+ else if(pr?.s==="ok")zustand="erreicht";
+ else if(pr?.s==="zurueck"&&!bs.some(b=>tsSek(b.updatedAt)>tsSek(pr.at)))zustand="zurueck";
+ else zustand="wartet";
+ return{zustand,fehlend,beitraege:bs,pruefung:pr};
+}
+function msErreichtAnzahl(ph,team,beitraege){
+ if(!team)return 0;
+ return ph.meilensteine.filter((m,i)=>msStatus(ph,team,beitraege,i).zustand==="erreicht").length;
+}
+function msEigeneBeitraege(ph,team,beitraege,uid){
+ const g=ph.meilensteine.length-1;
+ if(!team)return{n:0,g};
+ return{n:ph.meilensteine.filter((m,i)=>i>0&&(beitraege||[]).some(b=>b.teamId===team.id&&Number(b.index)===i&&b.uid===uid)).length,g};
+}
+function msNaechster(ph,team,beitraege){
+ for(let i=0;i<ph.meilensteine.length;i++){const st=msStatus(ph,team,beitraege,i);if(st.zustand!=="erreicht")return{i,st};}
+ return null;
+}
+const MS_ZUSTAND={
+ erreicht:{t:"erreicht",f:"#3fa66a",i:"✓"},
+ wartet:{t:"alle Beiträge da – wartet auf Bestätigung der Lehrkraft",f:"#e0a324",i:"⏳"},
+ zurueck:{t:"von der Lehrkraft zurückgegeben – bitte überarbeiten",f:"#d9534f",i:"↩"},
+ offen:{t:"offen",f:"#9fb0bd",i:"○"}
+};
+function msLinksHTML(b){
+ return`${b.link?` <a href="${esc(b.link)}"target="_blank"rel="noopener">Link ↗</a>`:""}${b.dateiUrl?` <a href="${esc(b.dateiUrl)}"target="_blank"rel="noopener">${esc(b.dateiName||"Datei")} ↗</a>`:""}`;
+}
+// Liste aller Meilensteine eines Teams. ansicht bestimmt, wohin nach dem
+// Speichern zurückgesprungen wird ("seite" | "modal" | "gesamtcheck" | "schueler").
+function msListeHTML(ph,team,beitraege,ansicht="seite",fokusUid=null){
+ if(!team)return"";
+ const c=ppFarbe(ph),ich=currentUser?.uid,lehrer=isTeacher();
+ const imTeam=(team.mitgliederUids||[]).includes(ich);
+ return`<div class="ms-liste">${ph.meilensteine.map((m,i)=>{
+  const st=msStatus(ph,team,beitraege,i),Z=MS_ZUSTAND[st.zustand];
+  const meiner=st.beitraege.find(b=>b.uid===ich);
+  const bestaetigen=msBrauchtBestaetigung(ph,i);
+  const personen=i>0?(team.mitgliederUids||[]).map((u,k)=>{
+   const b=st.beitraege.find(x=>x.uid===u);
+   return`<span class="ms-person${b?" ok":""}${fokusUid===u?" fokus":""}"title="${esc(b?b.text:"noch kein Beitrag")}">${b?"✓":"○"} ${esc((team.mitgliederNamen||[])[k]||"Mitglied")}</span>`;
+  }).join(""):"";
+  const lehrerBeitraege=lehrer&&st.beitraege.length?`<div class="ms-beitraege">${st.beitraege.map(b=>`<div${fokusUid===b.uid?' class="fokus"':""}><b>${esc(b.name||"")}:</b> ${esc(b.text||"")}${msLinksHTML(b)}</div>`).join("")}</div>`:"";
+  const lehrerAktion=lehrer&&bestaetigen&&i>0&&!st.fehlend.length?`
+    ${st.zustand!=="erreicht"?`<button class="primary"onclick="msPruefen('${ph.id}','${team.id}',${i},true,'${ansicht}')">✓ Bestätigen</button>`:""}
+    ${st.zustand!=="zurueck"?`<button class="secondary"onclick="msPruefen('${ph.id}','${team.id}',${i},false,'${ansicht}')">↩ Zurückgeben</button>`:""}`:"";
+  const schuelerAktion=!lehrer&&imTeam&&i>0?`<button class="${meiner?"secondary":"primary"}"onclick="openMsBeitrag('${ph.id}','${team.id}',${i},'${ansicht}')">${meiner?"Beitrag ändern":"Mein Beitrag"}</button>`:"";
+  return`<div class="ms-zeile ms-${st.zustand}"style="--c:${c}">
+   <span class="ms-icon"style="background:${st.zustand==="erreicht"?c:"#fff"};border-color:${st.zustand==="erreicht"?c:Z.f};color:${st.zustand==="erreicht"?"#fff":Z.f}">${Z.i}</span>
+   <div class="ms-body">
+    <div class="ms-kopf"><b>${esc(m)}</b>${bestaetigen?`<span class="ms-tag">Lehrkraft bestätigt</span>`:""}</div>
+    <small class="ms-status"style="color:${Z.f}">${i===0?"erreicht mit der Teamgründung":esc(Z.t)}${st.zustand==="offen"&&st.fehlend.length&&i>0?` · es fehlt noch: ${esc(st.fehlend.map(f=>f.name).join(", "))}`:""}</small>
+    ${personen?`<div class="ms-personen">${personen}</div>`:""}
+    ${st.pruefung?.kommentar&&st.zustand==="zurueck"?`<div class="ms-kommentar"><b>Rückmeldung:</b> ${esc(st.pruefung.kommentar)}</div>`:""}
+    ${!lehrer&&meiner?`<div class="ms-meiner"><b>Dein Beitrag:</b> ${esc(meiner.text)}${msLinksHTML(meiner)}</div>`:""}
+    ${lehrerBeitraege}
+   </div>
+   <div class="ms-aktion">${schuelerAktion}${lehrerAktion}</div>
+  </div>`;
+ }).join("")}</div>`;
+}
+async function msZurueck(){
+ const k=msKontext||{};
+ if(k.ansicht==="modal")return openMeilensteinModal(k.phId,k.teamId,k.zurueck);
+ if(k.ansicht==="gesamtcheck"){pgDaten=null;return openProjektGesamtcheck();}
+ if(k.ansicht==="schueler"){pgDaten=null;return openProjektSchuelerDetail(k.uid,k.phId);}
+ closeModal();return render();
+}
+async function openMsBeitrag(phId,teamId,i,ansicht){
+ const ph=projektPhaseById(phId);if(!ph)return;
+ msKontext={...(msKontext||{}),phId,teamId,ansicht:ansicht||msKontext?.ansicht||"seite"};
+ let b=null;
+ try{const s=await getDoc(doc(db,"meilensteinBeitraege",`${teamId}_${i}_${currentUser.uid}`));b=s.exists()?s.data():null;}catch(e){}
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+  <div class="kicker"style="color:${ppFarbe(ph)}">${esc(ph.lb)} · PROJEKT-MEILENSTEIN ${i+1}/${ph.meilensteine.length}</div>
+  <h2>${esc(ph.meilensteine[i])}</h2>
+  <p style="color:var(--muted);font-size:13px;margin-top:0">Was hast <b>du</b> zu diesem Meilenstein beigetragen? Der Meilenstein gilt erst als erreicht, wenn alle aus eurem Team ihren Beitrag eingetragen haben${msBrauchtBestaetigung(ph,i)?" und eure Lehrkraft ihn bestätigt hat":""}.</p>
+  <div class="form">
+   <label>Mein Beitrag<textarea id="msText"rows="4"maxlength="1500"placeholder="z. B. Ich habe die Hypothese mit UV und AV formuliert und die Kontrollgruppe geplant.">${esc(b?.text||"")}</textarea></label>
+   <label>Link (optional)<input id="msLink"type="url"value="${esc(b?.link||"")}"placeholder="https://…"></label>
+   <label>Datei (optional, max. 15 MB)<input id="msDatei"type="file"></label>
+   ${b?.dateiUrl?`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><a class="pill"href="${esc(b.dateiUrl)}"target="_blank"rel="noopener">${esc(b.dateiName||"Datei")} ↗</a><label class="check"style="font-size:12px"><input id="msDateiWeg"type="checkbox"> Datei löschen</label></div>`:""}
+   <div class="form-actions">
+    <button class="secondary"onclick="msZurueck()">Abbrechen</button>
+    ${b?`<button class="secondary"onclick="msBeitragLoeschen('${phId}','${teamId}',${i})">Beitrag löschen</button>`:""}
+    <button class="primary"onclick="msBeitragSpeichern('${phId}','${teamId}',${i})">Beitrag speichern</button>
+   </div>
+  </div>`);
+}
+async function msBeitragSpeichern(phId,teamId,i){
+ const text=$("msText")?.value.trim()||"";
+ let link=$("msLink")?.value.trim()||"";
+ const file=$("msDatei")?.files?.[0]||null;
+ const weg=$("msDateiWeg")?.checked;
+ if(!text){toast("Bitte kurz beschreiben, was du beigetragen hast.");return}
+ if(link&&!/^https?:\/\//i.test(link))link="https://"+link;
+ const ref=doc(db,"meilensteinBeitraege",`${teamId}_${i}_${currentUser.uid}`);
+ try{
+  const alt=await getDoc(ref);const altDaten=alt.exists()?alt.data():{};
+  const patch={teamId,phaseId:phId,index:i,uid:currentUser.uid,name:profile?.displayName||currentUser.email||"Schüler/in",text,link,updatedAt:serverTimestamp()};
+  let altUrlLoeschen="";
+  if(file){toast("Datei wird hochgeladen …");const up=await uploadCampusDatei(file,`meilensteinBeitraege/${teamId}`);patch.dateiUrl=up.url;patch.dateiName=up.name;altUrlLoeschen=altDaten.dateiUrl||"";}
+  else if(weg){patch.dateiUrl="";patch.dateiName="";altUrlLoeschen=altDaten.dateiUrl||"";}
+  await setDoc(ref,patch,{merge:true});
+  if(altUrlLoeschen)await deleteCampusDatei(altUrlLoeschen);
+  toast("Beitrag gespeichert.");showMotivationsBild();
+  await msZurueck();
+ }catch(e){console.error("Meilenstein-Beitrag:",e);toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Fehler: "+(e?.message||e));}
+}
+async function msBeitragLoeschen(phId,teamId,i){
+ if(!confirm("Deinen Beitrag zu diesem Meilenstein löschen?"))return;
+ const ref=doc(db,"meilensteinBeitraege",`${teamId}_${i}_${currentUser.uid}`);
+ try{const alt=await getDoc(ref);const url=alt.exists()?alt.data().dateiUrl:"";await deleteDoc(ref);await deleteCampusDatei(url);toast("Beitrag gelöscht.");await msZurueck();}
+ catch(e){console.error(e);toast("Konnte nicht gelöscht werden.");}
+}
+async function msPruefen(phId,teamId,i,ok,ansicht){
+ if(!isTeacher())return;
+ let kommentar="";
+ if(!ok){const r=prompt("Rückmeldung an das Team (was fehlt noch?):","");if(r===null)return;kommentar=r.trim();}
+ msKontext={...(msKontext||{}),phId,teamId,ansicht:ansicht||msKontext?.ansicht||"seite"};
+ try{
+  await updateDoc(doc(db,"lehrplanTeams",teamId),{[`msPruefung.${i}`]:{s:ok?"ok":"zurueck",kommentar,at:serverTimestamp(),von:currentUser.uid}});
+  toast(ok?"Meilenstein bestätigt.":"Meilenstein zurückgegeben.");
+  await msZurueck();
+ }catch(e){console.error("Meilenstein prüfen:",e);toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Konnte nicht gespeichert werden.");}
+}
+// Eigenes Fenster mit allen Meilensteinen eines Teams (aus der Wochenansicht).
+async function openMeilensteinModal(phId,teamId,zurueck){
+ const ph=projektPhaseById(phId);if(!ph)return;
+ let team=null;
+ try{const s=await getDoc(doc(db,"lehrplanTeams",teamId));team=s.exists()?{id:s.id,...s.data()}:null;}catch(e){}
+ if(!team){toast("Team nicht gefunden.");return}
+ msKontext={phId,teamId,ansicht:"modal",zurueck:zurueck||null};
+ const bs=await getMeilensteinBeitraege([teamId]);
+ const eig=msEigeneBeitraege(ph,team,bs,currentUser.uid);
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+  <div class="kicker"style="color:${ppFarbe(ph)}">${esc(ph.lb)} · PROJEKT-MEILENSTEINE · TEAM „${esc(team.teamName||"")}“</div>
+  <h2>${esc(ph.titel)}</h2>
+  <p style="font-size:13px;color:var(--muted);margin-top:0">Team-Meilensteine erreicht: <b>${msErreichtAnzahl(ph,team,bs)}/${ph.meilensteine.length}</b>${!isTeacher()&&(team.mitgliederUids||[]).includes(currentUser.uid)?` · deine Beiträge: <b>${eig.n}/${eig.g}</b>`:""}</p>
+  ${msListeHTML(ph,team,bs,"modal")}
+  <div class="form-actions"style="margin-top:14px">${zurueck?`<button class="secondary"onclick="reopenDetail('${zurueck.fach}','${zurueck.woche}')">← Zurück</button>`:""}<button class="secondary"onclick="closeModal()">Schließen</button></div>`);
+}
+window.openMsBeitrag=openMsBeitrag;window.msBeitragSpeichern=msBeitragSpeichern;window.msBeitragLoeschen=msBeitragLoeschen;
+window.msPruefen=msPruefen;window.msZurueck=msZurueck;window.openMeilensteinModal=openMeilensteinModal;
+
+// ---- Projekt-Gesamtcheck (Lehrkraft) ----
+async function ladeProjektCheckDaten(){
+ const students=await getAllUsersForLernstand();
+ const teams=[];
+ await Promise.all(PROJEKT_PHASEN.map(async ph=>{(await getLehrplanTeams(ph.projektWocheId)).forEach(t=>teams.push({...t,phaseId:ph.id}));}));
+ const beitraege=await getMeilensteinBeitraege(teams.map(t=>t.id));
+ const ids=PROJEKT_PHASEN.flatMap(p=>p.notwendigeWochen);
+ let fortschritt=[];
+ try{const s=await getDocs(query(collection(db,"lehrplanFortschritt"),where("wocheId","in",ids)));fortschritt=s.docs.map(d=>d.data());}catch(e){console.error(e);}
+ return{students,teams,beitraege,fortschritt};
+}
+function pgZelle(d,s,ph){
+ const team=d.teams.find(t=>t.phaseId===ph.id&&(t.mitgliederUids||[]).includes(s.uid))||null;
+ const inh=ph.notwendigeWochen.filter(id=>d.fortschritt.some(f=>f.uid===s.uid&&f.wocheId===id&&f.abgeschlossen)).length;
+ const eig=msEigeneBeitraege(ph,team,d.beitraege,s.uid);
+ const ms=msErreichtAnzahl(ph,team,d.beitraege);
+ return{team,inh,inhG:ph.notwendigeWochen.length,eig,ms,msG:ph.meilensteine.length};
+}
+async function openProjektGesamtcheck(){
+ if(!isTeacher()){toast("Nur Lehrkräfte können den Projekt-Gesamtcheck öffnen.");return}
+ try{pgDaten=await ladeProjektCheckDaten();}catch(e){console.error(e);toast("Konnte nicht geladen werden.");return}
+ const d=pgDaten,heute=new Date().toISOString().slice(0,10);
+ // Warteschlange: Meilensteine, die auf Bestätigung warten
+ const warten=[];
+ PROJEKT_PHASEN.forEach(ph=>d.teams.filter(t=>t.phaseId===ph.id).forEach(t=>(ph.bestaetigung||[]).forEach(i=>{const st=msStatus(ph,t,d.beitraege,i);if(st.zustand==="wartet")warten.push({ph,t,i,st});})));
+ const rows=d.students.map(s=>`<tr><td style="padding:8px">${esc(s.displayName||s.email||"Schüler/in")}</td>${PROJEKT_PHASEN.map(ph=>{
+  const z=pgZelle(d,s,ph);
+  if(heute<ph.projektStart&&!z.team&&!z.inh)return`<td class="pg-zelle kommend">–</td>`;
+  const q=Math.min(z.inh/z.inhG,z.eig.g?z.eig.n/z.eig.g:1);
+  const farbe=!z.team?"#c7d0d6":q>=1&&z.ms>=z.msG?"#3fa66a":q>0||z.ms>1?"#e0a324":"#c7d0d6";
+  return`<td class="pg-zelle"onclick="openProjektSchuelerDetail('${s.uid}','${ph.id}')"title="Details öffnen"><span class="ampel-dot"style="background:${farbe}"></span>
+   <small>Inhalte ${z.inh}/${z.inhG}<br>Beiträge ${z.eig.n}/${z.eig.g}<br>Team ${z.team?`${z.ms}/${z.msG}`:"–"}</small></td>`;}).join("")}</tr>`).join("");
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+  <div class="kicker">🔬 PROJEKT-GESAMTCHECK · NUR LEHRKRÄFTE</div>
+  <h2>Alle vier Projekte auf einen Blick</h2>
+  <h3 style="margin:10px 0 6px">⏳ Wartet auf deine Bestätigung (${warten.length})</h3>
+  <div class="list">${warten.map(w=>`<div class="list-item"style="flex-direction:column;align-items:stretch;gap:6px">
+   <div><strong style="color:${ppFarbe(w.ph)}">${esc(w.ph.lb)} · Team „${esc(w.t.teamName||"")}“</strong><small>Meilenstein: ${esc(w.ph.meilensteine[w.i])}</small></div>
+   <div class="ms-beitraege">${w.st.beitraege.map(b=>`<div><b>${esc(b.name||"")}:</b> ${esc(b.text||"")}${msLinksHTML(b)}</div>`).join("")}</div>
+   <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="primary"onclick="msPruefen('${w.ph.id}','${w.t.id}',${w.i},true,'gesamtcheck')">✓ Bestätigen</button><button class="secondary"onclick="msPruefen('${w.ph.id}','${w.t.id}',${w.i},false,'gesamtcheck')">↩ Zurückgeben</button></div>
+  </div>`).join("")||`<div class="empty">Gerade wartet nichts auf eine Bestätigung.</div>`}</div>
+  <h3 style="margin:18px 0 4px">Stand je Schüler:in</h3>
+  <p style="color:var(--muted);font-size:12px;margin-top:0">Inhalte = persönlich abgeschlossene Projektinhalte · Beiträge = eigene Meilenstein-Beiträge · Team = erreichte Team-Meilensteine. Zelle antippen für Details.</p>
+  <div style="overflow-x:auto"><table class="ls-matrix pg-matrix">
+   <thead><tr><th>Schüler:in</th>${PROJEKT_PHASEN.map(ph=>`<th style="color:${ppFarbe(ph)}">${esc(ph.lb)}</th>`).join("")}</tr></thead>
+   <tbody>${rows||`<tr><td colspan="5">Keine Schüler:innen gefunden.</td></tr>`}</tbody>
+  </table></div>
+  <div class="form-actions"style="margin-top:14px"><button class="secondary"onclick="closeModal()">Schließen</button></div>`);
+}
+window.openProjektGesamtcheck=openProjektGesamtcheck;
+async function openProjektSchuelerDetail(uid,phId){
+ if(!isTeacher())return;
+ if(!pgDaten){try{pgDaten=await ladeProjektCheckDaten();}catch(e){toast("Konnte nicht geladen werden.");return}}
+ const d=pgDaten,ph=projektPhaseById(phId),s=d.students.find(x=>x.uid===uid);
+ if(!ph||!s)return;
+ const z=pgZelle(d,s,ph);
+ msKontext={phId,teamId:z.team?.id,ansicht:"schueler",uid};
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+  <div class="kicker"style="color:${ppFarbe(ph)}">${esc(ph.lb)} · PROJEKT · ${esc(s.displayName||s.email||"")}</div>
+  <h2>${esc(ph.titel)}</h2>
+  <h3 class="apt-h3">Projektinhalte (persönlich)</h3>
+  <div class="list">${ph.notwendigeWochen.map(id=>{const e=lehrplanWocheById("paedagogik",id);const f=d.fortschritt.find(x=>x.uid===uid&&x.wocheId===id)||{};
+   return`<div class="list-item"><div><strong>${f.abgeschlossen?"✓ ":""}${esc(e?.thema||id)}</strong><small>${f.abgeschlossen?"abgeschlossen":Object.values(f.zieleErfuellt||{}).some(Boolean)?"in Arbeit":"noch offen"}</small></div></div>`;}).join("")}</div>
+  <h3 class="apt-h3">Meilensteine ${z.team?`· Team „${esc(z.team.teamName||"")}“ · eigene Beiträge ${z.eig.n}/${z.eig.g}`:""}</h3>
+  ${z.team?msListeHTML(ph,z.team,d.beitraege,"schueler",uid):`<div class="empty">Noch in keinem Team.</div>`}
+  <div class="form-actions"style="margin-top:14px"><button class="secondary"onclick="openProjektGesamtcheck()">← Zurück zum Gesamtcheck</button><button class="secondary"onclick="closeModal()">Schließen</button></div>`);
+}
+window.openProjektSchuelerDetail=openProjektSchuelerDetail;
+
 // ---- Produkte/Ergebnisse je Woche --------------------------------------
 async function getLehrplanProdukte(wocheId){
  try{
@@ -1728,7 +1984,7 @@ async function deleteLehrplanProdukt(id,fach,wocheId){
  await deleteCampusDatei(altUrl);
  if(lehrplanWocheById(fach,wocheId)?.typ==="apt"&&!isTeacher()){
   const rest=(await getLehrplanProdukte(wocheId)).filter(p=>p.uid===currentUser.uid);
-  if(!rest.length){await aptSetzen(wocheId,{produktHochgeladen:false},{tab:"produkt"});toast("Gelöscht.");return}
+  if(!rest.length){await aptSetzen(wocheId,{produktHochgeladen:false,vorkorrekturUmgesetzt:false},{tab:"produkt"});toast("Gelöscht.");return}
  }
  await reopenDetail(fach,wocheId);toast("Gelöscht.")}
  catch(e){console.error(e);toast("Konnte nicht gelöscht werden.")}
@@ -2076,8 +2332,10 @@ function renderPhasenLiveTable(phase){
  st.fortschritt.some(f=>f.uid===s.uid&&f.wocheId===wId&&f.abgeschlossen)
  ).length;
  const team=st.teams.find(t=>(t.mitgliederUids||[]).includes(s.uid));
- const idx=team?.meilensteinIndex||0;
- const meilensteinLabel=idx===0?"noch nicht begonnen":idx>=phase.meilensteine.length?"Projekt abgeschlossen":phase.meilensteine[idx-1];
+ const idx=msErreichtAnzahl(phase,team,st.beitraege);
+ const nx=team?msNaechster(phase,team,st.beitraege):null;
+ const eig=msEigeneBeitraege(phase,team,st.beitraege,s.uid);
+ const meilensteinLabel=!team?"kein Team":!nx?"alle Meilensteine erreicht":`nächster: ${phase.meilensteine[nx.i]} (${MS_ZUSTAND[nx.st.zustand].t}) · eigene Beiträge ${eig.n}/${eig.g}`;
  const letzteAktivitaet=st.fortschritt.filter(f=>f.uid===s.uid&&phase.notwendigeWochen.includes(f.wocheId))
  .map(f=>f.updatedAt?.seconds?new Date(f.updatedAt.seconds*1000):null).filter(Boolean).sort((a,b)=>b-a)[0];
  const tageInaktiv=letzteAktivitaet?Math.floor((Date.now()-letzteAktivitaet.getTime())/86400000):null;
@@ -2112,7 +2370,7 @@ async function openPhasenLiveUebersicht(phaseId){
  students=await getAllUsersForLernstand();
  teams=await getLehrplanTeams(phase.projektWocheId);
  }catch(e){console.error("Phasen-Live-Übersicht laden:",e);toast("Konnte nicht geladen werden.");return}
- phasenLiveState={students,teams,fortschritt:[]};
+ phasenLiveState={students,teams,fortschritt:[],beitraege:await getMeilensteinBeitraege(teams.map(t=>t.id))};
  modal(`<button class="modal-close"onclick="closeModal()">×</button>
  <div class="kicker"> LIVE-ÜBERSICHT · ${esc(phase.lb)} · NUR LEHRKRÄFTE</div>
  <h2>${esc(phase.titel)}</h2>
@@ -2128,85 +2386,7 @@ async function openPhasenLiveUebersicht(phaseId){
 }
 window.openPhasenLiveUebersicht=openPhasenLiveUebersicht;
 
-// ---- Projekt-Gesamtcheck: alle 4 Projekte auf einen Blick, statt einzeln
-// durchklicken zu müssen. Zeigt je Person den Meilenstein-Stand pro Projekt.
-async function openProjektGesamtcheck(){
- if(!isTeacher()){toast("Nur Lehrkräfte können den Projekt-Gesamtcheck öffnen.");return}
- let students=[];
- try{students=await getAllUsersForLernstand();}catch(e){console.error(e);toast("Konnte nicht geladen werden.");return}
- const teamsProPhase={};
- await Promise.all(PROJEKT_PHASEN.map(async ph=>{teamsProPhase[ph.id]=await getLehrplanTeams(ph.projektWocheId);}));
- const heute=new Date().toISOString().slice(0,10);
-
- const rows=students.map(s=>{
- const zellen=PROJEKT_PHASEN.map(ph=>{
- const status=phaseStatus(ph,heute);
- const team=(teamsProPhase[ph.id]||[]).find(t=>(t.mitgliederUids||[]).includes(s.uid));
- const idx=team?.meilensteinIndex||0;
- if(status==="kommend")return{farbe:"#e2eaf0",text:"–"};
- if(!team)return{farbe:"#c7d0d6",text:"kein Team"};
- if(idx>=ph.meilensteine.length)return{farbe:"#3fa66a",text:"abgeschlossen"};
- if(idx===0)return{farbe:"#c7d0d6",text:"noch nicht begonnen"};
- return{farbe:"#e0a324",text:ph.meilensteine[idx-1]};
- });
- return`<tr>
- <td style="padding:8px">${esc(s.displayName||s.email||"Schüler/in")}</td>
- ${zellen.map(z=>`<td style="padding:8px;text-align:center"><span class="ampel-dot"style="background:${z.farbe}"title="${esc(z.text)}"></span></td>`).join("")}
- </tr>`;
- }).join("");
-
- modal(`<button class="modal-close"onclick="closeModal()">×</button>
- <div class="kicker"> PROJEKT-GESAMTCHECK · NUR LEHRKRÄFTE</div>
- <h2>Alle vier Projekte auf einen Blick</h2>
- <p style="color:var(--muted);font-size:12px">Farbe = Meilenstein-Stand des jeweiligen Teams. Für Details eine Zeile antippen oder die einzelne Projekt-Live-Übersicht öffnen.</p>
- <div style="overflow-x:auto"><table class="ls-matrix">
- <thead><tr><th>Schüler:in</th>${PROJEKT_PHASEN.map(ph=>`<th>${esc(ph.lb)}</th>`).join("")}</tr></thead>
- <tbody>${rows||`<tr><td colspan="5">Keine Schüler:innen gefunden.</td></tr>`}</tbody>
- </table></div>
- <div class="form-actions"style="margin-top:14px"><button class="secondary"onclick="closeModal()">Schließen</button></div>
- `);
-}
-window.openProjektGesamtcheck=openProjektGesamtcheck;
-
-// ---- APT-Gesamtcheck (Abschlussprüfungs-Training): Schritte je Person und
-// Lernbereich + Liste der Lernprodukte, die noch auf Vorkorrektur warten.
-async function openFachaufsatzTrainingCheck(){
- if(!isTeacher()){toast("Nur Lehrkräfte können den APT-Gesamtcheck öffnen.");return}
- let students=[],fortschritt=[],produkte=[];
- const alleIds=PROJEKT_PHASEN.flatMap(p=>p.trainingWochen);
- try{
-  students=await getAllUsersForLernstand();
-  const [fs,ps]=await Promise.all([
-   getDocs(query(collection(db,"lehrplanFortschritt"),where("wocheId","in",alleIds))),
-   getDocs(query(collection(db,"lehrplanProdukte"),where("wocheId","in",alleIds)))
-  ]);
-  fortschritt=fs.docs.map(d=>d.data());produkte=ps.docs.map(d=>({id:d.id,...d.data()}));
- }catch(e){console.error("APT-Gesamtcheck:",e);toast("Konnte nicht geladen werden.");return}
- const heute=new Date().toISOString().slice(0,10);
- const rows=students.map(s=>{
-  const zellen=PROJEKT_PHASEN.map(ph=>{
-   const n=ph.trainingWochen.reduce((sum,id)=>sum+aptSchritte(fortschritt.find(f=>f.uid===s.uid&&f.wocheId===id)).filter(Boolean).length,0);
-   const g=ph.trainingWochen.length*5;
-   const kommend=heute<ph.aptStart;
-   const farbe=n===g?"#3fa66a":n>0?"#e0a324":kommend?"#e2eaf0":"#c7d0d6";
-   return`<td style="text-align:center;padding:8px"><span class="ampel-dot"style="background:${farbe}"></span> <small>${n}/${g}</small></td>`;
-  }).join("");
-  return`<tr><td style="padding:8px">${esc(s.displayName||s.email||"Schüler/in")}</td>${zellen}</tr>`;
- }).join("");
- const warten=produkte.filter(p=>!p.vorkorrektur);
- modal(`<button class="modal-close"onclick="closeModal()">×</button>
-  <div class="kicker">🎓 ABSCHLUSSPRÜFUNGS-TRAINING · GESAMTCHECK · NUR LEHRKRÄFTE</div>
-  <h2>Trainingsstand der Klasse</h2>
-  <p style="color:var(--muted);font-size:12px">Je Lernbereich: erledigte Schritte (5 je Inhalt: Prüfungsfrage, Inhalte & Eingrenzung, Basis-Check, Lernprodukt, K-Prim-Check).</p>
-  <div style="overflow-x:auto"><table class="ls-matrix">
-   <thead><tr><th>Schüler:in</th>${PROJEKT_PHASEN.map(ph=>`<th style="color:${ppFarbe(ph)}">${esc(ph.lb)}</th>`).join("")}</tr></thead>
-   <tbody>${rows||`<tr><td colspan="5">Keine Schüler:innen gefunden.</td></tr>`}</tbody>
-  </table></div>
-  <h3 style="margin:18px 0 6px">✍️ Warten auf Vorkorrektur (${warten.length})</h3>
-  <div class="list">${warten.map(p=>{const e=lehrplanWocheById("paedagogik",p.wocheId);return`<div class="list-item"style="cursor:pointer"onclick="openAptDetail('${p.wocheId}','produkt')"><div><strong>${esc(p.name||"")}</strong><small>${esc(e?.lb||"")} · ${esc(e?.thema||p.wocheId)} · ${esc(p.titel||"")}</small></div><span>→</span></div>`;}).join("")||`<div class="empty">Alles vorkorrigiert.</div>`}</div>
-  <div class="form-actions"style="margin-top:14px"><button class="secondary"onclick="closeModal()">Schließen</button></div>`);
-}
-window.openFachaufsatzTrainingCheck=openFachaufsatzTrainingCheck;
+// Projekt-Gesamtcheck und APT-Gesamtcheck: siehe Abschnitte „PROJEKT-MEILENSTEINE“ und „APT-GESAMTCHECK“.
 
 window.toggleMaterialErhalten=toggleMaterialErhalten;
 async function markWocheAbgeschlossen(fach,wocheId){
@@ -3023,6 +3203,7 @@ async function renderStart(){
  let tasks=[],projects=[],news=[],nextCalendar=null,birthdayInfo=null,wochenplan=[];
  try{[tasks,projects,news,nextCalendar,birthdayInfo,wochenplan]=await Promise.all([getCollection("tasks","deadline",false),getCollection("projects"),getCollection("news"),getUpcomingCampusCalendarEvent(),getUpcomingBirthdayInfo(),getMeineWochenplanung()])}catch(e){}
  const miniKalender=await miniKalenderHTML();
+ const coBanner=await checkoutStartBannerHTML();
  const praktikumsphase=aktuellePraktikumsphase();
  const praktikumsAuftraegeMap=await getPraktikumsAuftraege().catch(()=>({}));
  const aktuellerPraktikumsauftrag=(praktikumsphase?.status==="laufend")?praktikumsAuftraegeMap[praktikumsphase.id]:null;
@@ -3031,7 +3212,7 @@ async function renderStart(){
  const upcomingTime=nextCalendar?.time?` · ${esc(nextCalendar.time)} Uhr`:"";
  const newsAction=(isTeacher()?`<button class="primary"onclick="openNewsForm()">＋ News veröffentlichen</button>`:"")
  +(isTeacher()?`<button class="secondary"onclick="openUserManagement()"> Benutzer verwalten</button>`:"");
- return`<section class="hero"><div><span class="badge"> F11Sb 26/27</span><h1>Willkommen auf dem Campus.</h1><p>Hier
+ return`${coBanner}<section class="hero"><div><span class="badge"> F11Sb 26/27</span><h1>Willkommen auf dem Campus.</h1><p>Hier
 verbinden wir Lernen, Projekte, Praxis und Gemeinschaft. Alle angemeldeten Mitglieder arbeiten am selben digitalen Campus.</p>
 </div><div class="actions">${isTeacher()?`<button class="primary"onclick="openNewsForm()">＋ News veröffentlichen</button>`:""}<button class="secondary"onclick="go('kompass')">Mein Kompass →</button><button class="secondary"onclick="go('forum')">Campus-Forum</button></div></section>
  <div class="grid grid-3">
@@ -3423,9 +3604,9 @@ function ppHexRgb(h){h=String(h).replace("#","");return [0,2,4].map(i=>parseInt(
 function ppMix(hex,t){const a=ppHexRgb("#EEF2F6"),b=ppHexRgb(hex),k=Math.max(0,Math.min(1,t));return`rgb(${a.map((v,i)=>Math.round(v+(b[i]-v)*k)).join(",")})`;}
 function ppFarbe(ph){return PP_FARBEN[ph.lbNum]||"#8a99a3";}
 function ppSaettigung(prozent){return 0.08+0.92*(prozent/100);}
-const APT_SCHRITT_LABELS=["Prüfungsfrage","Inhalte & Eingrenzung","Basis-Check","Lernprodukt & Vorkorrektur","Abschluss-Check"];
-const APT_TABS=["frage","inhalte","basischeck","produkt","abschluss"];
-function aptSchritte(f){f=f||{};return[!!f.frageGelesen,!!(f.materialBearbeitet&&f.eingrenzung),!!f.basischeckErledigt,!!f.produktHochgeladen,!!f.kprim];}
+const APT_SCHRITT_LABELS=["Prüfungsfrage","Inhalte & Eingrenzung","Basis-Check","Lernprodukt & Vorkorrektur"];
+const APT_TABS=["frage","inhalte","basischeck","produkt"];
+function aptSchritte(f){f=f||{};return[!!f.frageGelesen,!!(f.materialBearbeitet&&f.eingrenzung),!!f.basischeckErledigt,!!(f.produktHochgeladen&&f.vorkorrekturUmgesetzt)];}
 function ppTeilWochen(ph,teil){return(teil==="projekt"?ph.projektSchulwochen:ph.aptSchulwochen).map(swById);}
 function ppTeilName(teil){return teil==="projekt"?"Projekt":"Abschlussprüfungs-Training";}
 function ppTeilIcon(teil){return teil==="projekt"?"🔬":"🎓";}
@@ -3433,12 +3614,12 @@ function ppTeilIcon(teil){return teil==="projekt"?"🔬":"🎓";}
 function ppTeilFortschritt(ph,teil,fortschrittMap,meinTeam){
  if(teil==="projekt"){
   const inhalteFertig=ph.notwendigeWochen.filter(id=>fortschrittMap[id]?.abgeschlossen).length;
-  const ms=Math.min(meinTeam?.meilensteinIndex||0,ph.meilensteine.length);
+  const ms=msErreichtAnzahl(ph,meinTeam,meinTeam?._beitraege);
   const gesamt=ph.notwendigeWochen.length+ph.meilensteine.length;
   return{erledigt:inhalteFertig+ms,gesamt,prozent:gesamt?Math.round((inhalteFertig+ms)/gesamt*100):0,inhalteFertig,inhalteGesamt:ph.notwendigeWochen.length,ms,msGesamt:ph.meilensteine.length};
  }
  const schritte=ph.trainingWochen.reduce((s,id)=>s+aptSchritte(fortschrittMap[id]).filter(Boolean).length,0);
- const gesamt=ph.trainingWochen.length*5;
+ const gesamt=ph.trainingWochen.length*APT_TABS.length;
  const inhalteFertig=ph.trainingWochen.filter(id=>aptSchritte(fortschrittMap[id]).every(Boolean)).length;
  return{erledigt:schritte,gesamt,prozent:gesamt?Math.round(schritte/gesamt*100):0,inhalteFertig,inhalteGesamt:ph.trainingWochen.length};
 }
@@ -3473,6 +3654,9 @@ async function ladePPTeams(){
   const teams=await getLehrplanTeams(ph.projektWocheId);
   res[ph.id]=teams.find(t=>(t.mitgliederUids||[]).includes(currentUser?.uid))||null;
  }));
+ const meine=Object.values(res).filter(Boolean);
+ const bs=await getMeilensteinBeitraege(meine.map(t=>t.id));
+ meine.forEach(t=>{t._beitraege=bs.filter(b=>b.teamId===t.id);});
  return res;
 }
 function ppWochenZellenHTML(wochen,farbe,heute){
@@ -3578,7 +3762,8 @@ async function renderPaedagogikPhasenZeitstrahl(fach,fortschrittMap,heute){
   if(ph)return renderPPTeilAnsicht(ph,teil==="apt"?"apt":"projekt",fortschrittMap,meineTeams,heute);
   activePhaseDetail=null;
  }
- return renderPPJahresuebersicht(fortschrittMap,meineTeams,heute);
+ const coDaten=await ladeCheckoutDaten();
+ return renderPPJahresuebersicht(fortschrittMap,meineTeams,heute,coDaten);
 }
 
 // Kurznamen der Inhalte für die kompakte Lernweg-Ansicht.
@@ -3649,13 +3834,15 @@ function ppDieseWocheHTML(x,fortschrittMap,meineTeams,heute){
   const e=lehrplanWocheById("paedagogik",id);if(!e)return"";
   let fertig,info;
   if(teil==="projekt"){fertig=!!fortschrittMap[id]?.abgeschlossen;info=fertig?"abgeschlossen":"";}
-  else{const s=aptSchritte(fortschrittMap[id]),k=s.filter(Boolean).length;fertig=k===5;info=fertig?"alle 5 Schritte":`${k}/5 Schritte · nächster: ${APT_SCHRITT_LABELS[s.indexOf(false)]}`;}
+  else{const s=aptSchritte(fortschrittMap[id]),k=s.filter(Boolean).length;fertig=k===APT_TABS.length;info=fertig?"alle Schritte erledigt":`${k}/${APT_TABS.length} Schritte · nächster: ${APT_SCHRITT_LABELS[s.indexOf(false)]}`;}
   return`<button type="button"class="pp-dw-zeile"onclick="openLehrplanEinheit('paedagogik','${id}')"><span class="pp-dw-box${fertig?" x":""}"style="--c:${c}">${fertig?"✓":""}</span><span><b>${esc(e.thema)}</b>${isTeacher()?`<small>Inhalt Nr. ${esc(e.nr||"")}</small>`:info?`<small>${esc(info)}</small>`:""}</span></button>`;
  }).join("");
  let ms="";
  if(teil==="projekt"&&!isTeacher()){
-  const team=meineTeams[ph.id],idx=Math.min(team?.meilensteinIndex||0,ph.meilensteine.length);
-  ms=team?(idx<ph.meilensteine.length?`<div class="pp-dw-ms">★ Meilenstein ${idx+1}/${ph.meilensteine.length}: „${esc(ph.meilensteine[idx])}“<small>Team „${esc(team.teamName||"")}“</small></div>`:`<div class="pp-dw-ms">★ Alle Meilensteine erreicht</div>`)
+  const team=meineTeams[ph.id],nx=team?msNaechster(ph,team,team._beitraege):null;
+  const meinFehlt=nx&&nx.i>0&&!nx.st.beitraege.some(b=>b.uid===currentUser.uid);
+  const hinweis=!nx?"":meinFehlt?"dein Beitrag fehlt noch":nx.st.zustand==="wartet"?"wartet auf Bestätigung der Lehrkraft":nx.st.zustand==="zurueck"?"zurückgegeben – bitte überarbeiten":`es fehlt noch: ${nx.st.fehlend.map(f=>f.name).join(", ")}`;
+  ms=team?(nx?`<div class="pp-dw-ms">★ Meilenstein ${nx.i+1}/${ph.meilensteine.length}: „${esc(ph.meilensteine[nx.i])}“<small style="color:${meinFehlt||nx.st.zustand==="zurueck"?"#b3541e":"var(--muted)"}">${esc(hinweis)} · Team „${esc(team.teamName||"")}“</small>${meinFehlt?`<button class="secondary"style="margin-top:6px"onclick="openMsBeitrag('${ph.id}','${team.id}',${nx.i},'seite')">Mein Beitrag eintragen</button>`:""}</div>`:`<div class="pp-dw-ms">★ Alle Meilensteine erreicht</div>`)
    :`<div class="pp-dw-ms">★ Noch kein Team – bilde im Projekt ein Team, um die Meilensteine abzuhaken.</div>`;
  }
  const naechste=isTeacher()?null:ppOffeneIds(x,fortschrittMap)[0];
@@ -3692,22 +3879,24 @@ function ppOffenKarteHTML(teile,fortschrittMap,aktIdx){
   <small>${ids.length} Inhalt${ids.length>1?"e":""} offen: ${ids.map(id=>esc(ppKurz(lehrplanWocheById("paedagogik",id)))).join(", ")}</small>
   <button class="secondary"onclick="openLehrplanEinheit('paedagogik','${ids[0]}')">Nachholen</button></div>`).join("")}</div>`;
 }
-function renderPPJahresuebersicht(fortschrittMap,meineTeams,heute){
+function renderPPJahresuebersicht(fortschrittMap,meineTeams,heute,coDaten){
  const gesamt=PROJEKT_PHASEN.reduce((s,ph)=>{["projekt","apt"].forEach(t=>{const f=ppTeilFortschritt(ph,t,fortschrittMap,meineTeams[ph.id]);s.e+=f.erledigt;s.g+=f.gesamt;});return s},{e:0,g:0});
  const gesamtProzent=gesamt.g?Math.round(gesamt.e/gesamt.g*100):0;
  const teile=ppAlleTeile(),aktIdx=ppAktuellerIndex(heute),akt=teile[aktIdx];
  const unter=isTeacher()?"Acht Stationen durchs Schuljahr: je Lernbereich ein Projekt und ein Prüfungstraining.":`Acht Stationen durchs Schuljahr. Der Ring zeigt, wie viel du geschafft hast – ${gesamtProzent} % deines Jahres.`;
  return`<button class="secondary"onclick="closeFach()">← Zurück zu den Fächern</button>
  ${pageHead("LERNPFAD","Pädagogik/Psychologie",unter,isTeacher()?`<button class="secondary"onclick="openProjektGesamtcheck()">🔬 Projekt-Gesamtcheck</button> <button class="secondary"onclick="openFachaufsatzTrainingCheck()">🎓 APT-Gesamtcheck</button>`:"")}
+ ${checkoutLiveBannerHTML(coDaten)}
  <div class="card pp-weg-card">
   <div class="pp-weg-lbs">${PROJEKT_PHASEN.map(ph=>{const c=ppFarbe(ph);return`<div style="background:${ppMix(c,.14)};color:${c}"><b>Lernbereich ${ph.lbNum}</b><span>${esc(ph.lbTitel)}</span></div>`}).join("")}</div>
   <div class="pp-weg">${teile.map((x,i)=>ppStationHTML(x,i,teile,fortschrittMap,meineTeams,heute,aktIdx)).join("")}</div>
-  <div class="pp-legende"><span>🔬 Projekt: Inhalte abhaken und Team-Meilensteine</span><span>🎓 Prüfungstraining: je Inhalt 5 Schritte bis zum K-Prim-Check</span><span>- - - Pause durch Praktikum 🏫🏥 oder Ferien 🌴</span></div>
+  <div class="pp-legende"><span>🔬 Projekt: Inhalte abhaken und Team-Meilensteine</span><span>🎓 Prüfungstraining: je Inhalt 4 Schritte bis zur umgesetzten Vorkorrektur</span><span>🏁 Check-out: K-Prim-Test am Ende der Woche</span><span>- - - Pause durch Praktikum 🏫🏥 oder Ferien 🌴</span></div>
  </div>
  <div class="pp-weg-karten${isTeacher()?" lehrkraft":""}">
   ${ppDieseWocheHTML(akt,fortschrittMap,meineTeams,heute)}
   ${isTeacher()?"":ppTempoKarteHTML(akt,fortschrittMap,meineTeams,heute,teile,aktIdx)+ppOffenKarteHTML(teile,fortschrittMap,aktIdx)}
  </div>
+ ${checkoutSektionHTML(coDaten)}
  ${footer()}`;
 }
 
@@ -3736,8 +3925,7 @@ function renderPPTeilAnsicht(ph,teil,fortschrittMap,meineTeams,heute){
 
  let inhalt="";
  if(teil==="projekt"){
-  const idx=Math.min(meinTeam?.meilensteinIndex||0,ph.meilensteine.length);
-  const darfAbhaken=!!meinTeam&&(isTeacher()||MEILENSTEINE_SCHUELER_DUERFEN_ABHAKEN);
+  const eig=meinTeam?msEigeneBeitraege(ph,meinTeam,meinTeam._beitraege,currentUser.uid):null;
   inhalt=`<div class="kicker"style="margin:18px 0 8px">PROJEKTINHALTE – bearbeiten und abhaken</div>
   ${ph.notwendigeWochen.map((id,i)=>{
    const e=lehrplanWocheById("paedagogik",id);if(!e)return"";
@@ -3752,27 +3940,24 @@ function renderPPTeilAnsicht(ph,teil,fortschrittMap,meineTeams,heute){
     <span>→</span>
    </div>`;}).join("")}
   <div class="kicker"style="margin:18px 0 8px">PROJEKT-MEILENSTEINE ${meinTeam?`· TEAM „${esc(meinTeam.teamName)}“`:""}</div>
-  ${meinTeam?`<div class="pp-meilensteine">${ph.meilensteine.map((m,i)=>{
-    const done=i<idx;
-    const neu=done&&i===idx-1?i:i+1;
-    return`<button type="button"class="pp-ms${done?" done":""}"style="--c:${c}"${darfAbhaken?`onclick="ppMeilensteinSetzen('${meinTeam.id}',${neu})"`:"disabled"}>${done?"✓":"○"} ${esc(m)}</button>`;
-   }).join("")}</div>
-   <small style="color:var(--muted)">${darfAbhaken?"Tippe einen Meilenstein an, sobald euer Team ihn erreicht hat (nochmal tippen = zurücknehmen).":"Die Meilensteine setzt eure Lehrkraft."}</small>`
+  ${meinTeam?`<p class="ms-info">Team-Meilensteine erreicht: <b>${msErreichtAnzahl(ph,meinTeam,meinTeam._beitraege)}/${ph.meilensteine.length}</b> · deine Beiträge: <b>${eig.n}/${eig.g}</b>. Ein Meilenstein ist erreicht, wenn alle aus dem Team ihren Beitrag eingetragen haben – bei „Lehrkraft bestätigt“ zusätzlich nach dem OK der Lehrkraft.</p>
+   ${msListeHTML(ph,meinTeam,meinTeam._beitraege,"seite")}`
+  :isTeacher()?`<div class="empty">Die Meilensteine aller Teams siehst und bestätigst du im Projekt-Gesamtcheck. <button class="primary"style="margin-top:8px"onclick="openProjektGesamtcheck()">🔬 Projekt-Gesamtcheck</button></div>`
   :`<div class="empty">Du bist noch in keinem Projektteam. <button class="primary"style="margin-top:8px"onclick="openWocheDetail('paedagogik','${ph.notwendigeWochen[0]}','team')">Team gründen oder beitreten</button></div>`}`;
  }else{
-  inhalt=`<div class="kicker"style="margin:18px 0 8px">PRÜFUNGSINHALTE – je Inhalt 5 Schritte</div>
+  inhalt=`<div class="kicker"style="margin:18px 0 8px">PRÜFUNGSINHALTE – je Inhalt 4 Schritte</div>
   <div class="pp-apt-grid">${ph.trainingWochen.map(id=>{
    const e=lehrplanWocheById("paedagogik",id);if(!e)return"";
    const s=aptSchritte(fortschrittMap[id]);
    const n=s.filter(Boolean).length;
-   return`<div class="pp-apt-karte${n===5?" fertig":""}"style="--c:${c};border-color:${n===5?c:ppMix(c,.3)}"onclick="openLehrplanEinheit('paedagogik','${id}')">
-    <div class="pp-apt-farbe"style="background:${ppMix(c,ppSaettigung(n/5*100))}"></div>
-    <small style="color:${c};font-weight:800">Inhalt Nr. ${esc(e.nr)} · ${n}/5</small>
+   return`<div class="pp-apt-karte${n===APT_TABS.length?" fertig":""}"style="--c:${c};border-color:${n===APT_TABS.length?c:ppMix(c,.3)}"onclick="openLehrplanEinheit('paedagogik','${id}')">
+    <div class="pp-apt-farbe"style="background:${ppMix(c,ppSaettigung(n/APT_TABS.length*100))}"></div>
+    <small style="color:${c};font-weight:800">Inhalt Nr. ${esc(e.nr)} · ${n}/${APT_TABS.length}</small>
     <strong>${esc(e.thema)}</strong>
     <div class="pp-schritte">${s.map((d,i)=>`<span class="${d?"done":""}"style="${d?`background:${c};border-color:${c}`:""}"title="${esc(APT_SCHRITT_LABELS[i])}">${d?"✓":i+1}</span>`).join("")}</div>
     ${(e.bezug||[]).length?`<small class="pp-bezug">🔗 baut auf dem Projekt auf: ${(e.bezug||[]).map(b=>`<a href="javascript:void 0"onclick="event.stopPropagation();openWocheDetail('paedagogik','${b}')">${esc(lehrplanWocheById("paedagogik",b)?.thema||b)}</a>`).join(" · ")}</small>`:""}
    </div>`;}).join("")}</div>
-  <p style="font-size:11px;color:var(--muted);margin-top:10px">① Prüfungsfrage · ② Inhalte & Aufgabeneingrenzung · ③ Basis-Check · ④ Lernprodukt & Vorkorrektur · ⑤ Abschluss-Check (K-Prim)</p>`;
+  <p style="font-size:11px;color:var(--muted);margin-top:10px">① Prüfungsfrage · ② Inhalte & Aufgabeneingrenzung · ③ Basis-Check · ④ Lernprodukt hochladen & Vorkorrektur umsetzen. Den K-Prim-Test schreibst du als 🏁 Check-out am Ende der Woche.</p>`;
  }
  return`<button class="secondary"onclick="closePhaseDetail()">← Zurück zum Zeitstrahl</button>
  ${ppMiniZeitstrahlHTML(fortschrittMap,meineTeams,heute,`${ph.id}:${teil}`)}
@@ -3918,13 +4103,10 @@ async function openAptDetail(wocheId,tab){
  const schritte=aptSchritte(fortschritt);
  const offenIdx=schritte.findIndex(s=>!s);
  if(tab)aptAktiverTab=tab;
- else if(aptLetzteEinheit!==wocheId||!aptAktiverTab)aptAktiverTab=APT_TABS[offenIdx===-1?4:offenIdx];
+ else if(aptLetzteEinheit!==wocheId||!aptAktiverTab||!APT_TABS.includes(aptAktiverTab))aptAktiverTab=APT_TABS[offenIdx===-1?APT_TABS.length-1:offenIdx];
  if(aptLetzteEinheit!==wocheId)aptKprimWiederholen=false;
  aptLetzteEinheit=wocheId;
  const eg=fortschritt.eingrenzung||{};
- const kprim=aptKprimAufgaben(inhalt,e);
- const kprimVonLehrkraft=!!(inhalt.kprim&&inhalt.kprim.length);
- const erg=fortschritt.kprim;
  const bezug=(e.bezug||[]).map(b=>lehrplanWocheById(fach,b)).filter(Boolean);
 
  // ① Prüfungsfrage
@@ -3988,8 +4170,11 @@ async function openAptDetail(wocheId,tab){
    ${lehrer?`<div class="form"style="background:#f7fafc;border-radius:10px;padding:10px">
      <label>Vorkorrektur<textarea id="vk_${p.id}"rows="3"placeholder="Rückmeldung: Was gelingt schon, was muss noch rein?">${esc(p.vorkorrektur||"")}</textarea></label>
      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><select id="vkA_${p.id}">${Object.entries(vkLabel).map(([k,v])=>`<option value="${k}"${p.vorkorrekturAmpel===k?" selected":""}>${v}</option>`).join("")}</select>
-     <button class="primary"onclick="saveAptVorkorrektur('${p.id}','${wocheId}')">Vorkorrektur speichern</button></div></div>`
-   :p.vorkorrektur?`<div class="card"style="border-left:4px solid ${ampelFarbe(p.vorkorrekturAmpel||"orange")};padding:10px 12px"><div class="kicker">VORKORREKTUR · ${esc(vkLabel[p.vorkorrekturAmpel]||"")}</div><p style="margin:4px 0 0;white-space:pre-wrap;font-size:13px">${esc(p.vorkorrektur)}</p></div>`
+     <button class="primary"onclick="saveAptVorkorrektur('${p.id}','${wocheId}')">Vorkorrektur speichern</button></div>
+     ${p.reaktion?`<small style="display:block;margin-top:6px"><b>Umsetzung durch ${esc(p.name||"")}:</b> ${esc(p.reaktion)}</small>`:p.vorkorrektur?`<small style="display:block;margin-top:6px;color:var(--muted)">Noch nicht umgesetzt.</small>`:""}</div>`
+   :p.vorkorrektur?`<div class="card"style="border-left:4px solid ${ampelFarbe(p.vorkorrekturAmpel||"orange")};padding:10px 12px"><div class="kicker">VORKORREKTUR · ${esc(vkLabel[p.vorkorrekturAmpel]||"")}</div><p style="margin:4px 0 0;white-space:pre-wrap;font-size:13px">${esc(p.vorkorrektur)}</p></div>
+   ${p.reaktion?`<div class="card"style="border-left:4px solid #3fa66a;padding:10px 12px"><div class="kicker">DEINE UMSETZUNG ✓</div><p style="margin:4px 0 0;white-space:pre-wrap;font-size:13px">${esc(p.reaktion)}</p></div>`
+   :`<div class="form"style="background:#fff8e6;border-radius:10px;padding:10px"><label>Was hast du nach der Vorkorrektur überarbeitet?<textarea id="vkR_${p.id}"rows="3"placeholder="z. B. Operator „erläutern“ jetzt mit Beispiel aus dem Praktikum umgesetzt, Fachbegriffe ergänzt …"></textarea></label><div class="form-actions"><button class="primary"onclick="aptVorkorrekturUmgesetzt('${p.id}','${wocheId}')">✓ Vorkorrektur umgesetzt</button></div><small style="color:var(--muted)">Lade die überarbeitete Fassung gern zusätzlich unten hoch.</small></div>`}`
    :`<small style="color:var(--muted)">⏳ Vorkorrektur durch die Lehrkraft steht noch aus.</small>`}
   </div>`).join("")||`<div class="empty">${lehrer?"Noch keine Lernprodukte hochgeladen.":"Noch kein Lernprodukt hochgeladen."}</div>`}</div>
   ${!lehrer?`<div class="form-actions"style="margin-top:10px;flex-wrap:wrap">
@@ -3999,38 +4184,7 @@ async function openAptDetail(wocheId,tab){
    <label style="font-weight:700;font-size:12px">Datei (optional, max. 15 MB)<input id="produktDatei"type="file"style="display:block;margin-top:4px"></label>
    <button class="primary"onclick="addLehrplanProdukt('${fach}','${wocheId}')">＋ Hochladen</button></div>`:""}`;
 
- // ⑤ Abschluss-Check (K-Prim)
- let panelAbschluss;
- if(lehrer){
-  panelAbschluss=`<p style="font-size:12px;color:var(--muted);margin-top:0">Bis zu 3 K-Prim-Aufgaben mit je 4 Aussagen. ${kprimVonLehrkraft?"":"<b>Aktuell sehen die Schüler:innen den Vorschlag aus der App</b> – anpassen und speichern, um ihn zu ersetzen."} Wertung je Aufgabe: 0 Fehler = 3 P., 1 Fehler = 2 P., 2 Fehler = 1 P.</p>
-  <div class="form">${[0,1,2].map(i=>{const a=kprim[i]||{};return`<div class="card"style="margin-bottom:10px;background:#f7fafc">
-   <label>Aufgabe ${i+1}${i>0?" (optional)":""}<input id="aptKpFrage${i}"value="${esc(a.frage||"")}"placeholder="Welche Aussagen treffen zu?"></label>
-   ${[0,1,2,3].map(j=>{const s=a.statements?.[j]||{};return`<div style="display:flex;gap:8px;align-items:center;margin-top:4px">
-    <input id="aptKpS${i}_${j}"value="${esc(s.text||"")}"placeholder="Aussage ${j+1}"style="flex:1">
-    <select id="aptKpR${i}_${j}"style="width:90px"><option value="true"${s.correct?" selected":""}>richtig</option><option value="false"${s.correct===false?" selected":""}>falsch</option></select></div>`;}).join("")}
-  </div>`;}).join("")}
-  <div class="form-actions"><button class="primary"onclick="saveAptKprim('${wocheId}')">K-Prim-Aufgaben speichern</button></div></div>`;
- }else if(!kprim.length){
-  panelAbschluss=`<div class="empty">Für diesen Inhalt sind noch keine K-Prim-Aufgaben hinterlegt.</div>`;
- }else if(erg&&!aptKprimWiederholen){
-  const pct=erg.max?erg.punkte/erg.max:0;
-  const farbe=pct>=0.8?"#3fa66a":pct>=0.5?"#e0a324":"#d9534f";
-  panelAbschluss=`<div class="card"style="border-left:4px solid ${farbe};background:${farbe}14">
-   <strong style="font-size:18px">${erg.punkte} von ${erg.max} Punkten</strong>
-   <p style="margin:4px 0 0;color:var(--muted);font-size:12px">${(erg.aufgaben||[]).map((a,i)=>`Aufgabe ${i+1}: ${a.fehler===0?"alles richtig ✓":a.fehler+" Fehler"}`).join(" · ")}</p>
-  </div>
-  <div class="form-actions"style="margin-top:10px"><button class="secondary"onclick="aptKprimNochmal('${wocheId}')">Nochmal versuchen</button></div>`;
- }else{
-  panelAbschluss=`<p style="font-size:12px;color:var(--muted);margin-top:0">Entscheide bei jeder Aussage: richtig oder falsch? Nur wenn alle vier stimmen, gibt es die volle Punktzahl.</p>
-  <div class="form">${kprim.map((a,i)=>`<div class="card"style="margin-bottom:10px"><strong style="display:block;margin-bottom:8px">${i+1}. ${esc(a.frage||"Welche Aussagen treffen zu?")}</strong>
-   ${(a.statements||[]).map((s,j)=>`<div class="apt-kp-zeile"><span>${esc(s.text)}</span>
-    <label><input type="radio"name="aptKpA${i}_${j}"value="r"> richtig</label>
-    <label><input type="radio"name="aptKpA${i}_${j}"value="f"> falsch</label></div>`).join("")}
-  </div>`).join("")}
-  <div class="form-actions"><button class="primary"onclick="aptKprimAbgeben('${wocheId}')">Abschluss-Check abgeben</button></div></div>`;
- }
-
- const tabs=[["frage","① Prüfungsfrage"],["inhalte","② Inhalte & Eingrenzung"],["basischeck","③ Basis-Check"],["produkt","④ Lernprodukt & Vorkorrektur"],["abschluss","⑤ Abschluss-Check"]];
+ const tabs=[["frage","① Prüfungsfrage"],["inhalte","② Inhalte & Eingrenzung"],["basischeck","③ Basis-Check"],["produkt","④ Lernprodukt & Vorkorrektur"]];
  modal(`<button class="modal-close"onclick="closeModal()">×</button>
   ${kopf}
   <div class="kicker">PÄDAGOGIK/PSYCHOLOGIE · ${esc(e.lb)} · ABSCHLUSSPRÜFUNGS-TRAINING · INHALT NR. ${esc(e.nr)}</div>
@@ -4039,7 +4193,7 @@ async function openAptDetail(wocheId,tab){
   <div class="wd-stepper">
    ${schritte.map((d,i)=>`<div class="wd-step${d?" wd-step-done":""}${i===offenIdx?" wd-step-aktiv":""}"onclick="showAptTab('${APT_TABS[i]}')"style="cursor:pointer">
     <div class="wd-step-dot"style="${d?`background:${c};border-color:${c}`:""}">${d?"✓":i+1}</div><small>${esc(APT_SCHRITT_LABELS[i])}</small>
-   </div>${i<4?`<div class="wd-step-line${d?" wd-step-line-done":""}"></div>`:""}`).join("")}
+   </div>${i<schritte.length-1?`<div class="wd-step-line${d?" wd-step-line-done":""}"></div>`:""}`).join("")}
   </div>
   ${lehrer&&ph?`<div style="margin:-10px 0 14px;display:flex;gap:8px;flex-wrap:wrap"><button class="secondary"style="font-size:11px"onclick="openFachaufsatzTrainingCheck()">🎓 APT-Gesamtcheck der Klasse</button></div>`:""}
   <div class="wd-tabs">${tabs.map(([k,l])=>`<button type="button"class="wd-tab apt-tab"data-tab="${k}"onclick="showAptTab('${k}')">${l}</button>`).join("")}</div>
@@ -4047,7 +4201,7 @@ async function openAptDetail(wocheId,tab){
   <div class="apt-panel"id="aptPanel_inhalte">${panelInhalte}</div>
   <div class="apt-panel"id="aptPanel_basischeck">${panelBasis}</div>
   <div class="apt-panel"id="aptPanel_produkt">${panelProdukt}</div>
-  <div class="apt-panel"id="aptPanel_abschluss">${panelAbschluss}</div>
+  <div class="apt-hinweis-checkout">🏁 Den K-Prim-Test zu diesem Lernbereich schreibst du als <b>Check-out</b> am Ende der Woche – deine Lehrkraft schaltet ihn live frei.</div>
   <div class="wd-footer">
    <button class="secondary"onclick="closeModal()">Schließen</button>
    <span style="flex:1"></span>
@@ -4158,6 +4312,669 @@ async function saveAptVorkorrektur(produktId,wocheId){
 }
 window.saveAptFrage=saveAptFrage;window.aptFrageDateiEntfernen=aptFrageDateiEntfernen;
 window.saveAptHinweis=saveAptHinweis;window.saveAptKprim=saveAptKprim;window.saveAptVorkorrektur=saveAptVorkorrektur;
+
+
+// ---- Schritt 4 zweistufig: Vorkorrektur umgesetzt ----
+async function aptVorkorrekturUmgesetzt(produktId,wocheId){
+ const reaktion=$(`vkR_${produktId}`)?.value.trim()||"";
+ if(!reaktion){toast("Bitte kurz eintragen, was du überarbeitet hast.");return}
+ try{
+  await updateDoc(doc(db,"lehrplanProdukte",produktId),{reaktion,reaktionAm:serverTimestamp()});
+  await aptSetzen(wocheId,{vorkorrekturUmgesetzt:true},{tab:"produkt",motiv:true});
+ }catch(e){console.error("Vorkorrektur umgesetzt:",e);toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Konnte nicht gespeichert werden.");}
+}
+window.aptVorkorrekturUmgesetzt=aptVorkorrekturUmgesetzt;
+
+// ============================================================
+// APT-GESAMTCHECK (Lehrkraft): Matrix Schüler:innen × Inhalte eines
+// Lernbereichs, je Zelle die 4 Schritte. Filter: hinter dem Zeitplan,
+// wartet auf Vorkorrektur, Vorkorrektur noch nicht umgesetzt.
+// ============================================================
+let aptCheckLb="lb1",aptCheckFilter="alle",aptCheckDaten=null;
+async function ladeAptCheckDaten(){
+ const alleIds=PROJEKT_PHASEN.flatMap(p=>p.trainingWochen);
+ const students=await getAllUsersForLernstand();
+ const [fs,ps]=await Promise.all([
+  getDocs(query(collection(db,"lehrplanFortschritt"),where("wocheId","in",alleIds))),
+  getDocs(query(collection(db,"lehrplanProdukte"),where("wocheId","in",alleIds)))
+ ]);
+ return{students,fortschritt:fs.docs.map(d=>d.data()),produkte:ps.docs.map(d=>({id:d.id,...d.data()}))};
+}
+// Zustand von Schritt 4 für eine Person: "fertig" | "umsetzen" (Vorkorrektur
+// da, noch nicht umgesetzt) | "wartet" (hochgeladen, Vorkorrektur fehlt) | "offen".
+function aptSchritt4Zustand(f,produkte){
+ if(f?.produktHochgeladen&&f?.vorkorrekturUmgesetzt)return"fertig";
+ if(!produkte.length&&!f?.produktHochgeladen)return"offen";
+ if(produkte.some(p=>p.vorkorrektur))return"umsetzen";
+ return produkte.length?"wartet":"offen";
+}
+async function openFachaufsatzTrainingCheck(lbId,filter){
+ if(!isTeacher()){toast("Nur Lehrkräfte können den APT-Gesamtcheck öffnen.");return}
+ if(lbId)aptCheckLb=lbId;
+ if(filter)aptCheckFilter=filter;
+ if(!aptCheckDaten||(!lbId&&!filter)){
+  try{aptCheckDaten=await ladeAptCheckDaten();}catch(e){console.error("APT-Gesamtcheck:",e);toast("Konnte nicht geladen werden.");return}
+ }
+ const d=aptCheckDaten,ph=projektPhaseById(aptCheckLb)||PROJEKT_PHASEN[0],c=ppFarbe(ph);
+ const heute=new Date().toISOString().slice(0,10);
+ const budget=ppZeitbudget(ppTeilWochen(ph,"apt"),heute);
+ const n=APT_TABS.length;
+ const zeilen=d.students.map(s=>{
+  const zellen=ph.trainingWochen.map(id=>{
+   const f=d.fortschritt.find(x=>x.uid===s.uid&&x.wocheId===id)||null;
+   const pr=d.produkte.filter(p=>p.uid===s.uid&&p.wocheId===id);
+   return{id,f,pr,schritte:aptSchritte(f),z4:aptSchritt4Zustand(f,pr)};
+  });
+  const erledigt=zellen.reduce((a,z)=>a+z.schritte.filter(Boolean).length,0),gesamt=zellen.length*n;
+  const prozent=gesamt?Math.round(erledigt/gesamt*100):0;
+  const tempo=ppTempo(prozent,budget);
+  const hinterher=budget.zustand!=="kommend"&&prozent<Math.round(budget.soll*100)-10;
+  return{s,zellen,erledigt,gesamt,prozent,tempo,hinterher,wartet:zellen.some(z=>z.z4==="wartet"),umsetzen:zellen.some(z=>z.z4==="umsetzen")};
+ });
+ const gefiltert=zeilen.filter(r=>aptCheckFilter==="hinterher"?r.hinterher:aptCheckFilter==="wartet"?r.wartet:aptCheckFilter==="umsetzen"?r.umsetzen:true);
+ const dot=(done,i,z4)=>{
+  if(i===3&&!done&&z4==="wartet")return`<span class="apt-dot halb"title="Lernprodukt hochgeladen – Vorkorrektur fehlt">⏳</span>`;
+  if(i===3&&!done&&z4==="umsetzen")return`<span class="apt-dot umsetzen"title="Vorkorrektur da – noch nicht umgesetzt">!</span>`;
+  return`<span class="apt-dot${done?" an":""}"style="${done?`background:${c};border-color:${c}`:""}"title="${esc(APT_SCHRITT_LABELS[i])}">${done?"✓":i+1}</span>`;
+ };
+ const warten=d.produkte.filter(p=>ph.trainingWochen.includes(p.wocheId)&&!p.vorkorrektur);
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+  <div class="kicker">🎓 ABSCHLUSSPRÜFUNGS-TRAINING · GESAMTCHECK · NUR LEHRKRÄFTE</div>
+  <h2>Trainingsstand der Klasse</h2>
+  <div class="apt-check-tabs">${PROJEKT_PHASEN.map(p=>`<button type="button"class="${p.id===ph.id?"aktiv":""}"style="--c:${ppFarbe(p)}"onclick="openFachaufsatzTrainingCheck('${p.id}')">${esc(p.lb)}</button>`).join("")}
+   <select onchange="openFachaufsatzTrainingCheck(null,this.value)">
+    ${[["alle","Alle anzeigen"],["hinterher","Hinter dem Zeitplan"],["wartet","Wartet auf Vorkorrektur"],["umsetzen","Vorkorrektur nicht umgesetzt"]].map(([k,l])=>`<option value="${k}"${aptCheckFilter===k?" selected":""}>${l}</option>`).join("")}
+   </select>
+   <button type="button"class="secondary"onclick="aptCheckDaten=null;openFachaufsatzTrainingCheck()">↻</button>
+  </div>
+  <p style="color:var(--muted);font-size:12px;margin:6px 0">Je Inhalt 4 Schritte: ① Prüfungsfrage · ② Inhalte & Eingrenzung · ③ Basis-Check · ④ Lernprodukt & Vorkorrektur umgesetzt. ⏳ = wartet auf deine Vorkorrektur · ! = Vorkorrektur noch nicht umgesetzt. Zelle antippen für Details. Zeitbudget: ${esc(budget.text)}.</p>
+  <div style="overflow-x:auto"><table class="ls-matrix apt-matrix">
+   <thead><tr><th>Schüler:in</th>${ph.trainingWochen.map(id=>`<th title="${esc(lehrplanWocheById("paedagogik",id)?.thema||"")}">${esc(ppKurz(lehrplanWocheById("paedagogik",id)))}</th>`).join("")}<th>Stand</th></tr></thead>
+   <tbody>${gefiltert.map(r=>`<tr><td>${esc(r.s.displayName||r.s.email||"Schüler/in")}</td>
+    ${r.zellen.map(z=>`<td class="apt-zelle"onclick="openAptSchuelerDetail('${r.s.uid}','${z.id}')"><span class="apt-dots">${z.schritte.map((dn,i)=>dot(dn,i,z.z4)).join("")}</span></td>`).join("")}
+    <td style="white-space:nowrap"><b>${r.prozent} %</b>${r.tempo?` <span class="pp-tempo"style="background:${r.tempo.farbe}">${esc(r.tempo.txt)}</span>`:""}</td></tr>`).join("")||`<tr><td colspan="${ph.trainingWochen.length+2}">Niemand in dieser Auswahl.</td></tr>`}</tbody>
+  </table></div>
+  <h3 style="margin:18px 0 6px">✍️ ${esc(ph.lb)}: Warten auf Vorkorrektur (${warten.length})</h3>
+  <div class="list">${warten.map(p=>{const e=lehrplanWocheById("paedagogik",p.wocheId);return`<div class="list-item"style="cursor:pointer"onclick="openAptDetail('${p.wocheId}','produkt')"><div><strong>${esc(p.name||"")}</strong><small>${esc(e?.thema||p.wocheId)} · ${esc(p.titel||"")}</small></div><span>→</span></div>`;}).join("")||`<div class="empty">Alles vorkorrigiert.</div>`}</div>
+  <div class="form-actions"style="margin-top:14px"><button class="secondary"onclick="closeModal()">Schließen</button></div>`);
+}
+window.openFachaufsatzTrainingCheck=openFachaufsatzTrainingCheck;
+async function openAptSchuelerDetail(uid,wocheId){
+ if(!isTeacher())return;
+ if(!aptCheckDaten){try{aptCheckDaten=await ladeAptCheckDaten();}catch(e){return}}
+ const d=aptCheckDaten,s=d.students.find(x=>x.uid===uid),e=lehrplanWocheById("paedagogik",wocheId),ph=projektPhaseByWoche(wocheId);
+ const f=d.fortschritt.find(x=>x.uid===uid&&x.wocheId===wocheId)||{};
+ const pr=d.produkte.filter(p=>p.uid===uid&&p.wocheId===wocheId);
+ const sch=aptSchritte(f),z4=aptSchritt4Zustand(f,pr),eg=f.eingrenzung||{};
+ const c=ph?ppFarbe(ph):"#4a90d9";
+ const info=[
+  f.frageGelesen?"gelesen":"noch nicht gelesen",
+  f.materialBearbeitet&&f.eingrenzung?"erledigt":f.eingrenzung?"Eingrenzung da, Inhalte noch nicht abgehakt":f.materialBearbeitet?"Inhalte bearbeitet, Eingrenzung fehlt":"offen",
+  f.basischeckErledigt?(f.basischeckUebersprungen?"übersprungen":"erledigt"):"offen",
+  z4==="fertig"?"Vorkorrektur umgesetzt":z4==="umsetzen"?"Vorkorrektur da – noch nicht umgesetzt":z4==="wartet"?"hochgeladen – wartet auf deine Vorkorrektur":"noch kein Lernprodukt"
+ ];
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+  <div class="kicker"style="color:${c}">${esc(e?.lb||"")} · PRÜFUNGSTRAINING · ${esc(s?.displayName||s?.email||"")}</div>
+  <h2>${esc(e?.thema||wocheId)}</h2>
+  <div class="list">${sch.map((dn,i)=>`<div class="list-item"><div><strong>${dn?"✓":"○"} ${esc(APT_SCHRITT_LABELS[i])}</strong><small>${esc(info[i])}</small></div></div>`).join("")}</div>
+  ${f.eingrenzung?`<h3 class="apt-h3">Aufgabeneingrenzung</h3><div class="card"style="padding:10px 14px;font-size:13px"><b>Operator:</b> ${esc(eg.operator||"–")}<br><b>Gegenstand:</b> ${esc(eg.gegenstand||"–")}<br><b>Teilaufgaben:</b> <span style="white-space:pre-wrap">${esc(eg.teile||"–")}</span><br><b>Praxisbezug:</b> ${esc(eg.praxis||"–")}</div>`:""}
+  <h3 class="apt-h3">Lernprodukte</h3>
+  <div class="list">${pr.map(p=>`<div class="list-item"style="flex-direction:column;align-items:stretch;gap:6px"><div><strong>${esc(p.titel)}</strong><small>${esc(p.inhalt||"")}</small></div>
+   ${p.dateiUrl?dateiEmbedHTML(p.dateiUrl,p.dateiName):""}
+   ${p.vorkorrektur?`<div style="font-size:13px;border-left:4px solid ${ampelFarbe(p.vorkorrekturAmpel||"orange")};padding-left:8px"><b>Vorkorrektur:</b> ${esc(p.vorkorrektur)}</div>`:`<small style="color:#b3541e">⏳ Vorkorrektur fehlt noch</small>`}
+   ${p.reaktion?`<div style="font-size:13px;border-left:4px solid #3fa66a;padding-left:8px"><b>Umsetzung:</b> ${esc(p.reaktion)}</div>`:""}
+  </div>`).join("")||`<div class="empty">Noch kein Lernprodukt.</div>`}</div>
+  <div class="form-actions"style="margin-top:14px"><button class="secondary"onclick="openFachaufsatzTrainingCheck('${ph?.id||aptCheckLb}')">← Zurück zum Gesamtcheck</button>${pr.length?`<button class="primary"onclick="openAptDetail('${wocheId}','produkt')">Vorkorrektur geben</button>`:""}</div>`);
+}
+window.openAptSchuelerDetail=openAptSchuelerDetail;
+
+// ============================================================
+// CHECK-OUT · K-Prim-Test zum Wochenabschluss (Pädagogik/Psychologie)
+// ------------------------------------------------------------
+// Ablauf: Lehrkraft legt einen Check-out an (Fallvignette + 3–5 K-Prim-
+// Aufgaben) → schaltet ihn in der Testsituation LIVE → Schüler:innen
+// bearbeiten ihn (Antworten werden laufend gespeichert) → Lehrkraft
+// beendet LIVE → die App wertet automatisch aus (Bewertungseinheiten →
+// FOSBOS-Notenpunkte 0–15, Note in Klammern).
+// Kurzarbeit-Ersatz: aus den (standardmäßig 10) gewerteten Check-outs
+// wählen die Schüler:innen die 7 für sie relevanten aus – der Durchschnitt
+// der Notenpunkte ersetzt eine Kurzarbeit.
+// Datenschutz beim Test: Die Lösungen liegen getrennt in „checkoutLoesungen"
+// (nur Lehrkräfte lesbar); ausgewertet wird im Browser der Lehrkraft.
+// ============================================================
+
+// Bewertungseinheiten (BE) je K-Prim-Aufgabe nach Anzahl der Fehler
+// (0 Fehler, 1 Fehler, 2 Fehler, 3, 4). Nicht beantwortete Aussage = Fehler.
+const CHECKOUT_BE_NACH_FEHLERN=[3,2,1,0,0];
+// FOSBOS-Notenschlüssel: [Notenpunkte, Mindestprozent]. Darunter 0 Punkte.
+const FOSBOS_SCHLUESSEL=[[15,96],[14,91],[13,86],[12,81],[11,76],[10,71],[9,66],[8,61],[7,56],[6,51],[5,46],[4,41],[3,34],[2,27],[1,20]];
+const CHECKOUT_MIN_AUFGABEN=3,CHECKOUT_MAX_AUFGABEN=5;
+function notenpunkteAusProzent(p){for(const [np,min] of FOSBOS_SCHLUESSEL)if(p>=min)return np;return 0;}
+function noteAusNotenpunkten(np){return np>=13?1:np>=10?2:np>=7?3:np>=4?4:np>=1?5:6;}
+function npText(np){return`${np} Punkte (${noteAusNotenpunkten(np)})`;}
+function coDatum(d){return d?fmtDateOnly(d):"";}
+function coBewerten(co,loesung,antworten){
+ let be=0,max=0;
+ const auswertung=(co.aufgaben||[]).map((a,i)=>{
+  const l=(loesung?.aufgaben?.[i]?.richtig)||[];
+  let fehler=0;const korrekt=[],angekreuzt=[];
+  for(let j=0;j<4;j++){
+   const v=antworten?.[`${i}_${j}`]||"";
+   const ok=!!v&&((v==="r")===!!l[j]);
+   if(!ok)fehler++;
+   korrekt.push(ok);angekreuzt.push(v);
+  }
+  const p=CHECKOUT_BE_NACH_FEHLERN[fehler]??0;
+  be+=p;max+=CHECKOUT_BE_NACH_FEHLERN[0];
+  return{fehler,be:p,korrekt,angekreuzt,loesung:[0,1,2,3].map(j=>!!l[j])};
+ });
+ const prozent=max?Math.round(be/max*1000)/10:0;
+ const notenpunkte=notenpunkteAusProzent(prozent);
+ return{be,maxBE:max,prozent,notenpunkte,note:noteAusNotenpunkten(notenpunkte),auswertung};
+}
+
+// ---- Laden ----
+async function ladeCheckoutDaten(){
+ const lehrer=isTeacher();
+ const basis={anzahlGesamt:10,anzahlWaehlen:7,auswahlOffen:false};
+ try{
+  const docs=lehrer?(await getDocs(collection(db,"checkouts"))).docs
+   :(await Promise.all(["live","beendet"].map(st=>getDocs(query(collection(db,"checkouts"),where("status","==",st)))))).flatMap(s=>s.docs);
+  const checkouts=docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>String(a.datum||"").localeCompare(String(b.datum||""))||tsSek(a.createdAt)-tsSek(b.createdAt));
+  let einst={};
+  try{const e=await getDoc(doc(db,"checkoutEinstellungen","pp"));einst=e.exists()?e.data():{};}catch(e){}
+  const meineAbgaben={};let auswahl=null;
+  if(!lehrer){
+   const s=await getDocs(query(collection(db,"checkoutAbgaben"),where("uid","==",currentUser.uid)));
+   s.docs.forEach(d=>{const x=d.data();meineAbgaben[x.checkoutId]=x;});
+   try{const a=await getDoc(doc(db,"checkoutAuswahl",currentUser.uid));auswahl=a.exists()?a.data():null;}catch(e){}
+  }
+  return{checkouts,einst:{...basis,...einst},meineAbgaben,auswahl};
+ }catch(e){console.error("Check-outs laden:",e);return{checkouts:[],einst:basis,meineAbgaben:{},auswahl:null,fehler:true};}
+}
+// Die für den Kurzarbeit-Ersatz zählenden Check-outs (beendet, „zählt").
+function coPool(checkouts,einst){return checkouts.filter(c=>c.status==="beendet"&&c.zaehlt!==false).slice(0,einst.anzahlGesamt||10);}
+function coErsatz(ids,abgabenByCo){
+ const nps=ids.map(id=>abgabenByCo[id]).filter(a=>a?.ausgewertet).map(a=>Number(a.notenpunkte)||0);
+ if(!nps.length)return null;
+ const schnitt=nps.reduce((a,b)=>a+b,0)/nps.length;
+ return{schnitt,np:Math.round(schnitt),anzahl:nps.length};
+}
+
+// ---- Startseite: Hinweis, wenn ein Check-out gerade läuft ----
+async function checkoutStartBannerHTML(){
+ if(!currentUser||!isApproved())return"";
+ try{
+  const s=await getDocs(query(collection(db,"checkouts"),where("status","==","live")));
+  if(s.empty)return"";
+  const co={id:s.docs[0].id,...s.docs[0].data()};
+  if(isTeacher())return`<div class="co-banner"><span class="co-live-punkt"></span><div><b>Check-out läuft: ${esc(co.titel||"")}</b><small>Live-Übersicht öffnen, um den Stand zu sehen und den Test zu beenden.</small></div><button class="primary"onclick="openCheckoutMonitor('${co.id}')">Live-Übersicht</button></div>`;
+  return`<div class="co-banner"><span class="co-live-punkt"></span><div><b>Check-out läuft: ${esc(co.titel||"")}</b><small>Deine Lehrkraft hat den Test freigeschaltet.</small></div><button class="primary"onclick="openCheckoutTest('${co.id}')">Jetzt starten</button></div>`;
+ }catch(e){return"";}
+}
+
+// ---- Bereich auf dem P/P-Lernweg ----
+function checkoutSektionHTML(d){
+ if(!d)return"";
+ const lehrer=isTeacher();
+ const lbFarbe=n=>PP_FARBEN[n]||"#8a99a3";
+ const pool=coPool(d.checkouts,d.einst);
+ const statusChip=c=>c.status==="live"?`<span class="co-chip live"><span class="co-live-punkt"></span>läuft</span>`:c.status==="beendet"?`<span class="co-chip fertig">beendet</span>`:`<span class="co-chip entwurf">Entwurf</span>`;
+ const zeilen=d.checkouts.map(c=>{
+  const a=d.meineAbgaben[c.id];
+  let rechts="";
+  if(lehrer){
+   rechts=c.status==="entwurf"?`<button class="secondary"onclick="openCheckoutEditor('${c.id}')">Bearbeiten</button><button class="primary"onclick="coLiveStarten('${c.id}')">▶ Live freischalten</button>`
+    :c.status==="live"?`<button class="primary"onclick="openCheckoutMonitor('${c.id}')">Live-Übersicht</button>`
+    :`<button class="secondary"onclick="openCheckoutErgebnisse('${c.id}')">Ergebnisse</button><button class="secondary"onclick="coPdfKlasse('${c.id}')">PDF Klasse</button>`;
+  }else{
+   rechts=c.status==="live"?(a?.abgegeben?`<span class="co-chip fertig">abgegeben ✓</span>`:`<button class="primary"onclick="openCheckoutTest('${c.id}')">${a?"Weiter":"Starten"}</button>`)
+    :a?.ausgewertet?`<b class="co-np">${npText(a.notenpunkte)}</b><button class="secondary"onclick="openCheckoutMeinErgebnis('${c.id}')">Ansehen</button><button class="secondary"onclick="coPdfSchueler('${c.id}')">PDF</button>`
+    :a?`<small style="color:var(--muted)">wird ausgewertet …</small>`:`<small style="color:var(--muted)">nicht teilgenommen</small>`;
+  }
+  return`<div class="co-zeile"style="--c:${lbFarbe(c.lbNum)}">
+   <span class="co-lb">LB ${esc(c.lbNum||"")}</span>
+   <div class="co-titel"><b>${esc(c.titel||"Check-out")}</b><small>${coDatum(c.datum)} · ${(c.aufgaben||[]).length} K-Prim-Aufgaben${c.zaehlt===false?" · zählt nicht für den Kurzarbeit-Ersatz":""}</small></div>
+   ${statusChip(c)}
+   <div class="co-aktion">${rechts}</div>
+  </div>`;
+ }).join("");
+ // Kurzarbeit-Ersatz
+ let ersatz="";
+ if(lehrer){
+  ersatz=`<div class="co-ersatz"><div><b>Kurzarbeit-Ersatz</b><small>${pool.length} von ${d.einst.anzahlGesamt} Check-outs gewertet · Schüler:innen wählen ${d.einst.anzahlWaehlen} aus · Auswahl ist ${d.einst.auswahlOffen?"<b>geöffnet</b>":"geschlossen"}</small></div>
+   <div class="co-aktion"><button class="secondary"onclick="openCheckoutEinstellungen()">Einstellungen</button><button class="secondary"onclick="openCheckoutKlassenuebersicht()">Klassenübersicht</button></div></div>`;
+ }else{
+  const aByCo=d.meineAbgaben;
+  const gewertet=pool.filter(c=>aByCo[c.id]?.ausgewertet);
+  const e=d.auswahl?coErsatz(d.auswahl.ids||[],aByCo):null;
+  ersatz=`<div class="co-ersatz"><div><b>Kurzarbeit-Ersatz</b><small>${gewertet.length} von ${d.einst.anzahlGesamt} Check-outs geschrieben · du wählst die ${d.einst.anzahlWaehlen} für dich besten aus${e?` · <b>deine Auswahl: Ø ${e.schnitt.toFixed(1).replace(".",",")} → ${npText(e.np)}</b>`:""}</small></div>
+   <div class="co-aktion">${d.einst.auswahlOffen?`<button class="primary"onclick="openCheckoutAuswahl()">${d.auswahl?"Auswahl ändern":`${d.einst.anzahlWaehlen} auswählen`}</button>`:`<small style="color:var(--muted)">Auswahl wird von deiner Lehrkraft freigeschaltet</small>`}${d.auswahl?`<button class="secondary"onclick="coPdfErsatzSchueler()">PDF</button>`:""}</div></div>`;
+ }
+ return`<div class="card co-karte">
+  <div class="co-kopf"><div><h3>🏁 Check-out – K-Prim-Test zum Wochenabschluss</h3><small>Am Ende der Woche schaltet deine Lehrkraft den Check-out live frei: eine Fallvignette mit 3–5 K-Prim-Aufgaben. Ausgewertet wird automatisch in FOSBOS-Notenpunkten.</small></div>
+   ${lehrer?`<button class="primary"onclick="openCheckoutEditor()">＋ Neuer Check-out</button>`:""}</div>
+  <div class="co-liste">${zeilen||`<div class="empty">${lehrer?"Noch kein Check-out angelegt.":"Noch kein Check-out freigeschaltet."}</div>`}</div>
+  ${ersatz}
+ </div>`;
+}
+function checkoutLiveBannerHTML(d){
+ const live=(d?.checkouts||[]).filter(c=>c.status==="live");
+ if(!live.length)return"";
+ return live.map(c=>{
+  const a=d.meineAbgaben[c.id];
+  if(isTeacher())return`<div class="co-banner"><span class="co-live-punkt"></span><div><b>Check-out läuft: ${esc(c.titel||"")}</b><small>Beenden, sobald alle fertig sind – danach wird automatisch ausgewertet.</small></div><button class="primary"onclick="openCheckoutMonitor('${c.id}')">Live-Übersicht</button></div>`;
+  return`<div class="co-banner"><span class="co-live-punkt"></span><div><b>Check-out läuft: ${esc(c.titel||"")}</b><small>${a?.abgegeben?"Du hast abgegeben. Das Ergebnis siehst du, sobald deine Lehrkraft den Test beendet.":"Deine Lehrkraft hat den Test freigeschaltet."}</small></div>${a?.abgegeben?"":`<button class="primary"onclick="openCheckoutTest('${c.id}')">${a?"Weiter":"Jetzt starten"}</button>`}</div>`;
+ }).join("");
+}
+
+// ---- Editor (Lehrkraft) ----
+let coEditor=null;
+function coLeereAufgabe(){return{stamm:"",aussagen:[{text:"",richtig:true},{text:"",richtig:false},{text:"",richtig:true},{text:"",richtig:false}]};}
+async function openCheckoutEditor(id){
+ if(!isTeacher())return;
+ if(id){
+  try{
+   const [c,l]=await Promise.all([getDoc(doc(db,"checkouts",id)),getDoc(doc(db,"checkoutLoesungen",id))]);
+   if(!c.exists()){toast("Nicht gefunden.");return}
+   const co=c.data(),lo=l.exists()?l.data():{};
+   if(co.status!=="entwurf"){toast("Nur Entwürfe können bearbeitet werden.");return}
+   coEditor={id,titel:co.titel||"",lbNum:co.lbNum||1,datum:co.datum||"",zaehlt:co.zaehlt!==false,vignetteTitel:co.vignette?.titel||"",vignetteText:co.vignette?.text||"",
+    aufgaben:(co.aufgaben||[]).map((a,i)=>({stamm:a.stamm||"",aussagen:[0,1,2,3].map(j=>({text:a.aussagen?.[j]||"",richtig:!!lo.aufgaben?.[i]?.richtig?.[j]}))}))};
+  }catch(e){console.error(e);toast("Konnte nicht geladen werden.");return}
+ }else{
+  const heute=new Date().toISOString().slice(0,10);
+  const lauf=PROJEKT_PHASEN.find(p=>heute>=p.start&&heute<=p.end)||PROJEKT_PHASEN.find(p=>heute<p.start)||PROJEKT_PHASEN[0];
+  coEditor={id:null,titel:"",lbNum:lauf.lbNum,datum:heute,zaehlt:true,vignetteTitel:"",vignetteText:"",aufgaben:[coLeereAufgabe(),coLeereAufgabe(),coLeereAufgabe()]};
+ }
+ coEditorRender();
+}
+function coEditorLesen(){
+ if(!coEditor||!$("coTitel"))return;
+ coEditor.titel=$("coTitel").value;coEditor.lbNum=Number($("coLb").value)||1;coEditor.datum=$("coDatum").value;coEditor.zaehlt=$("coZaehlt").checked;
+ coEditor.vignetteTitel=$("coVigTitel").value;coEditor.vignetteText=$("coVigText").value;
+ coEditor.aufgaben=coEditor.aufgaben.map((a,i)=>({stamm:$(`coStamm${i}`)?.value||"",aussagen:[0,1,2,3].map(j=>({text:$(`coA${i}_${j}`)?.value||"",richtig:$(`coR${i}_${j}`)?.value==="r"}))}));
+}
+function coEditorRender(){
+ const e=coEditor;
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+  <div class="kicker">🏁 CHECK-OUT · ${e.id?"ENTWURF BEARBEITEN":"NEU ANLEGEN"} · NUR LEHRKRÄFTE</div>
+  <h2>Check-out: Fallvignette + ${CHECKOUT_MIN_AUFGABEN}–${CHECKOUT_MAX_AUFGABEN} K-Prim-Aufgaben</h2>
+  <div class="form">
+   <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <label style="flex:2;min-width:200px">Titel<input id="coTitel"value="${esc(e.titel)}"placeholder="z. B. Check-out KW 42: Experiment"></label>
+    <label style="flex:1;min-width:120px">Lernbereich<select id="coLb">${[1,2,3,4].map(n=>`<option value="${n}"${e.lbNum===n?" selected":""}>LB ${n}</option>`).join("")}</select></label>
+    <label style="flex:1;min-width:140px">Datum<input id="coDatum"type="date"value="${esc(e.datum)}"></label>
+   </div>
+   <label class="check"><input id="coZaehlt"type="checkbox"${e.zaehlt?" checked":""}> zählt für den Kurzarbeit-Ersatz</label>
+   <label>Fallvignette – Überschrift (optional)<input id="coVigTitel"value="${esc(e.vignetteTitel)}"placeholder="z. B. Lena, 4 Jahre, in der Kita"></label>
+   <label>Fallvignette – Text<textarea id="coVigText"rows="7"placeholder="Beschreibung des Falls …">${esc(e.vignetteText)}</textarea></label>
+   ${e.aufgaben.map((a,i)=>`<div class="card co-ed-aufgabe">
+    <label>K-Prim-Aufgabe ${i+1} – Aufgabenstellung<input id="coStamm${i}"value="${esc(a.stamm)}"placeholder="Welche Aussagen treffen auf den Fall zu?"></label>
+    ${a.aussagen.map((s,j)=>`<div class="co-ed-aussage"><span>${String.fromCharCode(97+j)})</span><input id="coA${i}_${j}"value="${esc(s.text)}"placeholder="Aussage ${j+1}">
+     <select id="coR${i}_${j}"><option value="r"${s.richtig?" selected":""}>richtig</option><option value="f"${!s.richtig?" selected":""}>falsch</option></select></div>`).join("")}
+   </div>`).join("")}
+   <div class="form-actions">
+    ${e.aufgaben.length<CHECKOUT_MAX_AUFGABEN?`<button class="secondary"onclick="coEditorAufgabe(1)">＋ Aufgabe</button>`:""}
+    ${e.aufgaben.length>CHECKOUT_MIN_AUFGABEN?`<button class="secondary"onclick="coEditorAufgabe(-1)">− letzte Aufgabe</button>`:""}
+    <button class="secondary"onclick="coEditorVorschlag()">Vorschläge aus der App einsetzen</button>
+   </div>
+   <details class="apt-hilfe"><summary>Aufgaben als Text/JSON einfügen</summary>
+    <p style="font-size:12px;color:var(--muted)">Format: {"titel":"…","lb":1,"vignette":"…","aufgaben":[{"stamm":"…","aussagen":[{"text":"…","richtig":true}, … 4×]}]}</p>
+    <textarea id="coImport"rows="5"></textarea>
+    <div class="form-actions"><button class="secondary"onclick="coEditorImport()">Übernehmen</button></div>
+   </details>
+   <p style="font-size:12px;color:var(--muted)">Wertung je Aufgabe: 0 Fehler = ${CHECKOUT_BE_NACH_FEHLERN[0]} BE, 1 Fehler = ${CHECKOUT_BE_NACH_FEHLERN[1]} BE, 2 Fehler = ${CHECKOUT_BE_NACH_FEHLERN[2]} BE, sonst 0. Nicht beantwortete Aussagen zählen als Fehler. Die Lösungen sehen die Schüler:innen erst nach dem Ende des Tests.</p>
+   <div class="form-actions">
+    ${e.id?`<button class="secondary"onclick="coLoeschen('${e.id}')">Löschen</button>`:""}
+    <button class="secondary"onclick="closeModal()">Abbrechen</button>
+    <button class="primary"onclick="coEditorSpeichern()">Entwurf speichern</button>
+   </div>
+  </div>`);
+}
+function coEditorAufgabe(d){coEditorLesen();if(d>0&&coEditor.aufgaben.length<CHECKOUT_MAX_AUFGABEN)coEditor.aufgaben.push(coLeereAufgabe());if(d<0&&coEditor.aufgaben.length>CHECKOUT_MIN_AUFGABEN)coEditor.aufgaben.pop();coEditorRender();}
+function coEditorVorschlag(){
+ coEditorLesen();
+ const ph=PROJEKT_PHASEN.find(p=>p.lbNum===coEditor.lbNum);
+ const kp=PP_EINHEITEN.filter(e=>ph&&(ph.trainingWochen.includes(e.id)||ph.notwendigeWochen.includes(e.id))).flatMap(e=>e.kprim||[]).slice(0,CHECKOUT_MAX_AUFGABEN);
+ if(!kp.length){toast("Für diesen Lernbereich gibt es keine Vorschläge.");return}
+ if(!confirm(`${kp.length} K-Prim-Aufgaben aus den App-Vorschlägen einsetzen? Bestehende Aufgaben werden ersetzt.`))return;
+ coEditor.aufgaben=kp.map(k=>({stamm:k.frage||"Welche Aussagen treffen zu?",aussagen:[0,1,2,3].map(j=>({text:k.statements?.[j]?.text||"",richtig:!!k.statements?.[j]?.correct}))}));
+ while(coEditor.aufgaben.length<CHECKOUT_MIN_AUFGABEN)coEditor.aufgaben.push(coLeereAufgabe());
+ coEditorRender();toast("Vorschläge eingesetzt – bitte die Fallvignette ergänzen und die Aufgaben auf den Fall zuschneiden.");
+}
+function coEditorImport(){
+ coEditorLesen();
+ try{
+  const j=JSON.parse($("coImport").value);
+  if(j.titel)coEditor.titel=j.titel;
+  if(j.lb)coEditor.lbNum=Number(j.lb)||coEditor.lbNum;
+  if(typeof j.vignette==="string")coEditor.vignetteText=j.vignette;
+  else if(j.vignette){coEditor.vignetteTitel=j.vignette.titel||"";coEditor.vignetteText=j.vignette.text||"";}
+  if(Array.isArray(j.aufgaben)&&j.aufgaben.length){
+   coEditor.aufgaben=j.aufgaben.slice(0,CHECKOUT_MAX_AUFGABEN).map(a=>({stamm:a.stamm||a.frage||"",aussagen:[0,1,2,3].map(k=>{const s=(a.aussagen||a.statements||[])[k]||{};return{text:typeof s==="string"?s:(s.text||""),richtig:!!(s.richtig??s.correct)};})}));
+   while(coEditor.aufgaben.length<CHECKOUT_MIN_AUFGABEN)coEditor.aufgaben.push(coLeereAufgabe());
+  }
+  coEditorRender();toast("Übernommen – bitte prüfen und speichern.");
+ }catch(e){toast("Das Format konnte nicht gelesen werden (JSON prüfen).");}
+}
+async function coEditorSpeichern(){
+ coEditorLesen();
+ const e=coEditor;
+ if(!e.titel.trim()){toast("Bitte einen Titel eingeben.");return}
+ if(!e.vignetteText.trim()){toast("Bitte die Fallvignette eintragen.");return}
+ const unvollst=e.aufgaben.findIndex(a=>!a.stamm.trim()||a.aussagen.some(s=>!s.text.trim()));
+ if(unvollst>-1){toast(`Aufgabe ${unvollst+1} ist noch unvollständig.`);return}
+ const daten={titel:e.titel.trim(),lbNum:e.lbNum,datum:e.datum,zaehlt:e.zaehlt,status:"entwurf",
+  vignette:{titel:e.vignetteTitel.trim(),text:e.vignetteText.trim()},
+  aufgaben:e.aufgaben.map(a=>({stamm:a.stamm.trim(),aussagen:a.aussagen.map(s=>s.text.trim())})),
+  updatedAt:serverTimestamp(),updatedBy:currentUser.uid};
+ const loesung={aufgaben:e.aufgaben.map(a=>({richtig:a.aussagen.map(s=>!!s.richtig)})),updatedAt:serverTimestamp()};
+ try{
+  let id=e.id;
+  if(id)await setDoc(doc(db,"checkouts",id),daten,{merge:true});
+  else{const r=await addDoc(collection(db,"checkouts"),{...daten,createdAt:serverTimestamp(),createdBy:currentUser.uid});id=r.id;}
+  await setDoc(doc(db,"checkoutLoesungen",id),loesung);
+  toast("Check-out gespeichert.");closeModal();await render();
+ }catch(err){console.error("Check-out speichern:",err);toast(err?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Konnte nicht gespeichert werden.");}
+}
+async function coLoeschen(id){
+ if(!isTeacher())return;
+ if(!confirm("Diesen Check-out wirklich löschen? Abgaben und Ergebnisse dazu werden ebenfalls gelöscht."))return;
+ try{
+  const ab=await getDocs(query(collection(db,"checkoutAbgaben"),where("checkoutId","==",id)));
+  await Promise.all(ab.docs.map(d=>deleteDoc(d.ref)));
+  await deleteDoc(doc(db,"checkoutLoesungen",id)).catch(()=>{});
+  await deleteDoc(doc(db,"checkouts",id));
+  toast("Check-out gelöscht.");closeModal();await render();
+ }catch(e){console.error(e);toast("Konnte nicht gelöscht werden.");}
+}
+
+// ---- Live schalten / beenden / auswerten (Lehrkraft) ----
+async function coLiveStarten(id){
+ if(!isTeacher())return;
+ if(!confirm("Check-out jetzt LIVE freischalten? Alle Schüler:innen können ihn dann sofort öffnen."))return;
+ try{await updateDoc(doc(db,"checkouts",id),{status:"live",liveAt:serverTimestamp()});toast("Check-out ist live.");await openCheckoutMonitor(id);}
+ catch(e){console.error(e);toast("Konnte nicht freigeschaltet werden.");}
+}
+function coUnsubAll(){if(window.__coUnsub){try{window.__coUnsub()}catch(e){}window.__coUnsub=null;}}
+async function openCheckoutMonitor(id){
+ if(!isTeacher())return;
+ coUnsubAll();
+ let co=null,students=[];
+ try{const c=await getDoc(doc(db,"checkouts",id));co=c.exists()?{id,...c.data()}:null;students=await getAllUsersForLernstand();}catch(e){}
+ if(!co){toast("Nicht gefunden.");return}
+ const n=(co.aufgaben||[]).length*4;
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+  <div class="kicker">🏁 CHECK-OUT · LIVE-ÜBERSICHT</div>
+  <h2>${esc(co.titel)}</h2>
+  <div id="coMonitor"><p style="color:var(--muted)">Lädt …</p></div>
+  <div class="form-actions"style="margin-top:14px">
+   <button class="secondary"onclick="closeModal()">Schließen</button>
+   ${co.status==="live"?`<button class="primary"style="background:#d9534f"onclick="coBeenden('${id}')">■ Live beenden & auswerten</button>`:`<button class="secondary"onclick="openCheckoutErgebnisse('${id}')">Ergebnisse</button>`}
+  </div>`);
+ window.__coUnsub=onSnapshot(query(collection(db,"checkoutAbgaben"),where("checkoutId","==",id)),snap=>{
+  const box=$("coMonitor");if(!box){coUnsubAll();return}
+  const ab={};snap.docs.forEach(d=>{const x=d.data();ab[x.uid]=x;});
+  const abgegeben=Object.values(ab).filter(a=>a.abgegeben).length;
+  box.innerHTML=`<p style="font-size:14px"><b>${abgegeben}</b> abgegeben · <b>${Object.keys(ab).length-abgegeben}</b> in Bearbeitung · <b>${students.length-Object.keys(ab).length}</b> noch nicht gestartet</p>
+   <div class="co-monitor">${students.map(s=>{const a=ab[s.uid];const k=a?Object.keys(a.antworten||{}).length:0;
+    return`<div class="co-mon-zeile ${a?.abgegeben?"ab":a?"lauf":"nicht"}"><span>${esc(s.displayName||s.email||"")}</span><small>${a?.abgegeben?"abgegeben ✓":a?`${k}/${n} beantwortet`:"noch nicht gestartet"}</small></div>`;}).join("")}</div>`;
+ },e=>console.error("Check-out-Monitor:",e));
+}
+async function coBeenden(id){
+ if(!isTeacher())return;
+ if(!confirm("Check-out jetzt beenden? Danach kann niemand mehr etwas ändern und die App wertet automatisch aus."))return;
+ coUnsubAll();
+ try{
+  await updateDoc(doc(db,"checkouts",id),{status:"beendet",endAt:serverTimestamp()});
+  toast("Beendet – wird ausgewertet …");
+  await coAuswerten(id);
+  await openCheckoutErgebnisse(id);
+ }catch(e){console.error("Check-out beenden:",e);toast("Konnte nicht beendet werden.");}
+}
+async function coAuswerten(id){
+ const [c,l,ab]=await Promise.all([getDoc(doc(db,"checkouts",id)),getDoc(doc(db,"checkoutLoesungen",id)),getDocs(query(collection(db,"checkoutAbgaben"),where("checkoutId","==",id)))]);
+ if(!c.exists()||!l.exists())throw new Error("Check-out oder Lösung fehlt");
+ const co=c.data(),lo=l.data();
+ await Promise.all(ab.docs.map(d=>{const x=d.data();const erg=coBewerten(co,lo,x.antworten||{});
+  return updateDoc(d.ref,{...erg,ausgewertet:true,abgegeben:true,ausgewertetAm:serverTimestamp()});}));
+ await updateDoc(doc(db,"checkouts",id),{ausgewertetAm:serverTimestamp(),teilnehmer:ab.size,maxBE:(co.aufgaben||[]).length*CHECKOUT_BE_NACH_FEHLERN[0]});
+ toast(`${ab.size} Abgaben ausgewertet.`);
+}
+async function coNeuAuswerten(id){
+ if(!confirm("Alle Abgaben dieses Check-outs neu auswerten (z. B. nach einer Korrektur der Lösung)?"))return;
+ try{await coAuswerten(id);await openCheckoutErgebnisse(id);}catch(e){console.error(e);toast("Konnte nicht ausgewertet werden.");}
+}
+
+// ---- Test bearbeiten (Schüler:in) ----
+async function openCheckoutTest(id){
+ coUnsubAll();
+ let co=null,a=null;
+ try{
+  const c=await getDoc(doc(db,"checkouts",id));co=c.exists()?{id,...c.data()}:null;
+  const s=await getDoc(doc(db,"checkoutAbgaben",`${id}_${currentUser.uid}`));a=s.exists()?s.data():null;
+ }catch(e){console.error(e);}
+ if(!co){toast("Dieser Check-out ist nicht verfügbar.");return}
+ if(co.status!=="live"){toast("Dieser Check-out ist nicht (mehr) freigeschaltet.");return}
+ if(a?.abgegeben){toast("Du hast bereits abgegeben.");return}
+ const ant=a?.antworten||{};
+ const c=PP_FARBEN[co.lbNum]||"#4a90d9";
+ modal(`<div id="coTest">
+  <div class="kicker"style="color:${c}">🏁 CHECK-OUT · LB ${esc(co.lbNum)} · ${coDatum(co.datum)}</div>
+  <h2>${esc(co.titel)}</h2>
+  <div class="co-vignette"style="border-left-color:${c}">${co.vignette?.titel?`<b>${esc(co.vignette.titel)}</b>`:""}<p>${esc(co.vignette?.text||"")}</p></div>
+  <p style="font-size:12px;color:var(--muted)">Entscheide bei jeder Aussage: richtig oder falsch. Deine Antworten werden automatisch gespeichert.</p>
+  ${(co.aufgaben||[]).map((q,i)=>`<div class="card co-aufgabe"><b>${i+1}. ${esc(q.stamm)}</b>
+   ${(q.aussagen||[]).map((t,j)=>`<div class="co-aussage"><span>${String.fromCharCode(97+j)}) ${esc(t)}</span>
+    <label><input type="radio"name="coT${i}_${j}"value="r"${ant[`${i}_${j}`]==="r"?" checked":""} onchange="coAntwort('${id}','${i}_${j}','r')"> richtig</label>
+    <label><input type="radio"name="coT${i}_${j}"value="f"${ant[`${i}_${j}`]==="f"?" checked":""} onchange="coAntwort('${id}','${i}_${j}','f')"> falsch</label></div>`).join("")}
+  </div>`).join("")}
+  <div class="co-test-fuss"><span id="coStand"></span><button class="primary"onclick="coAbgeben('${id}')">Abgeben</button></div>
+ </div>`);
+ coStandAktualisieren(co);
+ // Beendet die Lehrkraft den Test, wird die Bearbeitung sofort gesperrt.
+ window.__coUnsub=onSnapshot(doc(db,"checkouts",id),snap=>{
+  if(!$("coTest")){coUnsubAll();return}
+  const x=snap.data();
+  if(x&&x.status!=="live"){coUnsubAll();$("coTest").innerHTML=`<h2>Der Check-out wurde beendet.</h2><p>Deine gespeicherten Antworten werden gewertet. Das Ergebnis erscheint in deinem Lernweg.</p><div class="form-actions"><button class="primary"onclick="closeModal();render()">OK</button></div>`;}
+ });
+}
+function coStandAktualisieren(co){
+ const n=(co?.aufgaben||[]).length*4||document.querySelectorAll("#coTest .co-aussage").length;
+ const k=document.querySelectorAll('#coTest input[type="radio"]:checked').length;
+ const el=$("coStand");if(el)el.textContent=`${k} von ${n} Aussagen beantwortet`;
+}
+async function coAntwort(id,key,wert){
+ coStandAktualisieren();
+ try{
+  await setDoc(doc(db,"checkoutAbgaben",`${id}_${currentUser.uid}`),{checkoutId:id,uid:currentUser.uid,name:profile?.displayName||currentUser.email||"Schüler/in",antworten:{[key]:wert},updatedAt:serverTimestamp()},{merge:true});
+ }catch(e){console.error("Antwort speichern:",e);toast(e?.code==="permission-denied"?"Der Check-out ist nicht mehr freigeschaltet – Antwort nicht gespeichert.":"Antwort konnte nicht gespeichert werden – Verbindung prüfen.");}
+}
+async function coAbgeben(id){
+ const alle=document.querySelectorAll("#coTest .co-aussage").length;
+ const k=document.querySelectorAll('#coTest input[type="radio"]:checked').length;
+ if(k<alle&&!confirm(`Du hast ${alle-k} Aussage(n) noch nicht beantwortet – diese zählen als Fehler. Trotzdem abgeben?`))return;
+ if(k===alle&&!confirm("Jetzt endgültig abgeben? Danach kannst du nichts mehr ändern."))return;
+ try{
+  await setDoc(doc(db,"checkoutAbgaben",`${id}_${currentUser.uid}`),{checkoutId:id,uid:currentUser.uid,name:profile?.displayName||currentUser.email||"Schüler/in",abgegeben:true,abgegebenAt:serverTimestamp(),updatedAt:serverTimestamp()},{merge:true});
+  coUnsubAll();closeModal();toast("Abgegeben ✓");await render();
+ }catch(e){console.error(e);toast("Konnte nicht abgegeben werden.");}
+}
+
+// ---- Ergebnisse ----
+function coAufgabeErgebnisHTML(q,i,erg,pdf=false){
+ const E=pdf?escPDF:esc;
+ const r=erg?.auswertung?.[i];
+ const zeichen=v=>v==="r"?"richtig":v==="f"?"falsch":"–";
+ return`<div class="${pdf?"item":"card co-aufgabe"}"><b>${i+1}. ${E(q.stamm)}</b>${r?` <span style="float:right">${r.be} BE · ${r.fehler} Fehler</span>`:""}
+  <table class="co-erg-tab"style="width:100%;border-collapse:collapse;margin-top:6px;font-size:13px"><thead><tr><th style="text-align:left">Aussage</th><th>angekreuzt</th><th>Lösung</th><th></th></tr></thead><tbody>
+  ${(q.aussagen||[]).map((t,j)=>`<tr><td>${String.fromCharCode(97+j)}) ${E(t)}</td><td style="text-align:center">${zeichen(r?.angekreuzt?.[j])}</td><td style="text-align:center">${r?(r.loesung?.[j]?"richtig":"falsch"):"–"}</td><td style="text-align:center;color:${r?.korrekt?.[j]?"#3fa66a":"#d9534f"}">${r?(r.korrekt?.[j]?"✓":"✗"):""}</td></tr>`).join("")}
+  </tbody></table></div>`;
+}
+function coSummeHTML(erg){return erg?.ausgewertet?`<b>${erg.be} von ${erg.maxBE} BE (${String(erg.prozent).replace(".",",")} %) · ${npText(erg.notenpunkte)}</b>`:"nicht ausgewertet";}
+async function openCheckoutMeinErgebnis(id){
+ try{
+  const [c,a]=await Promise.all([getDoc(doc(db,"checkouts",id)),getDoc(doc(db,"checkoutAbgaben",`${id}_${currentUser.uid}`))]);
+  const co=c.data(),erg=a.exists()?a.data():null;
+  modal(`<button class="modal-close"onclick="closeModal()">×</button>
+   <div class="kicker">🏁 CHECK-OUT · DEIN ERGEBNIS</div><h2>${esc(co.titel)}</h2>
+   <div class="co-summe">${coSummeHTML(erg)}</div>
+   <div class="co-vignette"style="border-left-color:${PP_FARBEN[co.lbNum]||"#4a90d9"}">${co.vignette?.titel?`<b>${esc(co.vignette.titel)}</b>`:""}<p>${esc(co.vignette?.text||"")}</p></div>
+   ${(co.aufgaben||[]).map((q,i)=>coAufgabeErgebnisHTML(q,i,erg)).join("")}
+   <div class="form-actions"><button class="secondary"onclick="coPdfSchueler('${id}')">PDF herunterladen</button><button class="secondary"onclick="closeModal()">Schließen</button></div>`);
+ }catch(e){console.error(e);toast("Konnte nicht geladen werden.");}
+}
+async function coLadeErgebnisse(id){
+ const [c,ab,students]=await Promise.all([getDoc(doc(db,"checkouts",id)),getDocs(query(collection(db,"checkoutAbgaben"),where("checkoutId","==",id))),getAllUsersForLernstand()]);
+ const co={id,...c.data()};const abgaben={};ab.docs.forEach(d=>{const x=d.data();abgaben[x.uid]=x;});
+ return{co,abgaben,students};
+}
+async function openCheckoutErgebnisse(id){
+ if(!isTeacher())return;
+ let d;try{d=await coLadeErgebnisse(id);}catch(e){console.error(e);toast("Konnte nicht geladen werden.");return}
+ const {co,abgaben,students}=d;
+ const erg=Object.values(abgaben).filter(a=>a.ausgewertet);
+ const schnitt=erg.length?(erg.reduce((s,a)=>s+a.notenpunkte,0)/erg.length).toFixed(1).replace(".",","):"–";
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+  <div class="kicker">🏁 CHECK-OUT · ERGEBNISSE · NUR LEHRKRÄFTE</div><h2>${esc(co.titel)}</h2>
+  <p style="font-size:13px;color:var(--muted)">${coDatum(co.datum)} · ${erg.length} ausgewertet · Klassenschnitt ${schnitt} Punkte</p>
+  <div style="overflow-x:auto"><table class="ls-matrix co-erg-matrix"><thead><tr><th>Schüler:in</th>${(co.aufgaben||[]).map((q,i)=>`<th>A${i+1}</th>`).join("")}<th>BE</th><th>Ergebnis</th></tr></thead>
+  <tbody>${students.map(s=>{const a=abgaben[s.uid];
+   if(!a)return`<tr><td>${esc(s.displayName||s.email||"")}</td><td colspan="${(co.aufgaben||[]).length+2}"style="color:var(--muted)">nicht teilgenommen</td></tr>`;
+   if(!a.ausgewertet)return`<tr><td>${esc(s.displayName||s.email||"")}</td><td colspan="${(co.aufgaben||[]).length+2}">noch nicht ausgewertet</td></tr>`;
+   return`<tr style="cursor:pointer"onclick="openCheckoutSchuelerErgebnis('${id}','${s.uid}')"><td>${esc(s.displayName||s.email||"")}</td>${(a.auswertung||[]).map(r=>`<td style="text-align:center"title="${r.fehler} Fehler">${r.be}</td>`).join("")}<td style="text-align:center">${a.be}/${a.maxBE}</td><td><b>${npText(a.notenpunkte)}</b></td></tr>`;}).join("")}</tbody></table></div>
+  <div class="form-actions"style="margin-top:14px">
+   <button class="secondary"onclick="coNeuAuswerten('${id}')">Neu auswerten</button>
+   <button class="secondary"onclick="coLoeschen('${id}')">Löschen</button>
+   <button class="primary"onclick="coPdfKlasse('${id}')">PDF Klasse</button>
+   <button class="secondary"onclick="closeModal()">Schließen</button></div>`);
+}
+async function openCheckoutSchuelerErgebnis(id,uid){
+ let d;try{d=await coLadeErgebnisse(id);}catch(e){return}
+ const a=d.abgaben[uid],s=d.students.find(x=>x.uid===uid);
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+  <div class="kicker">🏁 CHECK-OUT · ${esc(s?.displayName||s?.email||"")}</div><h2>${esc(d.co.titel)}</h2>
+  <div class="co-summe">${coSummeHTML(a)}</div>
+  ${(d.co.aufgaben||[]).map((q,i)=>coAufgabeErgebnisHTML(q,i,a)).join("")}
+  <div class="form-actions"><button class="secondary"onclick="openCheckoutErgebnisse('${id}')">← Zurück</button><button class="secondary"onclick="coPdfSchueler('${id}','${uid}')">PDF</button></div>`);
+}
+
+// ---- PDF (Druckfenster „Als PDF sichern") ----
+function coPdfBlock(co,erg,name){
+ return`<div class="item"style="background:#f5f7f8"><strong>${escPDF(name)}</strong><div>${erg?.ausgewertet?`${erg.be} von ${erg.maxBE} BE (${String(erg.prozent).replace(".",",")} %) · <b>${npText(erg.notenpunkte)}</b>`:"nicht teilgenommen"}</div></div>
+  ${erg?.ausgewertet?(co.aufgaben||[]).map((q,i)=>coAufgabeErgebnisHTML(q,i,erg,true)).join(""):""}`;
+}
+function coVignettePdf(co){return`<div class="item"><b>Fallvignette${co.vignette?.titel?": "+escPDF(co.vignette.titel):""}</b><div style="white-space:pre-wrap">${escPDF(co.vignette?.text||"")}</div></div>`;}
+async function coPdfSchueler(id,uid){
+ uid=uid||currentUser.uid;
+ try{
+  const [c,a]=await Promise.all([getDoc(doc(db,"checkouts",id)),getDoc(doc(db,"checkoutAbgaben",`${id}_${uid}`))]);
+  const co=c.data(),erg=a.exists()?a.data():null;
+  openToolPrintWindow(`${co.titel} – Ergebnis`,coVignettePdf(co)+coPdfBlock(co,erg,erg?.name||profile?.displayName||""),`F11Sb · Pädagogik/Psychologie · LB ${co.lbNum} · ${coDatum(co.datum)}`);
+ }catch(e){console.error(e);toast("PDF konnte nicht erstellt werden.");}
+}
+async function coPdfKlasse(id){
+ if(!isTeacher())return;
+ try{
+  const {co,abgaben,students}=await coLadeErgebnisse(id);
+  const tabelle=`<table><thead><tr><th>Schüler:in</th>${(co.aufgaben||[]).map((q,i)=>`<th>A${i+1}</th>`).join("")}<th>BE</th><th>%</th><th>Notenpunkte (Note)</th></tr></thead><tbody>
+   ${students.map(s=>{const a=abgaben[s.uid];return`<tr><td>${escPDF(s.displayName||s.email||"")}</td>${a?.ausgewertet?(a.auswertung||[]).map(r=>`<td>${r.be}</td>`).join("")+`<td>${a.be}/${a.maxBE}</td><td>${String(a.prozent).replace(".",",")}</td><td><b>${npText(a.notenpunkte)}</b></td>`:`<td colspan="${(co.aufgaben||[]).length+3}">nicht teilgenommen</td>`}</tr>`;}).join("")}</tbody></table>`;
+  const einzel=students.filter(s=>abgaben[s.uid]?.ausgewertet).map(s=>`<div style="break-before:page">${coPdfBlock(co,abgaben[s.uid],s.displayName||s.email||"")}</div>`).join("");
+  openToolPrintWindow(`${co.titel} – Ergebnisse der Klasse`,`<h2>Übersicht</h2>${tabelle}<div style="break-before:page"></div>${coVignettePdf(co)}${einzel}`,`F11Sb · Pädagogik/Psychologie · LB ${co.lbNum} · ${coDatum(co.datum)} · Wertung je Aufgabe ${CHECKOUT_BE_NACH_FEHLERN.slice(0,3).join("/")} BE bei 0/1/2 Fehlern`);
+ }catch(e){console.error(e);toast("PDF konnte nicht erstellt werden.");}
+}
+
+// ---- Kurzarbeit-Ersatz: 7 aus 10 ----
+async function openCheckoutAuswahl(){
+ const d=await ladeCheckoutDaten();
+ if(!d.einst.auswahlOffen){toast("Die Auswahl ist gerade nicht freigeschaltet.");return}
+ const pool=coPool(d.checkouts,d.einst).filter(c=>d.meineAbgaben[c.id]?.ausgewertet);
+ const gewaehlt=new Set(d.auswahl?.ids||[]);
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+  <div class="kicker">🏁 KURZARBEIT-ERSATZ</div><h2>Wähle deine ${d.einst.anzahlWaehlen} Check-outs</h2>
+  <p style="font-size:13px;color:var(--muted);margin-top:0">Der Durchschnitt der Notenpunkte deiner Auswahl ersetzt eine Kurzarbeit (gerundet).</p>
+  ${pool.length<d.einst.anzahlWaehlen?`<div class="empty">Du hast erst ${pool.length} gewertete Check-outs – du brauchst mindestens ${d.einst.anzahlWaehlen}.</div>`:""}
+  <div class="list"id="coAuswahlListe">${pool.map(c=>{const a=d.meineAbgaben[c.id];return`<label class="list-item co-wahl"><input type="checkbox"value="${c.id}"data-np="${a.notenpunkte}"${gewaehlt.has(c.id)?" checked":""} onchange="coAuswahlStand(${d.einst.anzahlWaehlen})"><div style="flex:1"><strong>${esc(c.titel)}</strong><small>LB ${esc(c.lbNum)} · ${coDatum(c.datum)}</small></div><b>${npText(a.notenpunkte)}</b></label>`;}).join("")}</div>
+  <div class="co-test-fuss"><span id="coAuswahlStand"></span><button class="primary"onclick="coAuswahlSpeichern(${d.einst.anzahlWaehlen})">Auswahl speichern</button></div>`);
+ coAuswahlStand(d.einst.anzahlWaehlen);
+}
+function coAuswahlStand(soll){
+ const boxen=[...document.querySelectorAll("#coAuswahlListe input:checked")];
+ const nps=boxen.map(b=>Number(b.dataset.np)||0);
+ const el=$("coAuswahlStand");if(!el)return;
+ const schnitt=nps.length?nps.reduce((a,b)=>a+b,0)/nps.length:0;
+ el.innerHTML=`${nps.length} von ${soll} gewählt${nps.length?` · Ø ${schnitt.toFixed(1).replace(".",",")} → <b>${npText(Math.round(schnitt))}</b>`:""}`;
+ el.style.color=nps.length===soll?"#3e7a2a":"var(--muted)";
+}
+async function coAuswahlSpeichern(soll){
+ const ids=[...document.querySelectorAll("#coAuswahlListe input:checked")].map(b=>b.value);
+ if(ids.length!==soll){toast(`Bitte genau ${soll} Check-outs auswählen.`);return}
+ try{
+  await setDoc(doc(db,"checkoutAuswahl",currentUser.uid),{uid:currentUser.uid,name:profile?.displayName||currentUser.email||"",ids,updatedAt:serverTimestamp()});
+  toast("Auswahl gespeichert.");closeModal();await render();
+ }catch(e){console.error(e);toast(e?.code==="permission-denied"?"Die Auswahl ist nicht (mehr) freigeschaltet.":"Konnte nicht gespeichert werden.");}
+}
+async function coPdfErsatzSchueler(){
+ const d=await ladeCheckoutDaten();
+ const pool=coPool(d.checkouts,d.einst);const ids=new Set(d.auswahl?.ids||[]);
+ const e=d.auswahl?coErsatz(d.auswahl.ids||[],d.meineAbgaben):null;
+ const tab=`<table><thead><tr><th>Check-out</th><th>Datum</th><th>Ergebnis</th><th>gewählt</th></tr></thead><tbody>${pool.map(c=>{const a=d.meineAbgaben[c.id];return`<tr><td>${escPDF(c.titel)}</td><td>${coDatum(c.datum)}</td><td>${a?.ausgewertet?npText(a.notenpunkte):"–"}</td><td>${ids.has(c.id)?"✓":""}</td></tr>`;}).join("")}</tbody></table>`;
+ openToolPrintWindow("Kurzarbeit-Ersatz – Check-outs",`<div class="item"style="background:#f5f7f8"><strong>${escPDF(profile?.displayName||"")}</strong><div>${e?`Ø ${e.schnitt.toFixed(2).replace(".",",")} → <b>${npText(e.np)}</b> (${e.anzahl} gewählte Check-outs)`:"Noch keine Auswahl"}</div></div>${tab}`,"F11Sb · Pädagogik/Psychologie");
+}
+async function openCheckoutEinstellungen(){
+ if(!isTeacher())return;
+ const d=await ladeCheckoutDaten();const e=d.einst;
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+  <div class="kicker">🏁 KURZARBEIT-ERSATZ · EINSTELLUNGEN</div><h2>Check-outs als Kurzarbeit-Ersatz</h2>
+  <div class="form">
+   <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <label style="flex:1">Anzahl gewerteter Check-outs<input id="coEGesamt"type="number"min="1"max="30"value="${e.anzahlGesamt}"></label>
+    <label style="flex:1">Davon auswählen<input id="coEWaehlen"type="number"min="1"max="30"value="${e.anzahlWaehlen}"></label>
+   </div>
+   <label class="check"><input id="coEOffen"type="checkbox"${e.auswahlOffen?" checked":""}> Schüler:innen dürfen jetzt auswählen</label>
+   <p style="font-size:12px;color:var(--muted)">Es zählen die ersten ${e.anzahlGesamt} beendeten Check-outs (nach Datum), die für den Kurzarbeit-Ersatz markiert sind. Nimmst du das Häkchen wieder heraus, ist die Auswahl eingefroren.</p>
+   <div class="form-actions"><button class="secondary"onclick="closeModal()">Abbrechen</button><button class="primary"onclick="coEinstellungenSpeichern()">Speichern</button></div>
+  </div>`);
+}
+async function coEinstellungenSpeichern(){
+ const anzahlGesamt=Math.max(1,Number($("coEGesamt").value)||10),anzahlWaehlen=Math.max(1,Math.min(anzahlGesamt,Number($("coEWaehlen").value)||7));
+ try{await setDoc(doc(db,"checkoutEinstellungen","pp"),{anzahlGesamt,anzahlWaehlen,auswahlOffen:$("coEOffen").checked,updatedAt:serverTimestamp()},{merge:true});toast("Gespeichert.");closeModal();await render();}
+ catch(e){console.error(e);toast("Konnte nicht gespeichert werden.");}
+}
+async function coLadeKlasse(){
+ const d=await ladeCheckoutDaten();
+ const pool=coPool(d.checkouts,d.einst);
+ const [students,ab,aw]=await Promise.all([getAllUsersForLernstand(),getDocs(collection(db,"checkoutAbgaben")),getDocs(collection(db,"checkoutAuswahl"))]);
+ const abgaben={};ab.docs.forEach(x=>{const a=x.data();(abgaben[a.uid]=abgaben[a.uid]||{})[a.checkoutId]=a;});
+ const auswahl={};aw.docs.forEach(x=>{auswahl[x.id]=x.data();});
+ return{d,pool,students,abgaben,auswahl};
+}
+async function openCheckoutKlassenuebersicht(){
+ if(!isTeacher())return;
+ let k;try{k=await coLadeKlasse();}catch(e){console.error(e);toast("Konnte nicht geladen werden.");return}
+ const {pool,students,abgaben,auswahl,d}=k;
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+  <div class="kicker">🏁 KURZARBEIT-ERSATZ · KLASSENÜBERSICHT</div><h2>Check-outs der Klasse</h2>
+  <p style="font-size:12px;color:var(--muted);margin-top:0">Markiert = von der Schülerin / dem Schüler für den Ersatz gewählt (${d.einst.anzahlWaehlen} aus ${d.einst.anzahlGesamt}).</p>
+  <div style="overflow-x:auto"><table class="ls-matrix co-erg-matrix"><thead><tr><th>Schüler:in</th>${pool.map((c,i)=>`<th title="${esc(c.titel)}">${i+1}</th>`).join("")}<th>Ersatz</th></tr></thead>
+  <tbody>${students.map(s=>{const a=abgaben[s.uid]||{},w=new Set(auswahl[s.uid]?.ids||[]);const e=auswahl[s.uid]?coErsatz([...w],a):null;
+   return`<tr><td>${esc(s.displayName||s.email||"")}</td>${pool.map(c=>`<td class="${w.has(c.id)?"co-gewaehlt":""}"style="text-align:center">${a[c.id]?.ausgewertet?a[c.id].notenpunkte:"–"}</td>`).join("")}<td><b>${e?npText(e.np):"–"}</b></td></tr>`;}).join("")}</tbody></table></div>
+  <div class="form-actions"style="margin-top:14px"><button class="primary"onclick="coPdfErsatzKlasse()">PDF Klasse</button><button class="secondary"onclick="closeModal()">Schließen</button></div>`);
+}
+async function coPdfErsatzKlasse(){
+ if(!isTeacher())return;
+ try{
+  const {pool,students,abgaben,auswahl,d}=await coLadeKlasse();
+  const legende=`<div class="item">${pool.map((c,i)=>`${i+1}: ${escPDF(c.titel)} (${coDatum(c.datum)})`).join(" · ")}</div>`;
+  const tab=`<table><thead><tr><th>Schüler:in</th>${pool.map((c,i)=>`<th>${i+1}</th>`).join("")}<th>Ø Auswahl</th><th>Ersatznote</th></tr></thead><tbody>${students.map(s=>{const a=abgaben[s.uid]||{},w=new Set(auswahl[s.uid]?.ids||[]);const e=auswahl[s.uid]?coErsatz([...w],a):null;
+   return`<tr><td>${escPDF(s.displayName||s.email||"")}</td>${pool.map(c=>`<td>${a[c.id]?.ausgewertet?(w.has(c.id)?`<b>[${a[c.id].notenpunkte}]</b>`:a[c.id].notenpunkte):"–"}</td>`).join("")}<td>${e?e.schnitt.toFixed(2).replace(".",","):"–"}</td><td><b>${e?npText(e.np):"–"}</b></td></tr>`;}).join("")}</tbody></table>`;
+  openToolPrintWindow("Kurzarbeit-Ersatz – Check-outs (Klasse)",legende+tab,`F11Sb · Pädagogik/Psychologie · [x] = gewählt · ${d.einst.anzahlWaehlen} aus ${d.einst.anzahlGesamt}`);
+ }catch(e){console.error(e);toast("PDF konnte nicht erstellt werden.");}
+}
+Object.assign(window,{openCheckoutEditor,coEditorAufgabe,coEditorVorschlag,coEditorImport,coEditorSpeichern,coLoeschen,coLiveStarten,openCheckoutMonitor,coBeenden,coNeuAuswerten,
+ openCheckoutTest,coAntwort,coAbgeben,openCheckoutMeinErgebnis,openCheckoutErgebnisse,openCheckoutSchuelerErgebnis,coPdfSchueler,coPdfKlasse,
+ openCheckoutAuswahl,coAuswahlStand,coAuswahlSpeichern,coPdfErsatzSchueler,openCheckoutEinstellungen,coEinstellungenSpeichern,openCheckoutKlassenuebersicht,coPdfErsatzKlasse});
 
 async function renderFachDetail(){
  if(!activeFach)return await renderFaecherUebersicht();
@@ -4447,13 +5264,9 @@ async function openWocheDetail(fach,wocheId,startTabOverride){
  const inTeam=(t.mitgliederUids||[]).includes(currentUser.uid);
  const phase=projektPhaseByWoche(wocheId);
  const zeigtMeilensteine=phase&&phase.notwendigeWochen.includes(wocheId);
- const idx=t.meilensteinIndex||0;
  return`<div class="list-item"style="flex-direction:column;align-items:stretch;gap:8px">
  <div style="display:flex;justify-content:space-between;align-items:center"><div><strong>${esc(t.teamName)}</strong><small>${esc((t.mitgliederNamen||[]).join(", ")||"Noch niemand")}</small></div><div style="display:flex;gap:6px">${inTeam?`<button class="secondary"onclick="leaveLehrplanTeam('${t.id}','${fach}','${wocheId}')">Verlassen</button>`:`<button class="primary"onclick="joinLehrplanTeam('${t.id}','${fach}','${wocheId}')">Beitreten</button>`}${isTeacher()?`<button class="secondary"onclick="deleteLehrplanTeam('${t.id}','${fach}','${wocheId}')">Auflösen</button>`:""}</div></div>
- ${zeigtMeilensteine?`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">${phase.meilensteine.map((m,i)=>{
- const status=i<idx?"#3fa66a":i===idx?"#e0a324":"#c7d0d6";
- return`<span${(isTeacher()||(inTeam&&MEILENSTEINE_SCHUELER_DUERFEN_ABHAKEN))?` onclick="setTeamMeilenstein('${t.id}',${i<idx&&i===idx-1?i:i+1},'${fach}','${wocheId}')"style="cursor:pointer"`:""}class="pill"style="background:${status};color:#fff;font-size:10px">${i<idx?"✓ ":""}${esc(m)}</span>`;
- }).join("")}</div>`:""}
+ ${zeigtMeilensteine&&(inTeam||isTeacher())?`<div><button class="secondary"style="font-size:12px"onclick="openMeilensteinModal('${phase.id}','${t.id}',{fach:'${fach}',woche:'${wocheId}'})">★ Meilensteine & ${inTeam?"meine Beiträge":"Beiträge ansehen"}</button></div>`:""}
  </div>`}).join("")||`<div class="empty">Noch keine Teams gebildet.</div>`}</div>
  ${!meinTeam?`<div class="form-actions"style="margin-top:10px"><input id="neuTeamName"type="text"placeholder="Team-Name"style="flex:1"><button class="primary"onclick="createLehrplanTeam('${fach}','${wocheId}')">＋ Team gründen</button></div>`:""}
  ${miniToolRow([["🌟","Kompetenzwerkstatt","kompetenz"],["🤝","Kollaborations-Tools","kollaboration"]])}
