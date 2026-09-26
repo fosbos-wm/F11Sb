@@ -4466,7 +4466,11 @@ window.openAptSchuelerDetail=openAptSchuelerDetail;
 // richtigen Entscheidungen, bei drei die Hälfte, bei zwei 1 BE, sonst 0.
 // Nicht beantwortete Aussage = Fehler.
 const CHECKOUT_BE_NACH_FEHLERN=[4,2,1,0,0];
-// FOSBOS-Notenschlüssel: [Notenpunkte, Mindestprozent]. Darunter 0 Punkte.
+// Bewertungsschlüssel Pädagogik/Psychologie (eingeführt lt. „Unterrichten,
+// Korrigieren und Bewerten im Fach Pädagogik/Psychologie an der Beruflichen
+// Oberschule Bayern", Stand 13.09.2022): [Notenpunkte, Mindestprozent].
+// 15: 100–96 · 14: 95–91 · … · 3: 40–34 · 2: 33–27 · 1: 26–20 · 0: 19–0.
+// Zwischenwerte werden nicht aufgerundet (z. B. 95,5 % → 14 Punkte).
 const FOSBOS_SCHLUESSEL=[[15,96],[14,91],[13,86],[12,81],[11,76],[10,71],[9,66],[8,61],[7,56],[6,51],[5,46],[4,41],[3,34],[2,27],[1,20]];
 const CHECKOUT_MIN_AUFGABEN=3,CHECKOUT_MAX_AUFGABEN=5;
 function notenpunkteAusProzent(p){for(const [np,min] of FOSBOS_SCHLUESSEL)if(p>=min)return np;return 0;}
