@@ -446,9 +446,9 @@ service cloud.firestore {
     }
 
     // ---------------------------------------------------------
-    // FACHAUFSATZ-TRAINING (Pädagogik/Psychologie, Baustein für
-    // Baustein). Übungstexte sind PRIVAT – exakt wie beim
-    // Lernjournal darf nur die schreibende Person oder eine
+    // FACHAUFSATZ-TRAINING (Pädagogik/Psychologie, an echten
+    // Prüfungs-/Schulaufgaben). Übungstexte sind PRIVAT – exakt wie
+    // beim Lernjournal darf nur die schreibende Person oder eine
     // Lehrkraft sie lesen, nicht andere Schüler:innen.
     // ---------------------------------------------------------
     match /essayCases/{id} {
@@ -639,6 +639,13 @@ service cloud.firestore {
 
       allow delete: if isTeacher()
         || (isApproved() && resource.data.uid == request.auth.uid);
+    }
+
+    // Kleine, generische Link-Ablage (aktuell: fobizz-Assistent-Link
+    // fürs Fachaufsatz-Training).
+    match /taskcardLinks/{id} {
+      allow read: if isApproved();
+      allow write: if isTeacher();
     }
 
     match /practice/{id} {

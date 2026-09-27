@@ -3218,7 +3218,7 @@ async function renderStart(){
  return`${coBanner}<section class="hero"><div><span class="badge"> F11Sb 26/27</span><h1>Willkommen auf dem Campus.</h1><p>Hier
 verbinden wir Lernen, Projekte, Praxis und Gemeinschaft. Alle angemeldeten Mitglieder arbeiten am selben digitalen Campus.</p>
 </div><div class="actions">${isTeacher()?`<button class="primary"onclick="openNewsForm()">＋ News veröffentlichen</button>`:""}<button class="secondary"onclick="go('kompass')">Mein Kompass →</button><button class="secondary"onclick="go('forum')">Campus-Forum</button></div></section>
- <div class="grid grid-3">
+ <div class="grid grid-3"style="gap:20px;margin-bottom:20px">
  <div class="card card-compact"style="border-left:4px solid #4a90d9"><h3> Campus-News</h3><div class="list">${news.slice(0,3).map(p=>`<div
 class="list-item"><div><strong>${esc(p.title||p.text)}</strong>${p.title?`<small>${esc(p.text)} · ${fmtDate(p.createdAt)}</small>`:`<small>${fmtDate(p.createdAt)}</small>`}</div><div style="display:flex;align-items:center;gap:8px"><span class="pill">Info</span>${isAdmin()?`<button class="secondary"onclick="deleteNews('${p.id}')">Löschen</button>`:""}</div>
 </div>`).join("")||`<div class="empty">Noch keine News.</div>`}</div></div>
@@ -3229,7 +3229,7 @@ class="list-item"><div><strong>${esc(p.title||p.text)}</strong>${p.title?`<small
  :`<div class="list-item"><div><strong>${birthdayInfo.people.map(p=>{const c=personColor(p.uid);return`<span style="color:${c.text}">${esc(p.name)}</span>`}).join(" & ")}</strong><small>${esc(birthdayInfo.date.toLocaleDateString("de-DE",{day:"2-digit",month:"long"}))} · ${birthdayInfo.days===1?"morgen":`in ${birthdayInfo.days} Tagen`}</small></div><span class="pill"style="background:${personColor(birthdayInfo.people[0].uid).border};color:#fff">Nächste(r)</span></div>`
  }</div>
  </div>
- <div class="grid grid-3"style="margin-bottom:16px;gap:12px">
+ <div class="grid grid-3"style="margin-bottom:20px;gap:20px">
  <div class="card card-compact"style="text-align:center">
  <h3 style="margin:0 0 6px"> Uhrzeit</h3>
  <div style="display:flex;justify-content:center">${analogClockSVG(64)}</div>
@@ -7558,6 +7558,30 @@ let simpleTimerSecondsLeft=600;
 let simpleTimerRunning=false;
 let simpleTimerInterval=null;
 function simpleTimerFormat(sec){const m=Math.floor(sec/60),s=sec%60;return`${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`}
+// ---- Ring-Darstellung des Timers (Fortschrittsring statt reiner Zahl) ----
+const TIMER_RING_R=78,TIMER_RING_C=2*Math.PI*TIMER_RING_R;
+function timerRingFarbe(secLeft){
+ if(secLeft<=0)return"#E24B4A"; // rot: Zeit um
+ if(secLeft<=60)return"#e0a324"; // amber: letzte Minute
+ return"#378ADD"; // blau: normal
+}
+function timerRingInnerHTML(){
+ const total=Math.max(1,simpleTimerMinutes*60);
+ const secLeft=Math.max(0,simpleTimerSecondsLeft);
+ const farbe=timerRingFarbe(secLeft);
+ const offset=TIMER_RING_C*(1-secLeft/total);
+ return`<svg width="180"height="180"viewBox="0 0 180 180">
+ <circle cx="90"cy="90"r="${TIMER_RING_R}"fill="none"stroke="var(--line,#e2eaf0)"stroke-width="10"/>
+ <circle cx="90"cy="90"r="${TIMER_RING_R}"fill="none"stroke="${farbe}"stroke-width="10"stroke-linecap="round"stroke-dasharray="${TIMER_RING_C.toFixed(1)}"stroke-dashoffset="${offset.toFixed(1)}"transform="rotate(-90 90 90)"style="transition:stroke-dashoffset 1s linear,stroke .3s"/>
+ </svg>
+ <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+ <span style="font-size:32px;font-weight:700;color:${farbe}"id="simpleTimerDisplay">${simpleTimerFormat(secLeft)}</span>
+ <span style="font-size:12px;color:var(--muted);margin-top:2px">von ${simpleTimerFormat(total)}</span>
+ </div>`;
+}
+function updateTimerRing(){
+ const wrap=$("timerRingWrap");if(wrap)wrap.innerHTML=timerRingInnerHTML();
+}
 function startSimpleTimer(){
  if(simpleTimerRunning)return;
  if(simpleTimerSecondsLeft<=0){
@@ -7566,26 +7590,27 @@ function startSimpleTimer(){
  }
  simpleTimerRunning=true;
  const btn=$("simpleTimerStartBtn");if(btn)btn.textContent="Läuft …";
+ updateTimerRing();
  simpleTimerInterval=setInterval(()=>{
  simpleTimerSecondsLeft--;
- const disp=$("simpleTimerDisplay");if(disp)disp.textContent=simpleTimerFormat(simpleTimerSecondsLeft);
+ updateTimerRing();
  if(simpleTimerSecondsLeft<=0){
  clearInterval(simpleTimerInterval);simpleTimerRunning=false;
  toast(" Zeit ist um!");
- const b=$("simpleTimerStartBtn");if(b)b.textContent="▶ Start";
+ const b=$("simpleTimerStartBtn");if(b)b.textContent="Start";
  }
  },1000);
 }
 function pauseSimpleTimer(){
  clearInterval(simpleTimerInterval);simpleTimerRunning=false;
- const btn=$("simpleTimerStartBtn");if(btn)btn.textContent="▶ Weiter";
+ const btn=$("simpleTimerStartBtn");if(btn)btn.textContent="Weiter";
 }
 function resetSimpleTimer(){
  clearInterval(simpleTimerInterval);simpleTimerRunning=false;
  const mins=Math.max(1,Math.min(180,parseInt($("simpleTimerInput")?.value,10)||10));
  simpleTimerMinutes=mins;simpleTimerSecondsLeft=mins*60;
- const disp=$("simpleTimerDisplay");if(disp)disp.textContent=simpleTimerFormat(simpleTimerSecondsLeft);
- const btn=$("simpleTimerStartBtn");if(btn)btn.textContent="▶ Start";
+ updateTimerRing();
+ const btn=$("simpleTimerStartBtn");if(btn)btn.textContent="Start";
 }
 window.startSimpleTimer=startSimpleTimer;window.pauseSimpleTimer=pauseSimpleTimer;window.resetSimpleTimer=resetSimpleTimer;
 function renderUhrTimer(){
@@ -7599,11 +7624,11 @@ function renderUhrTimer(){
  </div>
  <div class="card"style="text-align:center">
  <div class="kicker">TIMER</div>
- <div class="pomo-display"id="simpleTimerDisplay"style="margin-top:10px">${simpleTimerFormat(simpleTimerSecondsLeft)}</div>
- <div class="pomo-actions">
- <button class="primary"id="simpleTimerStartBtn"onclick="startSimpleTimer()">${simpleTimerRunning?"Läuft …":"▶ Start"}</button>
- <button class="secondary"onclick="pauseSimpleTimer()">⏸ Pause</button>
- <button class="secondary"onclick="resetSimpleTimer()">↺ Zurücksetzen</button>
+ <div id="timerRingWrap"style="position:relative;width:180px;height:180px;margin:10px auto 0">${timerRingInnerHTML()}</div>
+ <div class="pomo-actions"style="margin-top:14px">
+ <button class="primary"id="simpleTimerStartBtn"onclick="startSimpleTimer()">${simpleTimerRunning?"Läuft …":"Start"}</button>
+ <button class="secondary"onclick="pauseSimpleTimer()">Pause</button>
+ <button class="secondary"onclick="resetSimpleTimer()">Zurücksetzen</button>
  </div>
  <div class="pomo-settings">
  <label>Minuten<input id="simpleTimerInput"type="number"min="1"max="180"value="${simpleTimerMinutes}"></label>
@@ -7815,34 +7840,43 @@ async function downloadGlossaryPDF(){
 }
 
 /* =========================================================
- FACHAUFSATZ-TRAINING – Fachaufsatz Pädagogik/Psychologie
- Baustein für Baustein üben (Einleitung, Theorie allgemein,
- Theorie am Fall analysieren, Beurteilung), gegliedert nach den
- vier Lernbereichen aus LehrplanPLUS FOS 11 Pädagogik/Psychologie.
- Fallbeispiele können als Text und/oder als Link zu einer bereits
- gehosteten PDF (z. B. Google Drive) hinterlegt werden – kein
- eigener Datei-Upload, damit kein Firebase Storage nötig ist.
- Collections: "essayCases" (Fallbeispiele, für alle sichtbar) und"essayEntries" (eigene Übungstexte, PRIVAT – nur die schreibende
+ FACHAUFSATZ-TRAINING – Fachaufsatz Pädagogik/Psychologie.
+ Vereinfachtes Modell (statt Bausteine): pro Aufgabe EINE
+ Aufgabenstellung (echte alte Prüfungs-/Schulaufgabe), EIN
+ Theorieteil zur Beantwortung, und EIN zusammenhängender
+ Antwortraum je Schüler:in. Aufgaben können als Text und/oder
+ als Link zu einer bereits gehosteten PDF (z. B. Google Drive)
+ hinterlegt werden – kein eigener Datei-Upload, damit kein
+ Firebase Storage nötig ist.
+ Collections: "essayCases" (Aufgaben, für alle sichtbar) und
+ "essayEntries" (eigene Übungstexte, PRIVAT – nur die schreibende
  Person und Lehrkräfte dürfen sie lesen, exakt wie beim
- Lernjournal). Feste Doc-ID "<caseId>_<type>_<uid>", damit pro
- Fall/Baustein/Person immer nur eine aktuelle Fassung existiert.
- Rückmeldung: Schüler:in fordert sie gezielt pro Baustein an,
- Lehrkraft schreibt einen Kommentar zurück, der direkt beim
- Baustein angezeigt wird. Echte automatische Bewertung würde eine
- kostenpflichtige externe KI benötigen und ist daher bewusst nicht
- eingebaut.
+ Lernjournal). Feste Doc-ID "<caseId>_<uid>", damit pro Aufgabe/
+ Person immer nur eine aktuelle Fassung existiert.
+ Rückmeldung: Schüler:in fordert sie gezielt an, Lehrkraft schreibt
+ einen Kommentar zurück. Echte automatische Bewertung würde eine
+ kostenpflichtige externe KI benötigen – dafür gibt es die
+ Vorkorrektur über einen fobizz-Assistenten (Kopieren + Link).
+ Die vier Lernbereiche bleiben die der 11. Klasse (11.1–11.4 nach
+ LehrplanPLUS FOS 11 Pädagogik/Psychologie), unabhängig davon,
+ welche Lernbereiche in der F12Sb dafür verwendet werden.
  ========================================================= */
 let activeEssayCaseId=null;
-const essayParts=[
- ["einleitung","Einleitung",["Thema/Fragestellung kurz benennen","Fallbeispiel in 1–2 Sätzen anreißen","Bezug zur Theorie andeuten","Aufbau des Aufsatzes kurz ankündigen","Sachlich, prägnant (ca. 5–8 Sätze)"],
- ["Hast du Thema und Fragestellung ähnlich klar benannt?","Ist dein Fallbezug ähnlich kurz und treffend?"]],
- ["theorie","Theorie allgemein",["Fachbegriffe korrekt und präzise definieren","Theorie in eigenen Worten darstellen","Kernaussagen/Modell vollständig und strukturiert erklären","Noch KEIN Bezug zum Fallbeispiel","Fachsprache durchgehend korrekt verwenden"],
- ["Hast du die gleichen Kernbegriffe korrekt definiert?","Ist deine Darstellung ähnlich vollständig und strukturiert?"]],
- ["analyse","Theorie am Fall analysieren",["Konkrete Stellen/Verhaltensweisen aus dem Fall aufgreifen","Jede Beobachtung mit der Theorie begründen","Klarer Bezug: „Dies zeigt sich im Fall daran, dass …“","Roter Faden zwischen Theorie und Analyse erkennbar"],
- ["Hast du ähnliche Textstellen/Beobachtungen aus dem Fall aufgegriffen?","Ist dein Theoriebezug ähnlich präzise begründet?"]],
- ["beurteilung","Beurteilung",["Eigene fachliche Einschätzung abgeben","Chancen UND Grenzen benennen","Ggf. Handlungsempfehlungen ableiten","Sachlich begründen, kurzes Fazit am Ende"],
- ["Hast du sowohl Chancen als auch Grenzen benannt wie im Muster?","Ist deine Einschätzung ähnlich sachlich begründet?"]]
+// Kriterien und Tipp orientieren sich an "Unterrichten, Korrigieren und
+// Bewerten im Fach Pädagogik/Psychologie" (FOSBOS Bayern, Stand
+// 13.09.2022): In 11./12. Klasse gelten die Anforderungsebenen
+// Aufzeigen/Erläutern/Verdeutlichen und Erklären (Bewerten/Beurteilen
+// ist erst 13. Klasse). Die Erfolgskriterien bilden direkt die drei
+// Bewertungsbogen-Kategorien ab, damit Schüler:innen an echten
+// Prüfungsmaßstäben üben.
+const ESSAY_VORGEHEN_TIPP="Vorgehen bei Erläutern/Erklären: 1. Begriff bzw. Aussage fachlich korrekt darstellen. 2. Bezug zum Fallbeispiel/zur Aufgabenstellung herstellen (Textstelle/Verhalten konkret benennen). 3. Beides miteinander verknüpfen – nicht nur Theorie und Fall getrennt nacheinander abhandeln.";
+const ESSAY_KRITERIEN=[
+ {gruppe:"Darstellung",punkte:["Klarer Bezug zur Aufgabenstellung","Klare, eindeutige und zusammenhängende Formulierungen","Sinnvoller, strukturierter Aufbau"]},
+ {gruppe:"Fachliche Kenntnisse",punkte:["Fachbegriffe korrekt bestimmt und definiert","Theorie/Modell vollständig und korrekt wiedergegeben"]},
+ {gruppe:"Anwendung",punkte:["Konkreter, klar benannter Bezug zum Fallbeispiel/zur Situation","Fachkenntnisse auf die Problemstellung übertragen (nicht nur Theorie abgeschrieben)"]}
 ];
+const ESSAY_KRITERIEN_FLAT=ESSAY_KRITERIEN.flatMap(g=>g.punkte);
+const ESSAY_VERGLEICHSFRAGEN=["Hast du die Fachbegriffe ähnlich korrekt und vollständig verwendet?","Ist dein Fallbezug ähnlich konkret (Textstelle/Verhalten benannt)?","Ist deine Darstellung ähnlich klar strukturiert?"];
 const essayLernbereiche=[
  ["11.1","Pädagogik/Psychologie als Wissenschaft"],
  ["11.2","Grundlagen des Erlebens, Verhaltens, Handelns"],
@@ -7853,9 +7887,12 @@ function essayLernbereichLabel(code){
  const found=essayLernbereiche.find(l=>l[0]===code);
  return found?`${found[0]} – ${found[1]}`:(code||"Ohne Lernbereich");
 }
-function essayPartLabel(type){
- const found=essayParts.find(p=>p[0]===type);
- return found?found[1]:type;
+// Die Lernbereich-Farben (LERNBEREICH_FARBEN) sind nach Nummer 1–4
+// indiziert; die 11Sb-Lernbereichs-Codes lauten aber "11.1"–"11.4",
+// daher hier die Position in essayLernbereiche als Farb-Nummer nehmen.
+function essayLernbereichNummer(code){
+ const idx=essayLernbereiche.findIndex(l=>l[0]===code);
+ return idx>=0?idx+1:1;
 }
 // Berechnet aus der Selbsteinschätzung eine Ampel: grün = alle Kriterien
 // erfüllt, gelb = teilweise, rot = größtenteils nicht erfüllt,
@@ -7869,23 +7906,14 @@ function essaySelfCheckStatus(entry,criteriaCount){
  return {color:"yellow",label:`🟡 ${metCount}/${criteriaCount} Kriterien selbst erfüllt`};
 }
 
-// Fest eingebaute Beispiel-Fallbeispiele (aktuell keine für F11Sb hinterlegt –
-// die App unterstützt sie aber genauso wie F12Sb, falls später gewünscht).
-const ESSAY_SEED_CASES=[];
+async function getEssayCases(){return await getCollection("essayCases")}
 
-async function getEssayCases(){
- const stored=await getCollection("essayCases");
- const storedTitles=new Set(stored.map(c=>c.title));
- const seeds=ESSAY_SEED_CASES.filter(s=>!storedTitles.has(s.title));
- return [...seeds,...stored];
-}
-
-async function getMyEssayEntries(caseId){
- if(!db)return [];
+async function getMyEssayEntry(caseId){
+ if(!db||!currentUser)return null;
  try{
- const snap=await getDocs(query(collection(db,"essayEntries"),where("caseId","==",caseId),where("uid","==",currentUser.uid)));
- return snap.docs.map(d=>({id:d.id,...d.data()}));
- }catch(e){console.error("Eigene Übungen laden:",e);return []}
+ const snap=await getDoc(doc(db,"essayEntries",`${caseId}_${currentUser.uid}`));
+ return snap.exists()?{id:snap.id,...snap.data()}:null;
+ }catch(e){console.error("Eigene Übung laden:",e);return null}
 }
 
 async function getAllEssayEntriesForCase(caseId){
@@ -7897,23 +7925,27 @@ async function getAllEssayEntriesForCase(caseId){
 }
 
 function essayCaseTileHTML(c){
- return`<div class="card tile"style="cursor:pointer;text-align:left"onclick="openEssayCase('${c.id}')">
- <span class="emoji"></span>
- <strong>${esc(c.title||"Fallbeispiel")}</strong>
- <small>${esc(c.theoryArea||"")||"Fachaufsatz-Training"}</small>
+ const farbe=LERNBEREICH_FARBEN[essayLernbereichNummer(c.lernbereich)]?.border||"#b8c4cc";
+ return`<div class="card tile"style="cursor:pointer;text-align:left;border-left:4px solid ${farbe}"onclick="openEssayCase('${c.id}')">
+ <strong>${esc(c.title||"Aufgabe")}</strong>
+ <small>${esc(c.quelle||"")||"Fachaufsatz-Training"}</small>
  </div>`;
 }
 
 async function renderFachaufsatzUebersicht(){
  const cases=await getEssayCases();
- const grouped=essayLernbereiche.map(([code,label])=>({code,label,cases:cases.filter(c=>c.lernbereich===code)}));
+ const grouped=essayLernbereiche.map(([code,label])=>({code,label,cases:cases.filter(c=>c.lernbereich===code)})).filter(g=>g.cases.length);
  const ungrouped=cases.filter(c=>!c.lernbereich||!essayLernbereiche.some(l=>l[0]===c.lernbereich));
- return`${pageHead("SELBSTSTÄNDIG LERNEN","Fachaufsatz-Training","Fachaufsatz in Pädagogik/Psychologie üben – Baustein für Baustein, gegliedert nach den Lernbereichen 11.1–11.4.",`<button class="secondary"onclick="go('lernwerkstatt')">← Lernwerkstatt</button>
- <button class="primary"onclick="openEssayCaseForm()">＋ Neues Fallbeispiel</button>`)}
- <div class="notice"><strong>Deine Übungstexte sind privat.</strong><p style="margin-bottom:0">Nur du selbst und Lehrkräfte können sehen, was du hier schreibst – nicht deine Mitschüler:innen.</p></div>
+ return`${pageHead("SELBSTSTÄNDIG LERNEN","Fachaufsatz-Training","Fachaufsatz in Pädagogik/Psychologie an echten Prüfungsaufgaben üben.",`<button class="secondary"onclick="go('lernwerkstatt')">← Lernwerkstatt</button>
+ ${isTeacher()?`<button class="primary"onclick="openEssayCaseForm()">＋ Neue Aufgabe</button>`:""}`)}
+ <div class="notice"><strong>So funktioniert's:</strong><p style="margin-bottom:0">Jede Aufgabe basiert auf einer echten alten Prüfungs- oder Schulaufgabe: 1. Aufgabenstellung lesen, 2. Theorie zur Beantwortung lesen, 3. im Antwortraum deinen Fachaufsatz schreiben, danach die Erfolgskriterien nach dem echten Bewertungsbogen selbst ankreuzen, optional per fobizz-Assistent eine schnelle KI-Vorkorrektur holen und bei Bedarf zur Lehrkraft zur Korrektur einreichen. Deine Übungstexte sind privat – nur du selbst und Lehrkräfte sehen sie, nicht deine Mitschüler:innen.</p></div>
+ <div style="display:flex;gap:8px;flex-wrap:wrap;margin:16px 0">
+ ${essayLernbereiche.map(([code,label])=>{const c=LERNBEREICH_FARBEN[essayLernbereichNummer(code)];return`<span class="pill"style="background:${c.bg};color:${c.text}">${esc(code)} · ${esc(label)}</span>`;}).join("")}
+ </div>
+ ${!cases.length?`<div class="card empty"style="text-align:center"><strong>Noch keine Übungsaufgaben</strong><p style="margin-bottom:0">${isTeacher()?"Lege oben die erste Prüfungsaufgabe zum Üben an.":"Deine Lehrkraft stellt hier bald die ersten Prüfungsaufgaben zum Üben ein."}</p></div>`:""}
  ${grouped.map(g=>`
  <h3 style="margin:20px 0 10px">${esc(g.code)} – ${esc(g.label)}</h3>
- <div class="grid grid-3">${g.cases.map(essayCaseTileHTML).join("")||`<div class="empty">Noch kein Fallbeispiel in diesem Lernbereich.</div>`}</div>`).join("")}
+ <div class="grid grid-3">${g.cases.map(essayCaseTileHTML).join("")}</div>`).join("")}
  ${ungrouped.length?`<h3 style="margin:20px 0 10px">Ohne Lernbereich</h3><div class="grid grid-3">${ungrouped.map(essayCaseTileHTML).join("")}</div>`:""}
  ${footer()}`;
 }
@@ -7924,61 +7956,64 @@ function closeEssayCase(){activeEssayCaseId=null;go("fachaufsatz")}
 async function renderFachaufsatzBoard(){
  if(!activeEssayCaseId)return await renderFachaufsatzUebersicht();
  let c=null;
- if(activeEssayCaseId.startsWith("seed-")){
- c=ESSAY_SEED_CASES.find(s=>s.id===activeEssayCaseId)||null;
- }else{
  try{
  const snap=await getDoc(doc(db,"essayCases",activeEssayCaseId));
  c=snap.exists()?{id:snap.id,...snap.data()}:null;
- }catch(e){console.error("Fallbeispiel laden:",e)}
- }
+ }catch(e){console.error("Aufgabe laden:",e)}
  if(!c){
  activeEssayCaseId=null;
- toast("Dieses Fallbeispiel wurde nicht gefunden.");
+ toast("Diese Aufgabe wurde nicht gefunden.");
  return await renderFachaufsatzUebersicht();
  }
- const myEntries=await getMyEssayEntries(c.id);
- const byType={};myEntries.forEach(e=>byType[e.type]=e);
- const canManage=!c.isSeed&&(isTeacher()||c.createdBy===currentUser.uid);
+ const entry=await getMyEssayEntry(c.id);
+ const canManage=isTeacher()||c.createdBy===currentUser.uid;
+ const hasModel=!!(c.modelAnswer||"").trim();
  const teacherEntries=isTeacher()?await getAllEssayEntriesForCase(c.id):[];
- return`${pageHead("SELBSTSTÄNDIG LERNEN",esc(c.title||"Fallbeispiel"),
- essayLernbereichLabel(c.lernbereich)+(c.theoryArea?" · "+esc(c.theoryArea):""),`<button class="secondary"onclick="closeEssayCase()">← Fallbeispiel-Übersicht</button>
+ const taskcardLinks=await ladeTaskcardLinks();
+ const fobizzUrl=(taskcardLinks.fobizz_fachaufsatz||{}).url||"";
+ return`${pageHead("SELBSTSTÄNDIG LERNEN",esc(c.title||"Aufgabe"),
+ essayLernbereichLabel(c.lernbereich)+(c.quelle?" · "+esc(c.quelle):""),`<button class="secondary"onclick="closeEssayCase()">← Aufgaben-Übersicht</button>
  <button class="secondary"onclick="downloadEssayPDF('${c.id}')"> Meinen Aufsatz als PDF</button>
- ${canManage?`<button class="secondary"onclick="openEssayModelAnswersForm('${c.id}')"> Musterlösungen bearbeiten</button>`:""}
- ${canManage?`<button class="secondary"onclick="deleteEssayCase('${c.id}')">Fall löschen</button>`:""}`)}
- <div class="card">
- <h3 style="margin-top:0">Fallbeispiel</h3>
- ${c.caseText?`<p style="white-space:pre-wrap">${esc(c.caseText)}</p>`:""}
- ${c.pdfUrl?`<a href="${esc(c.pdfUrl)}"target="_blank"rel="noopener noreferrer"class="secondary"style="display:inline-block;text-decoration:none;padding:8px 14px;border-radius:8px;border:1px solid var(--line,#ddd);margin-top:${c.caseText?"10px":"0"}"> Fallbeispiel-PDF öffnen</a>`:""}
- ${!c.caseText&&!c.pdfUrl?`<p class="empty">Kein Fallbeispiel-Text oder -Link hinterlegt.</p>`:""}
+ ${canManage?`<button class="secondary"onclick="openEssayModelAnswerForm('${c.id}')"> Musterlösung bearbeiten</button>`:""}
+ ${canManage?`<button class="secondary"onclick="deleteEssayCase('${c.id}')">Aufgabe löschen</button>`:""}`)}
+ <div class="card"style="border-left:4px solid #9b59b6">
+ <h3 style="margin-top:0">1. Aufgabenstellung</h3>
+ <p style="white-space:pre-wrap">${esc(c.aufgabenstellung||"")||"Noch keine Aufgabenstellung hinterlegt."}</p>
+ ${c.pdfUrl?`<a href="${esc(c.pdfUrl)}"target="_blank"rel="noopener noreferrer"class="secondary"style="display:inline-block;text-decoration:none;padding:8px 14px;border-radius:8px;border:1px solid var(--line,#ddd);margin-top:10px"> Materialien/PDF öffnen</a>`:""}
  </div>
- ${essayParts.map(([type,label,criteria])=>{
- const entry=byType[type];
- const hasModel=!!(c.modelAnswers?.[type]||"").trim();
- return`<div class="card"style="margin-top:14px">
- <h3 style="margin-top:0">${esc(label)}</h3>
- <p style="margin:0 0 8px;color:var(--muted);font-size:12px">Erfolgskriterien – nach dem Schreiben selbst ankreuzen, was du erreicht hast:</p>
- <div class="ls-kprim-list"style="margin-bottom:12px">${criteria.map((cr,i)=>`<label class="ls-kprim-row"><input type="checkbox"data-selfcheck-type="${type}"data-selfcheck-index="${i}" ${entry?.selfCheck?.[i]?"checked":""}><span>${esc(cr)}</span></label>`).join("")}</div>
- <textarea id="essayText_${type}"rows="8"placeholder="Hier deinen Text schreiben …">${esc(entry?.text||"")}</textarea>
- <div class="form-actions"style="margin-top:8px;align-items:center">
- <button class="primary"onclick="saveEssayEntry('${c.id}','${type}')">Speichern</button>
+ <div class="card"style="margin-top:14px;border-left:4px solid #3fa66a">
+ <h3 style="margin-top:0">2. Theorie zur Beantwortung</h3>
+ ${c.theoriePdfUrl?`<a href="${esc(c.theoriePdfUrl)}"target="_blank"rel="noopener noreferrer"class="secondary"style="display:inline-block;text-decoration:none;padding:8px 14px;border-radius:8px;border:1px solid var(--line,#ddd);margin-bottom:${c.theorieinhalt?"10px":"0"}"> Lehrtext als PDF öffnen</a>`:""}
+ ${c.theorieinhalt?`<p style="white-space:pre-wrap">${esc(c.theorieinhalt)}</p>`:""}
+ ${!c.theorieinhalt&&!c.theoriePdfUrl?`<p class="empty">Noch kein Theorieinhalt hinterlegt.</p>`:""}
+ </div>
+ <div class="notice"style="margin-top:14px"><strong>Tipp fürs Schreiben:</strong><p style="margin-bottom:0">${esc(ESSAY_VORGEHEN_TIPP)}</p></div>
+ <div class="card"style="margin-top:14px">
+ <h3 style="margin-top:0">3. Raum zur Beantwortung</h3>
+ <textarea id="essayText"rows="12"placeholder="Hier deinen Fachaufsatz schreiben …">${esc(entry?.text||"")}</textarea>
+ <p style="margin:10px 0 8px;color:var(--muted);font-size:12px">Erfolgskriterien (Bewertungsbogen Pädagogik/Psychologie) – nach dem Schreiben selbst ankreuzen:</p>
+ <div class="ls-kprim-list"style="margin-bottom:12px">${ESSAY_KRITERIEN_FLAT.map((cr,i)=>`<label class="ls-kprim-row"><input type="checkbox"data-selfcheck-index="${i}" ${entry?.selfCheck?.[i]?"checked":""}><span>${esc(cr)}</span></label>`).join("")}</div>
+ <div class="form-actions"style="align-items:center">
+ <button class="primary"onclick="saveEssayEntry('${c.id}')">Speichern</button>
  ${entry?.updatedAt?`<small style="color:var(--muted)">Zuletzt gespeichert: ${fmtDate(entry.updatedAt)}</small>`:""}
- ${entry&&!entry.feedbackRequested?`<button class="secondary"onclick="requestEssayFeedback('${c.id}','${type}')"> Zur Korrektur einreichen</button>`:""}
+ ${entry&&!entry.feedbackRequested?`<button class="secondary"onclick="requestEssayFeedback('${c.id}')"> Zur Korrektur einreichen</button>`:""}
  ${entry?.feedbackRequested?`<span class="pill"> Rückmeldung angefragt</span>`:""}
- ${entry&&hasModel?`<button class="secondary"onclick="openEssayModelCompare('${c.id}','${type}')"> Mit Musterbeispiel vergleichen</button>`:""}
+ ${entry&&hasModel?`<button class="secondary"onclick="openEssayModelCompare('${c.id}')"> Mit Musterlösung vergleichen</button>`:""}
+ ${entry?.text?`<button class="secondary"onclick="kopiereFuerFobizz('${c.id}')">Text für fobizz kopieren</button>`:""}
+ ${entry?.text&&fobizzUrl?`<a class="secondary"style="text-decoration:none;display:inline-block;padding:9px 14px;border-radius:9px;border:1px solid var(--line,#ddd)"href="${esc(fobizzUrl)}"target="_blank"rel="noopener">fobizz-Assistent öffnen →</a>`:""}
+ ${isTeacher()?`<button class="text-button"style="font-size:11px"onclick="taskcardLinkBearbeiten('fobizz_fachaufsatz','${esc(fobizzUrl).replace(/'/g,"&#39;")}')">${fobizzUrl?"fobizz-Link ändern":"＋ fobizz-Link hinterlegen"}</button>`:""}
  </div>
+ ${entry?.text?`<small style="display:block;margin-top:6px;color:var(--muted)">Tipp: Erst „Text für fobizz kopieren", dann „fobizz-Assistent öffnen" und den Text dort einfügen – für eine schnelle KI-Vorkorrektur, bevor du bei der Lehrkraft zur Korrektur einreichst.</small>`:""}
  ${entry?.feedback?`<div class="notice"style="margin-top:10px"><strong> Rückmeldung von ${esc(entry.feedbackBy||"Lehrkraft")}</strong><p style="margin-bottom:0;white-space:pre-wrap">${esc(entry.feedback)}</p></div>`:""}
- </div>`;
- }).join("")}
+ </div>
  ${isTeacher()?`<div class="card"style="margin-top:14px">
  <h3 style="margin-top:0"> Für Lehrkräfte: Abgaben der Klasse</h3>
  <p style="color:var(--muted);font-size:12px;margin-top:-6px">Übungstexte sind privat. Die Ampel zeigt die Selbsteinschätzung – so siehst du auf einen Blick, wo ein Blick sich lohnt, ohne jeden Text vollständig lesen zu müssen.</p>
  <div class="list">${teacherEntries.map(e=>{
- const criteriaCount=(essayParts.find(p=>p[0]===e.type)?.[2]||[]).length;
- const st=essaySelfCheckStatus(e,criteriaCount);
+ const st=essaySelfCheckStatus(e,ESSAY_KRITERIEN_FLAT.length);
  return`<div class="list-item">
- <div><strong>${esc(e.name||"Campus-Mitglied")}</strong><small>${esc(essayPartLabel(e.type))}${e.feedbackRequested?" · Rückmeldung angefragt":e.feedback?" · ✅ Rückmeldung gegeben":""}</small></div>
- <div style="display:flex;align-items:center;gap:8px">${st.color?`<span class="pill${st.color==="green"?"green":""}"style="${st.color==="yellow"?"background:#fdecb8;color:#916d0b":st.color==="red"?"background:#fad2d5;color:#b32b32":""}"title="${esc(st.label)}">${st.color==="green"?"🟢":st.color==="yellow"?"🟡":"🔴"}</span>`:`<span class="pill"title="Noch keine Selbsteinschätzung"></span>`}<button class="secondary"onclick="openTeacherFeedbackForm('${e.id}','${esc(e.name||"Campus-Mitglied")}','${esc(essayPartLabel(e.type))}','${esc(e.text||"")}','${esc(e.feedback||"")}')">${e.feedback?"Rückmeldung bearbeiten":"Antworten"}</button></div>
+ <div><strong>${esc(e.name||"Campus-Mitglied")}</strong><small>${e.feedbackRequested?"Rückmeldung angefragt":e.feedback?"✅ Rückmeldung gegeben":"Noch nicht eingereicht"}</small></div>
+ <div style="display:flex;align-items:center;gap:8px">${st.color?`<span class="pill${st.color==="green"?"green":""}"style="${st.color==="yellow"?"background:#fdecb8;color:#916d0b":st.color==="red"?"background:#fad2d5;color:#b32b32":""}"title="${esc(st.label)}">${st.color==="green"?"🟢":st.color==="yellow"?"🟡":"🔴"}</span>`:`<span class="pill"title="Noch keine Selbsteinschätzung"></span>`}<button class="secondary"onclick="openTeacherFeedbackForm('${e.id}','${esc(e.name||"Campus-Mitglied")}','${esc(c.title||"Aufgabe")}','${esc(e.text||"")}','${esc(e.feedback||"")}')">${e.feedback?"Rückmeldung bearbeiten":"Antworten"}</button></div>
  </div>`;
  }).join("")||`<div class="empty">Noch keine Abgaben.</div>`}</div>
  </div>`:""}
@@ -7986,16 +8021,19 @@ async function renderFachaufsatzBoard(){
 }
 
 function openEssayCaseForm(){
- if(!isApproved()){toast("Nur freigeschaltete Nutzer können ein Fallbeispiel anlegen.");return}
+ if(!isTeacher()){toast("Nur Lehrkräfte können eine Aufgabe anlegen.");return}
  modal(`<button class="modal-close"onclick="closeModal()">×</button>
  <div class="kicker">FACHAUFSATZ-TRAINING</div>
- <h2>Neues Fallbeispiel</h2>
+ <h2>Neue Aufgabe</h2>
+ <p style="color:var(--muted);font-size:13px;margin-top:-4px">Lade die Aufgabenstellung einer echten (alten) Prüfungs- oder Schulaufgabe hoch, dazu den Theorieteil, der zur Beantwortung nötig ist – als PDF-Link (z. B. Google Drive) und/oder als Text. Die Schüler:innen sehen dann: 1. Aufgabenstellung, 2. Theorie als Lehrtext, 3. Raum zur Beantwortung mit Selbsteinschätzung und fobizz-Vorkorrektur.</p>
  <div class="form">
- <label>Titel<input id="ecTitle"maxlength="150"placeholder="z. B. Der Kindergarten-Konflikt"></label>
+ <label>Titel<input id="ecTitle"maxlength="150"placeholder="z. B. Schulaufgabe PäPsy 2024, Aufgabe 2"></label>
  <label>Lernbereich<select id="ecLernbereich">${essayLernbereiche.map(([code,label])=>`<option value="${code}">${esc(code)} – ${esc(label)}</option>`).join("")}</select></label>
- <label>Theoriebereich (optional)<input id="ecTheoryArea"maxlength="150"placeholder="z. B. Bindungstheorie nach Bowlby"></label>
- <label>Fallbeispiel-Text (optional, falls kein PDF-Link)<textarea id="ecCaseText"rows="6"maxlength="3000"placeholder="Beschreibung des Falls …"></textarea></label>
- <label>Link zur Fallbeispiel-PDF (optional, z. B. Google Drive)<input id="ecPdfUrl"type="url"placeholder="https://…"></label>
+ <label>Quelle (optional)<input id="ecQuelle"maxlength="200"placeholder="z. B. Schulaufgabe 2024, 2. Halbjahr"></label>
+ <label>Aufgabenstellung<textarea id="ecFrage"rows="6"maxlength="4000"placeholder="Die vollständige Aufgabenstellung (inkl. Fallbeispiel/Material, falls Teil der Aufgabe) …"></textarea></label>
+ <label>Theorie als PDF (Lehrtext, z. B. Google Drive-Link) – wird den Schüler:innen als Lehrtext zur Verfügung gestellt<input id="ecTheoriePdfUrl"type="url"placeholder="https://…"></label>
+ <label>Theorie zur Beantwortung als Text (optional, zusätzlich zur PDF oder allein)<textarea id="ecTheorieinhalt"rows="6"maxlength="6000"placeholder="Stichpunkte/Zusammenfassung, falls kein PDF-Lehrtext oder zusätzlich dazu …"></textarea></label>
+ <label>Link zu weiteren Materialien (optional, z. B. Google Drive)<input id="ecPdfUrl"type="url"placeholder="https://…"></label>
  <div class="form-actions">
  <button class="secondary"onclick="closeModal()">Abbrechen</button>
  <button class="primary"onclick="addEssayCase()">Anlegen</button>
@@ -8006,49 +8044,52 @@ function openEssayCaseForm(){
 async function addEssayCase(){
  const title=$("ecTitle")?.value.trim()||"";
  const lernbereich=$("ecLernbereich")?.value||"";
- const theoryArea=$("ecTheoryArea")?.value.trim()||"";
- const caseText=$("ecCaseText")?.value.trim()||"";
+ const quelle=$("ecQuelle")?.value.trim()||"";
+ const aufgabenstellung=$("ecFrage")?.value.trim()||"";
+ const theoriePdfUrlRaw=$("ecTheoriePdfUrl")?.value.trim()||"";
+ const theorieinhalt=$("ecTheorieinhalt")?.value.trim()||"";
  const pdfUrlRaw=$("ecPdfUrl")?.value.trim()||"";
  if(!title){toast("Bitte einen Titel eingeben.");return}
- if(!caseText&&!pdfUrlRaw){toast("Bitte entweder einen Fallbeispiel-Text oder einen PDF-Link angeben.");return}
+ if(!aufgabenstellung){toast("Bitte die Aufgabenstellung eingeben.");return}
+ if(!theoriePdfUrlRaw&&!theorieinhalt){toast("Bitte die Theorie entweder als PDF-Link oder als Text eingeben.");return}
+ const theoriePdfUrl=theoriePdfUrlRaw?normalizeExternalUrl(theoriePdfUrlRaw):"";
  const pdfUrl=pdfUrlRaw?normalizeExternalUrl(pdfUrlRaw):"";
  try{
  await addDoc(collection(db,"essayCases"),{
- title,lernbereich,theoryArea,caseText,pdfUrl,
+ title,lernbereich,quelle,aufgabenstellung,theoriePdfUrl,theorieinhalt,pdfUrl,
  createdBy:currentUser.uid,
- createdByName:profile?.displayName||currentUser.email||"Campus-Mitglied",
+ createdByName:profile?.displayName||currentUser.email||"Lehrkraft",
  createdAt:serverTimestamp()
  });
- closeModal();await render();toast("Fallbeispiel angelegt.");
+ closeModal();await render();toast("Aufgabe angelegt.");
  }catch(e){
- console.error("Fallbeispiel anlegen:",e);
- toast(e?.code==="permission-denied"?"Firebase verweigert das Anlegen. Bitte die Firestore-Regeln prüfen.":"Fallbeispiel konnte nicht angelegt werden.");
+ console.error("Aufgabe anlegen:",e);
+ toast(e?.code==="permission-denied"?"Firebase verweigert das Anlegen. Bitte die Firestore-Regeln prüfen.":"Aufgabe konnte nicht angelegt werden.");
  }
 }
 
 async function deleteEssayCase(id){
- if(!isTeacher()){toast("Nur Lehrkräfte können ein Fallbeispiel löschen.");return}
- if(!confirm("Dieses Fallbeispiel inklusive aller Übungstexte der Klasse wirklich löschen?"))return;
+ if(!isTeacher()){toast("Nur Lehrkräfte können eine Aufgabe löschen.");return}
+ if(!confirm("Diese Aufgabe inklusive aller Übungstexte der Klasse wirklich löschen?"))return;
  try{
  const entries=await getAllEssayEntriesForCase(id);
  await Promise.all(entries.map(e=>deleteDoc(doc(db,"essayEntries",e.id))));
  await deleteDoc(doc(db,"essayCases",id));
  if(activeEssayCaseId===id)activeEssayCaseId=null;
  go("fachaufsatz");
- toast("Fallbeispiel gelöscht.");
- }catch(e){console.error("Fallbeispiel löschen:",e);toast("Fallbeispiel konnte nicht vollständig gelöscht werden.")}
+ toast("Aufgabe gelöscht.");
+ }catch(e){console.error("Aufgabe löschen:",e);toast("Aufgabe konnte nicht vollständig gelöscht werden.")}
 }
 
-async function saveEssayEntry(caseId,type){
+async function saveEssayEntry(caseId){
  if(!isApproved()){toast("Nur freigeschaltete Nutzer können Texte speichern.");return}
- const text=$(`essayText_${type}`)?.value.trim()||"";
+ const text=$("essayText")?.value.trim()||"";
  if(!text){toast("Bitte einen Text eingeben, bevor du speicherst.");return}
- const criteria=(essayParts.find(p=>p[0]===type)?.[2])||[];
  const selfCheck={};
- criteria.forEach((_,i)=>{selfCheck[i]=!!document.querySelector(`[data-selfcheck-type="${CSS.escape(type)}"][data-selfcheck-index="${i}"]`)?.checked});
+ ESSAY_KRITERIEN_FLAT.forEach((_,i)=>{selfCheck[i]=!!document.querySelector(`[data-selfcheck-index="${i}"]`)?.checked});
  try{
- await setDoc(doc(db,"essayEntries",`${caseId}_${type}_${currentUser.uid}`),{
- caseId,type,uid:currentUser.uid,
+ await setDoc(doc(db,"essayEntries",`${caseId}_${currentUser.uid}`),{
+ caseId,uid:currentUser.uid,
  name:profile?.displayName||currentUser.email||"Campus-Mitglied",
  text,selfCheck,selfCheckAt:serverTimestamp(),updatedAt:serverTimestamp()
  },{merge:true});
@@ -8056,78 +8097,71 @@ async function saveEssayEntry(caseId,type){
  showMotivationsBild();
  toast("Gespeichert.");
  }catch(e){
- console.error("Fachaufsatz-Baustein speichern:",e);
+ console.error("Fachaufsatz speichern:",e);
  toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Text konnte nicht gespeichert werden.");
  }
 }
 
-// Zeigt den eigenen Text neben dem Musterbeispiel der Lehrkraft, mit
-// gezielten Vergleichsfragen statt einer einfachen Musterlösung zum Abschreiben.
-async function openEssayModelCompare(caseId,type){
+// Zeigt den eigenen Text neben der Musterlösung der Lehrkraft, mit
+// gezielten Vergleichsfragen statt einer einfachen Lösung zum Abschreiben.
+async function openEssayModelCompare(caseId){
  try{
- let c=null;
- if(caseId.startsWith("seed-")){
- c=ESSAY_SEED_CASES.find(s=>s.id===caseId)||null;
- }else{
- const snap=await getDoc(doc(db,"essayCases",caseId));
- c=snap.exists()?{id:snap.id,...snap.data()}:null;
- }
- if(!c){toast("Dieses Fallbeispiel wurde nicht gefunden.");return}
- const model=(c.modelAnswers?.[type]||"").trim();
- if(!model){toast("Für diesen Baustein ist noch kein Musterbeispiel hinterlegt.");return}
- const myEntries=await getMyEssayEntries(caseId);
- const myText=myEntries.find(e=>e.type===type)?.text||"";
- const part=essayParts.find(p=>p[0]===type);
- const compareQuestions=part?.[3]||[];
- modal(`<button class="modal-close"onclick="closeModal()">×</button>
- <div class="kicker">FACHAUFSATZ-TRAINING · SELBSTVERGLEICH</div>
- <h2>${esc(essayPartLabel(type))} – Vergleich mit dem Musterbeispiel</h2>
- <p style="color:var(--muted);font-size:12px">Lies zuerst deinen eigenen Text nochmal durch, dann das Musterbeispiel. Die Fragen unten helfen dir beim Vergleichen.</p>
- <div class="card"style="background:#f7fafc;margin-bottom:10px"><strong>Dein Text</strong><p style="white-space:pre-wrap;margin:6px 0 0">${esc(myText)||"(kein Text gespeichert)"}</p></div>
- <div class="card"style="border-left:4px solid #3fa66a;margin-bottom:10px"><strong> Musterbeispiel</strong><p style="white-space:pre-wrap;margin:6px 0 0">${esc(model)}</p></div>
- ${compareQuestions.length?`<div class="notice"><strong>Zum Vergleichen</strong><ul style="margin:8px 0 0;padding-left:18px">${compareQuestions.map(q=>`<li>${esc(q)}</li>`).join("")}</ul></div>`:""}
- <div class="form-actions"><button class="secondary"onclick="closeModal()">Schließen</button></div>`);
- }catch(e){console.error("Musterbeispiel-Vergleich:",e);toast("Der Vergleich konnte nicht geöffnet werden.")}
-}
-
-// Lehrkraft: pro Fallbeispiel für jeden der vier Bausteine ein Musterbeispiel
-// hinterlegen, das Schüler:innen zum Selbstvergleich nutzen können.
-async function openEssayModelAnswersForm(caseId){
- if(!isTeacher()){toast("Nur Lehrkräfte können Musterlösungen hinterlegen.");return}
  const snap=await getDoc(doc(db,"essayCases",caseId));
  const c=snap.exists()?{id:snap.id,...snap.data()}:null;
- if(!c){toast("Dieses Fallbeispiel wurde nicht gefunden.");return}
+ if(!c){toast("Diese Aufgabe wurde nicht gefunden.");return}
+ const model=(c.modelAnswer||"").trim();
+ if(!model){toast("Für diese Aufgabe ist noch keine Musterlösung hinterlegt.");return}
+ const entry=await getMyEssayEntry(caseId);
+ const myText=entry?.text||"";
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+ <div class="kicker">FACHAUFSATZ-TRAINING · SELBSTVERGLEICH</div>
+ <h2>${esc(c.title||"Aufgabe")} – Vergleich mit der Musterlösung</h2>
+ <p style="color:var(--muted);font-size:12px">Lies zuerst deinen eigenen Text nochmal durch, dann die Musterlösung. Die Fragen unten helfen dir beim Vergleichen.</p>
+ <div class="card"style="background:#f7fafc;margin-bottom:10px"><strong>Dein Text</strong><p style="white-space:pre-wrap;margin:6px 0 0">${esc(myText)||"(kein Text gespeichert)"}</p></div>
+ <div class="card"style="border-left:4px solid #3fa66a;margin-bottom:10px"><strong> Musterlösung</strong><p style="white-space:pre-wrap;margin:6px 0 0">${esc(model)}</p></div>
+ <div class="notice"><strong>Zum Vergleichen</strong><ul style="margin:8px 0 0;padding-left:18px">${ESSAY_VERGLEICHSFRAGEN.map(q=>`<li>${esc(q)}</li>`).join("")}</ul></div>
+ <div class="form-actions"><button class="secondary"onclick="closeModal()">Schließen</button></div>`);
+ }catch(e){console.error("Musterlösung-Vergleich:",e);toast("Der Vergleich konnte nicht geöffnet werden.")}
+}
+
+// Lehrkraft: pro Aufgabe eine Musterlösung hinterlegen, die
+// Schüler:innen zum Selbstvergleich nutzen können.
+async function openEssayModelAnswerForm(caseId){
+ if(!isTeacher()){toast("Nur Lehrkräfte können eine Musterlösung hinterlegen.");return}
+ const snap=await getDoc(doc(db,"essayCases",caseId));
+ const c=snap.exists()?{id:snap.id,...snap.data()}:null;
+ if(!c){toast("Diese Aufgabe wurde nicht gefunden.");return}
  window.__essayModelCaseId=caseId;
  modal(`<button class="modal-close"onclick="closeModal()">×</button>
- <div class="kicker">FACHAUFSATZ-TRAINING · MUSTERLÖSUNGEN</div>
- <h2>${esc(c.title||"Fallbeispiel")}</h2>
- <p style="color:var(--muted);font-size:12px">Diese Musterbeispiele sehen Schüler:innen erst, nachdem sie ihren eigenen Baustein geschrieben haben – zum Selbstvergleich, nicht zum Abschreiben.</p>
- <div class="form">${essayParts.map(([type,label])=>`<label>${esc(label)}<textarea id="emaText_${type}"rows="6"placeholder="Musterbeispiel für diesen Baustein …">${esc(c.modelAnswers?.[type]||"")}</textarea></label>`).join("")}
+ <div class="kicker">FACHAUFSATZ-TRAINING · MUSTERLÖSUNG</div>
+ <h2>${esc(c.title||"Aufgabe")}</h2>
+ <p style="color:var(--muted);font-size:12px">Diese Musterlösung sehen Schüler:innen erst, nachdem sie ihren eigenen Text geschrieben haben – zum Selbstvergleich, nicht zum Abschreiben.</p>
+ <div class="form">
+ <label>Musterlösung<textarea id="emaText"rows="12"placeholder="Musterlösung für diese Aufgabe …">${esc(c.modelAnswer||"")}</textarea></label>
  <div class="form-actions">
  <button class="secondary"onclick="closeModal()">Abbrechen</button>
- <button class="primary"onclick="saveEssayModelAnswers()">Speichern</button>
+ <button class="primary"onclick="saveEssayModelAnswer()">Speichern</button>
  </div>
  </div>`);
 }
 
-async function saveEssayModelAnswers(){
+async function saveEssayModelAnswer(){
  const caseId=window.__essayModelCaseId;
  if(!caseId||!isTeacher())return;
- const modelAnswers={};
- essayParts.forEach(([type])=>{modelAnswers[type]=$(`emaText_${type}`)?.value.trim()||""});
+ const modelAnswer=$("emaText")?.value.trim()||"";
  try{
- await updateDoc(doc(db,"essayCases",caseId),{modelAnswers,updatedAt:serverTimestamp()});
- closeModal();await render();toast("Musterlösungen gespeichert.");
+ await updateDoc(doc(db,"essayCases",caseId),{modelAnswer,updatedAt:serverTimestamp()});
+ closeModal();await render();toast("Musterlösung gespeichert.");
  }catch(e){
- console.error("Musterlösungen speichern:",e);
- toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Musterlösungen konnten nicht gespeichert werden.");
+ console.error("Musterlösung speichern:",e);
+ toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Musterlösung konnte nicht gespeichert werden.");
  }
 }
 
-async function requestEssayFeedback(caseId,type){
+async function requestEssayFeedback(caseId){
  if(!isApproved()){toast("Nur freigeschaltete Nutzer können eine Rückmeldung anfordern.");return}
  try{
- await updateDoc(doc(db,"essayEntries",`${caseId}_${type}_${currentUser.uid}`),{
+ await updateDoc(doc(db,"essayEntries",`${caseId}_${currentUser.uid}`),{
  feedbackRequested:true,feedbackRequestedAt:serverTimestamp()
  });
  await render();
@@ -8137,6 +8171,43 @@ async function requestEssayFeedback(caseId,type){
  toast(e?.code==="permission-denied"?"Firebase verweigert die Anfrage. Bitte die Firestore-Regeln prüfen.":"Anfrage konnte nicht gesendet werden.");
  }
 }
+
+// ---- KI-Vorkorrektur über einen fobizz-Assistenten -----------------------
+// fobizz bietet keine Schnittstelle, über die man einen bestimmten
+// Assistenten direkt aus einer fremden Webseite heraus automatisch
+// aufrufen könnte – Assistenten laufen ausschließlich im fobizz-KI-Chat
+// selbst. Der Weg hier: Text + Kontext in die Zwischenablage kopieren,
+// die Person öffnet den fobizz-Assistenten (Link von der Lehrkraft
+// hinterlegt) und fügt den kopierten Text dort ein.
+async function kopiereFuerFobizz(caseId){
+ const text=$("essayText")?.value.trim()||"";
+ if(!text){toast("Bitte zuerst einen Text schreiben und speichern.");return}
+ try{
+ const caseSnap=await getDoc(doc(db,"essayCases",caseId));
+ const c=caseSnap.exists()?caseSnap.data():{};
+ const block=`Aufgabe: ${c.title||""}
+
+Erfolgskriterien (Bewertungsbogen Pädagogik/Psychologie):
+${ESSAY_KRITERIEN_FLAT.map(k=>`- ${k}`).join("\n")}
+
+Aufgabenstellung:
+${c.aufgabenstellung||"(nicht hinterlegt)"}
+
+Theorie zur Beantwortung:
+${c.theorieinhalt||(c.theoriePdfUrl?"(als PDF-Lehrtext hinterlegt, siehe Link in der App)":"(nicht hinterlegt)")}
+
+Mein Fachaufsatz:
+${text}
+
+Bitte gib mir eine kurze, konstruktive Vorkorrektur: Was ist gut, was fehlt fachlich noch, sind die Erfolgskriterien erfüllt? Keine Note, keine Musterlösung.`;
+ await navigator.clipboard.writeText(block);
+ toast("In die Zwischenablage kopiert – jetzt beim fobizz-Assistenten einfügen.");
+ }catch(e){
+ console.error("Für fobizz kopieren:",e);
+ toast("Konnte nicht in die Zwischenablage kopiert werden.");
+ }
+}
+window.kopiereFuerFobizz=kopiereFuerFobizz;
 
 function openTeacherFeedbackForm(entryId,name,partLabel,text,existingFeedback){
  window.__feedbackEntryId=entryId;
@@ -8177,19 +8248,42 @@ async function downloadEssayPDF(caseId){
  try{
  const snap=await getDoc(doc(db,"essayCases",caseId));
  const c=snap.exists()?{id:snap.id,...snap.data()}:null;
- if(!c){toast("Dieses Fallbeispiel wurde nicht gefunden.");return}
- const myEntries=await getMyEssayEntries(caseId);
- const byType={};myEntries.forEach(e=>byType[e.type]=e);
- const body=essayParts.map(([type,label])=>`<div class="item">
- <strong>${escPDF(label)}</strong>
- <div>${byType[type]?escPDF(byType[type].text).replace(/\n/g,"<br>"):"<em>Noch nicht geschrieben.</em>"}</div>
- </div>`).join("");
+ if(!c){toast("Diese Aufgabe wurde nicht gefunden.");return}
+ const entry=await getMyEssayEntry(caseId);
+ const body=`<div class="item">
+ <strong>Aufgabenstellung</strong>
+ <div>${escPDF(c.aufgabenstellung||"").replace(/\n/g,"<br>")}</div>
+ </div>
+ <div class="item">
+ <strong>Mein Fachaufsatz</strong>
+ <div>${entry?.text?escPDF(entry.text).replace(/\n/g,"<br>"):"<em>Noch nicht geschrieben.</em>"}</div>
+ </div>`;
  openToolPrintWindow(
- "Fachaufsatz – "+(c.title||"Fallbeispiel"),
- body,"F11Sb · Fachaufsatz-Training"+(c.theoryArea?" · "+c.theoryArea:"")
+ "Fachaufsatz – "+(c.title||"Aufgabe"),
+ body,"F11Sb · Fachaufsatz-Training"+(c.quelle?" · "+c.quelle:"")
  );
  }catch(e){console.error("Fachaufsatz PDF:",e);toast("Der Aufsatz konnte nicht als PDF geöffnet werden.")}
 }
+
+// ---- Kleine, generische TaskCard-Link-Ablage (aktuell nur für den
+// fobizz-Assistenten im Fachaufsatz-Training genutzt) ----------------------
+async function ladeTaskcardLinks(){
+ try{
+  const s=await getDocs(collection(db,"taskcardLinks"));
+  const map={};s.docs.forEach(d=>map[d.id]=d.data());
+  return map;
+ }catch(e){console.error("TaskCard-Links laden:",e);return{};}
+}
+async function taskcardLinkBearbeiten(lbKey,aktuell){
+ const url=prompt("Link hinterlegen:",aktuell||"https://");
+ if(url===null)return;
+ try{
+  await setDoc(doc(db,"taskcardLinks",lbKey),{url:url.trim(),updatedAt:serverTimestamp(),updatedBy:currentUser.uid});
+  await render();toast("Link gespeichert.");
+ }catch(e){console.error(e);toast("Konnte nicht gespeichert werden.");}
+}
+window.taskcardLinkBearbeiten=taskcardLinkBearbeiten;
+
 
 
 
@@ -12782,8 +12876,8 @@ window.requestEssayFeedback=requestEssayFeedback;
 window.openTeacherFeedbackForm=openTeacherFeedbackForm;
 window.submitTeacherFeedback=submitTeacherFeedback;
 window.openEssayModelCompare=openEssayModelCompare;
-window.openEssayModelAnswersForm=openEssayModelAnswersForm;
-window.saveEssayModelAnswers=saveEssayModelAnswers;
+window.openEssayModelAnswerForm=openEssayModelAnswerForm;
+window.saveEssayModelAnswer=saveEssayModelAnswer;
 
 
 /* CAMPUS MODULE BRIDGE
