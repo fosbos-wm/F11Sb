@@ -446,6 +446,16 @@ service cloud.firestore {
     }
 
     // ---------------------------------------------------------
+    // ZUORDNUNGSÜBUNGEN (Begriff ↔ Erklärung)
+    // ---------------------------------------------------------
+    match /zuordnungen/{id} {
+      allow read: if isApproved();
+      allow create: if isTeacher()
+        && request.resource.data.createdBy == request.auth.uid;
+      allow update, delete: if isTeacher();
+    }
+
+    // ---------------------------------------------------------
     // FACHAUFSATZ-TRAINING (Pädagogik/Psychologie, an echten
     // Prüfungs-/Schulaufgaben). Übungstexte sind PRIVAT – exakt wie
     // beim Lernjournal darf nur die schreibende Person oder eine

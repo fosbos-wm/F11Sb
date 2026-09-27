@@ -5502,7 +5502,8 @@ async function renderLernwerkstatt(){
  [" ","Lernmethoden","Planung, Lernen, Zusammenarbeit und Reflexion.","methoden"],
  [" ","Lern-Werkzeuge","Karteikarten, Fokus-Timer und Glossar zum selbstständigen Lernen.","lernwerkzeuge"],
  [" ","Uhr & Timer","Aktuelle Uhrzeit im Blick, plus frei einstellbarer Timer für alle.","uhr-timer"],
- [" ","Fachaufsatz-Training","Fachaufsatz Pädagogik/Psychologie Baustein für Baustein üben.","fachaufsatz"],
+ [" ","Fachaufsatz-Training","Fachaufsatz Pädagogik/Psychologie an echten Prüfungsaufgaben üben.","fachaufsatz"],
+ [" ","Zuordnungsübungen","Begriff und Erklärung zuordnen, per Knopfdruck selbst überprüfen.","zuordnung"],
  [" ","Tools für Zusammenarbeit","Padlet, Wortwolke & Co. für Gruppenarbeit und Unterricht.","kollaboration"],
  [" ","Lernressourcen","TaskCard, KI, Videos, ByCS/mebis, Canva und LearningApps.","ressourcen"],
  [" ","KI zum Lernen","KI als Lernpartner nutzen – bereitgestellte KI-Angebote der Lehrkräfte.","ki-lernen"],
@@ -7197,6 +7198,221 @@ async function renderLernWerkzeuge(){
 <strong>${t[1]}</strong><small>${t[2]}</small></a>`).join("")}</div>
  ${footer()}`;
 }
+
+/* =========================================================
+ ZUORDNUNGSÜBUNGEN – Begriff ↔ Erklärung. Eine Lehrkraft (oder du
+ selbst über einen KI-Assistenten/fobizz) bereitet die Paare aus
+ einem Text vor und trägt sie ein; Schüler:innen ordnen zu und
+ prüfen per Knopfdruck selbst. Eine automatische Begriffs-Erkennung
+ aus hochgeladenem Text direkt in der App gibt es bewusst nicht –
+ das bräuchte eine serverseitige KI-Anbindung (siehe Fachaufsatz-
+ Training/fobizz). Ein Doc pro Übung, Paare als Array im selben Doc.
+ Collection: "zuordnungen".
+ ========================================================= */
+let activeZuordnungId=null;
+async function getZuordnungen(){return await getCollection("zuordnungen")}
+
+function parseZuordnungPaare(rohtext){
+ return rohtext.split("\n").map(z=>z.trim()).filter(Boolean).map(z=>{
+ const i=z.indexOf("=");
+ if(i===-1)return null;
+ const begriff=z.slice(0,i).trim(),erklaerung=z.slice(i+1).trim();
+ return(begriff&&erklaerung)?{begriff,erklaerung}:null;
+ }).filter(Boolean);
+}
+
+async function renderZuordnungUebersicht(){
+ const uebungen=await getZuordnungen();
+ return`${pageHead("SELBSTSTÄNDIG LERNEN","Zuordnungsübungen","Begriff und Erklärung zuordnen – am Ende per Knopfdruck selbst überprüfen.",`<button class="secondary"onclick="go('lernwerkstatt')">← Lernwerkstatt</button>
+ ${isTeacher()?`<button class="primary"onclick="openZuordnungForm()">＋ Neue Übung</button>`:""}`)}
+ <div class="grid grid-3">${uebungen.map(u=>`
+ <div class="card tile"style="cursor:pointer;text-align:left"onclick="openZuordnung('${u.id}')">
+ <strong>${esc(u.title||"Zuordnungsübung")}</strong>
+ <small>${(u.paare||[]).length} Begriffe${u.description?" · "+esc(u.description):""}</small>
+ </div>`).join("")||`<div class="empty"><strong>Noch keine Zuordnungsübung.</strong>${isTeacher()?"Lege die erste Übung an.":"Deine Lehrkraft hat noch keine Übung angelegt."}</div>`}
+ </div>${footer()}`;
+}
+
+function openZuordnung(id){activeZuordnungId=id;go("zuordnung-board")}
+function closeZuordnung(){activeZuordnungId=null;go("zuordnung")}
+
+// aktueller Spielstand (nur im Speicher, kein Firestore nötig)
+let zuordnungShuffle=[],zuordnungGeloest={};
+// Farbpalette für die Begriffs-Kacheln (zyklisch, nur zur Unterscheidbarkeit –
+// ohne inhaltliche Bedeutung wie bei den Lernbereichs-Farben).
+const ZU_FARBEN=[
+ {bg:"#E6F1FB",text:"#0C447C"},{bg:"#EEEDFE",text:"#3C3489"},{bg:"#EAF3DE",text:"#27500A"},
+ {bg:"#FAEEDA",text:"#633806"},{bg:"#E1F5EE",text:"#085041"},{bg:"#FBEAF0",text:"#72243E"}
+];
+
+async function renderZuordnungBoard(){
+ if(!activeZuordnungId)return await renderZuordnungUebersicht();
+ let u=null;
+ try{
+ const snap=await getDoc(doc(db,"zuordnungen",activeZuordnungId));
+ u=snap.exists()?{id:snap.id,...snap.data()}:null;
+ }catch(e){console.error("Zuordnungsübung laden:",e)}
+ if(!u){
+ activeZuordnungId=null;
+ toast("Diese Übung wurde nicht gefunden.");
+ return await renderZuordnungUebersicht();
+ }
+ const paare=u.paare||[];
+ if(zuordnungShuffle.length!==paare.length){
+ zuordnungShuffle=paare.map((_,i)=>i);
+ for(let i=zuordnungShuffle.length-1;i>0;i--){
+ const j=Math.floor(Math.random()*(i+1));
+ [zuordnungShuffle[i],zuordnungShuffle[j]]=[zuordnungShuffle[j],zuordnungShuffle[i]];
+ }
+ zuordnungGeloest={};
+ }
+ const canManage=isTeacher();
+ const geloestCount=Object.keys(zuordnungGeloest).length;
+ const fertig=paare.length>0&&geloestCount===paare.length;
+ return`${pageHead("SELBSTSTÄNDIG LERNEN",esc(u.title||"Zuordnungsübung"),esc(u.description||"")||"Ziehe jeden Begriff auf die passende Erklärung.",
+ `<button class="secondary"onclick="closeZuordnung()">← Zuordnungsübungen</button>
+ ${canManage?`<button class="secondary"onclick="deleteZuordnung('${u.id}')">Übung löschen</button>`:""}`)}
+ <style>
+ .zu-spielfeld{display:flex;gap:20px;align-items:flex-start}
+ .zu-col{flex:1;display:flex;flex-direction:column;gap:10px;min-width:0}
+ .zu-tile{border-radius:12px;font-size:14px;line-height:1.3;transition:opacity .15s,border-color .2s}
+ .zu-begriff{padding:14px 10px;min-height:36px;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:700;cursor:grab;touch-action:none;user-select:none;border:2px solid transparent}
+ .zu-begriff.zu-geloest{cursor:default;opacity:.75;border-color:#3fa66a}
+ .zu-erklaerung{padding:12px 14px;background:#fff;border:2px solid var(--line,#e2eaf0);color:var(--ink)}
+ .zu-erklaerung.zu-geloest{border-color:#3fa66a;background:#eaf3de;opacity:.75}
+ .zu-erklaerung.zu-falsch{border-color:#d92c34!important;background:#fad2d5!important}
+ </style>
+ ${paare.length?`<div class="card">
+ <p style="margin:0 0 14px;color:var(--muted);font-size:13px">Ziehe jede Begriffs-Kachel links auf ihre passende Erklärung rechts.</p>
+ <div class="zu-spielfeld">
+ <div class="zu-col">
+ ${paare.map((p,i)=>{
+ const f=ZU_FARBEN[i%ZU_FARBEN.length];
+ const geloest=!!zuordnungGeloest[i];
+ return`<div class="zu-tile zu-begriff${geloest?" zu-geloest":""}"data-index="${i}"style="background:${geloest?"#eaf3de":f.bg};color:${geloest?"#27500A":f.text}">${esc(p.begriff)}</div>`;
+ }).join("")}
+ </div>
+ <div class="zu-col">
+ ${zuordnungShuffle.map(j=>{
+ const geloest=!!zuordnungGeloest[j];
+ return`<div class="zu-tile zu-erklaerung${geloest?" zu-geloest":""}"data-index="${j}">${esc(paare[j].erklaerung)}</div>`;
+ }).join("")}
+ </div>
+ </div>
+ </div>
+ <div class="form-actions"style="margin-top:14px">
+ ${fertig?`<span class="pill green">Alle ${paare.length} richtig zugeordnet!</span>`:`<span class="pill">${geloestCount} von ${paare.length} zugeordnet</span>`}
+ <button class="secondary"onclick="zuordnungNochmal()">Neu mischen</button>
+ </div>`
+ :`<div class="empty"><strong>Diese Übung hat noch keine Begriffe.</strong></div>`}
+ ${footer()}`;
+}
+function zuordnungNochmal(){zuordnungShuffle=[];zuordnungGeloest={};render();}
+window.zuordnungNochmal=zuordnungNochmal;
+
+// Ziehen per Pointer Events (funktioniert mit Maus UND Touch). Ein Klon der
+// Kachel folgt dem Finger/Mauszeiger, die Original-Kachel bleibt an Ort und
+// Stelle (nur abgedunkelt), damit sich die Spalte während des Ziehens nicht
+// verschiebt. Beim Loslassen wird geprüft, über welcher Erklärung sich der
+// Zeiger befindet.
+function initZuordnungDragDrop(){
+ document.querySelectorAll(".zu-begriff:not(.zu-geloest)").forEach(tile=>{
+ tile.addEventListener("pointerdown",e=>{
+ e.preventDefault();
+ const idx=tile.dataset.index;
+ const rect=tile.getBoundingClientRect();
+ const clone=tile.cloneNode(true);
+ clone.style.position="fixed";
+ clone.style.left=rect.left+"px";
+ clone.style.top=rect.top+"px";
+ clone.style.width=rect.width+"px";
+ clone.style.height=rect.height+"px";
+ clone.style.zIndex=1000;
+ clone.style.pointerEvents="none";
+ clone.style.boxShadow="0 6px 16px rgba(23,56,79,.25)";
+ clone.style.cursor="grabbing";
+ document.body.appendChild(clone);
+ tile.style.opacity=".3";
+ const offsetX=e.clientX-rect.left,offsetY=e.clientY-rect.top;
+ function onMove(ev){
+ clone.style.left=(ev.clientX-offsetX)+"px";
+ clone.style.top=(ev.clientY-offsetY)+"px";
+ }
+ function onUp(ev){
+ document.removeEventListener("pointermove",onMove);
+ clone.remove();
+ const zielEl=document.elementFromPoint(ev.clientX,ev.clientY);
+ const ziel=zielEl?.closest(".zu-erklaerung");
+ if(ziel&&!ziel.classList.contains("zu-geloest")&&ziel.dataset.index===idx){
+ zuordnungGeloest[idx]=true;
+ render();
+ }else{
+ tile.style.opacity="1";
+ if(ziel){
+ ziel.classList.add("zu-falsch");
+ setTimeout(()=>ziel.classList.remove("zu-falsch"),350);
+ }
+ }
+ }
+ document.addEventListener("pointermove",onMove);
+ document.addEventListener("pointerup",onUp,{once:true});
+ });
+ });
+}
+window.initZuordnungDragDrop=initZuordnungDragDrop;
+
+function openZuordnungForm(){
+ if(!isTeacher()){toast("Nur Lehrkräfte können eine Zuordnungsübung anlegen.");return}
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+ <div class="kicker">ZUORDNUNGSÜBUNGEN</div>
+ <h2>Neue Zuordnungsübung</h2>
+ <p style="color:var(--muted);font-size:13px;margin-top:-4px">Tipp: Lass die Begriff/Erklärung-Paare aus eurem Text z. B. von einem KI-Assistenten (fobizz) vorschlagen und füge sie hier ein.</p>
+ <div class="form">
+ <label>Titel<input id="zuTitle"maxlength="150"placeholder="z. B. Fachbegriffe Bindungstheorie"></label>
+ <label>Kurzbeschreibung (optional)<input id="zuDescription"maxlength="200"placeholder="z. B. Kapitel 3"></label>
+ <label>Begriffe und Erklärungen – ein Paar pro Zeile, getrennt mit "="<textarea id="zuPaare"rows="10"placeholder="Assimilation = Neue Eindrücke in vorhandene Denkmuster einordnen
+Akkommodation = Bestehende Denkmuster an neue Eindrücke anpassen"></textarea></label>
+ <div class="form-actions">
+ <button class="secondary"onclick="closeModal()">Abbrechen</button>
+ <button class="primary"onclick="addZuordnung()">Anlegen</button>
+ </div>
+ </div>`);
+}
+
+async function addZuordnung(){
+ const title=$("zuTitle")?.value.trim()||"";
+ const description=$("zuDescription")?.value.trim()||"";
+ const paare=parseZuordnungPaare($("zuPaare")?.value||"");
+ if(!title){toast("Bitte einen Titel eingeben.");return}
+ if(paare.length<2){toast("Bitte mindestens 2 Begriff/Erklärung-Paare eingeben (Format: Begriff = Erklärung).");return}
+ try{
+ await addDoc(collection(db,"zuordnungen"),{
+ title,description,paare,
+ createdBy:currentUser.uid,
+ createdByName:profile?.displayName||currentUser.email||"Lehrkraft",
+ createdAt:serverTimestamp()
+ });
+ closeModal();await render();toast("Zuordnungsübung angelegt.");
+ }catch(e){
+ console.error("Zuordnungsübung anlegen:",e);
+ toast(e?.code==="permission-denied"?"Firebase verweigert das Anlegen. Bitte die Firestore-Regeln prüfen.":"Übung konnte nicht angelegt werden.");
+ }
+}
+window.openZuordnungForm=openZuordnungForm;window.addZuordnung=addZuordnung;
+window.openZuordnung=openZuordnung;window.closeZuordnung=closeZuordnung;
+
+async function deleteZuordnung(id){
+ if(!isTeacher()){toast("Nur Lehrkräfte können eine Übung löschen.");return}
+ if(!confirm("Diese Zuordnungsübung wirklich löschen?"))return;
+ try{
+ await deleteDoc(doc(db,"zuordnungen",id));
+ activeZuordnungId=null;await render();toast("Übung gelöscht.");
+ }catch(e){
+ console.error("Zuordnungsübung löschen:",e);
+ toast("Übung konnte nicht gelöscht werden.");
+ }
+}
+window.deleteZuordnung=deleteZuordnung;
 
 /* =========================================================
  KARTEIKARTEN / VOKABELTRAINER – Decks mit Frage/Antwort-Karten,
@@ -12527,6 +12743,7 @@ async function render(){
  umfrage:renderUmfrageUebersicht,"umfrage-board":renderUmfrageBoard,
  zufallspicker:renderZufallspicker,
  lernwerkzeuge:renderLernWerkzeuge,
+ zuordnung:renderZuordnungUebersicht,"zuordnung-board":renderZuordnungBoard,
  karteikarten:renderKarteikartenUebersicht,"karteikarten-board":renderKarteikartenBoard,"fokus-timer":renderFokusTimer,"uhr-timer":renderUhrTimer,
  glossar:renderGlossar,
  fachaufsatz:renderFachaufsatzUebersicht,"fachaufsatz-board":renderFachaufsatzBoard,
@@ -12590,6 +12807,9 @@ async function render(){
  getDoc(doc(db,"termPolls",activeTermPollId)).then(snap=>{
  if(snap.exists())subscribeTerminfindungLive(activeTermPollId,snap.data().slots||[]);
  });
+ }
+ if(p==="zuordnung-board"){
+ initZuordnungDragDrop();
  }
  if(p==="methoden"){
  renderProkChips();
