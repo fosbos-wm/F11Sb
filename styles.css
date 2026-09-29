@@ -680,3 +680,10 @@ main#content{flex:1;min-width:0;padding:28px 34px 60px;max-width:1500px}
 .exp-leiste{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top,0px));border-bottom:1px solid var(--line);background:#f7fafc}
 .exp-overlay iframe{flex:1;width:100%;border:0;background:#fff}
 body.exp-offen{overflow:hidden}
+
+.pp-weiter{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px;padding:12px 14px;background:#f7fafc;border:1.5px solid #e2eaf0;border-left:5px solid var(--c);border-radius:12px}
+.pp-weiter>span{font-size:24px;line-height:1}
+.pp-weiter>div{flex:1;min-width:200px}
+.pp-weiter small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+.pp-weg-liste{display:flex;flex-direction:column;gap:10px}
+.pp-weg-liste .pp-stunde{margin:0}

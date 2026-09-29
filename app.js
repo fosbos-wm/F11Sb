@@ -1276,7 +1276,7 @@ const PP_FARBEN={1:"#3F7FC1",2:"#8A64B8",3:"#3C9A6B",4:"#C9773A"};
 // Endprodukt. Index 5 (Entwurf) und 6 (Endprodukt) bestätigt die Lehrkraft.
 const PROJEKT_PHASEN_ROH=[
  {id:"lb1",lb:"LB 1",lbNum:1,titel:"Das Experiment – interaktive Stunde",lbTitel:"Wissenschaft & Erziehung",
-  einstieg:true,stundeWocheId:"pp03",
+  einstieg:true,stundeWocheId:"pp03",einstiegWeg:["pp01","pp02","stunde","pp03"],
   projektSchulwochen:["sw01"],aptSchulwochen:["sw02","sw03"],
   notwendigeWochen:["pp01","pp02","pp03"],trainingWochen:["pp1a1","pp1a2","pp1a3","pp1a4"],
   meilensteine:[],bestaetigung:[]},
@@ -1945,10 +1945,11 @@ async function openProjektGesamtcheck(){
  const rows=d.students.map(s=>`<tr><td style="padding:8px">${esc(s.displayName||s.email||"Schüler/in")}</td>${PROJEKT_PHASEN.map(ph=>{
   const z=pgZelle(d,s,ph);
   if(ph.einstieg){
-   const f=d.fortschritt.find(x=>x.uid===s.uid&&x.wocheId===ph.stundeWocheId)||{};
-   const farbe=f.experimentErledigt?"#3fa66a":(z.inh>0?"#e0a324":"#c7d0d6");
+   const sch=ppEinstiegSchritte(ph,id=>d.fortschritt.find(x=>x.uid===s.uid&&x.wocheId===id));
+   const n=sch.filter(x=>x.done).length,stundeOk=sch.find(x=>x.art==="stunde")?.done;
+   const farbe=n===sch.length?"#3fa66a":n>0?"#e0a324":"#c7d0d6";
    return`<td class="pg-zelle"onclick="openProjektSchuelerDetail('${s.uid}','${ph.id}')"title="Details öffnen"><span class="ampel-dot"style="background:${farbe}"></span>
-   <small>Stunde ${f.experimentErledigt?"gemacht ✓":"offen"}<br>Inhalte ${z.inh}/${z.inhG}</small></td>`;
+   <small>${n}/${sch.length} Schritte<br>Stunde ${stundeOk?"gemacht ✓":"offen"}</small></td>`;
   }
   if(heute<ph.projektStart&&!z.team&&!z.inh)return`<td class="pg-zelle kommend">–</td>`;
   const q=Math.min(z.inh/z.inhG,z.eig.g?z.eig.n/z.eig.g:1);
@@ -1983,7 +1984,7 @@ async function openProjektSchuelerDetail(uid,phId){
  modal(`<button class="modal-close"onclick="closeModal()">×</button>
   <div class="kicker"style="color:${ppFarbe(ph)}">${esc(ph.lb)} · PROJEKT · ${esc(s.displayName||s.email||"")}</div>
   <h2>${esc(ph.titel)}</h2>
-  <h3 class="apt-h3">Projektinhalte (persönlich)</h3>
+  <h3 class="apt-h3">${ph.einstieg?"Einstiegsinhalte (persönlich)":"Projektinhalte (persönlich)"}</h3>
   <div class="list">${ph.notwendigeWochen.map(id=>{const e=lehrplanWocheById("paedagogik",id);const f=d.fortschritt.find(x=>x.uid===uid&&x.wocheId===id)||{};
    return`<div class="list-item"><div><strong>${f.abgeschlossen?"✓ ":""}${esc(e?.thema||id)}</strong><small>${f.abgeschlossen?"abgeschlossen":Object.values(f.zieleErfuellt||{}).some(Boolean)?"in Arbeit":"noch offen"}</small></div></div>`;}).join("")}</div>
   ${ph.einstieg?(()=>{const f=d.fortschritt.find(x=>x.uid===uid&&x.wocheId===ph.stundeWocheId)||{};return`<h3 class="apt-h3">Interaktive Stunde</h3><div class="list"><div class="list-item"><div><strong>${f.experimentErledigt?"✓ Stunde „Das Experiment“ abgeschlossen":"Stunde noch nicht abgeschlossen"}</strong>${f.experimentAm?.seconds?`<small>am ${esc(new Date(f.experimentAm.seconds*1000).toLocaleDateString("de-DE"))}</small>`:""}</div></div></div>`;})():`<h3 class="apt-h3">Meilensteine ${z.team?`· Team „${esc(z.team.teamName||"")}“ · eigene Beiträge ${z.eig.n}/${z.eig.g}`:""}</h3>
@@ -3659,13 +3660,20 @@ function ppTeilWochen(ph,teil){return(teil==="projekt"?ph.projektSchulwochen:ph.
 function ppTeilName(teil,ph){return teil==="projekt"?(ph?.einstieg?"Einstieg":"Projekt"):"Abschlussprüfungs-Training";}
 function ppTeilIcon(teil,ph){return teil==="projekt"?(ph?.einstieg?"🧪":"🔬"):"🎓";}
 
+// Einstieg (LB 1): Weg in 4 Schritten (Inhalt 1 → Inhalt 7/8 → interaktive Stunde → Abschluss Inhalt 9/10).
+// get(wocheId) liefert das Fortschrittsdokument der Person (Schüler:in-Map oder Lehrkraft-Liste).
+function ppEinstiegSchritte(ph,get){
+ return(ph.einstiegWeg||[]).map((k,i)=>k==="stunde"
+  ?{nr:i+1,art:"stunde",id:ph.stundeWocheId,done:!!(get(ph.stundeWocheId)||{}).experimentErledigt}
+  :{nr:i+1,art:"einheit",id:k,done:!!(get(k)||{}).abgeschlossen});
+}
 function ppTeilFortschritt(ph,teil,fortschrittMap,meinTeam){
  if(teil==="projekt"){
   const inhalteFertig=ph.notwendigeWochen.filter(id=>fortschrittMap[id]?.abgeschlossen).length;
   if(ph.einstieg){
-   const stunde=fortschrittMap[ph.stundeWocheId]?.experimentErledigt?1:0;
-   const g=ph.notwendigeWochen.length+1;
-   return{erledigt:inhalteFertig+stunde,gesamt:g,prozent:Math.round((inhalteFertig+stunde)/g*100),inhalteFertig,inhalteGesamt:ph.notwendigeWochen.length,ms:0,msGesamt:0,stunde};
+   const sch=ppEinstiegSchritte(ph,id=>fortschrittMap[id]);
+   const n=sch.filter(x=>x.done).length;
+   return{erledigt:n,gesamt:sch.length,prozent:sch.length?Math.round(n/sch.length*100):0,inhalteFertig,inhalteGesamt:ph.notwendigeWochen.length,ms:0,msGesamt:0,stunde:sch.find(x=>x.art==="stunde")?.done?1:0};
   }
   const ms=msErreichtAnzahl(ph,meinTeam,meinTeam?._beitraege);
   const gesamt=ph.notwendigeWochen.length+ph.meilensteine.length;
@@ -3754,7 +3762,7 @@ function ppTeilKachelHTML(ph,teil,fortschrittMap,meinTeam,heute){
  const textFarbe=t>0.55?"#fff":"#17384f";
  const muster=teil==="apt"?";background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.16) 0 6px,transparent 6px 12px)":"";
  const jetzt=budget.zustand==="laeuft";
- const detail=teil==="projekt"?(ph.einstieg?`${fs.inhalteFertig}/${fs.inhalteGesamt} Inhalte · Stunde ${fs.stunde?"gemacht":"offen"}`:`${fs.inhalteFertig}/${fs.inhalteGesamt} Inhalte · ${fs.ms}/${fs.msGesamt} Meilensteine`):`${fs.inhalteFertig}/${fs.inhalteGesamt} Inhalte · ${fs.erledigt}/${fs.gesamt} Schritte`;
+ const detail=teil==="projekt"?(ph.einstieg?`${fs.erledigt}/${fs.gesamt} Schritte · Stunde ${fs.stunde?"gemacht":"offen"}`:`${fs.inhalteFertig}/${fs.inhalteGesamt} Inhalte · ${fs.ms}/${fs.msGesamt} Meilensteine`):`${fs.inhalteFertig}/${fs.inhalteGesamt} Inhalte · ${fs.erledigt}/${fs.gesamt} Schritte`;
  return`<button type="button"class="pp-teil${jetzt?" pp-teil-jetzt":""}"style="--c:${c};border-color:${jetzt?c:ppMix(c,.35)}"onclick="openPhaseDetail('${ph.id}:${teil}')">
   <div class="pp-teil-farbfeld"style="background-color:${ppMix(c,t)}${muster};color:${textFarbe}">
    <span class="pp-teil-icon">${ppTeilIcon(teil,ph)}</span>
@@ -4125,27 +4133,33 @@ async function ladeStundenStatus(ph){
 }
 function ppStundeKarteHTML(ph,fortschrittMap,c){
  const done=!!fortschrittMap[ph.stundeWocheId]?.experimentErledigt,lehrer=isTeacher();
+ const sch=ppEinstiegSchritte(ph,id=>fortschrittMap[id]);
+ const st=sch.find(x=>x.art==="stunde"),vor=sch.filter(x=>x.nr<(st?.nr||0));
+ const vorErl=vor.filter(x=>x.done).length;
+ const hinweis=lehrer||!st||!vor.length?"":`<p class="pp-stunde-status">Vorher erledigt: ${vorErl} von ${vor.length}${!done&&vorErl<vor.length?" · empfohlen: erst die Schritte davor abschließen":""}</p>`;
  return`<div class="pp-stunde${done?" fertig":""}"style="--c:${c}">
   <div class="pp-stunde-icon">🧪</div>
-  <div style="flex:1;min-width:200px"><div class="kicker"style="color:${c};margin:0 0 2px">INTERAKTIVE STUNDE · ca. eine Doppelstunde</div><h3>Das Experiment</h3>
+  <div style="flex:1;min-width:200px"><div class="kicker"style="color:${c};margin:0 0 2px">${st?`SCHRITT ${st.nr} · `:""}INTERAKTIVE STUNDE · ca. eine Doppelstunde</div><h3>Das Experiment</h3>
    <p>Kaugummi-Versuch in Kleingruppen, Klassenvergleich, Merkmale eines Experiments, Anwendungsaufgaben und Abschlussquiz.</p>
-   ${lehrer?"":`<p class="pp-stunde-status">${done?"✓ Abgeschlossen":"Noch nicht abgeschlossen"}</p>`}</div>
+   ${lehrer?"":`<p class="pp-stunde-status">${done?"✓ Abgeschlossen":"Noch nicht abgeschlossen"}</p>`}${hinweis}</div>
   <div class="pp-stunde-akt"><button class="primary"onclick="openExperimentStunde()">${lehrer?"Stunde öffnen":done?"Stunde wiederholen":"Stunde starten"}</button></div>
  </div>`;
 }
 function ppEinstiegInhaltHTML(ph,fortschrittMap,c,stunde){
- const zeilen=ph.notwendigeWochen.map((id,i)=>{
-  const e=lehrplanWocheById("paedagogik",id);if(!e)return"";
-  const f=fortschrittMap[id]||{};
-  const fertig=!!f.abgeschlossen;
-  const begonnen=!fertig&&(f.auftragGelesen||f.materialErhalten||Object.values(f.zieleErfuellt||{}).some(Boolean));
-  const apt=PP_EINHEITEN.filter(a=>a.typ==="apt"&&(a.bezug||[]).includes(id));
-  return`<div class="pp-einheit${fertig?" fertig":""}"style="--c:${c}"onclick="openLehrplanEinheit('paedagogik','${id}')">
-   <span class="pp-einheit-haken">${fertig?"✓":i+1}</span>
-   <div style="flex:1"><strong>${esc(e.thema)}</strong><small>Inhalt Nr. ${esc(e.nr)} · ${fertig?"abgeschlossen":begonnen?"in Arbeit":"noch offen"}</small>
-   ${apt.length?`<small class="pp-bezug">🎓 wird vertieft im Abschlussprüfungs-Training: ${apt.map(a=>`<a href="javascript:void 0"onclick="event.stopPropagation();openAptDetail('${a.id}')">${esc(a.thema)}</a>`).join(" · ")}</small>`:""}</div>
-   <span>→</span>
-  </div>`;}).join("");
+ const sch=ppEinstiegSchritte(ph,id=>fortschrittMap[id]);
+ const letzter=sch.length;
+ const weg=sch.map(sx=>{
+  if(sx.art==="stunde")return ppStundeKarteHTML(ph,fortschrittMap,c);
+  const e=lehrplanWocheById("paedagogik",sx.id);if(!e)return"";
+  const f=fortschrittMap[sx.id]||{};
+  const begonnen=!sx.done&&(f.auftragGelesen||f.materialErhalten||Object.values(f.zieleErfuellt||{}).some(Boolean));
+  const abschluss=sx.nr===letzter;
+  const status=sx.done?"abgeschlossen":begonnen?"in Arbeit":"noch offen";
+  return`<div class="pp-einheit${sx.done?" fertig":""}"style="--c:${c}"onclick="openLehrplanEinheit('paedagogik','${sx.id}')">
+   <span class="pp-einheit-haken">${sx.done?"✓":sx.nr}</span>
+   <div style="flex:1"><strong>${abschluss?"Abschluss: ":""}${esc(e.thema)}</strong><small>${abschluss?"Wird in der interaktiven Stunde erarbeitet, hier abhaken, wenn die Ziele erfüllt sind · ":""}Inhalt Nr. ${esc(e.nr)} · ${status}</small></div>
+   <span>→</span></div>`;
+ }).join("");
  let lehrer="";
  if(isTeacher()){
   if(stunde){
@@ -4156,9 +4170,11 @@ function ppEinstiegInhaltHTML(ph,fortschrittMap,c,stunde){
    <small style="color:var(--muted)">Als gemacht gilt die Stunde, sobald das Abschlussquiz vollständig bearbeitet wurde.</small>`;
   }else lehrer=`<div class="empty">Der Stand der Klasse konnte nicht geladen werden.</div>`;
  }
- return`${ppStundeKarteHTML(ph,fortschrittMap,c)}
- <div class="kicker"style="margin:18px 0 8px">EINSTIEGSINHALTE – bearbeiten und abhaken</div>
- ${zeilen}${lehrer}`;
+ return`<div class="kicker"style="margin:0 0 8px">SO GEHT'S · ${sch.length} SCHRITTE</div>
+ <div class="pp-weg-liste">${weg}</div>
+ <div class="pp-weiter"style="--c:${c}"><span>🎓</span><div><b>Weitere Inhalte</b><small>Die Pädagogik-Inhalte dieses Lernbereichs findest du im Abschlussprüfungs-Training.</small></div>
+  <button type="button"class="secondary"onclick="openPhaseDetail('${ph.id}:apt')">Zum Abschlussprüfungs-Training →</button></div>
+ ${lehrer}`;
 }
 // Schüler:innen dürfen die Meilensteine ihres eigenen Teams selbst abhaken
 // (auf false setzen, wenn das wieder nur Lehrkräfte dürfen sollen).
