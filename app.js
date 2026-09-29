@@ -114,11 +114,13 @@ function updateTeacherTeamNav(){
 }
 function showAuth(){
  $("authScreen").hidden=false;$("app").hidden=true;$("logoutBtn").hidden=true;
+ if($("motivBtn"))$("motivBtn").hidden=true;
  $("userName").textContent="";
 }
 function showApp(){
  $("authScreen").hidden=true;$("app").hidden=false;$("logoutBtn").hidden=false;
  $("userName").textContent=profile?.displayName||currentUser?.email||"Campus";
+ motivButtonAktualisieren();
  updateTeacherTeamNav();
  render();
 }
@@ -630,7 +632,7 @@ async function addLernpfadCheckin(){
  topic,standort,strategy,strategyDetail,outcome:"",
  createdAt:serverTimestamp()
  });
- closeModal();await render();toast("Check-in gespeichert.");
+ closeModal();await render();toast("Check-in gespeichert.");showMotivationsBild(false,"reflexion");
  }catch(e){
  console.error("Lernpfad-Check-in speichern:",e);
  toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Check-in konnte nicht gespeichert werden.");
@@ -658,7 +660,7 @@ async function saveLernpfadOutcome(){
  if(!outcome){toast("Bitte kurz eintragen, wie es gelaufen ist.");return}
  try{
  await updateDoc(doc(db,"lernpfade",id),{outcome,outcomeAt:serverTimestamp()});
- closeModal();await render();showMotivationsBild();toast("Danke für deine Reflexion.");
+ closeModal();await render();showMotivationsBild(false,"reflexion");toast("Danke für deine Reflexion.");
  }catch(e){
  console.error("Lernpfad-Ergebnis speichern:",e);
  toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Konnte nicht gespeichert werden.");
@@ -723,6 +725,7 @@ $("forgotBtn").onclick=async()=>{
  try{await loadFirebase();await sendPasswordResetEmail(auth,email);toast("E-Mail zum Zurücksetzen wurde versendet.")}catch(err)
 {console.error(err);authError(err)}
 };
+if($("motivBtn"))$("motivBtn").onclick=motivUmschalten;
 $("logoutBtn").onclick=async()=>{
  try{await loadFirebase();await signOut(auth)}catch(e){console.error(e)}
 };
@@ -977,6 +980,7 @@ async function saveHeimatort(){
  ort,createdAt:serverTimestamp()
  });
  toast("Eingetragen! Danke fürs Mitmachen.");
+  showMotivationsBild(false,"ich");
  await render();
  }catch(e){console.error("Heimatort speichern:",e);toast("Konnte nicht gespeichert werden.")}
 }
@@ -1072,7 +1076,7 @@ async function saveSteckbrief(){
  uid:currentUser.uid,name:profile?.displayName||currentUser.email||"Campus-Mitglied",
  mag,gutDarin,fakt,updatedAt:serverTimestamp()
  });
- closeModal();await render();showMotivationsBild();toast("Steckbrief gespeichert.");
+ closeModal();await render();showMotivationsBild(false,"ich");toast("Steckbrief gespeichert.");
  }catch(e){console.error("Steckbrief speichern:",e);toast("Konnte nicht gespeichert werden.")}
 }
 async function deleteSteckbrief(){
@@ -1565,39 +1569,122 @@ function combinedTimeline(fach){
  return [...wochen,...praktika].sort((a,b)=>a.start.localeCompare(b.start));
 }
 
-// ---- Motivierende Kurz-Verstärkung (intermittierend) ----
-// Bei kleinen Schritten erscheint die Nachricht bewusst nicht jedes Mal
-// (nach einem variablen Muster), bei großen Meilensteinen (Woche
-// komplett geschafft) immer – intermittierende Verstärkung wirkt
-// nachhaltiger als eine erwartbare Nachricht bei jedem Klick.
-const MOTIVATIONS_KARTEN=[
- {emoji:"🔥",text:"Läuft bei dir!"},
- {emoji:"💪",text:"Nice, weiter so!"},
- {emoji:"🚀",text:"Das war stark!"},
- {emoji:"⭐",text:"Du rockst das!"},
- {emoji:"🙌",text:"Sauber gemacht!"},
- {emoji:"🎯",text:"Ziel erreicht – on to the next!"},
- {emoji:"😎",text:"Genau so!"},
- {emoji:"🏆",text:"Top Leistung!"}
-];
-const MOTIVATIONS_KARTEN_BESONDERS=[
- {emoji:"🎉",text:"Ganze Woche geschafft – richtig stark!"},
- {emoji:"🥳",text:"Komplett abgeschlossen, weiter so!"},
- {emoji:"👑",text:"Das nenn ich Einsatz!"}
-];
-function showMotivationsBild(besonders){
- if(!besonders && Math.random()>0.65)return;
- const liste=besonders?MOTIVATIONS_KARTEN_BESONDERS:MOTIVATIONS_KARTEN;
- const pick=liste[Math.floor(Math.random()*liste.length)];
+// ---- Motivierende Kurz-Verstärkung (variable Quote) ----
+// Kleine Erfolge (Haken, Abgaben, Beiträge …) lösen eine kurze Nachricht mit
+// Symbol aus, aber nicht jedes Mal: Wann sie kommt, ist nicht vorhersehbar
+// (variable Quote: im Schnitt etwa jede dritte Aktion, nie länger als 8
+// Aktionen Pause). Große Meilensteine (Woche geschafft, Check-out abgegeben)
+// zeigen immer eine größere Karte, selten (ca. 1 von 12) gibt es ein Extra mit
+// Konfetti. Gelobt wird der Einsatz, nie der Vergleich mit anderen.
+// Nur für Schüler:innen, abschaltbar über ✨ in der Kopfleiste. Damit sich
+// Abhaken/Entfernen nicht „farmen“ lässt, zählt dieselbe Aktion (Schlüssel)
+// innerhalb von 60 Sekunden nur einmal.
+// Aufruf: showMotivationsBild(besonders, art, schluessel)
+//   art = haken | abgabe | lernen | team | mitmachen | reflexion | ich | planung
+const MOTIV_POOLS={
+ allgemein:[
+  {e:"🔥",t:"Läuft bei dir!"},{e:"💪",t:"Nice, weiter so!"},{e:"🚀",t:"Das war stark!"},{e:"⭐",t:"Du rockst das!"},
+  {e:"🙌",t:"Sauber gemacht!"},{e:"🎯",t:"Ziel erreicht – auf zum nächsten!"},{e:"😎",t:"Genau so!"},{e:"🏆",t:"Top Leistung!"}],
+ haken:[
+  {e:"✅",t:"Erledigt – das zählt."},{e:"🌱",t:"Wieder ein Stück gewachsen."},{e:"🧩",t:"Ein Teil mehr im Puzzle."},
+  {e:"📈",t:"Stück für Stück nach vorn."},{e:"🎈",t:"Eins weniger auf der Liste!"},{e:"🪜",t:"Die nächste Stufe genommen."}],
+ abgabe:[
+  {e:"📤",t:"Abgegeben – das kostet Überwindung. Gut gemacht!"},{e:"🏁",t:"Geschafft und abgeschickt."},
+  {e:"🧗",t:"Dranbleiben zahlt sich aus."},{e:"🎓",t:"Das ist echte Arbeit. Danke für deinen Einsatz."},{e:"📦",t:"Fertig gemacht – stark."}],
+ lernen:[
+  {e:"🧠",t:"Dein Gehirn sagt Danke."},{e:"📚",t:"Wieder etwas gelernt."},{e:"💡",t:"Da hat es Klick gemacht."},
+  {e:"🦉",t:"Clever gemacht."},{e:"🔍",t:"Genau hingeschaut – das lohnt sich."},{e:"🌟",t:"Wissen aufgebaut, das bleibt."}],
+ team:[
+  {e:"🤝",t:"Gemeinsam kommt ihr weiter."},{e:"🌈",t:"Gut für die ganze Klasse."},{e:"🪁",t:"Du bringst das Team voran."},{e:"🎶",t:"Schön, dass du dich einbringst."}],
+ mitmachen:[
+  {e:"📊",t:"Deine Stimme zählt."},{e:"👋",t:"Danke fürs Mitmachen!"},{e:"💬",t:"Gut, dass du dabei bist."},{e:"📣",t:"Deine Meinung hilft."}],
+ reflexion:[
+  {e:"🪞",t:"Kurz innehalten – das ist Stärke."},{e:"🌿",t:"Gut für dich gesorgt."},{e:"🧘",t:"Nimm den Moment mit."},{e:"🌤",t:"Schön, dass du dir Zeit nimmst."}],
+ ich:[
+  {e:"🌍",t:"Du gehörst dazu."},{e:"🎨",t:"Das macht dich aus."},{e:"🪴",t:"Schön, dass es dich hier gibt."}],
+ planung:[
+  {e:"🗓",t:"Der Plan steht – das entlastet."},{e:"🧭",t:"Mit Plan geht es leichter."},{e:"⏱",t:"Gut vorbereitet."}]
+};
+const MOTIV_BESONDERS=[
+ {e:"🎉",t:"Ganze Woche geschafft – richtig stark!"},{e:"🥳",t:"Komplett abgeschlossen, weiter so!"},
+ {e:"👑",t:"Das nenn ich Einsatz!"},{e:"🏅",t:"Meilenstein erreicht."}];
+const MOTIV_BONUS=[
+ {e:"🌟",t:"Extra-Stern für dich – weil du dranbleibst!"},{e:"🎁",t:"Überraschung! Dein Einsatz fällt auf."},
+ {e:"🦄",t:"Selten und echt: richtig stark gemacht!"},{e:"🍀",t:"Glückstreffer – und du hast ihn dir verdient."}];
+const motivZustand={seit:0,keys:{},letzterText:""};
+function motivAn(){try{return localStorage.getItem("f12sb_motivation_aus")!=="1"}catch(e){return true}}
+function motivButtonAktualisieren(){
+ const b=$("motivBtn");if(!b)return;
+ const zeigen=!!currentUser&&!isTeacher();
+ b.hidden=!zeigen;
+ const an=motivAn();
+ b.classList.toggle("aus",!an);
+ b.setAttribute("aria-pressed",String(an));
+ b.title=an?"Motivations-Hinweise sind an. Zum Ausschalten klicken.":"Motivations-Hinweise sind aus. Zum Einschalten klicken.";
+ b.setAttribute("aria-label",b.title);
+}
+function motivUmschalten(){
+ const an=!motivAn();
+ try{localStorage.setItem("f12sb_motivation_aus",an?"0":"1")}catch(e){}
+ motivButtonAktualisieren();
+ toast(an?"Motivations-Hinweise sind wieder an.":"Motivations-Hinweise sind aus.");
+ if(an)motivZeigen({e:"✨",t:"Schön, dass du wieder dabei bist!"},"mini");
+}
+function motivZeigen(pick,modus){
+ document.querySelectorAll(".motivations-karte,.motiv-mini,.motiv-konfetti").forEach(x=>x.remove());
  const el=document.createElement("div");
- el.className="motivations-karte";
- el.innerHTML=`<div class="motivations-karte-inner"><span class="motivations-emoji">${pick.emoji}</span><strong>${esc(pick.text)}</strong></div>`;
+ if(modus==="mini"){
+  el.className="motiv-mini";
+  el.setAttribute("role","status");
+  el.innerHTML=`<span class="motiv-badge"aria-hidden="true">${pick.e}</span><span class="motiv-text">${esc(pick.t)}</span>`;
+  el.onclick=()=>el.remove();
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),3300);
+  return;
+ }
+ el.className="motivations-karte"+(modus==="bonus"?" bonus":"");
+ el.setAttribute("role","status");
+ el.innerHTML=`<div class="motivations-karte-inner"><span class="motivations-abzeichen"aria-hidden="true"><span class="motivations-emoji">${pick.e}</span></span><strong>${esc(pick.t)}</strong></div>`;
  el.onclick=()=>el.remove();
  document.body.appendChild(el);
- setTimeout(()=>el.remove(),2600);
+ const farben=["#1598d1","#6c3483","#f5a623","#e0457b","#3fa66a","#f1c40f"];
+ const k=document.createElement("div");k.className="motiv-konfetti";k.setAttribute("aria-hidden","true");
+ for(let i=0;i<18;i++){
+  const c=document.createElement("i");
+  c.style.left=(Math.random()*100)+"%";c.style.background=farben[i%farben.length];
+  c.style.animationDelay=(Math.random()*0.5)+"s";c.style.animationDuration=(1.5+Math.random()*0.9)+"s";
+  k.appendChild(c);
+ }
+ document.body.appendChild(k);
+ setTimeout(()=>{el.remove();k.remove()},2700);
+}
+function showMotivationsBild(besonders,art,schluessel){
+ if(!currentUser||isTeacher()||!motivAn())return;
+ const jetzt=Date.now();
+ if(schluessel){
+  if(jetzt-(motivZustand.keys[schluessel]||0)<60000)return;
+  motivZustand.keys[schluessel]=jetzt;
+ }
+ motivZustand.seit++;
+ let modus="mini";
+ if(besonders)modus="gross";
+ else{
+  const n=motivZustand.seit;
+  // variable Quote: direkt nach einer Nachricht selten, nach längerer Pause sicherer
+  const p=n>=9?1:n>=6?0.75:n===1?0.15:0.32;
+  if(Math.random()>p)return;
+  if(Math.random()<0.08)modus="bonus";
+ }
+ motivZustand.seit=0;
+ const pool=modus==="gross"?MOTIV_BESONDERS:modus==="bonus"?MOTIV_BONUS:[...(MOTIV_POOLS[art]||[]),...MOTIV_POOLS.allgemein];
+ let pick=pool[0];
+ for(let i=0;i<8;i++){pick=pool[Math.floor(Math.random()*pool.length)];if(pick.t!==motivZustand.letzterText)break;}
+ motivZustand.letzterText=pick.t;
+ motivZeigen(pick,modus);
 }
 // Alte Aufrufstellen nutzen weiterhin diesen Namen.
 function showMotivationsToast(besonders){showMotivationsBild(besonders)}
+window.motivUmschalten=motivUmschalten;
 
 // ---- Auftrag/Ziele je Woche (Lehrkraft pflegt, Schüler:innen sehen) ------
 async function getLehrplanAuftrag(wocheId){
@@ -1685,6 +1772,7 @@ async function createLehrplanTeam(fach,wocheId){
  await addDoc(collection(db,"lehrplanTeams"),{wocheId:teamAnchorFor(wocheId),fach,teamName,mitgliederUids:[currentUser.uid],mitgliederNamen:[profile?.displayName||"Ich"],createdBy:currentUser.uid,createdAt:serverTimestamp()});
  await reopenDetail(fach,wocheId);
  toast("Team erstellt – du bist Mitglied!");
+  showMotivationsBild(false,"team");
  }catch(e){console.error(e);toast("Konnte nicht erstellt werden.")}
 }
 // Projekt-Meilensteine: werden direkt am Team-Dokument gespeichert
@@ -1713,6 +1801,7 @@ async function joinLehrplanTeam(teamId,fach,wocheId){
  await updateDoc(ref,{mitgliederUids:[...(d.mitgliederUids||[]),currentUser.uid],mitgliederNamen:[...(d.mitgliederNamen||[]),profile?.displayName||"Mitglied"]});
  await reopenDetail(fach,wocheId);
  toast("Team beigetreten!");
+  showMotivationsBild(false,"team");
  }catch(e){console.error(e);toast("Konnte nicht beitreten.")}
 }
 async function leaveLehrplanTeam(teamId,fach,wocheId){
@@ -1877,7 +1966,7 @@ async function msBeitragSpeichern(phId,teamId,i){
   else if(weg){patch.dateiUrl="";patch.dateiName="";altUrlLoeschen=altDaten.dateiUrl||"";}
   await setDoc(ref,patch,{merge:true});
   if(altUrlLoeschen)await deleteCampusDatei(altUrlLoeschen);
-  toast("Beitrag gespeichert.");showMotivationsBild();
+  toast("Beitrag gespeichert.");showMotivationsBild(false,"abgabe");
   await msZurueck();
  }catch(e){console.error("Meilenstein-Beitrag:",e);toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Fehler: "+(e?.message||e));}
 }
@@ -2016,7 +2105,7 @@ async function addLehrplanProdukt(fach,wocheId){
  await addDoc(collection(db,"lehrplanProdukte"),{wocheId,fach,uid:currentUser.uid,name:profile?.displayName||"Campus-Mitglied",titel,inhalt,dateiUrl,dateiName,createdAt:serverTimestamp()});
  if(lehrplanWocheById(fach,wocheId)?.typ==="apt"&&!isTeacher()){await aptSetzen(wocheId,{produktHochgeladen:true},{tab:"produkt"});return}
  await reopenDetail(fach,wocheId);
- showMotivationsBild();
+ showMotivationsBild(false,"abgabe");
  }catch(e){console.error("Lernprodukt hochladen:",e);toast("Fehler: "+(e?.message||e));}
 }
 async function deleteLehrplanProdukt(id,fach,wocheId){
@@ -2053,7 +2142,7 @@ async function toggleZielErfuellt(fach,wocheId,zielId,erfuellt){
  data.updatedAt=serverTimestamp();
  await setDoc(ref,data);
  await reopenDetail(fach,wocheId);
- if(erfuellt)showMotivationsToast();
+ if(erfuellt)showMotivationsBild(false,"haken","ziel:"+wocheId+":"+zielId);
  }catch(e){console.error("Ziel-Status:",e);toast("Konnte nicht gespeichert werden.")}
 }
 async function toggleAuftragGelesen(fach,wocheId,erledigt){
@@ -2065,7 +2154,7 @@ async function toggleAuftragGelesen(fach,wocheId,erledigt){
  data.updatedAt=serverTimestamp();
  await setDoc(ref,data);
  await reopenDetail(fach,wocheId);
- if(erledigt)showMotivationsToast();
+ if(erledigt)showMotivationsBild(false,"haken","auftrag:"+wocheId);
  }catch(e){console.error("Auftrag-gelesen-Status:",e);toast("Konnte nicht gespeichert werden.")}
 }
 async function toggleMaterialErhalten(fach,wocheId,erledigt){
@@ -2077,7 +2166,7 @@ async function toggleMaterialErhalten(fach,wocheId,erledigt){
  data.updatedAt=serverTimestamp();
  await setDoc(ref,data);
  await reopenDetail(fach,wocheId);
- if(erledigt)showMotivationsToast();
+ if(erledigt)showMotivationsBild(false,"haken","material:"+wocheId);
  }catch(e){console.error("Material-erhalten-Status:",e);toast("Konnte nicht gespeichert werden.")}
 }
 window.toggleAuftragGelesen=toggleAuftragGelesen;
@@ -2189,7 +2278,7 @@ async function submitBasischeck(fach,wocheId){
  if(lehrplanWocheById(fach,wocheId)?.typ==="apt"){await aptSetzen(wocheId,{basischeckErledigt:true},{tab:"basischeck"});return}
  await setDoc(doc(db,"lehrplanFortschritt",`${currentUser.uid}_${wocheId}`),{uid:currentUser.uid,wocheId,fach,basischeckErledigt:true,updatedAt:serverTimestamp()},{merge:true}).catch(e=>console.error(e));
  await reopenDetail(fach,wocheId);
- if(ampel==="gruen")showMotivationsToast();
+ if(ampel==="gruen")showMotivationsBild(false,"lernen","bc:"+wocheId);
  }catch(e){console.error("Basis-Check abgeben:",e);toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Konnte nicht gespeichert werden.");}
 }
 window.submitBasischeck=submitBasischeck;
@@ -2446,7 +2535,7 @@ async function markWocheAbgeschlossen(fach,wocheId){
  try{
  await setDoc(doc(db,"lehrplanFortschritt",`${currentUser.uid}_${wocheId}`),{...fortschritt,uid:currentUser.uid,wocheId,fach,abgeschlossen:true,updatedAt:serverTimestamp()});
  await render();
- showMotivationsToast(true);
+ showMotivationsBild(true);
  }catch(e){console.error("Woche abschließen:",e);toast("Konnte nicht gespeichert werden.")}
 }
 
@@ -2879,7 +2968,7 @@ async function uploadPraktikumsbericht(phaseId,typ){
  ampel:null,unterschriftBetreuer:null,stempelBetrieb:null,unterschriftSchueler:null,ausfuehrlichkeit:null
  },{merge:true});
  await openPraktikumsblockDetail(phaseId);
- showMotivationsBild();
+ showMotivationsBild(false,"abgabe");
  }catch(e){console.error("Bericht hochladen:",e);toast("Fehler: "+(e?.message||e));}
 }
 window.uploadPraktikumsbericht=uploadPraktikumsbericht;
@@ -3180,10 +3269,11 @@ async function saveWochenplanEntry(id){
  closeModal();
  await render();
  toast("Gespeichert.");
+  if(!id)showMotivationsBild(false,"planung");
  }catch(e){console.error("Wochenplanung speichern:",e);toast("Konnte nicht gespeichert werden.")}
 }
 async function toggleWochenplanDone(id,done){
- try{await updateDoc(doc(db,"wochenplanung",id),{done:!done,updatedAt:serverTimestamp()});await render();}
+ try{await updateDoc(doc(db,"wochenplanung",id),{done:!done,updatedAt:serverTimestamp()});await render();if(!done)showMotivationsBild(false,"haken","wp:"+id);}
  catch(e){console.error("Wochenplanung ändern:",e);toast("Konnte nicht geändert werden.")}
 }
 async function deleteWochenplanEntry(id){
@@ -4193,7 +4283,7 @@ async function ppMeilensteinSetzen(teamId,index){
  try{
   await updateDoc(doc(db,"lehrplanTeams",teamId),{meilensteinIndex:index,meilensteinUpdatedAt:serverTimestamp()});
   await render();
-  if(index>0)showMotivationsBild();
+  if(index>0)showMotivationsBild(false,"team","ms:"+teamId+":"+index);
  }catch(e){console.error("Meilenstein setzen:",e);toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Konnte nicht gespeichert werden.");}
 }
 window.ppMeilensteinSetzen=ppMeilensteinSetzen;
@@ -4254,6 +4344,7 @@ async function experimentErledigtSetzen(){
  await setDoc(doc(db,"lehrplanFortschritt",`${currentUser.uid}_${wocheId}`),
   {uid:currentUser.uid,wocheId,fach:"paedagogik",experimentErledigt:true,experimentAm:serverTimestamp(),updatedAt:serverTimestamp()},{merge:true});
  ppDirty=true;
+ showMotivationsBild(true);
 }
 async function experimentNachricht(ev){
  const fr=$("experimentFrame");
@@ -4563,7 +4654,7 @@ async function stundeAufsatzSpeichern(wocheId){
  const t=($("stAufsatz")?.value||"").trim();
  if(!t){toast("Schreibe zuerst deinen Text.");return}
  await aptSetzen(wocheId,{aufsatzText:t,aufsatzAm:serverTimestamp()},{tab:"aufsatz"});
- toast("Text gespeichert.");
+ toast("Text gespeichert.");showMotivationsBild(false,"lernen","aufsatz:"+wocheId);
 }
 async function stundeAufsatzKopieren(wocheId){
  const [inhalt,f]=await Promise.all([getAptInhalt(wocheId),getLehrplanFortschritt(wocheId)]);
@@ -4664,6 +4755,7 @@ async function einarbeitungNachricht(ev){
   }else if(m.type==="einarbeitung:abgeschlossen"&&!isTeacher()){
    await einarbeitungSpeichern(id,{einarbeitungAufgaben:{richtig:zahl(m.richtig),gesamt:zahl(m.gesamt),fertig:true},einarbeitungAbgeschlossen:true,einarbeitungAm:serverTimestamp(),materialBearbeitet:true,basischeckErledigt:true,basischeckUebersprungen:false});
    senden({type:"einarbeitung:gespeichert"});
+    showMotivationsBild(false,"lernen","einarb:"+id);
    await closeEinarbeitung();
   }
  }catch(e){
@@ -4683,7 +4775,11 @@ async function aptSetzen(wocheId,patch,opts={}){
   ppDirty=true;
   await openAptDetail(wocheId,opts.tab);
   if(fertig&&!warFertig)showMotivationsBild(true);
-  else if(opts.motiv||Object.values(patch).some(v=>v===true))showMotivationsBild();
+  else if(!patch.besprechungGewuenscht&&(opts.motiv||Object.values(patch).some(v=>v===true))){
+    const k=Object.keys(patch).find(x=>patch[x]===true)||"schritt";
+    const art=k==="feedbackErledigt"?"reflexion":k==="frageGelesen"?"haken":"lernen";
+    showMotivationsBild(false,opts.art||art,"apt:"+wocheId+":"+k);
+   }
  }catch(e){console.error("APT-Fortschritt speichern:",e);toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Konnte nicht gespeichert werden.");}
 }
 window.aptSetzen=aptSetzen;
@@ -5404,6 +5500,7 @@ async function coAbgeben(id){
  try{
   await setDoc(doc(db,"checkoutAbgaben",`${id}_${currentUser.uid}`),{checkoutId:id,uid:currentUser.uid,name:profile?.displayName||currentUser.email||"Schüler/in",abgegeben:true,abgegebenAt:serverTimestamp(),updatedAt:serverTimestamp()},{merge:true});
   coUnsubAll();closeModal();toast("Abgegeben ✓");await render();
+  showMotivationsBild(true,"abgabe");
  }catch(e){console.error(e);toast("Konnte nicht abgegeben werden.");}
 }
 
@@ -5517,7 +5614,7 @@ async function coAuswahlSpeichern(soll){
  if(ids.length!==soll){toast(`Bitte genau ${soll} Check-outs auswählen.`);return}
  try{
   await setDoc(doc(db,"checkoutAuswahl",currentUser.uid),{uid:currentUser.uid,name:profile?.displayName||currentUser.email||"",ids,updatedAt:serverTimestamp()});
-  toast("Auswahl gespeichert.");closeModal();await render();
+  toast("Auswahl gespeichert.");closeModal();await render();showMotivationsBild(false,"haken","coauswahl");
  }catch(e){console.error(e);toast(e?.code==="permission-denied"?"Die Auswahl ist nicht (mehr) freigeschaltet.":"Konnte nicht gespeichert werden.");}
 }
 // Alle Daten einer Person für die PDFs (Schüler:in: nur eigene, Lehrkraft: jede Person).
@@ -6239,6 +6336,7 @@ async function submitWordcloudWord(){
  createdAt:serverTimestamp()
  })));
  if($("wwInput"))$("wwInput").value="";
+ showMotivationsBild(false,"mitmachen");
  await render();
  toast(words.length>1?"Wörter hinzugefügt.":"Wort hinzugefügt.");
  }catch(e){
@@ -6500,7 +6598,7 @@ async function addKanbanCard(){
  createdByName:profile?.displayName||currentUser.email||"Campus-Mitglied",
  createdAt:serverTimestamp(),updatedAt:serverTimestamp()
  });
- closeModal();await render();toast("Aufgabe angelegt.");
+ closeModal();await render();toast("Aufgabe angelegt.");showMotivationsBild(false,"team");
  }catch(e){
  console.error("Kanban-Aufgabe anlegen:",e);
  toast(e?.code==="permission-denied"?"Firebase verweigert das Anlegen. Bitte die Firestore-Regeln prüfen.":"Aufgabe konnte nicht gespeichert werden.");
@@ -6512,6 +6610,7 @@ async function moveKanbanCard(id,newStatus){
  try{
  await updateDoc(doc(db,"kanbanCards",id),{status:newStatus,updatedAt:serverTimestamp()});
  await render();
+  if(newStatus==="fertig")showMotivationsBild(false,"haken","kb:"+id);
  }catch(e){
  console.error("Aufgabe verschieben:",e);
  toast(e?.code==="permission-denied"?"Firebase verweigert das Verschieben. Bitte die Firestore-Regeln prüfen.":"Aufgabe konnte nicht verschoben werden.");
@@ -6671,7 +6770,7 @@ async function saveTermVote(pollId){
  updatedAt:serverTimestamp()
  });
  await render();
- toast("Deine Auswahl wurde gespeichert.");
+ toast("Deine Auswahl wurde gespeichert.");showMotivationsBild(false,"mitmachen","tv:"+pollId);
  }catch(e){
  console.error("Terminfindung-Stimme speichern:",e);
  toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Auswahl konnte nicht gespeichert werden.");
@@ -6797,7 +6896,7 @@ async function addTeamAd(){
  interested:[],
  createdAt:serverTimestamp()
  });
- closeModal();await render();toast("Gesuch veröffentlicht.");
+ closeModal();await render();toast("Gesuch veröffentlicht.");showMotivationsBild(false,"team");
  }catch(e){
  console.error("Team-Gesuch anlegen:",e);
  toast(e?.code==="permission-denied"?"Firebase verweigert das Veröffentlichen. Bitte die Firestore-Regeln prüfen.":"Gesuch konnte nicht veröffentlicht werden.");
@@ -6817,6 +6916,7 @@ async function toggleTeamInterest(id){
  if(already) await updateDoc(ref,{interested:arrayRemove(already)});
  else await updateDoc(ref,{interested:arrayUnion(me)});
  await render();
+  if(!already)showMotivationsBild(false,"team","ti:"+id);
  }catch(e){
  console.error("Interesse an Team-Gesuch:",e);
  toast(e?.code==="permission-denied"?"Firebase verweigert diese Änderung. Bitte die Firestore-Regeln prüfen.":"Aktion konnte nicht gespeichert werden.");
@@ -7080,7 +7180,7 @@ async function addChecklistItem(){
  createdByName:profile?.displayName||currentUser.email||"Campus-Mitglied",
  createdAt:serverTimestamp()
  });
- closeModal();await render();toast("Eintrag hinzugefügt.");
+ closeModal();await render();toast("Eintrag hinzugefügt.");showMotivationsBild(false,"team");
  }catch(e){
  console.error("Checklisten-Eintrag anlegen:",e);
  toast(e?.code==="permission-denied"?"Firebase verweigert das Hinzufügen. Bitte die Firestore-Regeln prüfen.":"Eintrag konnte nicht gespeichert werden.");
@@ -7097,6 +7197,7 @@ async function toggleChecklistItem(id,checked){
  updatedAt:serverTimestamp()
  });
  await render();
+ if(checked)showMotivationsBild(false,"haken","cl:"+id);
  }catch(e){
  console.error("Eintrag abhaken:",e);
  toast(e?.code==="permission-denied"?"Firebase verweigert diese Änderung. Bitte die Firestore-Regeln prüfen.":"Eintrag konnte nicht aktualisiert werden.");
@@ -7289,6 +7390,7 @@ async function setAmpelResponse(roundId,value){
  value,updatedAt:serverTimestamp()
  });
  await render();
+ showMotivationsBild(false,"mitmachen","am:"+roundId);
  }catch(e){
  console.error("Ampel-Antwort speichern:",e);
  toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Antwort konnte nicht gespeichert werden.");
@@ -7505,7 +7607,7 @@ async function savePollVote(pollId){
  optionId:checked.value,updatedAt:serverTimestamp()
  });
  await render();
- toast("Deine Stimme wurde gespeichert.");
+ toast("Deine Stimme wurde gespeichert.");showMotivationsBild(false,"mitmachen","pv:"+pollId);
  }catch(e){
  console.error("Umfrage-Stimme speichern:",e);
  toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Stimme konnte nicht gespeichert werden.");
@@ -8057,7 +8159,7 @@ async function addDeck(){
  createdByName:profile?.displayName||currentUser.email||"Campus-Mitglied",
  createdAt:serverTimestamp()
  });
- closeModal();await render();toast("Deck angelegt.");
+ closeModal();await render();toast("Deck angelegt.");showMotivationsBild(false,"lernen");
  }catch(e){
  console.error("Deck anlegen:",e);
  toast(e?.code==="permission-denied"?"Firebase verweigert das Anlegen. Bitte die Firestore-Regeln prüfen.":"Deck konnte nicht angelegt werden.");
@@ -8134,7 +8236,7 @@ async function addCard(){
  createdByName:profile?.displayName||currentUser.email||"Campus-Mitglied",
  createdAt:serverTimestamp()
  });
- closeModal();studyOrder=[];await render();showMotivationsBild();toast("Karte hinzugefügt.");
+ closeModal();studyOrder=[];await render();showMotivationsBild(false,"lernen");toast("Karte hinzugefügt.");
  }catch(e){
  console.error("Karte anlegen:",e);
  toast(e?.code==="permission-denied"?"Firebase verweigert das Hinzufügen. Bitte die Firestore-Regeln prüfen.":"Karte konnte nicht gespeichert werden.");
@@ -8519,7 +8621,7 @@ async function addGlossaryEntry(){
  createdByName:profile?.displayName||currentUser.email||"Campus-Mitglied",
  createdAt:serverTimestamp()
  });
- closeModal();await render();showMotivationsBild();toast("Begriff hinzugefügt.");
+ closeModal();await render();showMotivationsBild(false,"lernen");toast("Begriff hinzugefügt.");
  }catch(e){
  console.error("Glossar-Eintrag anlegen:",e);
  toast(e?.code==="permission-denied"?"Firebase verweigert das Hinzufügen. Bitte die Firestore-Regeln prüfen.":"Begriff konnte nicht gespeichert werden.");
@@ -8828,7 +8930,7 @@ async function saveEssayEntry(caseId){
  text,selfCheck,selfCheckAt:serverTimestamp(),updatedAt:serverTimestamp()
  },{merge:true});
  await render();
- showMotivationsBild();
+ showMotivationsBild(false,"lernen");
  toast("Gespeichert.");
  }catch(e){
  console.error("Fachaufsatz speichern:",e);
@@ -9743,7 +9845,7 @@ async function addBoardPost(){
  authorName:profile?.displayName||currentUser.email||"Campus-Mitglied",
  createdAt:serverTimestamp()
  });
- closeModal();await render();showMotivationsBild();toast("Notiz angeheftet.");
+ closeModal();await render();showMotivationsBild(false,"team");toast("Notiz angeheftet.");
  }catch(e){
  console.error("Notiz anheften:",e);
  toast("Fehler: "+(e?.message||e));
@@ -10777,7 +10879,7 @@ async function startResilienzSkill(id){
  <button id="schatzBtn_${id}"class="${saved?"primary schatz-btn-active":"secondary"}"onclick="toggleResilienzSchatz('${id}')">${saved?"★ In der Schatzkiste":"☆ In meine Schatzkiste"}</button>
  <button class="primary"onclick="resilienzSkillDone()"> Geschafft</button></div>`);
 }
-function resilienzSkillDone(){toast("Gut. Nimm kurz wahr, was sich verändert hat.");closeResilienzModal();}
+function resilienzSkillDone(){toast("Gut. Nimm kurz wahr, was sich verändert hat.");closeResilienzModal();showMotivationsBild(false,"reflexion");}
 function closeResilienzModal(){stopResonanzTimer();closeModal();}
 // Lädt ausschließlich die eigenen gespeicherten Übungen – Firestore-Regeln
 // erlauben ohnehin nur Lesezugriff auf die eigenen Dokumente.
@@ -10830,6 +10932,7 @@ async function toggleResilienzSchatz(skillId){
  }else{
  await setDoc(ref,{uid:currentUser.uid,skillId,createdAt:serverTimestamp()});
  toast("In deine Resilienz-Schatzkiste gelegt.");
+  showMotivationsBild(false,"reflexion","rs:"+skillId);
  if(btn){btn.className="primary schatz-btn-active";btn.textContent="★ In der Schatzkiste"}
  }
  }catch(e){
@@ -11300,7 +11403,7 @@ async function saveKISolution(challengeId){
  aiUse:$("kiAI")?.value.trim()||"",status:"in Bearbeitung",
  createdBy:currentUser.uid,createdAt:serverTimestamp()
  });
- closeModal();await render();showMotivationsBild();toast("Bearbeitung gespeichert.");
+ closeModal();await render();showMotivationsBild(false,"lernen");toast("Bearbeitung gespeichert.");
  }catch(e){console.error("KI Lösung:",e);toast("Speichern fehlgeschlagen: "+(e.code||"Fehler"))}
 }
 function openKISolutionsLibrary(){
@@ -12319,6 +12422,7 @@ function completeLernimpuls(id){
  const i=lernImpulse.find(x=>x.id===id);
  closeModal();
  toast("Impuls geschafft – gut gemacht!");
+  showMotivationsBild(false,"lernen","li:"+id);
  modal(`<button class="modal-close"onclick="closeModal()">×</button><div class="kicker"> GESCHAFFT</div><h2>Du hast ihn
 gemacht.</h2><p><strong>${esc(i?.title||"Lernimpuls")}</strong> ist erledigt.</p>${answer?`<div class="card"><strong>Deine
 Notiz</strong><p>${esc(answer)}</p></div>`:""}<div class="notice"><strong> Dein nächster Schritt</strong>
@@ -13113,7 +13217,7 @@ async function submitLernstand(taskId,attempt){
  try{
  await addDoc(collection(db,"lernstandVersuche"),{uid:currentUser.uid,displayName:profile?.displayName||currentUser?.email||"Schüler/in",taskId:t.id,title:t.title,nr:t.nr,learningArea:t.learningArea,attempt,answers,competencies,kprimFeedback,total:autoPoints,status:"abgegeben",createdAt:serverTimestamp()});
  closeModal();
- showMotivationsBild();
+ showMotivationsBild(false,"abgabe");
  showLernstandSubmitFeedback(t,kprimFeedback,attempt);
  }catch(e){console.error("Lernstand speichern:",e);toast("Lernstand konnte nicht gespeichert werden.")}
 }
@@ -13641,7 +13745,7 @@ class="form-actions"><button class="secondary"onclick="closeModal()">Abbrechen</
 }
 async function addTask(){
  try{await addDoc(collection(db,"tasks"),{title:$("fTitle").value.trim()||"Neue Aufgabe",ownerName:$("fOwner").value.trim()||profile.displayName,ownerUid:currentUser.uid,deadline:cleanDateInput($("fDeadline").
-value),status:$("fStatus").value,next:$("fNext").value.trim()||"Nächsten Schritt festlegen",createdBy:currentUser.uid,createdAt:serverTimestamp()});closeModal();await render();toast("Aufgabe gespeichert.")}catch(e){toast("Speichern nicht möglich.");console.error(e)}
+value),status:$("fStatus").value,next:$("fNext").value.trim()||"Nächsten Schritt festlegen",createdBy:currentUser.uid,createdAt:serverTimestamp()});closeModal();await render();toast("Aufgabe gespeichert.");showMotivationsBild(false,"planung")}catch(e){toast("Speichern nicht möglich.");console.error(e)}
 }
 function openNewsForm(){
  if(!isTeacher()){toast("Nur Lehrkräfte können News veröffentlichen.");return}
@@ -13700,7 +13804,7 @@ async function addPost(){
  const text=$("pText").value.trim();if(!text){toast("Bitte Beitrag eingeben.");return}
  try{await addDoc(collection(db,"posts"),
 {authorUid:currentUser.uid,authorName:profile.displayName,type:$("pType").value,text,likes:0,comments:
-[],createdAt:serverTimestamp()});closeModal();await render();toast("Beitrag veröffentlicht.")}catch(e){toast("Beitrag konnte nicht gespeichert werden.");console.error(e)}
+[],createdAt:serverTimestamp()});closeModal();await render();toast("Beitrag veröffentlicht.");showMotivationsBild(false,"team")}catch(e){toast("Beitrag konnte nicht gespeichert werden.");console.error(e)}
 }
 async function likePost(id){
  try{
@@ -13854,7 +13958,7 @@ async function addJournal(){
  });
 
  await render();
- showMotivationsBild();
+ showMotivationsBild(false,"reflexion");
  toast("Lernjournal gespeichert.");
  }catch(error){
  console.error("Lernjournal speichern:",error);
@@ -13988,7 +14092,7 @@ async function addCompetence(){
  const name=$("cName")?.value.trim();if(!name){toast("Bitte eine Kompetenz eintragen.");return}
  try{
  await addDoc(collection(db,"competencies"),{uid:currentUser.uid,ownerName:profile?.displayName||currentUser?.email||"Campus-Mitglied",name,category:$("cCategory").value,level:Math.max(1,Math.min(5,Number($("cLevel").value)||1)),description:$("cDescription").value.trim()||"",canHelp:Boolean($("cCanHelp").checked),helpText:$("cHelpText").value.trim()||"",createdAt:serverTimestamp()});
- closeModal();await render();showMotivationsBild();toast("Kompetenz ins Netzwerk aufgenommen.");
+ closeModal();await render();showMotivationsBild(false,"ich");toast("Kompetenz ins Netzwerk aufgenommen.");
  }catch(e){console.error("Kompetenz speichern:",e);toast("Kompetenz konnte nicht gespeichert werden.")}
 }
 
