@@ -606,6 +606,23 @@ service cloud.firestore {
       allow delete: if isApproved() && resource.data.uid == request.auth.uid;
     }
 
+    // Interaktive Stunde „Das Experiment“ (LB 1): anonymer Klassenvergleich.
+    // Gespeichert werden NUR Gruppe (A/B) und Wörterzahl (0–10) – bewusst ohne
+    // UID, Name und Zeitstempel, damit kein Wert einer Person zuordenbar ist.
+    // Alle Freigeschalteten dürfen lesen und einen Wert hinzufügen; Werte lassen
+    // sich nicht ändern, löschen (zurücksetzen) darf nur die Lehrkraft.
+    match /experimentErgebnisse/{id} {
+      allow read: if isApproved();
+      allow create: if isApproved()
+        && request.resource.data.keys().hasOnly(['gruppe','woerter'])
+        && request.resource.data.gruppe in ['A','B']
+        && request.resource.data.woerter is int
+        && request.resource.data.woerter >= 0
+        && request.resource.data.woerter <= 10;
+      allow update: if false;
+      allow delete: if isTeacher();
+    }
+
     // Basis-Check: Fragen legen nur Lehrkräfte an, Versuche gehören der
     // jeweiligen Person (Lehrkräfte dürfen alle einsehen, für die Live-Übersicht).
     match /basischeckFragen/{id} {

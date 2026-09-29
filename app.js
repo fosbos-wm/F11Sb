@@ -1266,30 +1266,64 @@ function swById(id){return SCHULWOCHEN_PP.find(w=>w.id===id)||null;}
 // nur der Farbton wechselt) – Blau, Violett, Grün, Terrakotta.
 const PP_FARBEN={1:"#3F7FC1",2:"#8A64B8",3:"#3C9A6B",4:"#C9773A"};
 
-// Reihenfolge = zeitliche Reihenfolge im Schuljahr. LB 3 (Erziehung) liegt
-// bewusst direkt nach dem letzten Erziehungspraktikums-Block, damit die
-// Praxisbeobachtungen frisch sind; LB 4 (Lernen) fällt in die Pflegephase.
+// Reihenfolge = zeitliche Reihenfolge im Schuljahr (Umbau: LB 1 ist nur noch
+// die interaktive Einstiegsstunde „Das Experiment“ + Prüfungstraining in
+// zusammen 3 Schulwochen; jedes der drei echten Projekte LB 3 / LB 2 / LB 4
+// läuft 3 Schulwochen). Wochen ändern: nur die Listen projektSchulwochen /
+// aptSchulwochen unten anpassen (IDs siehe SCHULWOCHEN_PP).
+// Gemeinsamer Ablauf der drei Projekte (meilensteine): Team → Leitfrage →
+// fachliche Grundlage → Basis-Check → Praxisbezug → Entwurf mit Feedback →
+// Endprodukt. Index 5 (Entwurf) und 6 (Endprodukt) bestätigt die Lehrkraft.
 const PROJEKT_PHASEN_ROH=[
- {id:"lb1",lb:"LB 1",lbNum:1,titel:"Experiment durchführen",lbTitel:"Wissenschaft & Erziehung",
-  projektSchulwochen:["sw01","sw02","sw03"],aptSchulwochen:["sw04","sw05","sw06"],
+ {id:"lb1",lb:"LB 1",lbNum:1,titel:"Das Experiment – interaktive Stunde",lbTitel:"Wissenschaft & Erziehung",
+  einstieg:true,stundeWocheId:"pp03",
+  projektSchulwochen:["sw01"],aptSchulwochen:["sw02","sw03"],
   notwendigeWochen:["pp01","pp02","pp03"],trainingWochen:["pp1a1","pp1a2","pp1a3","pp1a4"],
-  meilensteine:["Team gebildet","Hypothese formuliert","Versuchsplan steht (UV/AV, Kontrollgruppe)","Experiment durchgeführt","Ergebnisse ausgewertet","Präsentiert"],
-  bestaetigung:[2,5]},
+  meilensteine:[],bestaetigung:[]},
  {id:"lb3",lb:"LB 3",lbNum:3,titel:"Praxisbeobachtung: Erziehung und Erziehungsstile erkennen",lbTitel:"Erziehung",
-  projektSchulwochen:["sw07","sw08"],aptSchulwochen:["sw09"],
+  projektSchulwochen:["sw04","sw05","sw06"],aptSchulwochen:["sw07"],
   notwendigeWochen:["pp04","pp05"],trainingWochen:["pp06","pp07"],
-  meilensteine:["Team gebildet","Beobachtungen aus dem Praktikum gesammelt (anonymisiert)","Merkmale von Erziehung nachgewiesen","Erziehungsstile nach Baumrind zugeordnet","Analyse präsentiert"],
-  bestaetigung:[1,4]},
+  auftrag:{titel:"Praxisbeobachtung: Erziehung und Erziehungsstile erkennen",text:
+`In euren Praktika erlebt ihr täglich Erziehung, oft ohne sie so zu benennen. In diesem Projekt untersucht ihr im Team, woran man Erziehung erkennt und welche Erziehungsstile nach Baumrind in der Praxis sichtbar werden.
+
+Euer Weg:
+1. Bildet ein Team, grenzt euer Thema ein und formuliert eine Leitfrage mit Begründung.
+2. Erarbeitet die fachliche Grundlage (Merkmale von Erziehung, Erziehungsstile nach Baumrind) und prüft euren Wissensstand im Basis-Check.
+3. Wendet die Theorie auf eine Beobachtung aus dem Praktikum an: beschreibt die Situation kurz und analysiert sie fachlich.
+4. Legt eine Gliederung bzw. einen Entwurf vor und holt euch Feedback der Lehrkraft.
+5. Erstellt euer Endprodukt (Ausarbeitung, Plakat oder Präsentation) und beantwortet darin eure Leitfrage.
+
+Datenschutz: Beobachtungen nur anonymisiert verwenden, also keine Namen, keine Einrichtung, keine erkennbaren Details.`},
+  meilensteine:["Team gebildet","Thema eingegrenzt, Leitfrage mit Begründung formuliert","Fachliche Grundlage erarbeitet (Merkmale von Erziehung, Baumrind)","Basis-Check gemacht","Praxisbezug: anonymisierte Praktikumsbeobachtung fachlich analysiert","Gliederung bzw. Entwurf liegt vor (Feedback der Lehrkraft)","Endprodukt abgegeben und präsentiert"],
+  bestaetigung:[5,6]},
  {id:"lb2",lb:"LB 2",lbNum:2,titel:"Wahrnehmungs- und Gedächtnis-Parcours",lbTitel:"Wahrnehmung, Gedächtnis, Emotion, Motivation",
-  projektSchulwochen:["sw10","sw11","sw12"],aptSchulwochen:["sw13","sw14","sw15"],
+  projektSchulwochen:["sw08","sw09","sw10"],aptSchulwochen:["sw11","sw12","sw13"],
   notwendigeWochen:["pp09","pp2p2","pp12"],trainingWochen:["pp2a1","pp10","pp11"],
-  meilensteine:["Team gebildet","Station konzipiert (Wahrnehmung oder Gedächtnis)","Material vorbereitet","Parcours durchgeführt","Reflexion abgegeben"],
-  bestaetigung:[1,4]},
+  auftrag:{titel:"Wahrnehmungs- und Gedächtnis-Parcours",text:
+`Wahrnehmung und Gedächtnis kann man am besten selbst erleben. Ihr entwickelt im Team eine Station für einen gemeinsamen Parcours, an der Mitschüler:innen ein Wahrnehmungs- oder Gedächtnisphänomen selbst ausprobieren.
+
+Euer Weg:
+1. Bildet ein Team, entscheidet euch für ein Phänomen (Wahrnehmung oder Gedächtnis) und formuliert eine Leitfrage mit Begründung.
+2. Erarbeitet die fachliche Grundlage (Wahrnehmung, Mehrspeichermodell, Strategien zum Wissenserwerb) und prüft euren Wissensstand im Basis-Check.
+3. Beschreibt kurz, was eure Station zeigt, und analysiert fachlich, welche Prozesse und Einflussfaktoren dahinterstehen.
+4. Legt ein Konzept für eure Station vor (Idee, Material, Ablauf) und holt euch Feedback der Lehrkraft.
+5. Führt eure Station im Parcours durch und gebt eine kurze Reflexion ab.`},
+  meilensteine:["Team gebildet","Phänomen gewählt, Leitfrage mit Begründung formuliert","Fachliche Grundlage erarbeitet (Wahrnehmung, Gedächtnis)","Basis-Check gemacht","Praxisbezug: Station kurz beschrieben und fachlich analysiert","Konzept bzw. Entwurf der Station liegt vor (Feedback der Lehrkraft)","Station im Parcours durchgeführt, Reflexion abgegeben"],
+  bestaetigung:[5,6]},
  {id:"lb4",lb:"LB 4",lbNum:4,titel:"Konditionierung im Alltag entdecken",lbTitel:"Lernen",
-  projektSchulwochen:["sw16","sw17"],aptSchulwochen:["sw18","sw19"],
+  projektSchulwochen:["sw14","sw15","sw16"],aptSchulwochen:["sw17","sw18","sw19"],
   notwendigeWochen:["pp4p1","pp13","pp14"],trainingWochen:["pp15","pp16"],
-  meilensteine:["Team gebildet","Alltagsbeispiele gesammelt","Beispiele fachlich analysiert (klassisch/operant)","Dokumentation erstellt","Präsentiert"],
-  bestaetigung:[2,4]}
+  auftrag:{titel:"Konditionierung im Alltag entdecken",text:
+`Lernen durch Konditionierung passiert ständig: in Werbung, Schule, Familie, Spielen und Social Media. Ihr geht im Team auf Spurensuche und ordnet Alltagsbeispiele fachlich ein.
+
+Euer Weg:
+1. Bildet ein Team, grenzt euer Thema ein und formuliert eine Leitfrage mit Begründung.
+2. Erarbeitet die fachliche Grundlage (Merkmale von Lernen, klassisches Konditionieren nach Pawlow, operantes Konditionieren nach Thorndike und Skinner) und prüft euren Wissensstand im Basis-Check.
+3. Sammelt Alltagsbeispiele, wählt eines aus, beschreibt es kurz und analysiert es fachlich (klassisch oder operant?).
+4. Legt eine Gliederung bzw. einen Entwurf eurer Dokumentation vor und holt euch Feedback der Lehrkraft.
+5. Erstellt euer Endprodukt (Dokumentation, Plakat oder Präsentation) und beantwortet darin eure Leitfrage.`},
+  meilensteine:["Team gebildet","Thema eingegrenzt, Leitfrage mit Begründung formuliert","Fachliche Grundlage erarbeitet (Konditionierung)","Basis-Check gemacht","Praxisbezug: Alltagsbeispiel kurz beschrieben und fachlich analysiert","Gliederung bzw. Entwurf liegt vor (Feedback der Lehrkraft)","Endprodukt abgegeben und präsentiert"],
+  bestaetigung:[5,6]}
 ];
 // Teams hängen am Projekt (nicht an einem einzelnen Inhalt) – ein Team pro
 // Projekt, sichtbar in allen Projektinhalten.
@@ -1302,6 +1336,8 @@ const PROJEKT_PHASEN=PROJEKT_PHASEN_ROH.map(ph=>{
 });
 function projektPhaseById(id){return PROJEKT_PHASEN.find(p=>p.id===id)||null;}
 function projektPhaseByWoche(wocheId){return PROJEKT_PHASEN.find(p=>p.notwendigeWochen.includes(wocheId)||p.trainingWochen.includes(wocheId))||null;}
+// LB 1 ist nur die interaktive Einstiegsstunde: kein Team, keine Meilensteine.
+function wocheHatTeam(woche){return woche?.typ==="projekt"&&!projektPhaseByWoche(woche.id)?.einstieg;}
 function teamAnchorFor(wocheId){const ph=PROJEKT_PHASEN.find(p=>p.notwendigeWochen.includes(wocheId));return ph?ph.projektWocheId:wocheId;}
 
 // Inhalte (Nr. = Nummer aus der Inhaltsliste Jgst. 11). typ "projekt" =
@@ -1312,17 +1348,18 @@ function teamAnchorFor(wocheId){const ph=PROJEKT_PHASEN.find(p=>p.notwendigeWoch
 const PP_EINHEITEN=[
  // ---------- LB 1 · Projekt ----------
  {id:"pp01",phase:"lb1",typ:"projekt",nr:"1",thema:"Gegenstand der Psychologie: Erleben und Verhalten",
-  planung:"Erleben (innere, nur der Person selbst zugängliche Vorgänge) und Verhalten (von außen beobachtbar) unterscheiden und festlegen, was ihr in eurem Experiment beobachtet und was ihr erfragt.",
+  planung:"Erleben (innere, nur der Person selbst zugängliche Vorgänge) und Verhalten (von außen beobachtbar) unterscheiden und an Beispielen zeigen, was sich beobachten und was sich nur erfragen lässt.",
   praxis:"Im Praktikum Beispiele sammeln: Was ist beobachtbares Verhalten, was lässt sich nur erschließen oder erfragen?",
-  ziele:["Ich kann Erleben und Verhalten als Gegenstand der Psychologie definieren und voneinander abgrenzen.","Ich kann an Alltags- und Praxisbeispielen zeigen, welche Anteile beobachtbar (Verhalten) und welche nur erschließbar bzw. erfragbar (Erleben) sind.","Ich kann für unser Experiment festlegen, welches Verhalten wir beobachten und wie wir das Erleben erfassen (z. B. Befragung)."]},
+  ziele:["Ich kann Erleben und Verhalten als Gegenstand der Psychologie definieren und voneinander abgrenzen.","Ich kann an Alltags- und Praxisbeispielen zeigen, welche Anteile beobachtbar (Verhalten) und welche nur erschließbar bzw. erfragbar (Erleben) sind.","Ich kann für ein Beispiel-Experiment festlegen, welches Verhalten beobachtet und wie das Erleben erfasst wird (z. B. durch Befragung)."]},
  {id:"pp02",phase:"lb1",typ:"projekt",nr:"7, 8",thema:"Wissenschaftliche und alltagspsychologische Aussagen",
-  planung:"Merkmale wissenschaftlicher Aussagen (systematische Gewinnung, Überprüfbarkeit, Allgemeingültigkeit, Objektivität) den Merkmalen alltagspsychologischer Aussagen (zufällige Erkenntnisgewinnung, fehlende Überprüfbarkeit, unzulässige Verallgemeinerung, Subjektivität) gegenüberstellen; eure Alltagsvermutung in eine überprüfbare Hypothese umformulieren.",
+  planung:"Merkmale wissenschaftlicher Aussagen (systematische Gewinnung, Überprüfbarkeit, Allgemeingültigkeit, Objektivität) den Merkmalen alltagspsychologischer Aussagen (zufällige Erkenntnisgewinnung, fehlende Überprüfbarkeit, unzulässige Verallgemeinerung, Subjektivität) gegenüberstellen; eine Alltagsvermutung (z. B. „Kaugummikauen hilft beim Lernen“) in eine überprüfbare Hypothese umformulieren.",
   praxis:"Praxisbeobachtung mit Kriterienraster: Was ist Beobachtung, was ist Interpretation?",
   ziele:["Ich kann die Merkmale wissenschaftlicher Aussagen – systematische Gewinnung, Überprüfbarkeit, Allgemeingültigkeit und Objektivität – erläutern.","Ich kann die Merkmale alltagspsychologischer Aussagen – zufällige Erkenntnisgewinnung, fehlende Überprüfbarkeit, unzulässige Verallgemeinerung und Subjektivität – an Beispielen aufzeigen.","Ich kann eine Alltagsvermutung in eine wissenschaftlich überprüfbare Hypothese umformulieren."]},
  {id:"pp03",phase:"lb1",typ:"projekt",nr:"9, 10",thema:"Das Experiment als wissenschaftliche Methode",
-  planung:"Aufbau eines Experiments (Hypothese, unabhängige/abhängige Variable, Versuchs- und Kontrollgruppe) und seine Kennzeichen Willkürlichkeit, Variierbarkeit und Wiederholbarkeit; euer Mini-Experiment planen, durchführen, auswerten und präsentieren.",
-  praxis:"Kleines Mini-Experiment zu Aufmerksamkeit, Erinnerung oder Lernverhalten; Datenschutz und Ethik beachten.",
-  ziele:["Ich kann das Experiment als wissenschaftliche Methode beschreiben (Hypothese, unabhängige und abhängige Variable, Versuchs- und Kontrollgruppe).","Ich kann die Kennzeichen Willkürlichkeit, Variierbarkeit und Wiederholbarkeit erklären und in unserer Versuchsplanung umsetzen.","Ich kann Durchführung und Ergebnisse unseres Experiments nachvollziehbar dokumentieren und sachlich präsentieren."]},
+  interaktiv:true,
+  planung:"Aufbau eines Experiments (Hypothese, unabhängige/abhängige Variable, Versuchs- und Kontrollgruppe) und seine Kennzeichen Willkürlichkeit, Variierbarkeit und Wiederholbarkeit. Du arbeitest die interaktive Stunde „Das Experiment“ durch: Kaugummi-Versuch in Kleingruppen durchführen, Ergebnisse der Klasse vergleichen, Merkmale erarbeiten und im Abschlussquiz anwenden.",
+  praxis:"Kaugummi-Versuch in Kleingruppen (Gruppe A ohne, Gruppe B mit Kaugummi); die Ergebnisse werden anonym mit der Klasse verglichen.",
+  ziele:["Ich kann das Experiment als wissenschaftliche Methode beschreiben (Hypothese, unabhängige und abhängige Variable, Versuchs- und Kontrollgruppe).","Ich kann die Kennzeichen Willkürlichkeit, Variierbarkeit und Wiederholbarkeit erklären und an einem Beispiel erkennen und begründen.","Ich kann Ergebnisse eines Experiments vergleichen und kritisch beurteilen, ob sie sich verallgemeinern lassen."]},
  // ---------- LB 1 · Abschlussprüfungs-Training ----------
  {id:"pp1a1",phase:"lb1",typ:"apt",nr:"2, 6",bezug:["pp01","pp02"],thema:"Gegenstand der Pädagogik: Erziehungswissenschaft, Erziehungspraxis, Erziehung und Bildung",
   planung:"Erziehungswissenschaft (Theorie) und Erziehungspraxis unterscheiden und aufeinander beziehen; Erziehung und Bildung definieren und abgrenzen.",
@@ -1746,7 +1783,7 @@ function msErreichtAnzahl(ph,team,beitraege){
  return ph.meilensteine.filter((m,i)=>msStatus(ph,team,beitraege,i).zustand==="erreicht").length;
 }
 function msEigeneBeitraege(ph,team,beitraege,uid){
- const g=ph.meilensteine.length-1;
+ const g=Math.max(0,ph.meilensteine.length-1);
  if(!team)return{n:0,g};
  return{n:ph.meilensteine.filter((m,i)=>i>0&&(beitraege||[]).some(b=>b.teamId===team.id&&Number(b.index)===i&&b.uid===uid)).length,g};
 }
@@ -1907,6 +1944,12 @@ async function openProjektGesamtcheck(){
  PROJEKT_PHASEN.forEach(ph=>d.teams.filter(t=>t.phaseId===ph.id).forEach(t=>(ph.bestaetigung||[]).forEach(i=>{const st=msStatus(ph,t,d.beitraege,i);if(st.zustand==="wartet")warten.push({ph,t,i,st});})));
  const rows=d.students.map(s=>`<tr><td style="padding:8px">${esc(s.displayName||s.email||"Schüler/in")}</td>${PROJEKT_PHASEN.map(ph=>{
   const z=pgZelle(d,s,ph);
+  if(ph.einstieg){
+   const f=d.fortschritt.find(x=>x.uid===s.uid&&x.wocheId===ph.stundeWocheId)||{};
+   const farbe=f.experimentErledigt?"#3fa66a":(z.inh>0?"#e0a324":"#c7d0d6");
+   return`<td class="pg-zelle"onclick="openProjektSchuelerDetail('${s.uid}','${ph.id}')"title="Details öffnen"><span class="ampel-dot"style="background:${farbe}"></span>
+   <small>Stunde ${f.experimentErledigt?"gemacht ✓":"offen"}<br>Inhalte ${z.inh}/${z.inhG}</small></td>`;
+  }
   if(heute<ph.projektStart&&!z.team&&!z.inh)return`<td class="pg-zelle kommend">–</td>`;
   const q=Math.min(z.inh/z.inhG,z.eig.g?z.eig.n/z.eig.g:1);
   const farbe=!z.team?"#c7d0d6":q>=1&&z.ms>=z.msG?"#3fa66a":q>0||z.ms>1?"#e0a324":"#c7d0d6";
@@ -1943,8 +1986,8 @@ async function openProjektSchuelerDetail(uid,phId){
   <h3 class="apt-h3">Projektinhalte (persönlich)</h3>
   <div class="list">${ph.notwendigeWochen.map(id=>{const e=lehrplanWocheById("paedagogik",id);const f=d.fortschritt.find(x=>x.uid===uid&&x.wocheId===id)||{};
    return`<div class="list-item"><div><strong>${f.abgeschlossen?"✓ ":""}${esc(e?.thema||id)}</strong><small>${f.abgeschlossen?"abgeschlossen":Object.values(f.zieleErfuellt||{}).some(Boolean)?"in Arbeit":"noch offen"}</small></div></div>`;}).join("")}</div>
-  <h3 class="apt-h3">Meilensteine ${z.team?`· Team „${esc(z.team.teamName||"")}“ · eigene Beiträge ${z.eig.n}/${z.eig.g}`:""}</h3>
-  ${z.team?msListeHTML(ph,z.team,d.beitraege,"schueler",uid):`<div class="empty">Noch in keinem Team.</div>`}
+  ${ph.einstieg?(()=>{const f=d.fortschritt.find(x=>x.uid===uid&&x.wocheId===ph.stundeWocheId)||{};return`<h3 class="apt-h3">Interaktive Stunde</h3><div class="list"><div class="list-item"><div><strong>${f.experimentErledigt?"✓ Stunde „Das Experiment“ abgeschlossen":"Stunde noch nicht abgeschlossen"}</strong>${f.experimentAm?.seconds?`<small>am ${esc(new Date(f.experimentAm.seconds*1000).toLocaleDateString("de-DE"))}</small>`:""}</div></div></div>`;})():`<h3 class="apt-h3">Meilensteine ${z.team?`· Team „${esc(z.team.teamName||"")}“ · eigene Beiträge ${z.eig.n}/${z.eig.g}`:""}</h3>
+  ${z.team?msListeHTML(ph,z.team,d.beitraege,"schueler",uid):`<div class="empty">Noch in keinem Team.</div>`}`}
   <div class="form-actions"style="margin-top:14px"><button class="secondary"onclick="openProjektGesamtcheck()">← Zurück zum Gesamtcheck</button><button class="secondary"onclick="closeModal()">Schließen</button></div>`);
 }
 window.openProjektSchuelerDetail=openProjektSchuelerDetail;
@@ -2162,7 +2205,7 @@ function renderWochenLiveTable(fach,wocheId,woche){
  const relevanteTasks=st.lsTasks.filter(t=>st.wocheLbKeys.includes(t.learningArea));
  // Basis-Schritte, die immer zählen: Auftrag, Material, Lernprodukt, Lernstand, Selbsteinschätzung.
  // Basis-Check und Team zählen nur mit, wenn für diese Woche zutreffend.
- const gesamtSchritte=5+(st.hatBasischeck?1:0)+(woche.typ==="projekt"?1:0);
+ const gesamtSchritte=5+(st.hatBasischeck?1:0)+(wocheHatTeam(woche)?1:0)+(woche.interaktiv?1:0);
  tbody.innerHTML=st.students.map(s=>{
  const f=st.fortschritt.find(x=>x.uid===s.uid)||{};
  const bc=st.basischeck.find(x=>x.uid===s.uid);
@@ -2173,7 +2216,8 @@ function renderWochenLiveTable(fach,wocheId,woche){
  if(f.auftragGelesen)position++;
  if(f.materialErhalten)position++;
  if(st.hatBasischeck&&bc)position++;
- if(woche.typ==="projekt"&&team)position++;
+ if(wocheHatTeam(woche)&&team)position++;
+ if(woche.interaktiv&&f.experimentErledigt)position++;
  if(produkt)position++;
  if(lernstandOk)position++;
  const zieleErfuellt=st.ziele.length>0&&st.ziele.every(z=>f.zieleErfuellt?.[z.id]);
@@ -2338,15 +2382,16 @@ function renderPhasenLiveTable(phase){
  const idx=msErreichtAnzahl(phase,team,st.beitraege);
  const nx=team?msNaechster(phase,team,st.beitraege):null;
  const eig=msEigeneBeitraege(phase,team,st.beitraege,s.uid);
- const meilensteinLabel=!team?"kein Team":!nx?"alle Meilensteine erreicht":`nächster: ${phase.meilensteine[nx.i]} (${MS_ZUSTAND[nx.st.zustand].t}) · eigene Beiträge ${eig.n}/${eig.g}`;
+ const stundeFertig=phase.einstieg&&st.fortschritt.some(f=>f.uid===s.uid&&f.wocheId===phase.stundeWocheId&&f.experimentErledigt);
+ const meilensteinLabel=phase.einstieg?(stundeFertig?"interaktive Stunde gemacht":"interaktive Stunde noch offen"):!team?"kein Team":!nx?"alle Meilensteine erreicht":`nächster: ${phase.meilensteine[nx.i]} (${MS_ZUSTAND[nx.st.zustand].t}) · eigene Beiträge ${eig.n}/${eig.g}`;
  const letzteAktivitaet=st.fortschritt.filter(f=>f.uid===s.uid&&phase.notwendigeWochen.includes(f.wocheId))
  .map(f=>f.updatedAt?.seconds?new Date(f.updatedAt.seconds*1000):null).filter(Boolean).sort((a,b)=>b-a)[0];
  const tageInaktiv=letzteAktivitaet?Math.floor((Date.now()-letzteAktivitaet.getTime())/86400000):null;
  return`<tr>
  <td>${esc(s.displayName||s.email||"Schüler/in")}</td>
  <td style="text-align:center"><span class="ampel-dot"style="background:${inhaltsAmpelFarbe(fertigeWochen,phase.notwendigeWochen.length)}"title="${fertigeWochen} von ${phase.notwendigeWochen.length} notwendigen Wochen"></span> ${fertigeWochen}/${phase.notwendigeWochen.length}</td>
- <td style="text-align:center"><span class="ampel-dot"style="background:${meilensteinAmpelFarbe(idx,phase.meilensteine.length)}"title="${esc(meilensteinLabel)}"></span></td>
- <td style="font-size:12px;color:var(--muted)">${esc(team?.teamName||"kein Team")}</td>
+ <td style="text-align:center"><span class="ampel-dot"style="background:${phase.einstieg?(stundeFertig?"#3fa66a":"#c7d0d6"):meilensteinAmpelFarbe(idx,phase.meilensteine.length)}"title="${esc(meilensteinLabel)}"></span></td>
+ <td style="font-size:12px;color:var(--muted)">${esc(phase.einstieg?"–":(team?.teamName||"kein Team"))}</td>
  <td style="font-size:11px">${esc(meilensteinLabel)}</td>
  <td style="font-size:11px;color:${tageInaktiv!==null&&tageInaktiv>=3?"#d9534f":"var(--muted)"}">${letzteAktivitaet?letzteAktivitaet.toLocaleDateString("de-DE"):"noch nicht begonnen"}</td>
  </tr>`;
@@ -3611,12 +3656,17 @@ const APT_SCHRITT_LABELS=["Prüfungsfrage","Inhalte & Eingrenzung","Basis-Check"
 const APT_TABS=["frage","inhalte","basischeck","produkt"];
 function aptSchritte(f){f=f||{};return[!!f.frageGelesen,!!(f.materialBearbeitet&&f.eingrenzung),!!f.basischeckErledigt,!!(f.produktHochgeladen&&f.vorkorrekturUmgesetzt)];}
 function ppTeilWochen(ph,teil){return(teil==="projekt"?ph.projektSchulwochen:ph.aptSchulwochen).map(swById);}
-function ppTeilName(teil){return teil==="projekt"?"Projekt":"Abschlussprüfungs-Training";}
-function ppTeilIcon(teil){return teil==="projekt"?"🔬":"🎓";}
+function ppTeilName(teil,ph){return teil==="projekt"?(ph?.einstieg?"Einstieg":"Projekt"):"Abschlussprüfungs-Training";}
+function ppTeilIcon(teil,ph){return teil==="projekt"?(ph?.einstieg?"🧪":"🔬"):"🎓";}
 
 function ppTeilFortschritt(ph,teil,fortschrittMap,meinTeam){
  if(teil==="projekt"){
   const inhalteFertig=ph.notwendigeWochen.filter(id=>fortschrittMap[id]?.abgeschlossen).length;
+  if(ph.einstieg){
+   const stunde=fortschrittMap[ph.stundeWocheId]?.experimentErledigt?1:0;
+   const g=ph.notwendigeWochen.length+1;
+   return{erledigt:inhalteFertig+stunde,gesamt:g,prozent:Math.round((inhalteFertig+stunde)/g*100),inhalteFertig,inhalteGesamt:ph.notwendigeWochen.length,ms:0,msGesamt:0,stunde};
+  }
   const ms=msErreichtAnzahl(ph,meinTeam,meinTeam?._beitraege);
   const gesamt=ph.notwendigeWochen.length+ph.meilensteine.length;
   return{erledigt:inhalteFertig+ms,gesamt,prozent:gesamt?Math.round((inhalteFertig+ms)/gesamt*100):0,inhalteFertig,inhalteGesamt:ph.notwendigeWochen.length,ms,msGesamt:ph.meilensteine.length};
@@ -3666,7 +3716,7 @@ function ppWochenZellenHTML(wochen,farbe,heute){
  return`<div class="pp-wz-reihe">${wochen.map(w=>{
   const st=w.end<heute?"vorbei":(w.start<=heute&&heute<=w.end)?"jetzt":"kommend";
   const stil=st==="vorbei"?`background:${ppMix(farbe,.45)};border-color:${ppMix(farbe,.45)};color:#fff`:st==="jetzt"?`border-color:${farbe};color:${farbe};font-weight:800`:"";
-  return`<span class="pp-wz pp-wz-${st}"style="${stil}"title="Schulwoche ${fmtKurz(w.start)}–${fmtKurz(w.end)}">${fmtKurz(w.start)}</span>`;
+  return`<span class="pp-wz pp-wz-${st}"style="${stil}"title="Schulwoche ${fmtKurz(w.start)}–${fmtKurz(w.end)} · Freitag ${fmtKurz(w.end)}: Check-out (K-Prim)">${fmtKurz(w.start)}<i class="pp-wz-fr">🏁</i></span>`;
  }).join("")}</div>`;
 }
 
@@ -3682,7 +3732,7 @@ function ppJahresleisteHTML(heute){
  const wochen=PROJEKT_PHASEN.flatMap(ph=>["projekt","apt"].flatMap(teil=>ppTeilWochen(ph,teil).map(w=>{
   const c=ppFarbe(ph);
   const bg=teil==="projekt"?c:`repeating-linear-gradient(135deg,${c} 0 5px,${ppMix(c,.5)} 5px 10px)`;
-  return seg(w.start,w.end,`background:${bg};cursor:pointer`,`${ph.lb} · ${ppTeilName(teil)} · ${fmtKurz(w.start)}–${fmtKurz(w.end)}`,"",` onclick="openPhaseDetail('${ph.id}:${teil}')"`);
+  return seg(w.start,w.end,`background:${bg};cursor:pointer`,`${ph.lb} · ${ppTeilName(teil,ph)} · ${fmtKurz(w.start)}–${fmtKurz(w.end)}`,"",` onclick="openPhaseDetail('${ph.id}:${teil}')"`);
  }))).join("");
  const monate=["2026-10-01","2026-11-01","2026-12-01","2027-01-01","2027-02-01","2027-03-01","2027-04-01","2027-05-01","2027-06-01","2027-07-01"];
  const mNamen=["Okt","Nov","Dez","Jan","Feb","Mär","Apr","Mai","Jun","Jul"];
@@ -3704,14 +3754,14 @@ function ppTeilKachelHTML(ph,teil,fortschrittMap,meinTeam,heute){
  const textFarbe=t>0.55?"#fff":"#17384f";
  const muster=teil==="apt"?";background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.16) 0 6px,transparent 6px 12px)":"";
  const jetzt=budget.zustand==="laeuft";
- const detail=teil==="projekt"?`${fs.inhalteFertig}/${fs.inhalteGesamt} Inhalte · ${fs.ms}/${fs.msGesamt} Meilensteine`:`${fs.inhalteFertig}/${fs.inhalteGesamt} Inhalte · ${fs.erledigt}/${fs.gesamt} Schritte`;
+ const detail=teil==="projekt"?(ph.einstieg?`${fs.inhalteFertig}/${fs.inhalteGesamt} Inhalte · Stunde ${fs.stunde?"gemacht":"offen"}`:`${fs.inhalteFertig}/${fs.inhalteGesamt} Inhalte · ${fs.ms}/${fs.msGesamt} Meilensteine`):`${fs.inhalteFertig}/${fs.inhalteGesamt} Inhalte · ${fs.erledigt}/${fs.gesamt} Schritte`;
  return`<button type="button"class="pp-teil${jetzt?" pp-teil-jetzt":""}"style="--c:${c};border-color:${jetzt?c:ppMix(c,.35)}"onclick="openPhaseDetail('${ph.id}:${teil}')">
   <div class="pp-teil-farbfeld"style="background-color:${ppMix(c,t)}${muster};color:${textFarbe}">
-   <span class="pp-teil-icon">${ppTeilIcon(teil)}</span>
+   <span class="pp-teil-icon">${ppTeilIcon(teil,ph)}</span>
    <span class="pp-teil-prozent">${fs.prozent}%</span>
   </div>
   <div class="pp-teil-body">
-   <div class="pp-teil-art"style="color:${c}">${ppTeilName(teil)}${jetzt?" · JETZT":""}</div>
+   <div class="pp-teil-art"style="color:${c}">${ppTeilName(teil,ph)}${jetzt?" · JETZT":""}</div>
    <div class="pp-teil-titel">${esc(teil==="projekt"?ph.titel:"Prüfungsinhalte "+ph.lb)}</div>
    <div class="pp-teil-meta">${detail}</div>
    <div class="pp-budget">⏳ ${esc(budget.text)}</div>
@@ -3722,7 +3772,7 @@ function ppTeilKachelHTML(ph,teil,fortschrittMap,meinTeam,heute){
 }
 
 // ---- Kompakter Zeitstrahl für Ebene 2 (oben am Rand) ----
-function ppMiniZeitstrahlHTML(fortschrittMap,meineTeams,heute,aktivKey){
+function ppMiniZeitstrahlHTML(fortschrittMap,meineTeams,heute,aktivKey,coDaten){
  return`<div class="pp-mini">${PROJEKT_PHASEN.map(ph=>{
   const c=ppFarbe(ph);
   return`<div class="pp-mini-block"style="flex:${ph.projektSchulwochen.length+ph.aptSchulwochen.length} 1 0">
@@ -3730,14 +3780,57 @@ function ppMiniZeitstrahlHTML(fortschrittMap,meineTeams,heute,aktivKey){
    <div class="pp-mini-teile">${["projekt","apt"].map(teil=>{
     const fs=ppTeilFortschritt(ph,teil,fortschrittMap,meineTeams[ph.id]);
     const key=`${ph.id}:${teil}`;
-    const n=teil==="projekt"?ph.projektSchulwochen.length:ph.aptSchulwochen.length;
+    const wochen=ppTeilWochen(ph,teil),n=wochen.length;
     const t=ppSaettigung(fs.prozent);
-    return`<button type="button"class="pp-mini-teil${key===aktivKey?" aktiv":""}"style="flex:${n} 1 0;background:${ppMix(c,t)};color:${t>0.55?"#fff":"#17384f"};--c:${c}"onclick="openPhaseDetail('${key}')"title="${esc(ph.lb+" · "+ppTeilName(teil)+" · "+fs.prozent+" %")}">${teil==="projekt"?"P":"A"} ${fs.prozent}%</button>`;
+    return`<div class="pp-mini-spalte"style="flex:${n} 1 0">
+     <button type="button"class="pp-mini-teil${key===aktivKey?" aktiv":""}"style="background:${ppMix(c,t)};color:${t>0.55?"#fff":"#17384f"};--c:${c}"onclick="openPhaseDetail('${key}')"title="${esc(ph.lb+" · "+ppTeilName(teil,ph)+" · "+fs.prozent+" %")}">${teil==="projekt"?(ph.einstieg?"E":"P"):"A"} ${fs.prozent}%</button>
+     <div class="pp-mini-fr">${wochen.map(w=>{const co=coFuerWoche(coDaten,w);return`<span class="pp-fr-marke${co?" "+co.status:""}"title="${esc("Freitag "+fmtKurz(w.end)+": Check-out (K-Prim)"+(co?" · "+(co.status==="live"?"läuft":co.status==="beendet"?"beendet":"Entwurf"):""))}">🏁</span>`;}).join("")}</div>
+    </div>`;
    }).join("")}</div>
   </div>`;
  }).join("")}</div>`;
 }
-
+// ---- Check-out am Freitag: Zuordnung Woche ↔ Check-out (über das Datum) ----
+function coFuerWoche(coDaten,w){
+ const liste=(coDaten?.checkouts||[]).filter(c=>c.datum&&c.datum>=w.start&&c.datum<=w.end);
+ return liste.find(c=>c.status==="live")||liste[0]||null;
+}
+function coAktionHTML(c,d){
+ const a=d.meineAbgaben?.[c.id];
+ if(isTeacher()){
+  return c.status==="entwurf"?`<button class="secondary"onclick="openCheckoutEditor('${c.id}')">Bearbeiten</button><button class="primary"onclick="coLiveStarten('${c.id}')">▶ Live freischalten</button>`
+   :c.status==="live"?`<button class="primary"onclick="openCheckoutMonitor('${c.id}')">Live-Übersicht</button>`
+   :`<button class="secondary"onclick="openCheckoutErgebnisse('${c.id}')">Ergebnisse</button>`;
+ }
+ return c.status==="live"?(a?.abgegeben?`<span class="co-chip fertig">abgegeben ✓</span>`:`<button class="primary"onclick="openCheckoutTest('${c.id}')">${a?"Weiter":"Starten"}</button>`)
+  :a?.ausgewertet?`<b class="co-np">${npText(a.notenpunkte)}</b><button class="secondary"onclick="openCheckoutMeinErgebnis('${c.id}')">Ansehen</button>`
+  :a?`<small style="color:var(--muted)">wird ausgewertet …</small>`:`<small style="color:var(--muted)">nicht teilgenommen</small>`;
+}
+// Karte auf Ebene 2 direkt unter dem Zeitstrahl: ein Check-out je Freitag.
+function ppFreitagsKarteHTML(ph,teil,coDaten,heute){
+ if(!coDaten)return"";
+ const wochen=ppTeilWochen(ph,teil),c=ppFarbe(ph),lehrer=isTeacher();
+ const ids=teil==="projekt"?ph.notwendigeWochen:ph.trainingWochen;
+ const themen=ids.map(id=>ppKurz(lehrplanWocheById("paedagogik",id))).filter(Boolean).join(", ");
+ const zeilen=wochen.map(w=>{
+  const co=coFuerWoche(coDaten,w);
+  const vorbei=w.end<heute;
+  const chip=co?(co.status==="live"?`<span class="co-chip live"><span class="co-live-punkt"></span>läuft</span>`:co.status==="beendet"?`<span class="co-chip fertig">beendet</span>`:`<span class="co-chip entwurf">Entwurf</span>`):"";
+  let rechts="";
+  if(co)rechts=coAktionHTML(co,coDaten);
+  else if(lehrer)rechts=`<button class="primary"onclick="openCheckoutEditor(null,{datum:'${w.end}',lbNum:${ph.lbNum}})">＋ Check-out anlegen</button>`;
+  else rechts=`<small style="color:var(--muted)">${vorbei?"kein Check-out":"Deine Lehrkraft schaltet ihn am Freitag frei."}</small>`;
+  return`<div class="co-zeile"style="--c:${c}">
+   <span class="co-lb">Fr ${fmtKurz(w.end)}</span>
+   <div class="co-titel"><b>${co?esc(co.titel||"Check-out"):"Check-out"}</b><small>${co?`${(co.aufgaben||[]).length} K-Prim-Aufgaben`:"K-Prim-Aufgaben zu den Themen der Woche"}</small></div>
+   ${chip}<div class="co-aktion">${rechts}</div>
+  </div>`;
+ }).join("");
+ return`<div class="card co-karte pp-fr-karte"style="margin-top:14px;border-left:5px solid ${c}">
+  <div class="co-kopf"><div><h3>🏁 Check-out am Freitag · K-Prim-Test</h3><small>Jeden Freitag folgt ein kurzer K-Prim-Test zu den Themen der Woche${themen?` (${esc(themen)})`:""}. Deine Lehrkraft schaltet ihn live frei.</small></div></div>
+  <div class="co-liste">${zeilen}</div>
+ </div>`;
+}
 // ---- Nächster Schritt für Schüler:innen ----
 function ppNaechsterSchrittHTML(fortschrittMap,heute){
  const teile=PROJEKT_PHASEN.flatMap(ph=>[{ph,teil:"projekt"},{ph,teil:"apt"}]);
@@ -3751,9 +3844,9 @@ function ppNaechsterSchrittHTML(fortschrittMap,heute){
  const c=ppFarbe(aktuell.ph);
  return`<div class="card pp-next"style="border-left:4px solid ${c}">
   <div class="kicker">DEIN NÄCHSTER SCHRITT</div>
-  ${e?`<button type="button"class="pp-next-btn"onclick="openLehrplanEinheit('paedagogik','${e.id}')"><span>${ppTeilIcon(aktuell.teil)}</span><span><small>${esc(aktuell.ph.lb)} · ${ppTeilName(aktuell.teil)}</small><strong>${esc(e.thema)}</strong></span><span>→</span></button>`
-   :`<p style="margin:6px 0 0">Im aktuellen Abschnitt (${esc(aktuell.ph.lb)} · ${ppTeilName(aktuell.teil)}) ist alles erledigt. Stark!</p>`}
-  ${rueckstand.length?`<p style="font-size:12px;color:#b3541e;margin:10px 0 0">⚠︎ Noch offen aus früheren Abschnitten: ${rueckstand.map(x=>`<a href="javascript:void 0"onclick="openPhaseDetail('${x.ph.id}:${x.teil}')">${esc(x.ph.lb)} ${ppTeilName(x.teil)} (${offen(x).length})</a>`).join(", ")}</p>`:""}
+  ${e?`<button type="button"class="pp-next-btn"onclick="openLehrplanEinheit('paedagogik','${e.id}')"><span>${ppTeilIcon(aktuell.teil,aktuell.ph)}</span><span><small>${esc(aktuell.ph.lb)} · ${ppTeilName(aktuell.teil,aktuell.ph)}</small><strong>${esc(e.thema)}</strong></span><span>→</span></button>`
+   :`<p style="margin:6px 0 0">Im aktuellen Abschnitt (${esc(aktuell.ph.lb)} · ${ppTeilName(aktuell.teil,aktuell.ph)}) ist alles erledigt. Stark!</p>`}
+  ${rueckstand.length?`<p style="font-size:12px;color:#b3541e;margin:10px 0 0">⚠︎ Noch offen aus früheren Abschnitten: ${rueckstand.map(x=>`<a href="javascript:void 0"onclick="openPhaseDetail('${x.ph.id}:${x.teil}')">${esc(x.ph.lb)} ${ppTeilName(x.teil,x.ph)} (${offen(x).length})</a>`).join(", ")}</p>`:""}
  </div>`;
 }
 
@@ -3762,7 +3855,11 @@ async function renderPaedagogikPhasenZeitstrahl(fach,fortschrittMap,heute){
  if(activePhaseDetail){
   const [phId,teil]=String(activePhaseDetail).split(":");
   const ph=projektPhaseById(phId);
-  if(ph)return renderPPTeilAnsicht(ph,teil==="apt"?"apt":"projekt",fortschrittMap,meineTeams,heute);
+  if(ph){
+   const extra={coDaten:await ladeCheckoutDaten()};
+   if(ph.einstieg&&teil!=="apt"&&isTeacher())extra.stunde=await ladeStundenStatus(ph);
+   return renderPPTeilAnsicht(ph,teil==="apt"?"apt":"projekt",fortschrittMap,meineTeams,heute,extra);
+  }
   activePhaseDetail=null;
  }
  const coDaten=await ladeCheckoutDaten();
@@ -3809,12 +3906,12 @@ function ppStationHTML(x,i,teile,fortschrittMap,meineTeams,heute,aktIdx){
   linie=`<span class="pp-weg-linie${pause?" pp-weg-pause-linie":""}"style="background:${bg}"></span>${pause?`<span class="pp-weg-pause"title="${esc(pause.titel)}">${pause.icon}</span>`:""}`;
  }
  const zeigTempo=tempo&&(hier||(budget.zustand==="vorbei"&&!fertig));
- return`<button type="button"class="pp-weg-station${hier?" hier":""}${isTeacher()?" lk":""}${fertig?" fertig":""}"style="--c:${c}"onclick="openPhaseDetail('${ph.id}:${teil}')"title="${esc(ph.lb+" · "+ppTeilName(teil)+" · "+fs.prozent+" %")}">
+ return`<button type="button"class="pp-weg-station${hier?" hier":""}${isTeacher()?" lk":""}${fertig?" fertig":""}"style="--c:${c}"onclick="openPhaseDetail('${ph.id}:${teil}')"title="${esc(ph.lb+" · "+ppTeilName(teil,ph)+" · "+fs.prozent+" %")}">
   ${linie}
   ${hier?`<span class="pp-weg-hier">${isTeacher()?"Jetzt im Plan":"Du bist hier"}</span>`:""}
-  <span class="pp-weg-ring"style="background:${ring}"><span style="color:${isTeacher()||fs.prozent?c:"#9fb0bd"}"><small>${ppTeilIcon(teil)}</small>${isTeacher()?`<small class="pp-weg-wo">${n} Wo</small>`:fertig?"✓":fs.prozent+" %"}</span></span>
+  <span class="pp-weg-ring"style="background:${ring}"><span style="color:${isTeacher()||fs.prozent?c:"#9fb0bd"}"><small>${ppTeilIcon(teil,ph)}</small>${isTeacher()?`<small class="pp-weg-wo">${n} Wo</small>`:fertig?"✓":fs.prozent+" %"}</span></span>
   <span class="pp-weg-text">
-   <span class="pp-weg-typ"style="color:${c}"><span class="pp-weg-lbmobil">LB ${ph.lbNum} · </span>${teil==="projekt"?"Projekt":"Prüfungstraining"}</span>
+   <span class="pp-weg-typ"style="color:${c}"><span class="pp-weg-lbmobil">LB ${ph.lbNum} · </span>${teil==="projekt"?ppTeilName("projekt",ph):"Prüfungstraining"}</span>
    <span class="pp-weg-titel">${esc(teil==="projekt"?ph.titel:ppAptKurztitel(ph))}</span>
    <span class="pp-weg-zeit">${fmtKurz(wochen[0].start)}–${fmtKurz(wochen[n-1].end)} · ${n} Schulwoche${n>1?"n":""}</span>
    ${zeigTempo?`<span class="pp-tempo"style="background:${tempo.farbe}">${esc(tempo.txt)}</span>`:""}
@@ -3841,7 +3938,10 @@ function ppDieseWocheHTML(x,fortschrittMap,meineTeams,heute){
   return`<button type="button"class="pp-dw-zeile"onclick="openLehrplanEinheit('paedagogik','${id}')"><span class="pp-dw-box${fertig?" x":""}"style="--c:${c}">${fertig?"✓":""}</span><span><b>${esc(e.thema)}</b>${isTeacher()?`<small>Inhalt Nr. ${esc(e.nr||"")}</small>`:info?`<small>${esc(info)}</small>`:""}</span></button>`;
  }).join("");
  let ms="";
- if(teil==="projekt"&&!isTeacher()){
+ if(teil==="projekt"&&!isTeacher()&&ph.einstieg){
+  const done=!!fortschrittMap[ph.stundeWocheId]?.experimentErledigt;
+  ms=`<div class="pp-dw-ms">🧪 Interaktive Stunde „Das Experiment“: ${done?"gemacht ✓":"noch nicht abgeschlossen"}<button class="secondary"style="margin-top:6px"onclick="openExperimentStunde()">${done?"Stunde wiederholen":"Stunde starten"}</button></div>`;
+ }else if(teil==="projekt"&&!isTeacher()){
   const team=meineTeams[ph.id],nx=team?msNaechster(ph,team,team._beitraege):null;
   const meinFehlt=nx&&nx.i>0&&!nx.st.beitraege.some(b=>b.uid===currentUser.uid);
   const hinweis=!nx?"":meinFehlt?"dein Beitrag fehlt noch":nx.st.zustand==="wartet"?"wartet auf Bestätigung der Lehrkraft":nx.st.zustand==="zurueck"?"zurückgegeben – bitte überarbeiten":`es fehlt noch: ${nx.st.fehlend.map(f=>f.name).join(", ")}`;
@@ -3852,7 +3952,7 @@ function ppDieseWocheHTML(x,fortschrittMap,meineTeams,heute){
  const ne=naechste?lehrplanWocheById("paedagogik",naechste):null;
  return`<div class="card pp-dw">
   <div class="pp-dw-kopf"style="color:${c}">${kopf}</div>
-  <h3>${ppTeilIcon(teil)} ${esc(teil==="projekt"?ph.titel:"Prüfungstraining "+ph.lb)}</h3>
+  <h3>${ppTeilIcon(teil,ph)} ${esc(teil==="projekt"?ph.titel:"Prüfungstraining "+ph.lb)}</h3>
   ${zeilen}${ms}
   <div class="pp-dw-aktion">${ne?`<button class="primary"onclick="openLehrplanEinheit('paedagogik','${ne.id}')">Weiter: ${esc(ppKurz(ne))}</button>`:""}<button class="secondary"onclick="openPhaseDetail('${ph.id}:${teil}')">Zur Übersicht</button></div>
  </div>`;
@@ -3871,14 +3971,14 @@ function ppTempoKarteHTML(x,fortschrittMap,meineTeams,heute,teile,aktIdx){
   <div class="pp-tk-info">${budget.zustand==="kommend"?"":`Soll heute: ${soll} % · `}${esc(budget.text)}</div>
   <div class="pp-balken"><div style="width:${fs.prozent}%;background:${c}"></div>${budget.zustand==="kommend"?"":`<i style="left:${soll}%"></i>`}</div>
   <div class="pp-tk-info"style="margin-top:4px">Balken = geschafft · Strich = Soll laut Zeitbudget</div>
-  ${next?`<p class="pp-tk-danach">Danach: ${ppTeilIcon(next.teil)} ${esc(next.ph.lb)} ${ppTeilName(next.teil)} ab ${fmtKurz(nw[0].start)} (${nw.length} Schulwoche${nw.length>1?"n":""}).</p>`:""}
+  ${next?`<p class="pp-tk-danach">Danach: ${ppTeilIcon(next.teil,next.ph)} ${esc(next.ph.lb)} ${ppTeilName(next.teil,next.ph)} ab ${fmtKurz(nw[0].start)} (${nw.length} Schulwoche${nw.length>1?"n":""}).</p>`:""}
  </div>`;
 }
 function ppOffenKarteHTML(teile,fortschrittMap,aktIdx){
  const rueck=teile.slice(0,aktIdx).map(x=>({x,ids:ppOffeneIds(x,fortschrittMap)})).filter(r=>r.ids.length);
  if(!rueck.length)return`<div class="card pp-ok"><div class="pp-dw-kopf">Noch offen</div><p class="pp-ok-leer">✓ Nichts offen aus früheren Etappen.</p></div>`;
  return`<div class="card pp-ok"><div class="pp-dw-kopf">Noch offen</div>${rueck.map(({x,ids})=>`<div class="pp-ok-eintrag">
-  <h3>${ppTeilIcon(x.teil)} ${esc(x.ph.lb)} ${ppTeilName(x.teil)}</h3>
+  <h3>${ppTeilIcon(x.teil,x.ph)} ${esc(x.ph.lb)} ${ppTeilName(x.teil,x.ph)}</h3>
   <small>${ids.length} Inhalt${ids.length>1?"e":""} offen: ${ids.map(id=>esc(ppKurz(lehrplanWocheById("paedagogik",id)))).join(", ")}</small>
   <button class="secondary"onclick="openLehrplanEinheit('paedagogik','${ids[0]}')">Nachholen</button></div>`).join("")}</div>`;
 }
@@ -3904,7 +4004,7 @@ function renderPPJahresuebersicht(fortschrittMap,meineTeams,heute,coDaten){
 }
 
 // ---- Ebene 2: Projekt- oder APT-Ansicht eines Lernbereichs ----
-function renderPPTeilAnsicht(ph,teil,fortschrittMap,meineTeams,heute){
+function renderPPTeilAnsicht(ph,teil,fortschrittMap,meineTeams,heute,extra={}){
  const c=ppFarbe(ph);
  const meinTeam=meineTeams[ph.id];
  const fs=ppTeilFortschritt(ph,teil,fortschrittMap,meinTeam);
@@ -3914,9 +4014,9 @@ function renderPPTeilAnsicht(ph,teil,fortschrittMap,meineTeams,heute){
  const t=ppSaettigung(fs.prozent);
  const anderer=teil==="projekt"?"apt":"projekt";
  const kopf=`<div class="card pp-teilkopf"style="border-left:5px solid ${c}">
-  <div class="pp-teilkopf-farbe"style="background-color:${ppMix(c,t)};color:${t>0.55?"#fff":"#17384f"}${teil==="apt"?";background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.16) 0 6px,transparent 6px 12px)":""}"><span>${ppTeilIcon(teil)}</span><b>${fs.prozent}%</b></div>
+  <div class="pp-teilkopf-farbe"style="background-color:${ppMix(c,t)};color:${t>0.55?"#fff":"#17384f"}${teil==="apt"?";background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.16) 0 6px,transparent 6px 12px)":""}"><span>${ppTeilIcon(teil,ph)}</span><b>${fs.prozent}%</b></div>
   <div style="flex:1;min-width:220px">
-   <div class="kicker"style="color:${c}">${esc(ph.lb)} · ${ppTeilName(teil).toUpperCase()} · ${fmtKurz(wochen[0].start)}–${fmtKurz(wochen[wochen.length-1].end)}</div>
+   <div class="kicker"style="color:${c}">${esc(ph.lb)} · ${ppTeilName(teil,ph).toUpperCase()} · ${fmtKurz(wochen[0].start)}–${fmtKurz(wochen[wochen.length-1].end)}</div>
    <h2 style="margin:4px 0">${esc(teil==="projekt"?ph.titel:"Abschlussprüfungs-Training "+ph.lb)}</h2>
    <div class="pp-budget"style="font-size:13px">⏳ ${esc(budget.text)} ${tempo?`<span class="pp-tempo"style="background:${tempo.farbe}">${esc(tempo.txt)}</span>`:""}</div>
    <div class="pp-balken"><div style="width:${fs.prozent}%;background:${c}"></div><i style="left:${Math.round(budget.soll*100)}%"title="Hier solltest du laut Zeitbudget ungefähr stehen"></i></div>
@@ -3924,12 +4024,15 @@ function renderPPTeilAnsicht(ph,teil,fortschrittMap,meineTeams,heute){
    ${ppWochenZellenHTML(wochen,c,heute)}
   </div>
  </div>`;
- const quer=`<button type="button"class="pp-quer"style="--c:${ppFarbe(ph)}"onclick="openPhaseDetail('${ph.id}:${anderer}')">${ppTeilIcon(anderer)} Zum ${anderer==="apt"?"Abschlussprüfungs-Training":"Projekt"} ${esc(ph.lb)} wechseln →</button>`;
+ const quer=`<button type="button"class="pp-quer"style="--c:${ppFarbe(ph)}"onclick="openPhaseDetail('${ph.id}:${anderer}')">${ppTeilIcon(anderer,ph)} Zum ${anderer==="apt"?"Abschlussprüfungs-Training":ppTeilName("projekt",ph)} ${esc(ph.lb)} wechseln →</button>`;
 
  let inhalt="";
- if(teil==="projekt"){
+ if(teil==="projekt"&&ph.einstieg){
+  inhalt=ppEinstiegInhaltHTML(ph,fortschrittMap,c,extra.stunde);
+ }else if(teil==="projekt"){
   const eig=meinTeam?msEigeneBeitraege(ph,meinTeam,meinTeam._beitraege,currentUser.uid):null;
-  inhalt=`<div class="kicker"style="margin:18px 0 8px">PROJEKTINHALTE – bearbeiten und abhaken</div>
+  inhalt=`${ppAuftragKarteHTML(ph)}
+  <div class="kicker"style="margin:18px 0 8px">PROJEKTINHALTE – bearbeiten und abhaken</div>
   ${ph.notwendigeWochen.map((id,i)=>{
    const e=lehrplanWocheById("paedagogik",id);if(!e)return"";
    const f=fortschrittMap[id]||{};
@@ -3963,12 +4066,63 @@ function renderPPTeilAnsicht(ph,teil,fortschrittMap,meineTeams,heute){
   <p style="font-size:11px;color:var(--muted);margin-top:10px">① Prüfungsfrage · ② Inhalte & Aufgabeneingrenzung · ③ Basis-Check · ④ Lernprodukt hochladen & Vorkorrektur umsetzen. Den K-Prim-Test schreibst du als 🏁 Check-out am Ende der Woche.</p>`;
  }
  return`<button class="secondary"onclick="closePhaseDetail()">← Zurück zum Zeitstrahl</button>
- ${ppMiniZeitstrahlHTML(fortschrittMap,meineTeams,heute,`${ph.id}:${teil}`)}
+ ${ppMiniZeitstrahlHTML(fortschrittMap,meineTeams,heute,`${ph.id}:${teil}`,extra.coDaten)}
  ${kopf}
+ ${ppFreitagsKarteHTML(ph,teil,extra.coDaten,heute)}
  <div class="card"style="margin-top:14px">${quer}${inhalt}</div>
  ${footer()}`;
 }
 
+function ppAuftragKarteHTML(ph){
+ const a=ph.auftrag;if(!a)return"";
+ const c=ppFarbe(ph),w=ppTeilWochen(ph,"projekt");
+ return`<div class="pp-auftrag"style="--c:${c}"><div class="kicker"style="color:${c};margin:0 0 4px">AUFTRAG DER LEHRKRAFT · ${fmtKurz(w[0].start)}–${fmtKurz(w[w.length-1].end)} · ${w.length} Schulwochen</div><h3>${esc(a.titel)}</h3><p>${esc(a.text)}</p></div>`;
+}
+// LB 1: Einstiegsstunde statt Projekt – Stunde starten, Inhalte abhaken, Lehrkraft sieht, wer sie gemacht hat.
+async function ladeStundenStatus(ph){
+ try{
+  const [students,snap]=await Promise.all([getAllUsersForLernstand(),getDocs(query(collection(db,"lehrplanFortschritt"),where("wocheId","==",ph.stundeWocheId)))]);
+  const erledigt=new Set(snap.docs.map(d=>d.data()).filter(f=>f.experimentErledigt).map(f=>f.uid));
+  return{students,erledigt};
+ }catch(e){console.error("Stunden-Status laden:",e);return null;}
+}
+function ppStundeKarteHTML(ph,fortschrittMap,c){
+ const done=!!fortschrittMap[ph.stundeWocheId]?.experimentErledigt,lehrer=isTeacher();
+ return`<div class="pp-stunde${done?" fertig":""}"style="--c:${c}">
+  <div class="pp-stunde-icon">🧪</div>
+  <div style="flex:1;min-width:200px"><div class="kicker"style="color:${c};margin:0 0 2px">INTERAKTIVE STUNDE · ca. eine Doppelstunde</div><h3>Das Experiment</h3>
+   <p>Kaugummi-Versuch in Kleingruppen, Klassenvergleich, Merkmale eines Experiments, Anwendungsaufgaben und Abschlussquiz.</p>
+   ${lehrer?"":`<p class="pp-stunde-status">${done?"✓ Abgeschlossen":"Noch nicht abgeschlossen"}</p>`}</div>
+  <div class="pp-stunde-akt"><button class="primary"onclick="openExperimentStunde()">${lehrer?"Stunde öffnen":done?"Stunde wiederholen":"Stunde starten"}</button></div>
+ </div>`;
+}
+function ppEinstiegInhaltHTML(ph,fortschrittMap,c,stunde){
+ const zeilen=ph.notwendigeWochen.map((id,i)=>{
+  const e=lehrplanWocheById("paedagogik",id);if(!e)return"";
+  const f=fortschrittMap[id]||{};
+  const fertig=!!f.abgeschlossen;
+  const begonnen=!fertig&&(f.auftragGelesen||f.materialErhalten||Object.values(f.zieleErfuellt||{}).some(Boolean));
+  const apt=PP_EINHEITEN.filter(a=>a.typ==="apt"&&(a.bezug||[]).includes(id));
+  return`<div class="pp-einheit${fertig?" fertig":""}"style="--c:${c}"onclick="openLehrplanEinheit('paedagogik','${id}')">
+   <span class="pp-einheit-haken">${fertig?"✓":i+1}</span>
+   <div style="flex:1"><strong>${esc(e.thema)}</strong><small>Inhalt Nr. ${esc(e.nr)} · ${fertig?"abgeschlossen":begonnen?"in Arbeit":"noch offen"}</small>
+   ${apt.length?`<small class="pp-bezug">🎓 wird vertieft im Abschlussprüfungs-Training: ${apt.map(a=>`<a href="javascript:void 0"onclick="event.stopPropagation();openAptDetail('${a.id}')">${esc(a.thema)}</a>`).join(" · ")}</small>`:""}</div>
+   <span>→</span>
+  </div>`;}).join("");
+ let lehrer="";
+ if(isTeacher()){
+  if(stunde){
+   const schueler=stunde.students||[];
+   const n=schueler.filter(x=>stunde.erledigt.has(x.uid)).length;
+   lehrer=`<div class="kicker"style="margin:18px 0 8px">WER HAT DIE STUNDE GEMACHT? · ${n} von ${schueler.length}</div>
+   <div class="pp-stunde-liste">${schueler.map(x=>{const ok=stunde.erledigt.has(x.uid);return`<span class="pp-stunde-chip${ok?" ok":""}">${ok?"✓":"–"} ${esc(x.displayName||x.email||"Schüler/in")}</span>`;}).join("")||`<div class="empty">Keine Schüler:innen gefunden.</div>`}</div>
+   <small style="color:var(--muted)">Als gemacht gilt die Stunde, sobald das Abschlussquiz vollständig bearbeitet wurde.</small>`;
+  }else lehrer=`<div class="empty">Der Stand der Klasse konnte nicht geladen werden.</div>`;
+ }
+ return`${ppStundeKarteHTML(ph,fortschrittMap,c)}
+ <div class="kicker"style="margin:18px 0 8px">EINSTIEGSINHALTE – bearbeiten und abhaken</div>
+ ${zeilen}${lehrer}`;
+}
 // Schüler:innen dürfen die Meilensteine ihres eigenen Teams selbst abhaken
 // (auf false setzen, wenn das wieder nur Lehrkräfte dürfen sollen).
 const MEILENSTEINE_SCHUELER_DUERFEN_ABHAKEN=true;
@@ -3980,6 +4134,98 @@ async function ppMeilensteinSetzen(teamId,index){
  }catch(e){console.error("Meilenstein setzen:",e);toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Konnte nicht gespeichert werden.");}
 }
 window.ppMeilensteinSetzen=ppMeilensteinSetzen;
+
+async function stundeKarteHTML(f){
+ const done=!!f?.experimentErledigt,lehrer=isTeacher();
+ return`<div class="pp-stunde${done?" fertig":""}"style="--c:#3F7FC1;margin-bottom:14px">
+  <div class="pp-stunde-icon">🧪</div>
+  <div style="flex:1;min-width:180px"><div class="kicker"style="color:#3F7FC1;margin:0 0 2px">INTERAKTIVE STUNDE</div><h3>Das Experiment</h3>
+   ${lehrer?"":`<p class="pp-stunde-status">${done?"✓ Abgeschlossen":"Noch nicht abgeschlossen"}</p>`}</div>
+  <div class="pp-stunde-akt"><button class="primary"onclick="openExperimentStunde()">${lehrer?"Stunde öffnen":done?"Stunde wiederholen":"Stunde starten"}</button></div>
+ </div>`;
+}
+
+// ============================================================
+// INTERAKTIVE STUNDE „DAS EXPERIMENT“ (LB 1)
+// ------------------------------------------------------------
+// Die Stunde liegt als eigenständige Seite im Repo (experiment/das-experiment.html)
+// und läuft hier als Vollbild-Overlay (iframe, gleiche Herkunft). Die Seite
+// selbst kennt kein Firebase; sie spricht per postMessage mit der App:
+//  • experiment:bereit        → App antwortet mit experiment:init (Rolle, erledigt?)
+//  • experiment:klasse-laden  → App liefert die anonymen Klassenwerte
+//  • experiment:senden        → speichert NUR {gruppe, woerter} anonym
+//                               (Collection „experimentErgebnisse“, ohne UID/Zeit)
+//  • experiment:erledigt      → Abschlussquiz fertig → Häkchen „Stunde gemacht“
+//                               im persönlichen Fortschritt (lehrplanFortschritt)
+//  • experiment:zuruecksetzen → nur Lehrkraft: alle Klassenwerte löschen
+// Quizergebnisse und Freitexte bleiben lokal im Browser (localStorage).
+// ============================================================
+const EXPERIMENT_URL="experiment/das-experiment.html";
+let experimentHandler=null;
+function experimentWocheId(){return projektPhaseById("lb1")?.stundeWocheId||"pp03";}
+function openExperimentStunde(){
+ closeExperimentStunde(true);
+ const ov=document.createElement("div");
+ ov.id="experimentOverlay";ov.className="exp-overlay";
+ ov.innerHTML=`<div class="exp-leiste"><b>🧪 Das Experiment · interaktive Stunde</b><button type="button"class="secondary"onclick="closeExperimentStunde()">✕ Schließen</button></div><iframe id="experimentFrame"title="Das Experiment – interaktive Stunde"src="${EXPERIMENT_URL}"></iframe>`;
+ document.body.appendChild(ov);
+ document.body.classList.add("exp-offen");
+ experimentHandler=ev=>{experimentNachricht(ev);};
+ window.addEventListener("message",experimentHandler);
+}
+function closeExperimentStunde(still){
+ $("experimentOverlay")?.remove();
+ document.body.classList.remove("exp-offen");
+ if(experimentHandler){window.removeEventListener("message",experimentHandler);experimentHandler=null;}
+ if(!still&&ppDirty){ppDirty=false;if(activeFach==="paedagogik")render();}
+}
+async function experimentKlassenwerte(){
+ const snap=await getDocs(collection(db,"experimentErgebnisse"));
+ const werte={A:[],B:[]};
+ snap.docs.forEach(d=>{const x=d.data();if((x.gruppe==="A"||x.gruppe==="B")&&Number.isInteger(x.woerter))werte[x.gruppe].push(x.woerter);});
+ return werte;
+}
+async function experimentErledigtSetzen(){
+ if(isTeacher()||!currentUser)return;
+ const wocheId=experimentWocheId();
+ await setDoc(doc(db,"lehrplanFortschritt",`${currentUser.uid}_${wocheId}`),
+  {uid:currentUser.uid,wocheId,fach:"paedagogik",experimentErledigt:true,experimentAm:serverTimestamp(),updatedAt:serverTimestamp()},{merge:true});
+ ppDirty=true;
+}
+async function experimentNachricht(ev){
+ const fr=$("experimentFrame");
+ if(!fr||ev.source!==fr.contentWindow||ev.origin!==location.origin)return;
+ const m=ev.data||{};
+ if(typeof m.type!=="string"||!m.type.startsWith("experiment:"))return;
+ const senden=o=>fr.contentWindow?.postMessage(o,location.origin);
+ try{
+  if(m.type==="experiment:bereit"){
+   const f=await getLehrplanFortschritt(experimentWocheId());
+   senden({type:"experiment:init",rolle:isTeacher()?"lehrkraft":"schueler",erledigt:!!f.experimentErledigt});
+  }else if(m.type==="experiment:klasse-laden"){
+   senden({type:"experiment:klasse",werte:await experimentKlassenwerte()});
+  }else if(m.type==="experiment:senden"){
+   const w=Number(m.woerter);
+   if(!["A","B"].includes(m.gruppe)||!Number.isInteger(w)||w<0||w>10)return;
+   await addDoc(collection(db,"experimentErgebnisse"),{gruppe:m.gruppe,woerter:w});
+   senden({type:"experiment:gesendet"});
+   senden({type:"experiment:klasse",werte:await experimentKlassenwerte()});
+  }else if(m.type==="experiment:erledigt"){
+   await experimentErledigtSetzen();
+   senden({type:"experiment:erledigt-gespeichert"});
+  }else if(m.type==="experiment:zuruecksetzen"){
+   if(!isTeacher())return;
+   if(!confirm("Alle anonymen Klassenwerte des Experiments löschen?"))return;
+   const snap=await getDocs(collection(db,"experimentErgebnisse"));
+   await Promise.all(snap.docs.map(d=>deleteDoc(d.ref)));
+   senden({type:"experiment:klasse",werte:{A:[],B:[]}});
+  }
+ }catch(e){
+  console.error("Experiment-Brücke:",e);
+  senden({type:"experiment:fehler",fuer:m.type,text:e?.code==="permission-denied"?"Firebase verweigert den Zugriff. Bitte die Firestore-Regeln prüfen (Collection experimentErgebnisse).":"Konnte nicht gespeichert werden."});
+ }
+}
+window.openExperimentStunde=openExperimentStunde;window.closeExperimentStunde=closeExperimentStunde;
 
 // Öffnet eine Einheit passend zu ihrem Typ.
 function openLehrplanEinheit(fach,id){
@@ -4014,8 +4260,8 @@ async function ppEinheitKopfHTML(wocheId){
  const budget=ppZeitbudget(ppTeilWochen(ph,teil),heute);
  const c=ppFarbe(ph);
  return`<div class="pp-modal-kopf"style="--c:${c}">
-  <span class="pp-modal-kopf-farbe"style="background:${ppMix(c,ppSaettigung(f.prozent))}">${ppTeilIcon(teil)}</span>
-  <span style="flex:1;min-width:0"><b style="color:${c}">${esc(ph.lb)} · ${ppTeilName(teil)}</b> · ${f.prozent}% · ${esc(budget.text)}
+  <span class="pp-modal-kopf-farbe"style="background:${ppMix(c,ppSaettigung(f.prozent))}">${ppTeilIcon(teil,ph)}</span>
+  <span style="flex:1;min-width:0"><b style="color:${c}">${esc(ph.lb)} · ${ppTeilName(teil,ph)}</b> · ${f.prozent}% · ${esc(budget.text)}
    <span class="pp-balken klein"><span style="width:${f.prozent}%;background:${c}"></span></span></span>
  </div>`;
 }
@@ -4635,7 +4881,7 @@ function coPruefung(e){
  return{pro,glob};
 }
 function coPruefChips(p){return p.hinweise.length?p.hinweise.map(h=>`<span class="co-hinweis">⚠ ${esc(h)}</span>`).join(""):`<span class="co-hinweis ok">✓ unauffällig</span>`;}
-async function openCheckoutEditor(id){
+async function openCheckoutEditor(id,vorgabe){
  if(!isTeacher())return;
  if(id){
   try{
@@ -4651,6 +4897,8 @@ async function openCheckoutEditor(id){
   const heute=new Date().toISOString().slice(0,10);
   const lauf=PROJEKT_PHASEN.find(p=>heute>=p.start&&heute<=p.end)||PROJEKT_PHASEN.find(p=>heute<p.start)||PROJEKT_PHASEN[0];
   coEditor={id:null,titel:"",lbNum:lauf.lbNum,datum:heute,zaehlt:true,vignetteTitel:"",vignetteText:"",klassisch:"",checkliste:[],aufgaben:[coLeereAufgabe(),coLeereAufgabe(),coLeereAufgabe()]};
+  if(vorgabe?.datum)coEditor.datum=vorgabe.datum;
+  if(vorgabe?.lbNum)coEditor.lbNum=vorgabe.lbNum;
  }
  coEditorRender();
 }
@@ -5281,7 +5529,8 @@ async function openWocheDetail(fach,wocheId,startTabOverride){
  {label:"Auftrag gelesen",done:!!fortschritt.auftragGelesen,tab:"ziele"},
  {label:"Material erhalten",done:!!fortschritt.materialErhalten,tab:"material"},
  ...(basischeckFragen.length?[{label:"Basis-Check",done:!!meinBasischeck,tab:"basischeck"}]:[]),
- ...(woche.typ==="projekt"?[{label:"Team gebildet",done:!!meinTeam,tab:"team"}]:[]),
+ ...(wocheHatTeam(woche)?[{label:"Team gebildet",done:!!meinTeam,tab:"team"}]:[]),
+  ...(woche.interaktiv?[{label:"Interaktive Stunde",done:!!fortschritt.experimentErledigt,tab:"ziele"}]:[]),
  {label:"Lernprodukt",done:meinProdukt,tab:"produkte"},
  {label:"Abschluss-Check",done:lernstandBearbeitet,tab:"lernstand"},
  {label:"Selbsteinschätzung",done:alleErfuellt,tab:"selbsteinschaetzung"},
@@ -5298,7 +5547,7 @@ async function openWocheDetail(fach,wocheId,startTabOverride){
  ${ppKopf}
  <div class="kicker">${esc(fachLbl)} · ${esc(woche.lb)} · ${esc(fmtDateOnly(woche.start))}–${esc(fmtDateOnly(woche.end))}</div>
  <h2>${esc(woche.thema)}</h2>
- <span class="pill"style="background:${woche.typ==="projekt"?"#3fa66a":"#e0a324"};color:#fff">${woche.typ==="projekt"?"Projektarbeit":"Selbstlern-/Eigenarbeit"}</span>
+ <span class="pill"style="background:${woche.interaktiv?"#3F7FC1":woche.typ==="projekt"?"#3fa66a":"#e0a324"};color:#fff">${woche.interaktiv?"Interaktive Einstiegsstunde":woche.typ==="projekt"?"Projektarbeit":"Selbstlern-/Eigenarbeit"}</span>
  <p style="margin-top:10px;color:var(--muted)">${esc(woche.planung)}</p>
  ${woche.praxis?`<div class="card"style="border-left:4px solid #4a90d9;margin-top:10px;padding:10px 12px"><strong style="font-size:12px"> Praxistransfer</strong><small style="display:block;margin-top:4px">${esc(woche.praxis)}</small></div>`:""}
  ${aptLinks.length?`<div class="pp-bezug-box"style="--c:${lernbereichAkzentfarbe(woche.lb)}">🎓 <b>Wird im Abschlussprüfungs-Training vertieft:</b> ${aptLinks.map(a=>`<a href="javascript:void 0"onclick="openAptDetail('${a.id}')">${esc(a.thema)}</a>`).join(" · ")}</div>`:""}
@@ -5314,13 +5563,14 @@ async function openWocheDetail(fach,wocheId,startTabOverride){
  <button type="button"class="wd-tab"data-tab="ziele"onclick="showWocheTab('ziele')"> Lernziele und Aufgaben</button>
  <button type="button"class="wd-tab"data-tab="material"onclick="showWocheTab('material')"> Lernmaterialien</button>
  ${basischeckFragen.length||isTeacher()?`<button type="button"class="wd-tab"data-tab="basischeck"onclick="showWocheTab('basischeck')"> Basis-Check</button>`:""}
- <button type="button"class="wd-tab"data-tab="team"onclick="showWocheTab('team')"> ${woche.typ==="projekt"?"Team":"(Team)"}</button>
+ <button type="button"class="wd-tab"data-tab="team"onclick="showWocheTab('team')"> ${wocheHatTeam(woche)?"Team":"(Team)"}</button>
  <button type="button"class="wd-tab"data-tab="produkte"onclick="showWocheTab('produkte')"> Lernprodukte</button>
  <button type="button"class="wd-tab"data-tab="lernstand"onclick="showWocheTab('lernstand')"> Abschluss-Check</button>
  <button type="button"class="wd-tab"data-tab="selbsteinschaetzung"onclick="showWocheTab('selbsteinschaetzung')"> Selbsteinschätzung</button>
  </div>
 
  <div class="wd-panel"id="wdPanel_ziele">
+ ${woche.interaktiv?await stundeKarteHTML(fortschritt):""}
  <div class="wd-ziele-info">
  <strong> Lernziele laut Lehrplan</strong> <small>(${esc(woche.lb)}, LehrplanPLUS FOS 11 Pädagogik/Psychologie)</small>
  <ul>${ziele.map(z=>`<li>${esc(z.text)}</li>`).join("")||"<li>Für dieses Fach/diese Woche sind noch keine Lehrplan-Ziele hinterlegt.</li>"}</ul>
@@ -5425,11 +5675,11 @@ async function openWocheDetail(fach,wocheId,startTabOverride){
  </div>
 
  <div class="wd-panel"id="wdPanel_team">
- <p style="color:var(--muted);margin-top:0">Team/Gruppe${woche.typ==="projekt"?" – für dieses Projekt vorgesehen":" – freiwillig (deshalb in Klammern)"}. Passende Mitstreiter:innen findest du auch über die Kompetenzwerkstatt.</p>
+ <p style="color:var(--muted);margin-top:0">Team/Gruppe${wocheHatTeam(woche)?" – für dieses Projekt vorgesehen":" – freiwillig (deshalb in Klammern)"}. Passende Mitstreiter:innen findest du auch über die Kompetenzwerkstatt.</p>
  <div class="list">${teams.map(t=>{
  const inTeam=(t.mitgliederUids||[]).includes(currentUser.uid);
  const phase=projektPhaseByWoche(wocheId);
- const zeigtMeilensteine=phase&&phase.notwendigeWochen.includes(wocheId);
+ const zeigtMeilensteine=phase&&!phase.einstieg&&phase.notwendigeWochen.includes(wocheId);
  return`<div class="list-item"style="flex-direction:column;align-items:stretch;gap:8px">
  <div style="display:flex;justify-content:space-between;align-items:center"><div><strong>${esc(t.teamName)}</strong><small>${esc((t.mitgliederNamen||[]).join(", ")||"Noch niemand")}</small></div><div style="display:flex;gap:6px">${inTeam?`<button class="secondary"onclick="leaveLehrplanTeam('${t.id}','${fach}','${wocheId}')">Verlassen</button>`:`<button class="primary"onclick="joinLehrplanTeam('${t.id}','${fach}','${wocheId}')">Beitreten</button>`}${isTeacher()?`<button class="secondary"onclick="deleteLehrplanTeam('${t.id}','${fach}','${wocheId}')">Auflösen</button>`:""}</div></div>
  ${zeigtMeilensteine&&(inTeam||isTeacher())?`<div><button class="secondary"style="font-size:12px"onclick="openMeilensteinModal('${phase.id}','${t.id}',{fach:'${fach}',woche:'${wocheId}'})">★ Meilensteine & ${inTeam?"meine Beiträge":"Beiträge ansehen"}</button></div>`:""}
