@@ -3935,7 +3935,11 @@ function ppKprimBereichHTML(ph,teil,coDaten,heute){
   const co=coFuerWoche(d,w),vorbei=w.end<heute;
   let rechts="";
   if(co)rechts=coAktionHTML(co,d);
-  else if(lehrer)rechts=`<button class="primary"onclick="openCheckoutEditor(null,{datum:'${w.end}',lbNum:${ph.lbNum}})">＋ Check-out anlegen</button>`;
+  else if(lehrer){
+   const vl=CHECKOUT_VORLAGEN.find(v=>v.datum===w.end);
+   rechts=(vl?`<button class="primary"onclick="openCheckoutEditor(null,{datum:'${w.end}',lbNum:${ph.lbNum},vorlage:'${vl.id}'})">📋 Vorlage „${esc(vl.titel)}“ einsetzen</button>`:"")
+    +`<button class="${vl?"secondary":"primary"}"onclick="openCheckoutEditor(null,{datum:'${w.end}',lbNum:${ph.lbNum}})">＋ Check-out anlegen</button>`;
+  }
   else rechts=`<small style="color:var(--muted)">${vorbei?"kein Check-out":"Deine Lehrkraft schaltet ihn am Freitag frei."}</small>`;
   const st=co&&lehrer&&co.status==="beendet"&&stat[co.id]?` · ${stat[co.id].n} ausgewertet · Ø ${(stat[co.id].summe/stat[co.id].n).toFixed(1).replace(".",",")} Punkte`:"";
   return`<div class="co-zeile"><span class="co-lb">Fr ${fmtKurz(w.end)}</span>
@@ -5004,7 +5008,8 @@ function coBewerten(co,loesung,antworten){
   }
   const p=CHECKOUT_BE_NACH_FEHLERN[fehler]??0;
   be+=p;max+=CHECKOUT_BE_NACH_FEHLERN[0];
-  return{fehler,be:p,korrekt,angekreuzt,loesung:[0,1,2,3].map(j=>!!l[j])};
+  const erk=[0,1,2,3].map(j=>String(loesung?.aufgaben?.[i]?.erklaerung?.[j]||""));
+  return{fehler,be:p,korrekt,angekreuzt,loesung:[0,1,2,3].map(j=>!!l[j]),erklaerung:erk};
  });
  const prozent=max?Math.round(be/max*1000)/10:0;
  const notenpunkte=notenpunkteAusProzent(prozent);
@@ -5129,6 +5134,202 @@ function checkoutLiveBannerHTML(d){
 // ① Situation (Vignette) → ② 3–5 K-Prim-Aufgaben (Einleitungssatz + genau
 // 4 Aussagen) → ③ Checkliste. Automatische Hinweise prüfen, was sich prüfen
 // lässt (Längen, absolute/vage Begriffe, doppelte Verneinung, Muster).
+// ---- Aufgabenbank und Vorlagen für Check-outs -------------------------------
+// Jede Aufgabe = eigene Fallvignette (+ optional Material) + Einleitungssatz + 4 Aussagen.
+// „erklaerung“ ist eine kurze Begründung, die Schüler:innen erst NACH der Auswertung sehen.
+const CO_AUFGABENBANK=[
+ {
+  "id": "tim-max",
+  "titel": "Tim und Max – Alltagspsychologie",
+  "lbNum": 1,
+  "vignette": {
+   "titel": "Kindergarten „Wirbelwind“",
+   "text": "Sie absolvieren Ihr Praktikum im Kindergarten „Wirbelwind“ in Wendelstein. Seit Beginn Ihres Praktikums vor drei Wochen beobachten Sie immer wieder zwei Geschwisterkinder, die beide in Ihrer Gruppe sind. Der 3-jährige Max ist neu in den Kindergarten gekommen und hält sich fast immer in der Nähe seines Bruders Tim auf, der mit seinen fünf Jahren zu den Vorschulkindern gehört. Er will, dass Tim immer nur mit ihm spielt. Sie beobachten immer wieder, wie Tim genervt die Augen verdreht und versucht, Max abzuschütteln, zum Beispiel indem er zu ihm sagt, dass er sich mal andere Kinder zum Spielen suchen soll oder indem er einfach davonrennt. Daraufhin lässt Max immer den Kopf und die Schultern hängen, Tränen laufen ihm über die Wangen und er streckt seinen Arm nach Tim aus. Regelmäßig hat dies zur Folge, dass Tim dann einlenkt, seinem Bruder den Arm um die Schultern legt und ihn dann doch mit sich nimmt. Ihnen tun beide irgendwie leid und Sie erzählen der Erzieherin Moni davon.",
+   "zeilen": false
+  },
+  "kontext": "Pädagogische/psychologische Kompetenz bedeutet auch, fachlich fundierte Einschätzungen vorzunehmen und begründetes Handeln abzuleiten.\nIm Teamgespräch nimmt die Erzieherin Moni Bezug zu Ihren Beobachtungen im Alltag. Da Tim häufig genervt reagiert, wenn Max seine Nähe sucht und dabei die Augen verdreht oder weggeht, stellt sie fest: „Tim mag seinen Bruder einfach nicht!“",
+  "stamm": "Diese Aussage ist alltagstheoretisch, wenn …",
+  "aussagen": [
+   {
+    "text": "… Monis Schlussfolgerung sich aus einem umfassenden Bestand von fachlichen Eindrücken, die sie im Laufe ihres langjährigen beruflichen Alltags zufällig angesammelt hat, bildet.",
+    "richtig": true,
+    "erklaerung": "Fehlende Systematik"
+   },
+   {
+    "text": "… Monis Aussage sich als gesichertes Ergebnis einstufen lässt, da die Information durch mehrere Elterngespräche zur sozial-emotionalen Entwicklung sowie wiederholte gezielte Beobachtungen mit einem Beobachtungsbogen gewonnen wurde.",
+    "richtig": false,
+    "erklaerung": "Systematik: gezielte, wiederholte Beobachtung spricht für eine wissenschaftliche Aussage"
+   },
+   {
+    "text": "… Monis Kollegin Sarah aufgrund ihrer langjährigen Berufserfahrung durch die Beobachtung der gleichen Spielsituationen zwischen den Brüdern die Emotion von Tim als natürliches Wetteifern unter Brüdern deutet.",
+    "richtig": true,
+    "erklaerung": "Subjektivität"
+   },
+   {
+    "text": "… Monis Erkenntnis aus mehreren geplanten Beobachtungen aus den letzten zwei Kindergartenjahren stammt, in denen sie bei allen wiederholt konfliktreiche Situationen zwischen den zwei Brüdern beobachten konnte.",
+    "richtig": false,
+    "erklaerung": "Keine unzulässige Verallgemeinerung/Allgemeingültigkeit"
+   }
+  ]
+ },
+ {
+  "id": "hannes",
+  "titel": "Hannes und Herr Kluge – wissenschaftliche Kriterien",
+  "lbNum": 1,
+  "vignette": {
+   "titel": "Fallbeispiel: Hannes",
+   "text": "Hannes (3,5 Jahre) ist seit 3 Monaten in der Kindergartengruppe „Sternchen“ und hat sich\nmittlerweile gut eingewöhnt. Doch seit zwei Wochen fällt Erzieher Martin Kluge sein Verhalten\nauf: Hannes zwickt die anderen Kinder und wird schnell wütend, wenn er ein Spielzeug nicht\nsofort bekommen kann. Einmal hat er sogar gesehen, wie Hannes einem Mädchen ins Gesicht\ngespuckt hat. Herr Kluge zieht die Notbremse und holt die Eltern von Hannes Jung zum\nGespräch in die Einrichtung.\nHerr Kluge: „Nun, da ich Ihnen den Fall geschildert habe, müssen wir überlegen, wie wir mit dem\naggressiven Verhalten von Hannes umgehen.“\nFrau Jung: „Ist er denn wirklich so aggressiv? Die Kinderpflegerin Fatima meinte neulich zu mir,\nsie erlebe ihn eher als ausgeglichenen, neugierigen Jungen.“\nHerr Kluge: „Ich sehe das anders. Und aus diesem Grund müssen wir handeln. Letztens waren\nwir zu zweit in der Puppenecke und er hat so wütend auf die Puppen eingeschlagen und – ja,\nauch wenn Sie das jetzt nicht glauben wollen, genau so war es – das hat mir echt Angst\ngemacht. Sehen Sie doch: Wenn Hannes sein aggressives Verhalten nicht bald in den Griff\nbekommt, wird aus ihm später ein gewalttätiger Schläger! Während meiner Ausbildung hatten\nwir auch so ein Kind in der Gruppe, er zeigte das gleiche Verhalten wie Hannes – der sitzt jetzt\nim Gefängnis.“\nHerr Jung: „Also, ich weiß nicht. Gibt es da vielleicht so etwas wie einen Aggressions-Test oder\nFragebogen, den man dazu durchführen könnte? Dann wüssten wir genauer, ob…“\nHerr Kluge (unterbrochen): „Ach, da brauche ich keinen Test, sowas kann ich selbst einschätzen.\nDafür arbeite ich lange genug! Vertrauen Sie mir.“\nDie Personen verabreden sich zu einem weiteren Treffen und Herr und Frau Jung gehen\nbedrückt und unsicher aus der Einrichtung.",
+   "zeilen": true
+  },
+  "kontext": "Fachkräfte in der pädagogischen Arbeit sind angewiesen, stets nur wissenschaftlich fundierte Aussagen und Entscheidungen zu treffen.",
+  "stamm": "Herr Kluge würde Hannes‘ Fall nach wissenschaftlichen Kriterien beurteilen, wenn …",
+  "aussagen": [
+   {
+    "text": "… neben ihm auch der Vater Gewalthandlungen von Hannes beobachtet hätten, da dann das Merkmal der Objektivität vorliegen würde.",
+    "richtig": false,
+    "erklaerung": ""
+   },
+   {
+    "text": "… er Beweise für die in Z. 15‒17 getätigte Aussage vorlegen könnte, um eine objektive Einschätzung zu treffen.",
+    "richtig": false,
+    "erklaerung": ""
+   },
+   {
+    "text": "… er sich selbst einen Aggressionstest ausdenken und mit Hannes durchführen würde. Das Vorgehen wäre systematisch und die Aussagen daraus allgemeingültig.",
+    "richtig": false,
+    "erklaerung": ""
+   },
+   {
+    "text": "… er und Fatima Hannes‘ Verhalten über mehrere Wochen beobachten und systematisch dokumentieren würden, um nachvollziehbare und vergleichbare Aussagen zu Hannes tätigen zu können.",
+    "richtig": true,
+    "erklaerung": ""
+   }
+  ]
+ },
+ {
+  "id": "schlaf",
+  "titel": "Schlaf und Experiment – Studie",
+  "lbNum": 1,
+  "vignette": {
+   "titel": "Lernnachmittag vor der Schulaufgabe",
+   "text": "Am Tag vor der nächsten Schulaufgabe in Mathematik treffen Sie sich am Nachmittag mit Ihren Schulfreundinnen Larissa, Klara und Tina zum Lernen.\nKlara begrüßt Sie gar nicht richtig, sondern meint gleich zu Larissa: „Mensch du siehst aber gar nicht gut aus. Bist du krank?“\nLarissa erwidert darauf: „Nein, ich schlafe nur unglaublich schlecht. Seit mein Freund bei mir eingezogen ist und wir jede Nacht nebeneinander schlafen, mach ich nachts kaum noch ein Auge zu.“\nKlara nickt zustimmend: „Das kann ich mir gut vorstellen. Ich schlafe auch richtig schlecht, wenn jemand neben mir liegt. Es ist viel besser alleine zu schlafen. Wenn man nämlich alleine schläft, steigt die Leistungsfähigkeit des Menschen spürbar an. Durch die Bewegungen, die dein Partner nachts macht, wird auch dein Schlaf gestört. Heute solltest du unbedingt alleine schlafen, damit du für die Schulaufgabe morgen fit bist.“\nTina runzelt die Stirn und meint: „Also das glaube ich nicht.“\nLarissa wirft ein: „Doch, das macht echt Sinn. Solange ich nämlich noch meine 8 Stunden jede Nacht durchgeschlafen habe, hat mir auch niemand unterstellt, ich sähe krank aus. Da konnte ich mich nachts richtig erholen und war viel fitter.“\nTina gibt zu: „Ja, es stimmt schon, dass sich die Schlafqualität und Schlafdauer darauf auswirkt, wie du von anderen wahrgenommen wirst. Dazu habe ich erst vor kurzem etwas gelesen. Aber, dass es an deinem Freund liegt, dass du schlecht schläfst, das kann ich mir nicht vorstellen. Ich liege auch neben meinem Partner und ich schlafe richtig gut. Aber wartet mal, ich zeige euch noch kurz die Studie, die ich da gelesen habe. Danach müssen wir aber unbedingt mit Mathe anfangen.“",
+   "zeilen": false
+  },
+  "kontext": "Tina meint, dass die Schlafqualität und die Schlafdauer eine Auswirkung auf die wahrgenommene Gesundheit, Attraktivität und Müdigkeit einer Person haben. Sie bezieht sich dabei auf eine experimentelle Studie (vgl. Material). Jedes Experiment muss die Kriterien Willkürlichkeit, Variierbarkeit und Wiederholbarkeit erfüllen, um als wissenschaftliche Methode anerkannt zu sein.",
+  "material": {
+   "titel": "Schönheitsschlaf: Experimentelle Studie zur wahrgenommenen Gesundheit und Attraktivität von Menschen mit Schlafentzug",
+   "text": "Die experimentelle Studie „Schönheitsschlaf: Wahrgenommene Gesundheit und Attraktivität von Menschen mit Schlafentzug“ untersuchte, ob Personen nach einer Nacht mit Schlafentzug im Vergleich zu einer normalen Nachtruhe als weniger gesund, weniger attraktiv und müder wahrgenommen werden. Die Untersuchung wurde in einem Schlaflabor in Stockholm, Schweden, durchgeführt. An der Studie nahmen 23 gesunde Erwachsene im Alter von 18 bis 31 Jahren teil, die fotografiert wurden, sowie 65 ungeschulte Beobachter im Alter von 18 bis 61 Jahren, die diese Fotos bewerteten. Die Teilnehmer wurden nach einer normalen Nachtruhe von acht Stunden sowie nach einer Phase des Schlafentzugs fotografiert. Der Schlafentzug bestand aus 31 Stunden Wachsein nach einer Nacht mit verkürzter Schlafdauer. Anschließend wurden die Fotos in zufälliger Reihenfolge den Beobachtern präsentiert. Diese bewerteten die wahrgenommene Gesundheit, Attraktivität und Müdigkeit der abgebildeten Personen […]. Teilnehmer mit Schlafentzug wurden als weniger gesund wahrgenommen als nach einer normalen Nachtruhe […]. Zudem wirkten sie deutlich müder […] und etwas weniger attraktiv […].\nZusammenfassend verdeutlichen die Ergebnisse, dass Schlafentzug das äußere Erscheinungsbild beeinflusst und dazu führt, dass Menschen als weniger gesund, weniger attraktiv und müder wahrgenommen werden.",
+   "quelle": "Quelle: BMJ 2010; 341 doi. Veröffentlicht am: 15. Dezember 2010. Internetpublikation unter: https://www-bmj-com.translate.goog/content/341/bmj.c6614?_x_tr_sl=en&_x_tr_tl=de&_x_tr_hl=de&_x_tr_pto=sc, aufgerufen am 11.06.2026."
+  },
+  "stamm": "Beurteilen Sie die folgenden Aussagen zur geschilderten Studie.",
+  "aussagen": [
+   {
+    "text": "Die geschilderte Studie erfüllt das Kriterium der Willkürlichkeit, da die Schlafdauer für jede Person zufällig gewählt worden ist.",
+    "richtig": false,
+    "erklaerung": ""
+   },
+   {
+    "text": "Die geschilderte Studie erfüllt das Kriterium der Variierbarkeit, da die Schlafbedingungen (normale Nachtruhe vs. Schlafentzug) systematisch variiert worden sind.",
+    "richtig": true,
+    "erklaerung": ""
+   },
+   {
+    "text": "Die geschilderte Studie erfüllt das Kriterium der Wiederholbarkeit, da das Schlaflaborprozedere und der Ablauf der Fotodarbietung genau beschrieben worden sind.",
+    "richtig": true,
+    "erklaerung": ""
+   },
+   {
+    "text": "Die geschilderte Studie bestätigt Tinas Aussage, dass Schlafqualität und Schlafdauer eine Auswirkung auf die wahrgenommene Gesundheit, Attraktivität und Müdigkeit einer Person haben.",
+    "richtig": false,
+    "erklaerung": ""
+   }
+  ]
+ },
+ {
+  "id": "luan-a",
+  "titel": "Luan und ADHS – Variante A",
+  "lbNum": 1,
+  "vignette": {
+   "titel": "Erziehungsberatungsstelle",
+   "text": "Frau Müller kommt mit ihrem 5-jährigen Sohn Luan in die Erziehungsberatungsstelle, da sie mit der Erziehung ihres sehr lebhaften und aufbrausenden Sohnes überfordert ist. Frau Müller berichtet der Sozialpädagogin, dass ihr Sohn bei jeder Kleinigkeit ausflippe. Neulich, als ihre Freundin zu Besuch war, schmiss er vor lauter Wut einen Teller auf den Boden, weil er kein weiteres Stück Kuchen bekam. Ihre Freundin habe ihr nun empfohlen, sich Hilfe bei einer Beratungsstelle zu holen. Die Freundin sei sich sicher, Luan würde ADHS haben, schließlich sei er so aggressiv wie der Sohn der Nachbarin. Und der habe schließlich auch ADHS. Außerdem würde er ja auch gar nicht folgen. Das wäre ja wohl auch typisch für Kinder mit ADHS. Luans Erzieherin sieht das Ganze aber weniger dramatisch. Er könne sich in der Gruppe doch sehr gut an Regeln halten.",
+   "zeilen": false
+  },
+  "kontext": "",
+  "stamm": "Die Sozialpädagogin gibt eine wissenschaftsbasierte Einschätzung zu Luan ab, wenn …",
+  "pruefen": "Im Word-Dokument war keine Lösung angekreuzt. Die Lösung wurde aus dem Inhalt abgeleitet – bitte fachlich prüfen.",
+  "aussagen": [
+   {
+    "text": "… sie die Vermutung der Freundin aufgrund der Ähnlichkeit zum Nachbarskind als Bestätigung für eine ADHS-Diagnose übernimmt.",
+    "richtig": false,
+    "erklaerung": ""
+   },
+   {
+    "text": "… sie eine differenzierte Verhaltensbeobachtung in verschiedenen Lebenswelten (z. B. Schule, Zuhause) durchführt.",
+    "richtig": true,
+    "erklaerung": ""
+   },
+   {
+    "text": "… sie standardisierte Fragebögen oder klinische Interviews zur Erhebung der Symptomatik einsetzt.",
+    "richtig": true,
+    "erklaerung": ""
+   },
+   {
+    "text": "… sie eine interdisziplinäre Zusammenarbeit mit Lehrkräften, Eltern und medizinischem Fachpersonal anstrebt, um ein ganzheitliches Bild zu erhalten.",
+    "richtig": true,
+    "erklaerung": ""
+   }
+  ]
+ },
+ {
+  "id": "luan-b",
+  "titel": "Luan und ADHS – Variante B",
+  "lbNum": 1,
+  "vignette": {
+   "titel": "Erziehungsberatungsstelle",
+   "text": "Frau Müller kommt mit ihrem 5-jährigen Sohn Luan in die Erziehungsberatungsstelle, da sie mit der Erziehung ihres sehr lebhaften und aufbrausenden Sohnes überfordert ist. Frau Müller berichtet der Sozialpädagogin, dass ihr Sohn bei jeder Kleinigkeit ausflippe. Neulich, als ihre Freundin zu Besuch war, schmiss er vor lauter Wut einen Teller auf den Boden, weil er kein weiteres Stück Kuchen bekam. Ihre Freundin habe ihr nun empfohlen, sich Hilfe bei einer Beratungsstelle zu holen. Die Freundin sei sich sicher, Luan würde ADHS haben, schließlich sei er so aggressiv wie der Sohn der Nachbarin. Und der habe schließlich auch ADHS. Außerdem würde er ja auch gar nicht folgen. Das wäre ja wohl auch typisch für Kinder mit ADHS. Luans Erzieherin sieht das Ganze aber weniger dramatisch. Er könne sich in der Gruppe doch sehr gut an Regeln halten.",
+   "zeilen": false
+  },
+  "kontext": "",
+  "stamm": "Die Sozialpädagogin gibt eine wissenschaftsbasierte Einschätzung zu Luan ab, wenn …",
+  "pruefen": "Im Word-Dokument war keine Lösung angekreuzt. Die Lösung wurde aus dem Inhalt abgeleitet – bitte fachlich prüfen.",
+  "aussagen": [
+   {
+    "text": "… sie ausgewertete Fragebögen von den wichtigen Bezugspersonen (Mutter, Vater, Erzieherinnen) mit einbezieht.",
+    "richtig": true,
+    "erklaerung": ""
+   },
+   {
+    "text": "… sie ihre Einschätzung auf die detaillierten Schilderungen der Mutter stützt, da diese Luan im Alltag intensiv erlebt.",
+    "richtig": false,
+    "erklaerung": ""
+   },
+   {
+    "text": "… sie einen standardisierten Beobachtungsbogen verwendet, um Luans Verhalten über einen längeren Zeitraum zu erfassen.",
+    "richtig": true,
+    "erklaerung": ""
+   },
+   {
+    "text": "… sie die Einschätzung aufgrund des Vorfalls mit dem auf den Boden geschmissenen Teller trifft, weil dieser sehr eindrücklich ist.",
+    "richtig": false,
+    "erklaerung": ""
+   }
+  ]
+ }
+];
+// Vorlage = Check-out mit genau 3 Aufgaben aus der Bank; wird am passenden Freitag per Klick eingesetzt.
+const CHECKOUT_VORLAGEN=[
+ {
+  "id": "lb1-woche1",
+  "titel": "Alltags- und Wissenschaftstheorie",
+  "lbNum": 1,
+  "datum": "2026-10-09",
+  "aufgaben": [
+   "tim-max",
+   "hannes",
+   "schlaf"
+  ]
+ }
+];
 let coEditor=null;
 const CO_CHECKLISTE=[
  ["Situation","Situationsbeschreibung adäquat (anwendungsorientierte Informationen)"],
@@ -5147,7 +5348,20 @@ const CO_CHECKLISTE=[
 ];
 const CO_WORT_ABSOLUT=/\b(immer|nie|niemals|stets|ausschließlich|grundsätzlich|jede[rsmn]?|alle|eventuell|vielleicht|manchmal|oft|häufig|selten|meistens|gelegentlich)\b/gi;
 const CO_WORT_NEGATION=/\b(nicht|kein\w*|nie|niemals|ohne|weder)\b/gi;
-function coLeereAufgabe(){return{stamm:"",aussagen:[{text:"",richtig:true},{text:"",richtig:false},{text:"",richtig:false},{text:"",richtig:true}]};}
+// Editor-Form einer Aufgabe. Ältere Formen ({stamm,aussagen}) werden ergänzt.
+function coAufgabeNorm(a){
+ a=a||{};
+ const q={stamm:"",kontext:"",vTitel:"",vText:"",vZeilen:false,mTitel:"",mText:"",mQuelle:"",pruefen:"",...a};
+ q.aussagen=[0,1,2,3].map(j=>({text:"",richtig:false,erklaerung:"",...(a.aussagen?.[j]||{})}));
+ return q;
+}
+function coLeereAufgabe(){return coAufgabeNorm({aussagen:[{richtig:true},{richtig:false},{richtig:false},{richtig:true}]});}
+function coAufgabeAusBank(id){
+ const b=CO_AUFGABENBANK.find(x=>x.id===id);if(!b)return coLeereAufgabe();
+ return coAufgabeNorm({stamm:b.stamm,kontext:b.kontext||"",vTitel:b.vignette?.titel||"",vText:b.vignette?.text||"",vZeilen:!!b.vignette?.zeilen,
+  mTitel:b.material?.titel||"",mText:b.material?.text||"",mQuelle:b.material?.quelle||"",pruefen:b.pruefen||"",
+  aussagen:b.aussagen.map(x=>({text:x.text,richtig:!!x.richtig,erklaerung:x.erklaerung||""}))});
+}
 function coPruefung(e){
  const pro=e.aufgaben.map(a=>{
   const h=[],texte=a.aussagen.map(s=>s.text.trim());
@@ -5176,9 +5390,13 @@ async function openCheckoutEditor(id,vorgabe){
    if(!c.exists()){toast("Nicht gefunden.");return}
    const co=c.data(),lo=l.exists()?l.data():{};
    if(co.status!=="entwurf"){toast("Nur Entwürfe können bearbeitet werden.");return}
-   coEditor={id,titel:co.titel||"",lbNum:co.lbNum||1,datum:co.datum||"",zaehlt:co.zaehlt!==false,vignetteTitel:co.vignette?.titel||"",vignetteText:co.vignette?.text||"",
+   const glob=co.vignette?.text?co.vignette:null; // ältere Check-outs: eine gemeinsame Situation
+   coEditor={id,titel:co.titel||"",lbNum:co.lbNum||1,datum:co.datum||"",zaehlt:co.zaehlt!==false,vignetteTitel:"",vignetteText:"",
     klassisch:lo.klassisch||"",checkliste:lo.checkliste||[],
-    aufgaben:(co.aufgaben||[]).map((a,i)=>({stamm:a.stamm||"",aussagen:[0,1,2,3].map(j=>({text:a.aussagen?.[j]||"",richtig:!!lo.aufgaben?.[i]?.richtig?.[j]}))}))};
+    aufgaben:(co.aufgaben||[]).map((a,i)=>coAufgabeNorm({stamm:a.stamm||"",kontext:a.kontext||"",
+     vTitel:a.vignette?.titel??(glob?.titel||""),vText:a.vignette?.text??(glob?.text||""),vZeilen:a.vignette?!!a.vignette.zeilen:!!glob,
+     mTitel:a.material?.titel||"",mText:a.material?.text||"",mQuelle:a.material?.quelle||"",
+     aussagen:[0,1,2,3].map(j=>({text:a.aussagen?.[j]||"",richtig:!!lo.aufgaben?.[i]?.richtig?.[j],erklaerung:lo.aufgaben?.[i]?.erklaerung?.[j]||""}))}))};
   }catch(e){console.error(e);toast("Konnte nicht geladen werden.");return}
  }else{
   const heute=new Date().toISOString().slice(0,10);
@@ -5186,15 +5404,21 @@ async function openCheckoutEditor(id,vorgabe){
   coEditor={id:null,titel:"",lbNum:lauf.lbNum,datum:heute,zaehlt:true,vignetteTitel:"",vignetteText:"",klassisch:"",checkliste:[],aufgaben:[coLeereAufgabe(),coLeereAufgabe(),coLeereAufgabe()]};
   if(vorgabe?.datum)coEditor.datum=vorgabe.datum;
   if(vorgabe?.lbNum)coEditor.lbNum=vorgabe.lbNum;
+  const vl=vorgabe?.vorlage?CHECKOUT_VORLAGEN.find(v=>v.id===vorgabe.vorlage):null;
+  if(vl){coEditor.titel=vl.titel;coEditor.lbNum=vl.lbNum;coEditor.aufgaben=vl.aufgaben.map(coAufgabeAusBank);}
  }
  coEditorRender();
 }
 function coEditorLesen(){
  if(!coEditor||!$("coTitel"))return;
  coEditor.titel=$("coTitel").value;coEditor.lbNum=Number($("coLb").value)||1;coEditor.datum=$("coDatum").value;coEditor.zaehlt=$("coZaehlt").checked;
- coEditor.vignetteTitel=$("coVigTitel").value;coEditor.vignetteText=$("coVigText").value;coEditor.klassisch=$("coKlassisch").value;
+ coEditor.klassisch=$("coKlassisch").value;
  coEditor.checkliste=CO_CHECKLISTE.map((c,k)=>!!$(`coCl${k}`)?.checked);
- coEditor.aufgaben=coEditor.aufgaben.map((a,i)=>({stamm:$(`coStamm${i}`)?.value||"",aussagen:[0,1,2,3].map(j=>({text:$(`coA${i}_${j}`)?.value||"",richtig:$(`coR${i}_${j}`)?.value==="r"}))}));
+ const v=(id,def="")=>$(id)?.value??def;
+ coEditor.aufgaben=coEditor.aufgaben.map((a,i)=>({...a,
+  stamm:v(`coStamm${i}`),kontext:v(`coKo${i}`),vTitel:v(`coVT${i}`),vText:v(`coVX${i}`),vZeilen:!!$(`coVZ${i}`)?.checked,
+  mTitel:v(`coMT${i}`),mText:v(`coMX${i}`),mQuelle:v(`coMQ${i}`),
+  aussagen:[0,1,2,3].map(j=>({text:v(`coA${i}_${j}`),richtig:$(`coR${i}_${j}`)?.value==="r",erklaerung:v(`coE${i}_${j}`)}))}));
 }
 // Aktualisiert nur die Hinweise (beim Tippen), ohne das Formular neu zu zeichnen.
 function coEditorPruefen(){
@@ -5205,44 +5429,58 @@ function coEditorPruefen(){
  const n=coEditor.checkliste.filter(Boolean).length,cs=$("coClStand");if(cs)cs.textContent=`${n}/${CO_CHECKLISTE.length} bestätigt`;
 }
 function coEditorRender(){
+ coEditor.aufgaben=coEditor.aufgaben.map(coAufgabeNorm);
+ // Ältere Importe mit einer gemeinsamen Situation: sie wird jeder Aufgabe als eigene Fallvignette mitgegeben.
+ if((coEditor.vignetteText||"").trim()){
+  coEditor.aufgaben.forEach(a=>{if(!a.vText.trim()){a.vTitel=coEditor.vignetteTitel||"";a.vText=coEditor.vignetteText;a.vZeilen=true;}});
+  coEditor.vignetteText="";coEditor.vignetteTitel="";
+ }
  const e=coEditor,p=coPruefung(e),be=CHECKOUT_BE_NACH_FEHLERN;
  const cl=CO_CHECKLISTE.map(([g,t],k)=>`${k===0||CO_CHECKLISTE[k-1][0]!==g?`<div class="co-cl-gruppe">${g}</div>`:""}<label class="co-cl"><input id="coCl${k}"type="checkbox"${e.checkliste[k]?" checked":""} onchange="coEditorPruefen()"> ${esc(t)}</label>`).join("");
+ const bankOpt=`<option value="">Aus der Aufgabenbank einsetzen …</option>${CO_AUFGABENBANK.map(b=>`<option value="${esc(b.id)}">${esc(b.titel)}</option>`).join("")}`;
  modal(`<button class="modal-close"onclick="closeModal()">×</button>
   <div class="kicker">🏁 CHECK-OUT-TEST · ${e.id?"ENTWURF BEARBEITEN":"NEU ANLEGEN"} · NUR LEHRKRÄFTE</div>
   <h2>K-Prim-Test anlegen</h2>
-  <p class="co-ed-intro">Aufbau nach ISB-Vorgabe: <b>① Situation</b> → <b>② ${CHECKOUT_MAX_AUFGABEN} K-Prim-Aufgaben</b> (je Einleitungssatz + 4 Aussagen) → <b>③ Checkliste</b>. Wertung je Aufgabe: 4 richtig = ${be[0]} BE · 3 = ${be[1]} BE · 2 = ${be[2]} BE · sonst 0.</p>
+  <p class="co-ed-intro">Jeder Freitagstest hat genau <b>${CHECKOUT_MAX_AUFGABEN} K-Prim-Aufgaben</b>. Jede Aufgabe beginnt mit ihrer eigenen <b>Fallvignette</b> (optional mit Material), dann folgen Einleitungssatz und 4 Aussagen. Wertung je Aufgabe: 4 richtig = ${be[0]} BE · 3 = ${be[1]} BE · 2 = ${be[2]} BE · sonst 0.</p>
   <div class="form">
+   ${!e.id&&CHECKOUT_VORLAGEN.length?`<div class="co-ed-vorlage"><b>📋 Vorlage:</b> <select id="coVorlage"onchange="coVorlageWaehlen()"><option value="">Ganzen Test aus Vorlage einsetzen …</option>${CHECKOUT_VORLAGEN.map(v=>`<option value="${esc(v.id)}">${esc(v.titel)} (LB ${v.lbNum} · ${esc(coDatum(v.datum))})</option>`).join("")}</select></div>`:""}
    <div style="display:flex;gap:10px;flex-wrap:wrap">
-    <label style="flex:2;min-width:200px">Titel<input id="coTitel"value="${esc(e.titel)}"placeholder="z. B. Kommunikation in der Lerngruppe"></label>
+    <label style="flex:2;min-width:200px">Titel<input id="coTitel"value="${esc(e.titel)}"placeholder="z. B. Alltags- und Wissenschaftstheorie"></label>
     <label style="flex:1;min-width:110px">Lernbereich<select id="coLb">${[1,2,3,4].map(n=>`<option value="${n}"${e.lbNum===n?" selected":""}>LB ${n}</option>`).join("")}</select></label>
     <label style="flex:1;min-width:140px">Datum<input id="coDatum"type="date"value="${esc(e.datum)}"></label>
    </div>
    <label class="check"><input id="coZaehlt"type="checkbox"${e.zaehlt?" checked":""}> zählt für den Kurzarbeit-Ersatz</label>
+   <label>Klassische Aufgabenstellung <span class="co-opt">optional · nur für den Aufgabenpool, Schüler sehen sie nicht</span><textarea id="coKlassisch"rows="2"placeholder="z. B. Stellen Sie anhand der Aussagen von Herrn Kluge drei Merkmale der Alltagstheorie dar.">${esc(e.klassisch)}</textarea></label>
 
-   <div class="co-ed-schritt"><span>①</span> Situation (Vignette)</div>
-   <label>Überschrift<input id="coVigTitel"value="${esc(e.vignetteTitel)}"placeholder="z. B. Schwierige Kommunikation in der Lerngruppe"></label>
-   <label>Situationsbeschreibung<textarea id="coVigText"rows="7"placeholder="Jede Zeile wird für die Schüler:innen nummeriert.">${esc(e.vignetteText)}</textarea></label>
-   <small class="co-ed-tipp">Nur relevante Informationen, keine Hinweise auf die Lösung. Zeilenumbrüche werden nummeriert – so kannst du in Aussagen auf Zeilen verweisen.</small>
-   <label>Klassische Aufgabenstellung <span class="co-opt">optional · nur für den Aufgabenpool, Schüler sehen sie nicht</span><textarea id="coKlassisch"rows="2"placeholder="z. B. Erklären Sie anhand von Luzie und Tom die Entstehung einer Kommunikationsstörung auf Basis des 3. Axioms nach Watzlawick.">${esc(e.klassisch)}</textarea></label>
-
-   <div class="co-ed-schritt"><span>②</span> K-Prim-Aufgaben</div>
-   <small class="co-ed-tipp">Erst die richtige(n) Aussage(n) formulieren, dann plausible Distraktoren. Aussagen ähnlich lang und gleich gebaut.</small>
+   <div class="co-ed-schritt"><span>①</span> K-Prim-Aufgaben</div>
+   <small class="co-ed-tipp">Erst die richtige(n) Aussage(n) formulieren, dann plausible Distraktoren. Aussagen ähnlich lang und gleich gebaut. Die Begründung sehen Schüler:innen erst nach der Auswertung.</small>
    ${e.aufgaben.map((a,i)=>`<div class="card co-ed-aufgabe">
     <div class="co-ed-kopf"><b>Aufgabe ${i+1}</b><span id="coHinw${i}"><b>${p.pro[i].richtig} richtig · ${4-p.pro[i].richtig} falsch</b> ${coPruefChips(p.pro[i])}</span></div>
-    <label>Einleitungssatz<input id="coStamm${i}"value="${esc(a.stamm)}"oninput="coEditorPruefen()"placeholder="z. B. Die weitere Kommunikation zwischen Tom und Luzie kann erfolgreich verlaufen, wenn …"></label>
-    ${a.aussagen.map((s,j)=>`<div class="co-ed-aussage"><span>${j+1}</span><textarea id="coA${i}_${j}"rows="2"oninput="coEditorPruefen()"placeholder="Aussage ${j+1}">${esc(s.text)}</textarea>
+    <select id="coBank${i}"class="co-ed-bank"onchange="coBankEinsetzen(${i})">${bankOpt}</select>
+    ${a.pruefen?`<div class="co-hinweis">⚠ ${esc(a.pruefen)}</div>`:""}
+    <div class="co-ed-abschn">📖 Fallvignette</div>
+    <label>Überschrift<input id="coVT${i}"value="${esc(a.vTitel)}"placeholder="z. B. Kindergarten „Wirbelwind“"></label>
+    <label>Text<textarea id="coVX${i}"rows="6"placeholder="Situation ohne Hinweise auf die Lösung.">${esc(a.vText)}</textarea></label>
+    <label class="check"><input id="coVZ${i}"type="checkbox"${a.vZeilen?" checked":""}> Zeilen nummerieren (jeder Zeilenumbruch = neue Zeile, für Verweise wie „Z. 15–17“)</label>
+    <details class="co-ed-details"${a.mText?" open":""}><summary>📎 Material (optional, z. B. Studie oder Text)</summary>
+     <label>Titel<input id="coMT${i}"value="${esc(a.mTitel)}"></label>
+     <label>Text<textarea id="coMX${i}"rows="5">${esc(a.mText)}</textarea></label>
+     <label>Quelle<input id="coMQ${i}"value="${esc(a.mQuelle)}"></label>
+    </details>
+    <div class="co-ed-abschn">❓ Aufgabe</div>
+    <label>Zusatz zur Situation <span class="co-opt">optional</span><textarea id="coKo${i}"rows="2"placeholder="z. B. Ein Teamgespräch, ein Zitat oder ein Hinweis zur Aufgabe">${esc(a.kontext)}</textarea></label>
+    <label>Einleitungssatz<input id="coStamm${i}"value="${esc(a.stamm)}"oninput="coEditorPruefen()"placeholder="z. B. Diese Aussage ist alltagstheoretisch, wenn …"></label>
+    ${a.aussagen.map((s,j)=>`<div class="co-ed-aussage"><span>${j+1}</span><div style="flex:1;display:flex;flex-direction:column;gap:4px"><textarea id="coA${i}_${j}"rows="2"oninput="coEditorPruefen()"placeholder="Aussage ${j+1}">${esc(s.text)}</textarea><input id="coE${i}_${j}"value="${esc(s.erklaerung)}"placeholder="Begründung (optional, erst nach der Auswertung sichtbar)"></div>
      <select id="coR${i}_${j}"onchange="coEditorPruefen()"><option value="r"${s.richtig?" selected":""}>richtig</option><option value="f"${!s.richtig?" selected":""}>falsch</option></select></div>`).join("")}
    </div>`).join("")}
    <div id="coHinwGlob">${p.glob.map(t=>`<div class="co-hinweis">⚠ ${esc(t)}</div>`).join("")}</div>
    <div class="form-actions">
-    ${e.aufgaben.length<CHECKOUT_MAX_AUFGABEN?`<button class="secondary"onclick="coEditorAufgabe(1)">＋ Aufgabe</button>`:""}
-    ${e.aufgaben.length>CHECKOUT_MIN_AUFGABEN?`<button class="secondary"onclick="coEditorAufgabe(-1)">− letzte Aufgabe</button>`:""}
     <button class="secondary"onclick="coEditorVorschlag()">Vorschläge aus der App</button>
    </div>
 
-   <details class="co-ed-details"><summary><span class="co-ed-schritt-inline">③</span> Checkliste (ISB) · <span id="coClStand">${e.checkliste.filter(Boolean).length}/${CO_CHECKLISTE.length} bestätigt</span></summary><div class="co-cl-liste">${cl}</div></details>
+   <details class="co-ed-details"><summary><span class="co-ed-schritt-inline">②</span> Checkliste (ISB) · <span id="coClStand">${e.checkliste.filter(Boolean).length}/${CO_CHECKLISTE.length} bestätigt</span></summary><div class="co-cl-liste">${cl}</div></details>
    <details class="co-ed-details"><summary>Aus Word einfügen (Textvorlage)</summary>
-    <p style="font-size:12px;color:var(--muted);margin:6px 0">Text in dieser Form einfügen – R = richtig, F = falsch:</p>
+    <p style="font-size:12px;color:var(--muted);margin:6px 0">Text in dieser Form einfügen – R = richtig, F = falsch. Eine SITUATION gilt für alle Aufgaben, die du danach noch anpassen kannst:</p>
     <pre class="co-vorlage">TITEL: Kommunikation in der Lerngruppe
 LB: 4
 SITUATION: Schwierige Kommunikation in der Lerngruppe
@@ -5268,6 +5506,24 @@ AUFGABE: …</pre>
    </div>
   </div>`);
 }
+function coBankEinsetzen(i){
+ coEditorLesen();
+ const id=$(`coBank${i}`)?.value;if(!id)return;
+ const a=coEditor.aufgaben[i];
+ const belegt=a.vText.trim()||a.stamm.trim()||a.aussagen.some(x=>x.text.trim());
+ if(belegt&&!confirm(`Aufgabe ${i+1} wird durch die Aufgabe aus der Bank ersetzt. Fortfahren?`)){coEditorRender();return}
+ coEditor.aufgaben[i]=coAufgabeAusBank(id);
+ coEditorRender();toast("Aufgabe eingesetzt – bitte prüfen.");
+}
+function coVorlageWaehlen(){
+ coEditorLesen();
+ const id=$("coVorlage")?.value;if(!id)return;
+ const v=CHECKOUT_VORLAGEN.find(x=>x.id===id);if(!v)return;
+ const belegt=coEditor.aufgaben.some(a=>a.vText.trim()||a.stamm.trim()||a.aussagen.some(x=>x.text.trim()));
+ if(belegt&&!confirm("Der Inhalt dieses Entwurfs wird durch die Vorlage ersetzt. Fortfahren?")){coEditorRender();return}
+ coEditor.titel=v.titel;coEditor.lbNum=v.lbNum;coEditor.datum=v.datum;coEditor.aufgaben=v.aufgaben.map(coAufgabeAusBank);
+ coEditorRender();toast("Vorlage eingesetzt – bitte prüfen und speichern.");
+}
 function coEditorAufgabe(d){coEditorLesen();if(d>0&&coEditor.aufgaben.length<CHECKOUT_MAX_AUFGABEN)coEditor.aufgaben.push(coLeereAufgabe());if(d<0&&coEditor.aufgaben.length>CHECKOUT_MIN_AUFGABEN)coEditor.aufgaben.pop();coEditorRender();}
 function coEditorVorschlag(){
  coEditorLesen();
@@ -5275,9 +5531,9 @@ function coEditorVorschlag(){
  const kp=PP_EINHEITEN.filter(e=>ph&&(ph.trainingWochen.includes(e.id)||ph.notwendigeWochen.includes(e.id))).flatMap(e=>e.kprim||[]).slice(0,CHECKOUT_MAX_AUFGABEN);
  if(!kp.length){toast("Für diesen Lernbereich gibt es keine Vorschläge.");return}
  if(!confirm(`${kp.length} K-Prim-Aufgaben aus den App-Vorschlägen einsetzen? Bestehende Aufgaben werden ersetzt.`))return;
- coEditor.aufgaben=kp.map(k=>({stamm:k.frage||"",aussagen:[0,1,2,3].map(j=>({text:k.statements?.[j]?.text||"",richtig:!!k.statements?.[j]?.correct}))}));
+ coEditor.aufgaben=kp.map(k=>coAufgabeNorm({stamm:k.frage||"",aussagen:[0,1,2,3].map(j=>({text:k.statements?.[j]?.text||"",richtig:!!k.statements?.[j]?.correct}))}));
  while(coEditor.aufgaben.length<CHECKOUT_MIN_AUFGABEN)coEditor.aufgaben.push(coLeereAufgabe());
- coEditorRender();toast("Eingesetzt – bitte eine Situation ergänzen und die Aussagen auf den Fall zuschneiden.");
+ coEditorRender();toast("Eingesetzt – bitte je Aufgabe eine Fallvignette ergänzen und die Aussagen auf den Fall zuschneiden.");
 }
 // Textvorlage (aus Word kopiert) oder JSON einlesen.
 function coEditorImport(){
@@ -5293,6 +5549,8 @@ function coEditorImport(){
    else if(j.vignette){coEditor.vignetteTitel=j.vignette.titel||"";coEditor.vignetteText=j.vignette.text||"";}
    if(j.aufgabenstellung)coEditor.klassisch=j.aufgabenstellung;
    if(Array.isArray(j.aufgaben)&&j.aufgaben.length)coEditor.aufgaben=j.aufgaben.slice(0,CHECKOUT_MAX_AUFGABEN).map(a=>({stamm:a.stamm||a.frage||"",aussagen:[0,1,2,3].map(k=>{const s=(a.aussagen||a.statements||[])[k]||{};return{text:typeof s==="string"?s:(s.text||""),richtig:!!(s.richtig??s.correct)};})}));
+    if(Array.isArray(j.aufgaben)&&j.aufgaben.length)coEditor.aufgaben=coEditor.aufgaben.map((x,ii)=>{const q=j.aufgaben[ii]||{};const v=q.vignette;const ma=q.material||{};
+     return{...x,kontext:q.kontext||"",vTitel:typeof v==="object"&&v?(v.titel||""):"",vText:typeof v==="string"?v:(v?.text||""),vZeilen:!!(v&&v.zeilen),mTitel:ma.titel||"",mText:ma.text||"",mQuelle:ma.quelle||""};});
   }else{
    let modus="",situation=[],aufgaben=[],klassisch=[];
    roh.split(/\r?\n/).forEach(z=>{
@@ -5312,7 +5570,7 @@ function coEditorImport(){
    if(aufgaben.length){
     const fehl=aufgaben.findIndex(a=>a.aussagen.length!==4);
     if(fehl>-1)toast(`Aufgabe ${fehl+1} hat nicht genau 4 Aussagen – bitte ergänzen.`);
-    coEditor.aufgaben=aufgaben.slice(0,CHECKOUT_MAX_AUFGABEN).map(a=>({stamm:a.stamm,aussagen:[0,1,2,3].map(k=>a.aussagen[k]||{text:"",richtig:false})}));
+    coEditor.aufgaben=aufgaben.slice(0,CHECKOUT_MAX_AUFGABEN).map(a=>coAufgabeNorm({stamm:a.stamm,aussagen:[0,1,2,3].map(k=>a.aussagen[k]||{text:"",richtig:false})}));
    }
   }
   while(coEditor.aufgaben.length<CHECKOUT_MIN_AUFGABEN)coEditor.aufgaben.push(coLeereAufgabe());
@@ -5323,18 +5581,23 @@ async function coEditorSpeichern(){
  coEditorLesen();
  const e=coEditor;
  if(!e.titel.trim()){toast("Bitte einen Titel eingeben.");return}
- if(!e.vignetteText.trim()){toast("Bitte die Situation (Vignette) eintragen.");return}
  if(e.aufgaben.length!==CHECKOUT_MAX_AUFGABEN){toast(`Ein Check-out hat immer genau ${CHECKOUT_MAX_AUFGABEN} K-Prim-Aufgaben.`);return}
- const unvollst=e.aufgaben.findIndex(a=>!a.stamm.trim()||a.aussagen.some(s=>!s.text.trim()));
- if(unvollst>-1){toast(`Aufgabe ${unvollst+1}: Einleitungssatz und alle 4 Aussagen ausfüllen.`);return}
+ const unvollst=e.aufgaben.findIndex(a=>!a.vText.trim()||!a.stamm.trim()||a.aussagen.some(s=>!s.text.trim()));
+ if(unvollst>-1){toast(`Aufgabe ${unvollst+1}: Fallvignette, Einleitungssatz und alle 4 Aussagen ausfüllen.`);return}
+ const matFehl=e.aufgaben.findIndex(a=>(a.mTitel.trim()||a.mQuelle.trim())&&!a.mText.trim());
+ if(matFehl>-1){toast(`Aufgabe ${matFehl+1}: Das Material braucht einen Text.`);return}
  const offen=CO_CHECKLISTE.length-e.checkliste.filter(Boolean).length;
  if(offen&&!confirm(`${offen} Punkt(e) der Checkliste sind noch nicht bestätigt. Trotzdem speichern?`))return;
  const daten={titel:e.titel.trim(),lbNum:e.lbNum,datum:e.datum,zaehlt:e.zaehlt,status:"entwurf",
-  vignette:{titel:e.vignetteTitel.trim(),text:e.vignetteText.replace(/\s+$/,"")},
-  aufgaben:e.aufgaben.map(a=>({stamm:a.stamm.trim(),aussagen:a.aussagen.map(s=>s.text.trim())})),
+  vignette:null,
+  aufgaben:e.aufgaben.map(a=>{
+   const q={stamm:a.stamm.trim(),vignette:{titel:a.vTitel.trim(),text:a.vText.replace(/\s+$/,""),zeilen:!!a.vZeilen},aussagen:a.aussagen.map(s=>s.text.trim())};
+   if(a.kontext.trim())q.kontext=a.kontext.trim();
+   if(a.mText.trim())q.material={titel:a.mTitel.trim(),text:a.mText.replace(/\s+$/,""),quelle:a.mQuelle.trim()};
+   return q;}),
   updatedAt:serverTimestamp(),updatedBy:currentUser.uid};
- // Lösung, klassische Aufgabenstellung und Checkliste liegen nur bei den Lehrkräften.
- const loesung={aufgaben:e.aufgaben.map(a=>({richtig:a.aussagen.map(s=>!!s.richtig)})),klassisch:e.klassisch.trim(),checkliste:e.checkliste,updatedAt:serverTimestamp()};
+ // Lösung, Begründungen, klassische Aufgabenstellung und Checkliste liegen nur bei den Lehrkräften.
+ const loesung={aufgaben:e.aufgaben.map(a=>({richtig:a.aussagen.map(s=>!!s.richtig),erklaerung:a.aussagen.map(s=>(s.erklaerung||"").trim())})),klassisch:e.klassisch.trim(),checkliste:e.checkliste,updatedAt:serverTimestamp()};
  try{
   let id=e.id;
   if(id)await setDoc(doc(db,"checkouts",id),daten,{merge:true});
@@ -5344,12 +5607,27 @@ async function coEditorSpeichern(){
  }catch(err){console.error("Check-out speichern:",err);toast(err?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Konnte nicht gespeichert werden.");}
 }
 // Situation mit Zeilennummern (wie in Prüfungsaufgaben).
-function coSituationHTML(v,pdf=false){
+function coSituationHTML(v,pdf=false,nummeriert=true,ohneTitel=false){
  const E=pdf?escPDF:esc;
  const zeilen=String(v?.text||"").split(/\r?\n/);
- return`<div class="co-situation">${v?.titel?`<div class="co-sit-titel">Situation: ${E(v.titel)}</div>`:""}
+ const titel=!ohneTitel&&v?.titel?`<div class="co-sit-titel">Situation: ${E(v.titel)}</div>`:"";
+ if(!nummeriert)return`<div class="co-situation co-sit-frei">${titel}${zeilen.filter(z=>z.trim()).map(z=>`<p style="margin:0 0 8px;line-height:1.6">${E(z)}</p>`).join("")}</div>`;
+ return`<div class="co-situation">${titel}
   <table class="co-sit-tab"style="border-collapse:collapse;width:100%">${zeilen.map((z,k)=>`<tr><td class="co-sit-nr"style="width:28px;vertical-align:top;color:#8a99a3;font-size:12px;padding:2px 8px 2px 0;text-align:right">${k+1}</td><td style="padding:2px 0;line-height:1.55">${E(z)||"&nbsp;"}</td></tr>`).join("")}</table></div>`;
 }
+// Absätze (Zeilenumbruch = neuer Absatz).
+function coAbsaetzeHTML(t,pdf=false){const E=pdf?escPDF:esc;return String(t||"").split(/\r?\n/).filter(z=>z.trim()).map(z=>`<p style="margin:0 0 8px;line-height:1.6">${E(z)}</p>`).join("");}
+// Ausgangslage einer Aufgabe: Fallvignette, Material, Zusatz, Einleitungssatz (ohne die Aussagen).
+function coFallHTML(q,pdf=false){
+ const E=pdf?escPDF:esc;
+ const v=q.vignette?.text?q.vignette:null,m=q.material?.text?q.material:null;
+ return`${v?`<div class="kp-vig"><div class="kp-label">📖 Fallvignette${v.titel?` · ${E(v.titel)}`:""}</div>${coSituationHTML(v,pdf,!!v.zeilen,true)}</div>`:""}
+  ${m?`<div class="kp-mat"><div class="kp-label">📎 Material${m.titel?` · ${E(m.titel)}`:""}</div>${coAbsaetzeHTML(m.text,pdf)}${m.quelle?`<div class="kp-quelle">${E(m.quelle)}</div>`:""}</div>`:""}
+  <div class="kp-frage">${q.kontext?`<div class="kp-kontext">${coAbsaetzeHTML(q.kontext,pdf)}</div>`:""}<strong class="kp-stamm">${E(q.stamm)}</strong>
+  <div class="kp-anleitung">Entscheiden Sie bei den Aussagen 1–4, ob sie jeweils <b>richtig oder falsch</b> sind.</div></div>`;
+}
+// Ältere Check-outs haben eine gemeinsame Situation über allen Aufgaben.
+function coGemeinsameSituation(co){return co?.vignette?.text&&!(co.aufgaben||[]).some(a=>a.vignette?.text)?co.vignette:null;}
 // Export für den ISB-Aufgabenpool: Situation, klassische Aufgabenstellung,
 // K-Prim-Aufgaben mit Lösung (X). Dateiname INHALT_KPRIM_SCHULNUMMER.
 function coPoolExport(art){
@@ -5361,13 +5639,15 @@ function coPoolExport(art){
  const name=`${inhalt}_KPRIM_${nr.trim()||"0000"}`;
  const be=CHECKOUT_BE_NACH_FEHLERN[0];
  const aufg=e.aufgaben.map((a,i)=>`<h3 style="margin:18px 0 4px">Aufgabe ${i+1}: K-Prim-Aufgabe</h3>
+  <h4 style="margin:8px 0 4px">Situation${a.vTitel?`: ${escPDF(a.vTitel)}`:""}</h4>${coSituationHTML({text:a.vText},true,!!a.vZeilen,true)}
+  ${a.mText.trim()?`<h4 style="margin:8px 0 4px">Material${a.mTitel?`: ${escPDF(a.mTitel)}`:""}</h4>${coAbsaetzeHTML(a.mText,true)}${a.mQuelle?`<p style="font-size:11px;color:#666">${escPDF(a.mQuelle)}</p>`:""}`:""}
+  ${a.kontext.trim()?coAbsaetzeHTML(a.kontext,true):""}
   <p style="margin:0 0 6px">Entscheiden Sie bei den Aussagen 1–4, ob sie jeweils richtig oder falsch sind.</p>
   <p style="margin:0 0 6px"><b>${escPDF(a.stamm)}</b></p>
   <table style="width:100%;border-collapse:collapse" border="1" cellpadding="6"><tr><th style="width:60px">richtig</th><th style="width:60px">falsch</th><th style="text-align:left">Aussage</th></tr>
   ${a.aussagen.map((s,j)=>`<tr><td style="text-align:center">${s.richtig?"X":""}</td><td style="text-align:center">${s.richtig?"":"X"}</td><td>${j+1}. ${escPDF(s.text)}</td></tr>`).join("")}</table>
   <p style="text-align:right;margin:4px 0 0">____ / ${be} BE</p>`).join("");
  const body=`<p><b>Lernbereich:</b> LB ${e.lbNum} · Pädagogik/Psychologie 11</p>
-  <h2>Ausgangssituation</h2>${coSituationHTML({titel:e.vignetteTitel,text:e.vignetteText},true)}
   ${e.klassisch.trim()?`<h2>Klassische Aufgabenstellung</h2><p>${escPDF(e.klassisch)}</p>`:""}
   <h2>K-Prim-Aufgaben (mit Lösung)</h2>${aufg}
   <p style="font-size:11px;color:#666;margin-top:14px">Wertung je Aufgabe: 4 richtige Entscheidungen = ${be} BE, 3 = ${CHECKOUT_BE_NACH_FEHLERN[1]} BE, 2 = ${CHECKOUT_BE_NACH_FEHLERN[2]} BE, weniger = 0 BE.</p>`;
@@ -5459,19 +5739,22 @@ async function openCheckoutTest(id){
  if(a?.abgegeben){toast("Du hast bereits abgegeben.");return}
  const ant=a?.antworten||{};
  const c=PP_FARBEN[co.lbNum]||"#4a90d9";
- modal(`<div id="coTest">
+ const glob=coGemeinsameSituation(co);
+ modal(`<div id="coTest"class="kp-test">
   <div class="kicker"style="color:${c}">🏁 CHECK-OUT · LB ${esc(co.lbNum)} · ${coDatum(co.datum)}</div>
   <h2>${esc(co.titel)}</h2>
-  <div class="co-info">Lies die Situation genau. Entscheide dann bei <b>jeder</b> Aussage, ob sie richtig oder falsch ist.
-   <span>Wertung je Aufgabe: 4 richtig = ${CHECKOUT_BE_NACH_FEHLERN[0]} BE · 3 = ${CHECKOUT_BE_NACH_FEHLERN[1]} BE · 2 = ${CHECKOUT_BE_NACH_FEHLERN[2]} BE · sonst 0 · Leer = falsch · Antworten werden automatisch gespeichert.</span></div>
-  <div class="co-vignette"style="border-left-color:${c}">${coSituationHTML(co.vignette)}</div>
-  ${(co.aufgaben||[]).map((q,i)=>`<div class="card co-aufgabe">
-   <div class="co-auf-kopf"><span>Aufgabe ${i+1}</span><span>/ ${CHECKOUT_BE_NACH_FEHLERN[0]} BE</span></div>
-   <strong class="kp-stamm">${esc(q.stamm)}</strong>
-   <p class="kp-anleitung">Entscheiden Sie bei den Aussagen 1–4, ob sie jeweils <b>richtig oder falsch</b> sind.</p>
-   ${kprimTabelleHTML(`coT${i}`,q.aussagen||[],Object.fromEntries([0,1,2,3].map(j=>[j,ant[`${i}_${j}`]])),`coAntwort('${id}','${i}_%J','%V')`)}
-  </div>`).join("")}
-  <div class="co-test-fuss"><span id="coStand"></span><button class="primary"onclick="coAbgeben('${id}')">Abgeben</button></div>
+  <div class="kp-fortschritt"><div class="kp-balken"><i id="coBalken"style="background:${c}"></i></div><span id="coStand"></span></div>
+  <details class="kp-hilfe"><summary>So funktioniert der Test</summary>
+   <p>Lies zu jeder Aufgabe zuerst die Fallvignette. Entscheide dann bei <b>jeder</b> der 4 Aussagen, ob sie richtig oder falsch ist. Eine leere Aussage zählt als Fehler. Deine Antworten werden automatisch gespeichert.</p>
+   <p class="kp-wertung">Wertung je Aufgabe: 4 richtig = ${CHECKOUT_BE_NACH_FEHLERN[0]} BE · 3 richtig = ${CHECKOUT_BE_NACH_FEHLERN[1]} BE · 2 richtig = ${CHECKOUT_BE_NACH_FEHLERN[2]} BE · weniger = 0 BE</p></details>
+  ${glob?`<div class="kp-vig"style="border-left-color:${c}"><div class="kp-label">📖 Situation</div>${coSituationHTML(glob,false,true,false)}</div>`:""}
+  ${(co.aufgaben||[]).map((q,i)=>`<section class="kp-karte"style="--c:${c}">
+   <header class="kp-kopf"><span class="kp-nummer">${i+1}</span><div><b>Aufgabe ${i+1} von ${(co.aufgaben||[]).length}</b><small>bis zu ${CHECKOUT_BE_NACH_FEHLERN[0]} BE</small></div><span class="kp-fort">0/4</span></header>
+   ${coFallHTML(q)}
+   <div class="kp-liste">${(q.aussagen||[]).map((t,j)=>`<div class="kp-zeile"><span class="kp-num">${j+1}</span><p class="kp-text">${esc(t)}</p>
+    <div class="kp-wahl"role="radiogroup"aria-label="Aussage ${j+1}">${[["r","✓ Richtig"],["f","✗ Falsch"]].map(([v,l])=>`<label class="kp-opt ${v}"><input type="radio"name="coT${i}_${j}"value="${v}"aria-label="Aussage ${j+1}: ${v==="r"?"richtig":"falsch"}"${ant[`${i}_${j}`]===v?" checked":""} onchange="coAntwort('${id}','${i}_${j}','${v}')"><span>${l}</span></label>`).join("")}</div></div>`).join("")}</div>
+  </section>`).join("")}
+  <div class="co-test-fuss"><span id="coStand2"></span><button class="primary"onclick="coAbgeben('${id}')">Abgeben</button></div>
  </div>`);
  coStandAktualisieren(co);
  // Beendet die Lehrkraft den Test, wird die Bearbeitung sofort gesperrt.
@@ -5482,9 +5765,17 @@ async function openCheckoutTest(id){
  });
 }
 function coStandAktualisieren(co){
- const n=(co?.aufgaben||[]).length*4||document.querySelectorAll("#coTest .kp-tabelle tbody tr").length;
+ const n=document.querySelectorAll("#coTest .kp-zeile").length||(co?.aufgaben||[]).length*4;
  const k=document.querySelectorAll('#coTest input[type="radio"]:checked').length;
- const el=$("coStand");if(el)el.textContent=`${k} von ${n} Aussagen beantwortet`;
+ const t=`${k} von ${n} Aussagen beantwortet`;
+ const el=$("coStand");if(el)el.textContent=t;
+ const e2=$("coStand2");if(e2)e2.textContent=t;
+ const b=$("coBalken");if(b)b.style.width=(n?k/n*100:0)+"%";
+ document.querySelectorAll("#coTest .kp-karte").forEach(c=>{
+  const kk=c.querySelectorAll('input[type="radio"]:checked').length,f=c.querySelector(".kp-fort");
+  if(f){f.textContent=kk+"/4";f.classList.toggle("voll",kk===4);}
+ });
+ document.querySelectorAll("#coTest .kp-zeile").forEach(z=>z.classList.toggle("beantwortet",!!z.querySelector('input:checked')));
 }
 async function coAntwort(id,key,wert){
  coStandAktualisieren();
@@ -5493,7 +5784,7 @@ async function coAntwort(id,key,wert){
  }catch(e){console.error("Antwort speichern:",e);toast(e?.code==="permission-denied"?"Der Check-out ist nicht mehr freigeschaltet – Antwort nicht gespeichert.":"Antwort konnte nicht gespeichert werden – Verbindung prüfen.");}
 }
 async function coAbgeben(id){
- const alle=document.querySelectorAll("#coTest .kp-tabelle tbody tr").length;
+ const alle=document.querySelectorAll("#coTest .kp-zeile").length;
  const k=document.querySelectorAll('#coTest input[type="radio"]:checked').length;
  if(k<alle&&!confirm(`Du hast ${alle-k} Aussage(n) noch nicht beantwortet – diese zählen als Fehler. Trotzdem abgeben?`))return;
  if(k===alle&&!confirm("Jetzt endgültig abgeben? Danach kannst du nichts mehr ändern."))return;
@@ -5505,14 +5796,22 @@ async function coAbgeben(id){
 }
 
 // ---- Ergebnisse ----
-function coAufgabeErgebnisHTML(q,i,erg,pdf=false){
+function coAufgabeErgebnisHTML(q,i,erg,pdf=false,mitFall=true){
  const E=pdf?escPDF:esc;
  const r=erg?.auswertung?.[i];
- const zeichen=v=>v==="r"?"richtig":v==="f"?"falsch":"–";
- return`<div class="${pdf?"item":"card co-aufgabe"}"><b>${i+1}. ${E(q.stamm)}</b>${r?` <span style="float:right">${r.be} BE · ${r.fehler} Fehler</span>`:""}
-  <table class="co-erg-tab"style="width:100%;border-collapse:collapse;margin-top:6px;font-size:13px"><thead><tr><th style="text-align:left">Aussage</th><th>angekreuzt</th><th>Lösung</th><th></th></tr></thead><tbody>
-  ${(q.aussagen||[]).map((t,j)=>`<tr><td>${j+1}. ${E(t)}</td><td style="text-align:center">${zeichen(r?.angekreuzt?.[j])}</td><td style="text-align:center">${r?(r.loesung?.[j]?"richtig":"falsch"):"–"}</td><td style="text-align:center;color:${r?.korrekt?.[j]?"#3fa66a":"#d9534f"}">${r?(r.korrekt?.[j]?"✓":"✗"):""}</td></tr>`).join("")}
-  </tbody></table></div>`;
+ const zeichen=v=>v==="r"?"richtig":v==="f"?"falsch":"nicht beantwortet";
+ if(pdf){
+  const hatErk=!!r?.erklaerung?.some(x=>x);
+  return`<div class="item"><b>${i+1}. ${E(q.stamm)}</b>${r?` <span style="float:right">${r.be} BE · ${r.fehler} Fehler</span>`:""}
+   <table class="co-erg-tab"style="width:100%;border-collapse:collapse;margin-top:6px;font-size:13px"><thead><tr><th style="text-align:left">Aussage</th><th>angekreuzt</th><th>Lösung</th><th></th>${hatErk?`<th style="text-align:left">Begründung</th>`:""}</tr></thead><tbody>
+   ${(q.aussagen||[]).map((t,j)=>`<tr><td>${j+1}. ${E(t)}</td><td style="text-align:center">${zeichen(r?.angekreuzt?.[j])}</td><td style="text-align:center">${r?(r.loesung?.[j]?"richtig":"falsch"):"–"}</td><td style="text-align:center">${r?(r.korrekt?.[j]?"✓":"✗"):""}</td>${hatErk?`<td>${E(r?.erklaerung?.[j]||"")}</td>`:""}</tr>`).join("")}
+   </tbody></table></div>`;
+ }
+ const fall=mitFall&&(q.vignette?.text||q.material?.text)?`<details class="kp-fall"><summary>📖 Fallvignette${q.material?.text?" und Material":""} anzeigen</summary>${coFallHTML(q,false)}</details>`:`<div class="kp-frage"><strong class="kp-stamm">${E(q.stamm)}</strong></div>`;
+ return`<section class="kp-karte kp-erg"><header class="kp-kopf"><span class="kp-nummer">${i+1}</span><div><b>Aufgabe ${i+1}</b>${r?`<small>${r.fehler===0?"alles richtig":r.fehler+(r.fehler===1?" Fehler":" Fehler")}</small>`:""}</div>${r?`<span class="kp-be${r.be===CHECKOUT_BE_NACH_FEHLERN[0]?" voll":""}">${r.be} BE</span>`:""}</header>
+  ${fall}
+  <div class="kp-liste">${(q.aussagen||[]).map((t,j)=>{const ok=r?.korrekt?.[j];const ang=r?.angekreuzt?.[j];return`<div class="kp-zeile kp-ergz ${r?(ok?"ok":"nein"):""}"><span class="kp-num">${r?(ok?"✓":"✗"):j+1}</span>
+   <div class="kp-text"><p>${E(t)}</p>${r?`<div class="kp-chips"><span class="kp-chip">Deine Antwort: <b>${zeichen(ang)}</b></span><span class="kp-chip loes">Lösung: <b>${r.loesung?.[j]?"richtig":"falsch"}</b></span></div>${r.erklaerung?.[j]?`<div class="kp-erk">💡 ${E(r.erklaerung[j])}</div>`:""}`:""}</div></div>`;}).join("")}</div></section>`;
 }
 function coSummeHTML(erg){return erg?.ausgewertet?`<b>${erg.be} von ${erg.maxBE} BE (${String(erg.prozent).replace(".",",")} %) · ${npText(erg.notenpunkte)}</b>`:"nicht ausgewertet";}
 async function openCheckoutMeinErgebnis(id){
@@ -5522,7 +5821,7 @@ async function openCheckoutMeinErgebnis(id){
   modal(`<button class="modal-close"onclick="closeModal()">×</button>
    <div class="kicker">🏁 CHECK-OUT · DEIN ERGEBNIS</div><h2>${esc(co.titel)}</h2>
    <div class="co-summe">${coSummeHTML(erg)}</div>
-   <div class="co-vignette"style="border-left-color:${PP_FARBEN[co.lbNum]||"#4a90d9"}">${coSituationHTML(co.vignette)}</div>
+   ${coGemeinsameSituation(co)?`<div class="co-vignette"style="border-left-color:${PP_FARBEN[co.lbNum]||"#4a90d9"}">${coSituationHTML(co.vignette)}</div>`:""}
    ${(co.aufgaben||[]).map((q,i)=>coAufgabeErgebnisHTML(q,i,erg)).join("")}
    <div class="form-actions"><button class="secondary"onclick="coPdfSchueler('${id}')">PDF herunterladen</button><button class="secondary"onclick="closeModal()">Schließen</button></div>`);
  }catch(e){console.error(e);toast("Konnte nicht geladen werden.");}
@@ -5567,7 +5866,11 @@ function coPdfBlock(co,erg,name){
  return`<div class="item"style="background:#f5f7f8"><strong>${escPDF(name)}</strong><div>${erg?.ausgewertet?`${erg.be} von ${erg.maxBE} BE (${String(erg.prozent).replace(".",",")} %) · <b>${npText(erg.notenpunkte)}</b>`:"nicht teilgenommen"}</div></div>
   ${erg?.ausgewertet?(co.aufgaben||[]).map((q,i)=>coAufgabeErgebnisHTML(q,i,erg,true)).join(""):""}`;
 }
-function coVignettePdf(co){return`<div class="item">${coSituationHTML(co.vignette,true)}</div>`;}
+function coVignettePdf(co){
+ const g=coGemeinsameSituation(co);
+ if(g)return`<div class="item">${coSituationHTML(g,true)}</div>`;
+ return(co.aufgaben||[]).map((q,i)=>`<div class="item"><b>Aufgabe ${i+1}</b>${coFallHTML({...q,stamm:""},true).replace(/<strong class="kp-stamm"><\/strong>/,"").replace(/<div class="kp-anleitung">.*?<\/div>/,"")}</div>`).join("");
+}
 async function coPdfSchueler(id,uid){
  uid=uid||currentUser.uid;
  try{
