@@ -3653,9 +3653,19 @@ function ppHexRgb(h){h=String(h).replace("#","");return [0,2,4].map(i=>parseInt(
 function ppMix(hex,t){const a=ppHexRgb("#EEF2F6"),b=ppHexRgb(hex),k=Math.max(0,Math.min(1,t));return`rgb(${a.map((v,i)=>Math.round(v+(b[i]-v)*k)).join(",")})`;}
 function ppFarbe(ph){return PP_FARBEN[ph.lbNum]||"#8a99a3";}
 function ppSaettigung(prozent){return 0.08+0.92*(prozent/100);}
-const APT_SCHRITT_LABELS=["Prüfungsfrage","Inhalte & Eingrenzung","Basis-Check","Lernprodukt & Vorkorrektur"];
-const APT_TABS=["frage","inhalte","basischeck","produkt"];
-function aptSchritte(f){f=f||{};return[!!f.frageGelesen,!!(f.materialBearbeitet&&f.eingrenzung),!!f.basischeckErledigt,!!(f.produktHochgeladen&&f.vorkorrekturUmgesetzt)];}
+const APT_SCHRITT_LABELS=["Prüfungsfrage","Einarbeitung","Fachaufsatz üben","Feedback"];
+const APT_TABS=["frage","einarbeitung","aufsatz","feedback"];
+// Ältere Tab-Namen (Buttons, gespeicherte Aufrufe) auf die neuen 4 Schritte abbilden.
+const STUNDE_TAB_IDX={frage:0,einarbeitung:1,inhalte:1,basischeck:1,aufsatz:2,produkt:2,feedback:3,abschluss:3};
+// Alte Haken zählen weiter mit, damit bereits gesammelter Fortschritt nicht verloren geht.
+function aptSchritte(f){f=f||{};return[
+ !!f.frageGelesen,
+ !!(f.einarbeitungAbgeschlossen||(f.materialBearbeitet&&f.basischeckErledigt&&f.eingrenzung)),
+ !!(f.aufsatzErledigt||f.produktHochgeladen),
+ !!(f.feedbackErledigt||f.vorkorrekturUmgesetzt)
+];}
+// Stundeninhalte mit den 4 Schritten: alle Prüfungstrainings-Einheiten und die Einstiegsinhalte.
+function istStundeneinheit(id){const e=lehrplanWocheById("paedagogik",id);return e?.typ==="apt"||PROJEKT_PHASEN.some(p=>p.einstieg&&p.notwendigeWochen.includes(id));}
 function ppTeilWochen(ph,teil){return(teil==="projekt"?ph.projektSchulwochen:ph.aptSchulwochen).map(swById);}
 function ppTeilName(teil,ph){return teil==="projekt"?(ph?.einstieg?"Einstieg":"Projekt"):"Abschlussprüfungs-Training";}
 function ppTeilIcon(teil,ph){return teil==="projekt"?(ph?.einstieg?"🧪":"🔬"):"🎓";}
@@ -4283,7 +4293,7 @@ window.openExperimentStunde=openExperimentStunde;window.closeExperimentStunde=cl
 // Öffnet eine Einheit passend zu ihrem Typ.
 function openLehrplanEinheit(fach,id){
  const e=lehrplanWocheById(fach,id);
- if(e?.typ==="apt")return openAptDetail(id);
+ if(istStundeneinheit(id))return openAptDetail(id);
  return openWocheDetail(fach,id);
 }
 window.openLehrplanEinheit=openLehrplanEinheit;
@@ -4292,7 +4302,7 @@ window.openLehrplanEinheit=openLehrplanEinheit;
 async function reopenDetail(fach,wocheId){
  ppDirty=true;
  const e=lehrplanWocheById(fach,wocheId);
- if(e?.typ==="apt")return openAptDetail(wocheId);
+ if(istStundeneinheit(wocheId))return openAptDetail(wocheId);
  return openWocheDetail(fach,wocheId);
 }
 
@@ -4322,7 +4332,7 @@ async function ppEinheitKopfHTML(wocheId){
 // ============================================================
 // ABSCHLUSSPRÜFUNGS-TRAINING · Detailfenster eines Inhalts
 // ============================================================
-let aptAktiverTab=null,aptLetzteEinheit=null,aptKprimWiederholen=false;
+let aptAktiverTab=null,aptLetzteEinheit=null,aptKprimWiederholen=false; // Reste der alten Tabs (nur noch von älteren Funktionen gelesen)
 const APT_OPERATOREN=[["nennen","I"],["beschreiben","I"],["darstellen","I–II"],["erklären","II"],["erläutern","II"],["vergleichen","II"],["anwenden","II"],["analysieren","II–III"],["beurteilen","III"],["bewerten","III"],["Stellung nehmen","III"],["entwickeln","III"]];
 function showAptTab(tab){
  aptAktiverTab=tab;
@@ -4404,132 +4414,259 @@ function basischeckPanelHTML(fach,wocheId,basischeckFragen,meinBasischeck,extraS
  </div>`;
 }
 
+// ---- Einarbeitung: interaktive Seite je Stunde (einarbeitung/inhalte/<id>.json) ----
+const einarbeitungCache={};
+async function einarbeitungInfo(id){
+ if(id in einarbeitungCache)return einarbeitungCache[id];
+ let r=null;
+ try{
+  const res=await fetch(`einarbeitung/inhalte/${encodeURIComponent(id)}.json`,{cache:"no-cache"});
+  if(res.ok){const j=await res.json();r={titel:j.titel||"",entwurf:!!j.entwurf,aufgaben:(j.abschnitte||[]).reduce((n,x)=>n+(x.aufgaben||[]).length,0)};}
+ }catch(e){r=null;}
+ einarbeitungCache[id]=r;return r;
+}
+async function ladeStundeKlasse(wocheId){
+ const [students,snap]=await Promise.all([getAllUsersForLernstand(),getDocs(query(collection(db,"lehrplanFortschritt"),where("wocheId","==",wocheId)))]);
+ const fs={};snap.docs.forEach(d=>{const x=d.data();fs[x.uid]=x;});
+ return{students,fs};
+}
+function stDatum(ts){const d=coTsDatum(ts);return d?d.toLocaleDateString("de-DE"):"";}
 async function openAptDetail(wocheId,tab){
  const fach="paedagogik";
  const e=lehrplanWocheById(fach,wocheId);
  if(!e){toast("Dieser Inhalt wurde nicht gefunden.");return}
  const ph=projektPhaseByWoche(wocheId);
  const c=ph?ppFarbe(ph):"#4a90d9";
- const [inhalt,materialien,produkteAlle,fortschritt,bcFragen,meinBc,kopf]=await Promise.all([
-  getAptInhalt(wocheId),getLehrplanMaterialien(wocheId),getLehrplanProdukte(wocheId),
-  getLehrplanFortschritt(wocheId),getBasischeckFragen(wocheId),getMyBasischeckVersuch(wocheId),
-  ppEinheitKopfHTML(wocheId)
- ]);
  const lehrer=isTeacher();
- const produkte=lehrer?produkteAlle:produkteAlle.filter(p=>p.uid===currentUser.uid);
- const schritte=aptSchritte(fortschritt);
- const offenIdx=schritte.findIndex(s=>!s);
- if(tab)aptAktiverTab=tab;
- else if(aptLetzteEinheit!==wocheId||!aptAktiverTab||!APT_TABS.includes(aptAktiverTab))aptAktiverTab=APT_TABS[offenIdx===-1?APT_TABS.length-1:offenIdx];
- if(aptLetzteEinheit!==wocheId)aptKprimWiederholen=false;
- aptLetzteEinheit=wocheId;
- const eg=fortschritt.eingrenzung||{};
- const bezug=(e.bezug||[]).map(b=>lehrplanWocheById(fach,b)).filter(Boolean);
+ const [inhalt,materialien,fortschritt,links,ein,klasse,stundeKarte]=await Promise.all([
+  getAptInhalt(wocheId),getLehrplanMaterialien(wocheId),getLehrplanFortschritt(wocheId),
+  ladeTaskcardLinks().catch(()=>({})),einarbeitungInfo(wocheId),
+  lehrer?ladeStundeKlasse(wocheId).catch(()=>null):Promise.resolve(null),
+  e.interaktiv?stundeKarteHTML(await getLehrplanFortschritt(wocheId)):Promise.resolve("")
+ ]);
+ const schritte=aptSchritte(fortschritt),n=schritte.filter(Boolean).length;
+ const offenIdx=schritte.findIndex(x=>!x);
+ const oeffne=tab&&STUNDE_TAB_IDX[tab]!==undefined?STUNDE_TAB_IDX[tab]:(offenIdx===-1?3:offenIdx);
+ const fobizzUrl=(links.fobizz_fachaufsatz||{}).url||"";
+ const frage=inhalt.pruefungsfrage||e.pruefung||"";
 
  // ① Prüfungsfrage
- const panelFrage=lehrer?`<div class="form">
-   <p style="font-size:12px;color:var(--muted);margin:0">Lade die Prüfungsfrage hoch (Text und/oder Datei). ${inhalt.pruefungsfrage?"":"<b>Vorschlag aus der App ist bereits eingetragen – anpassen und speichern.</b>"}</p>
-   <label>Prüfungsfrage<textarea id="aptFrageText"rows="5">${esc(inhalt.pruefungsfrage||e.pruefung||"")}</textarea></label>
+ const s1=lehrer?`<div class="form">
+   <p style="font-size:12px;color:var(--muted);margin:0">Prüfungsfrage aus einer Abschlussprüfung (Text und/oder Datei).</p>
+   <label>Prüfungsfrage<textarea id="aptFrageText"rows="5">${esc(frage)}</textarea></label>
    <label>Datei (optional, z. B. PDF/Bild, max. 15 MB)<input id="aptFrageDatei"type="file"></label>
    ${inhalt.frageDateiUrl?`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${dateiEmbedHTML(inhalt.frageDateiUrl,inhalt.frageDateiName)}<button class="secondary"onclick="aptFrageDateiEntfernen('${wocheId}')">Datei entfernen</button></div>`:""}
-   <div class="form-actions"><button class="primary"onclick="saveAptFrage('${wocheId}')">Prüfungsfrage speichern</button></div>
-  </div>`
- :!(inhalt.pruefungsfrage||inhalt.frageDateiUrl)?`<div class="empty">Deine Lehrkraft stellt die Prüfungsfrage hier bereit.</div>`
- :`<div class="card apt-frage"style="border-left:4px solid ${c}">
-   <div class="kicker">PRÜFUNGSFRAGE</div>
+   <div class="form-actions"><button class="primary"onclick="saveAptFrage('${wocheId}')">Prüfungsfrage speichern</button></div></div>`
+  :!(inhalt.pruefungsfrage||inhalt.frageDateiUrl)?`<div class="empty">Deine Lehrkraft stellt die Prüfungsfrage hier bereit.</div>`
+  :`<div class="card apt-frage"style="border-left:4px solid ${c}">
    ${inhalt.pruefungsfrage?`<p style="white-space:pre-wrap;font-size:15px;line-height:1.5;margin:6px 0">${esc(inhalt.pruefungsfrage)}</p>`:""}
-   ${inhalt.frageDateiUrl?dateiEmbedHTML(inhalt.frageDateiUrl,inhalt.frageDateiName):""}
-  </div>
-  <label class="apt-check"><input type="checkbox"${fortschritt.frageGelesen?" checked":""} onchange="aptSetzen('${wocheId}',{frageGelesen:this.checked},{tab:'frage'})"><span>Prüfungsfrage gelesen – ich weiß, worum es geht</span></label>`;
+   ${inhalt.frageDateiUrl?dateiEmbedHTML(inhalt.frageDateiUrl,inhalt.frageDateiName):""}</div>`;
+ const s1b=lehrer?"":`<label class="apt-check"><input type="checkbox"${fortschritt.frageGelesen?" checked":""} onchange="aptSetzen('${wocheId}',{frageGelesen:this.checked,frageAm:serverTimestamp()},{tab:'frage'})"><span>Ich habe die Prüfungsfrage gelesen</span></label>`;
 
- // ② Inhalte & Aufgabeneingrenzung
- const operatorHilfe=`<details class="apt-hilfe"><summary>Operatoren & Anforderungsbereiche</summary><div class="apt-op-liste">${APT_OPERATOREN.map(([o,a])=>`<span><b>${esc(o)}</b> AFB ${a}</span>`).join("")}</div></details>`;
- const panelInhalte=`
-  <h3 class="apt-h3">Inhalte zur Bearbeitung</h3>
-  <p style="font-size:12px;color:var(--muted);margin:0 0 8px">${esc(e.planung)}</p>
-  ${lehrer?`<div class="form"style="margin-bottom:12px"><div style="display:flex;gap:8px;flex-wrap:wrap">
+ // ② Einarbeitung
+ const erg=fortschritt.einarbeitungAufgaben;
+ const einKarte=ein?`<div class="st-ein"style="--c:${c}"><div><b>${esc(ein.titel||"Interaktive Einarbeitung")}</b>
+   <small>${ein.aufgaben} Aufgaben${ein.entwurf?" · Entwurf":""}${erg&&!lehrer?` · zuletzt: ${erg.richtig} von ${erg.gesamt} richtig`:""}</small></div>
+   <button class="primary"onclick="openEinarbeitung('${wocheId}')">${erg?.fertig?"Nochmal öffnen":"Einarbeitung starten"}</button></div>`
+  :(lehrer?`<div class="empty">Noch keine interaktive Einarbeitung. Lege die Datei <code>einarbeitung/inhalte/${esc(wocheId)}.json</code> im Repo an (siehe README im Ordner „einarbeitung“).</div>`:"");
+ const matListe=materialien.map(m=>`<div class="list-item"style="flex-direction:column;align-items:stretch;gap:8px">
+   <div style="display:flex;justify-content:space-between;align-items:center"><strong>${esc(MATERIAL_KATEGORIEN.find(k=>k.key===m.kategorie)?.label||m.kategorie)}: ${esc(m.titel)}</strong>${lehrer?`<button class="secondary"onclick="deleteLehrplanMaterial('${m.id}','${fach}','${wocheId}')">Löschen</button>`:""}</div>
+   ${m.url?materialEmbedHTML(m):""}</div>`).join("");
+ const matForm=lehrer?`<div class="form"style="margin:10px 0"><div style="display:flex;gap:8px;flex-wrap:wrap">
    <select id="matKategorie">${MATERIAL_KATEGORIEN.map(k=>`<option value="${k.key}">${k.label}</option>`).join("")}</select>
    <input id="matTitel"type="text"placeholder="Titel"style="flex:1;min-width:140px">
    <input id="matUrl"type="url"placeholder="Link/URL"style="flex:1;min-width:160px">
-   <button class="primary"onclick="addLehrplanMaterial('${fach}','${wocheId}')">＋ Hinzufügen</button></div></div>`:""}
-  <div class="list">${materialien.map(m=>`<div class="list-item"style="flex-direction:column;align-items:stretch;gap:8px">
-   <div style="display:flex;justify-content:space-between;align-items:center"><strong>${esc(MATERIAL_KATEGORIEN.find(k=>k.key===m.kategorie)?.label||m.kategorie)}: ${esc(m.titel)}</strong>${lehrer?`<button class="secondary"onclick="deleteLehrplanMaterial('${m.id}','${fach}','${wocheId}')">Löschen</button>`:""}</div>
-   ${m.url?materialEmbedHTML(m):""}</div>`).join("")||`<div class="empty">Noch keine Inhalte eingestellt.</div>`}</div>
-  ${bezug.length?`<div class="pp-bezug-box"style="--c:${c}">🔗 <b>Baut auf deinem Projekt auf:</b> ${bezug.map(b=>`<a href="javascript:void 0"onclick="openWocheDetail('paedagogik','${b.id}')">${esc(b.thema)}</a>`).join(" · ")} – nutze deine Projektergebnisse als Praxisbeispiel!</div>`:""}
-  ${miniToolRow([["🗂️","Karteikarten & Timer","lernwerkzeuge"],["🤖","KI zum Lernen","ki-lernen"],["✍️","Fachaufsatz-Training","fachaufsatz"]])}
-  ${!lehrer?`<label class="apt-check"><input type="checkbox"${fortschritt.materialBearbeitet?" checked":""} onchange="aptSetzen('${wocheId}',{materialBearbeitet:this.checked},{tab:'inhalte'})"><span>Inhalte bearbeitet</span></label>`:""}
-  <h3 class="apt-h3">Aufgabeneingrenzung</h3>
-  ${lehrer?`<div class="form"><label>Hinweise der Lehrkraft zur Eingrenzung (optional)<textarea id="aptHinweis"rows="3"placeholder="z. B. Worauf liegt der Schwerpunkt? Was gehört NICHT dazu?">${esc(inhalt.eingrenzungHinweis||"")}</textarea></label><div class="form-actions"><button class="primary"onclick="saveAptHinweis('${wocheId}')">Hinweis speichern</button></div></div>`
-  :`${inhalt.eingrenzungHinweis?`<div class="card"style="border-left:4px solid #e0a324;padding:10px 12px;margin-bottom:8px"><small><b>Hinweis der Lehrkraft:</b> ${esc(inhalt.eingrenzungHinweis)}</small></div>`:""}
-   <p style="font-size:12px;color:var(--muted);margin:0 0 6px">Bevor du schreibst: Was genau verlangt die Prüfungsfrage – und was nicht?</p>
-   <div class="form">
-    <label>Operator(en) – was sollst du tun?<input id="aptEgOperator"list="aptOperatorListe"value="${esc(eg.operator||"")}"placeholder="z. B. erläutern, beurteilen"></label>
-    <datalist id="aptOperatorListe">${APT_OPERATOREN.map(([o])=>`<option value="${esc(o)}">`).join("")}</datalist>
-    <label>Gegenstand – welche Theorie / welcher Fachbegriff?<input id="aptEgGegenstand"value="${esc(eg.gegenstand||"")}"placeholder="z. B. Attributionstheorie nach Weiner"></label>
-    <label>Teilaufgaben & Gliederung<textarea id="aptEgTeile"rows="3"placeholder="1. … 2. … 3. …">${esc(eg.teile||"")}</textarea></label>
-    <label>Praxisbezug / Beispiel<input id="aptEgPraxis"value="${esc(eg.praxis||"")}"placeholder="z. B. Situation aus meinem Praktikum"></label>
-    <div class="form-actions"><button class="primary"onclick="aptEingrenzungSpeichern('${wocheId}')">${fortschritt.eingrenzung?"✓ Eingrenzung aktualisieren":"Eingrenzung speichern"}</button></div>
-   </div>`}
-  ${operatorHilfe}`;
+   <button class="primary"onclick="addLehrplanMaterial('${fach}','${wocheId}')">＋ Material</button></div></div>`:"";
+ const abgeschlossenAm=stDatum(fortschritt.einarbeitungAm);
+ const s2=`${einKarte}
+  ${matListe||lehrer?`<h3 class="apt-h3">Material</h3><div class="list">${matListe||`<div class="empty">Noch kein Material eingestellt.</div>`}</div>`:""}${matForm}
+  ${lehrer?"":schritte[1]?`<div class="st-fertig">✓ Einarbeitung abgeschlossen${abgeschlossenAm?` am ${abgeschlossenAm}`:""} <button class="text-button"style="font-size:11px"onclick="aptSetzen('${wocheId}',{einarbeitungAbgeschlossen:false,materialBearbeitet:false,basischeckErledigt:false},{tab:'einarbeitung'})">zurücknehmen</button></div>`
+   :`<div class="form-actions"style="margin-top:12px"><button class="primary"onclick="stundeEinarbeitungAbschliessen('${wocheId}')">Ich habe die Einarbeitung abgeschlossen</button></div>`}`;
 
- // ③ Basis-Check
- const panelBasis=`<p style="color:var(--muted);margin-top:0;font-size:12px">Kurzer Check: Sitzt die fachliche Basis, bevor du deine Antwort schreibst?</p>
-  ${basischeckPanelHTML(fach,wocheId,bcFragen,meinBc,!lehrer&&!fortschritt.basischeckErledigt?`<div class="form-actions"style="margin-top:8px"><button class="secondary"onclick="aptSetzen('${wocheId}',{basischeckErledigt:true,basischeckUebersprungen:true},{tab:'basischeck'})">Weiter ohne Basis-Check</button></div>`:"")}`;
+ // ③ Fachaufsatz üben
+ const hatText=!!(fortschritt.aufsatzText||"").trim();
+ const fobizzBtn=fobizzUrl?`<a class="secondary"style="text-decoration:none;display:inline-block;padding:9px 14px;border-radius:9px;border:1px solid var(--line)"href="${esc(fobizzUrl)}"target="_blank"rel="noopener noreferrer">🤖 Fobizz-Assistent öffnen ↗</a>`:`<small style="color:var(--muted)">Der Link zum Fobizz-Assistenten wird von deiner Lehrkraft hinterlegt.</small>`;
+ const s3=lehrer?`<p style="font-size:13px;color:var(--muted);margin:0 0 8px">Die Schüler:innen schreiben ihren Text hier, kopieren ihn und lassen ihn im Fobizz-Assistenten korrigieren.</p>
+   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${fobizzUrl?`<a href="${esc(fobizzUrl)}"target="_blank"rel="noopener noreferrer">${esc(fobizzUrl)}</a>`:`<small style="color:var(--muted)">Noch kein Fobizz-Link hinterlegt.</small>`}<button class="secondary"onclick="stundeFobizzLinkAendern('${wocheId}')">Fobizz-Link ${fobizzUrl?"ändern":"hinterlegen"}</button></div>`
+  :`<p style="font-size:13px;color:var(--muted);margin:0 0 8px">Beantworte die Prüfungsfrage als Fachaufsatz, lass deinen Text von der KI korrigieren und arbeite die Rückmeldung ein.</p>
+   <label style="display:block;font-weight:700;font-size:12px">Dein Text<textarea id="stAufsatz"rows="10"style="width:100%;margin-top:4px"placeholder="Schreibe hier deinen Fachaufsatz …">${esc(fortschritt.aufsatzText||"")}</textarea></label>
+   <div class="form-actions"style="margin-top:8px;flex-wrap:wrap;justify-content:flex-start"><button class="primary"onclick="stundeAufsatzSpeichern('${wocheId}')">Text speichern</button>
+    <button class="secondary"onclick="stundeAufsatzKopieren('${wocheId}')">Text für Fobizz kopieren</button>${fobizzBtn}</div>
+   <small style="display:block;color:var(--muted);margin-top:6px">Erst „Text für Fobizz kopieren“, dann den Assistenten öffnen und einfügen.</small>
+   <label class="apt-check"style="margin-top:10px"><input type="checkbox"${fortschritt.aufsatzErledigt?" checked":""}${hatText?"":" disabled"} onchange="aptSetzen('${wocheId}',{aufsatzErledigt:this.checked,aufsatzKiAm:serverTimestamp()},{tab:'aufsatz'})"><span>Ich habe meinen Text mit dem KI-Assistenten korrigieren lassen${hatText?"":" (erst Text speichern)"}</span></label>`;
 
- // ④ Lernprodukt & Vorkorrektur
- const vkLabel={gruen:"passt – so prüfungstauglich",orange:"überarbeiten",rot:"grundlegend überarbeiten"};
- const panelProdukt=`
-  ${!lehrer?`<div class="card"style="background:#f7fafc;padding:10px 14px;margin-bottom:10px"><strong style="font-size:12px">Checkliste vor dem Hochladen</strong>
-   <ul style="margin:6px 0 0;font-size:12px;color:var(--muted);padding-left:18px"><li>Operator erfüllt (z. B. wirklich „erläutert“ statt nur „genannt“)?</li><li>Fachbegriffe korrekt und vollständig?</li><li>Praxisbeispiel eingebunden und fachlich verknüpft?</li><li>Klare Gliederung: Einleitung – Hauptteil – Schluss?</li></ul></div>`:""}
-  <div class="list">${produkte.map(p=>`<div class="list-item"style="flex-direction:column;align-items:stretch;gap:8px">
-   <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div><strong>${esc(p.titel)}</strong><small>${esc(p.name)}${p.inhalt?" · "+esc(p.inhalt.slice(0,80)):""}</small></div>${(p.uid===currentUser.uid||lehrer)?`<button class="secondary"onclick="deleteLehrplanProdukt('${p.id}','${fach}','${wocheId}')">Löschen</button>`:""}</div>
-   ${p.dateiUrl?dateiEmbedHTML(p.dateiUrl,p.dateiName):""}
-   ${lehrer?`<div class="form"style="background:#f7fafc;border-radius:10px;padding:10px">
-     <label>Vorkorrektur<textarea id="vk_${p.id}"rows="3"placeholder="Rückmeldung: Was gelingt schon, was muss noch rein?">${esc(p.vorkorrektur||"")}</textarea></label>
-     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><select id="vkA_${p.id}">${Object.entries(vkLabel).map(([k,v])=>`<option value="${k}"${p.vorkorrekturAmpel===k?" selected":""}>${v}</option>`).join("")}</select>
-     <button class="primary"onclick="saveAptVorkorrektur('${p.id}','${wocheId}')">Vorkorrektur speichern</button></div>
-     ${p.reaktion?`<small style="display:block;margin-top:6px"><b>Umsetzung durch ${esc(p.name||"")}:</b> ${esc(p.reaktion)}</small>`:p.vorkorrektur?`<small style="display:block;margin-top:6px;color:var(--muted)">Noch nicht umgesetzt.</small>`:""}</div>`
-   :p.vorkorrektur?`<div class="card"style="border-left:4px solid ${ampelFarbe(p.vorkorrekturAmpel||"orange")};padding:10px 12px"><div class="kicker">VORKORREKTUR · ${esc(vkLabel[p.vorkorrekturAmpel]||"")}</div><p style="margin:4px 0 0;white-space:pre-wrap;font-size:13px">${esc(p.vorkorrektur)}</p></div>
-   ${p.reaktion?`<div class="card"style="border-left:4px solid #3fa66a;padding:10px 12px"><div class="kicker">DEINE UMSETZUNG ✓</div><p style="margin:4px 0 0;white-space:pre-wrap;font-size:13px">${esc(p.reaktion)}</p></div>`
-   :`<div class="form"style="background:#fff8e6;border-radius:10px;padding:10px"><label>Was hast du nach der Vorkorrektur überarbeitet?<textarea id="vkR_${p.id}"rows="3"placeholder="z. B. Operator „erläutern“ jetzt mit Beispiel aus dem Praktikum umgesetzt, Fachbegriffe ergänzt …"></textarea></label><div class="form-actions"><button class="primary"onclick="aptVorkorrekturUmgesetzt('${p.id}','${wocheId}')">✓ Vorkorrektur umgesetzt</button></div><small style="color:var(--muted)">Lade die überarbeitete Fassung gern zusätzlich unten hoch.</small></div>`}`
-   :`<small style="color:var(--muted)">⏳ Vorkorrektur durch die Lehrkraft steht noch aus.</small>`}
-  </div>`).join("")||`<div class="empty">${lehrer?"Noch keine Lernprodukte hochgeladen.":"Noch kein Lernprodukt hochgeladen."}</div>`}</div>
-  ${!lehrer?`<div class="form-actions"style="margin-top:10px;flex-wrap:wrap">
-   <input id="produktTitel"type="text"placeholder="Titel, z. B. Antwort Prüfungsfrage"style="flex:1;min-width:140px">
-   <input id="produktInhalt"type="text"placeholder="Link oder kurze Notiz (optional)"style="flex:1;min-width:160px"></div>
-  <div class="form-actions"style="margin-top:8px;flex-wrap:wrap;align-items:center">
-   <label style="font-weight:700;font-size:12px">Datei (optional, max. 15 MB)<input id="produktDatei"type="file"style="display:block;margin-top:4px"></label>
-   <button class="primary"onclick="addLehrplanProdukt('${fach}','${wocheId}')">＋ Hochladen</button></div>`:""}`;
+ // ④ Feedback
+ const wunsch=!!fortschritt.besprechungGewuenscht&&!fortschritt.besprechungErledigt;
+ const s4=lehrer?`<p style="font-size:13px;color:var(--muted);margin:0">Die Schüler:innen halten fest, was sie aus der Rückmeldung mitnehmen, und können eine Besprechung wünschen. Im Klassenstand oben siehst du das mit 💬. Dort kannst du auch eine Rückmeldung schreiben.</p>`
+  :`${fortschritt.lehrerFeedback?`<div class="card"style="border-left:4px solid #3fa66a;padding:10px 12px;margin-bottom:10px"><div class="kicker">RÜCKMELDUNG DEINER LEHRKRAFT</div><p style="margin:4px 0 0;white-space:pre-wrap;font-size:13px">${esc(fortschritt.lehrerFeedback)}</p></div>`:""}
+   <label style="display:block;font-weight:700;font-size:12px">Was nimmst du aus der Rückmeldung mit? Was hast du überarbeitet?<textarea id="stFeedback"rows="4"style="width:100%;margin-top:4px"placeholder="z. B. Operator „erläutern“ mit Beispiel ergänzt, Fachbegriffe genauer verwendet …">${esc(fortschritt.feedbackText||"")}</textarea></label>
+   <div class="form-actions"style="margin-top:8px;flex-wrap:wrap;justify-content:flex-start">
+    ${fortschritt.feedbackErledigt?`<span class="st-fertig">✓ Rückmeldung eingearbeitet <button class="text-button"style="font-size:11px"onclick="aptSetzen('${wocheId}',{feedbackErledigt:false,vorkorrekturUmgesetzt:false},{tab:'feedback'})">zurücknehmen</button></span>`
+     :`<button class="primary"onclick="stundeFeedbackAbschliessen('${wocheId}')">Ich habe die Rückmeldung eingearbeitet</button>`}
+    ${wunsch?`<span class="st-wunsch">💬 Besprechung gewünscht${fortschritt.besprechungAm?` (${stDatum(fortschritt.besprechungAm)})`:""}</span><button class="secondary"onclick="aptSetzen('${wocheId}',{besprechungGewuenscht:false},{tab:'feedback'})">Zurücknehmen</button>`
+     :`<button class="secondary"onclick="aptSetzen('${wocheId}',{besprechungGewuenscht:true,besprechungErledigt:false,besprechungAm:serverTimestamp()},{tab:'feedback'})">💬 Besprechung mit der Lehrkraft wünschen</button>`}
+   </div>`;
 
- const tabs=[["frage","① Prüfungsfrage"],["inhalte","② Inhalte & Eingrenzung"],["basischeck","③ Basis-Check"],["produkt","④ Lernprodukt & Vorkorrektur"]];
+ const sek=(i,titel,body,extra="")=>`<details class="st-schritt${!lehrer&&schritte[i]?" done":""}"${i===oeffne?" open":""}style="--c:${c}"><summary><span class="st-nr">${!lehrer&&schritte[i]?"✓":i+1}</span><b>${esc(titel)}</b></summary><div class="st-body">${body}${extra}</div></details>`;
+ const balken=lehrer?"":`<div class="st-balken-wrap"><div class="st-balken"><i style="width:${n/4*100}%;background:${c}"></i></div><small><b>${n} von 4</b> Schritten erledigt</small></div>`;
+
+ // Klassenstand (Lehrkraft)
+ let klassenHTML="";
+ if(lehrer){
+  if(!klasse)klassenHTML=`<div class="empty">Der Klassenstand konnte nicht geladen werden.</div>`;
+  else{
+   const zeilen=klasse.students.map(st=>{
+    const f=klasse.fs[st.uid]||null,sc=aptSchritte(f);
+    const wu=f?.besprechungGewuenscht&&!f?.besprechungErledigt;
+    const ea=f?.einarbeitungAufgaben;
+    return`<tr><td>${esc(st.displayName||st.email||"Schüler/in")}</td>
+     <td><span class="apt-dots">${sc.map((d,i)=>`<span class="apt-dot${d?" an":""}"style="${d?`background:${c};border-color:${c}`:""}"title="${esc(APT_SCHRITT_LABELS[i])}">${d?"✓":i+1}</span>`).join("")}</span></td>
+     <td style="font-size:12px">${f?.einarbeitungAbgeschlossen?`${esc(stDatum(f.einarbeitungAm))}${ea?.gesamt?` · ${ea.richtig}/${ea.gesamt}`:""}`:"–"}</td>
+     <td>${wu?`<span title="Besprechung gewünscht">💬</span>`:""}</td>
+     <td><button class="secondary"style="font-size:11px"onclick="openStundeSchueler('${wocheId}','${st.uid}')">Ansehen</button></td></tr>`;}).join("");
+   const fertigN=klasse.students.filter(st=>aptSchritte(klasse.fs[st.uid]).every(Boolean)).length;
+   klassenHTML=`<h3 class="apt-h3">Klassenstand · ${fertigN} von ${klasse.students.length} fertig</h3>
+    <div style="overflow-x:auto"><table class="ls-matrix"><thead><tr><th>Schüler:in</th><th>Schritte</th><th>Einarbeitung (Datum · Aufgaben)</th><th>💬</th><th></th></tr></thead><tbody>${zeilen||`<tr><td colspan="5">Keine Schüler:innen gefunden.</td></tr>`}</tbody></table></div>
+    <small style="color:var(--muted)">Ansehen zeigt, was die Person in dieser Stunde gemacht hat, samt Aufsatztext.</small>`;
+  }
+ }
+
  modal(`<button class="modal-close"onclick="closeModal()">×</button>
-  ${kopf}
-  <div class="kicker">PÄDAGOGIK/PSYCHOLOGIE · ${esc(e.lb)} · ABSCHLUSSPRÜFUNGS-TRAINING · INHALT NR. ${esc(e.nr)}</div>
+  <div class="kicker"style="color:${c}">${esc(e.lb||"")} · ${e.typ==="apt"?"ABSCHLUSSPRÜFUNGS-TRAINING":"EINSTIEG"}</div>
   <h2>${esc(e.thema)}</h2>
-  <div class="wd-ziele-info"style="margin-top:8px"><strong>Das sollst du am Ende können</strong><ul>${(e.ziele||[]).map(z=>`<li>${esc(z)}</li>`).join("")}</ul></div>
-  <div class="wd-stepper">
-   ${schritte.map((d,i)=>`<div class="wd-step${d?" wd-step-done":""}${i===offenIdx?" wd-step-aktiv":""}"onclick="showAptTab('${APT_TABS[i]}')"style="cursor:pointer">
-    <div class="wd-step-dot"style="${d?`background:${c};border-color:${c}`:""}">${d?"✓":i+1}</div><small>${esc(APT_SCHRITT_LABELS[i])}</small>
-   </div>${i<schritte.length-1?`<div class="wd-step-line${d?" wd-step-line-done":""}"></div>`:""}`).join("")}
+  ${balken}
+  ${stundeKarte}
+  ${klassenHTML}
+  <div class="st-schritte">
+   ${sek(0,"Prüfungsfrage",s1,s1b)}
+   ${sek(1,"Einarbeitung ins Thema",s2)}
+   ${sek(2,"Fachaufsatz üben",s3)}
+   ${sek(3,"Feedback",s4)}
   </div>
-  ${lehrer&&ph?`<div style="margin:-10px 0 14px;display:flex;gap:8px;flex-wrap:wrap"><button class="secondary"style="font-size:11px"onclick="openFachaufsatzTrainingCheck()">🎓 APT-Gesamtcheck der Klasse</button></div>`:""}
-  <div class="wd-tabs">${tabs.map(([k,l])=>`<button type="button"class="wd-tab apt-tab"data-tab="${k}"onclick="showAptTab('${k}')">${l}</button>`).join("")}</div>
-  <div class="apt-panel"id="aptPanel_frage">${panelFrage}</div>
-  <div class="apt-panel"id="aptPanel_inhalte">${panelInhalte}</div>
-  <div class="apt-panel"id="aptPanel_basischeck">${panelBasis}</div>
-  <div class="apt-panel"id="aptPanel_produkt">${panelProdukt}</div>
-  <div class="apt-hinweis-checkout">🏁 Den K-Prim-Test zu diesem Lernbereich schreibst du als <b>Check-out</b> am Ende der Woche – deine Lehrkraft schaltet ihn live frei.</div>
-  <div class="wd-footer">
-   <button class="secondary"onclick="closeModal()">Schließen</button>
-   <span style="flex:1"></span>
-   ${ph?`<button class="secondary"onclick="closeModal();openPhaseDetail('${ph.id}:projekt')">🔬 Zum Projekt ${esc(ph.lb)}</button>`:""}
-   ${!lehrer?`<button class="primary"onclick="closeModal();go('forum-nachrichten')">Lehrkraft fragen</button>`:""}
-  </div>`);
- showAptTab(aptAktiverTab);
+  <div class="apt-hinweis-checkout">🏁 Den K-Prim-Test zu diesem Lernbereich schreibst du als <b>Check-out</b> am Ende der Woche. Deine Lehrkraft schaltet ihn live frei.</div>
+  <div class="wd-footer"><button class="secondary"onclick="closeModal()">Schließen</button><span style="flex:1"></span>
+   ${!lehrer?`<button class="primary"onclick="closeModal();go('forum-nachrichten')">Lehrkraft fragen</button>`:""}</div>`);
 }
 window.openAptDetail=openAptDetail;
 
 // ---- Speichern: Schüler:innen-Fortschritt ----
+// ---- Aktionen der 4 Schritte ----
+async function stundeEinarbeitungAbschliessen(wocheId){
+ await aptSetzen(wocheId,{einarbeitungAbgeschlossen:true,einarbeitungAm:serverTimestamp(),materialBearbeitet:true,basischeckErledigt:true,basischeckUebersprungen:false},{tab:"einarbeitung",motiv:true});
+}
+async function stundeAufsatzSpeichern(wocheId){
+ const t=($("stAufsatz")?.value||"").trim();
+ if(!t){toast("Schreibe zuerst deinen Text.");return}
+ await aptSetzen(wocheId,{aufsatzText:t,aufsatzAm:serverTimestamp()},{tab:"aufsatz"});
+ toast("Text gespeichert.");
+}
+async function stundeAufsatzKopieren(wocheId){
+ const [inhalt,f]=await Promise.all([getAptInhalt(wocheId),getLehrplanFortschritt(wocheId)]);
+ const text=($("stAufsatz")?.value||f.aufsatzText||"").trim();
+ if(!text){toast("Schreibe zuerst deinen Text.");return}
+ const e=lehrplanWocheById("paedagogik",wocheId);
+ const paket=`Aufgabe:\n${inhalt.pruefungsfrage||e?.pruefung||""}\n\nMein Text:\n${text}`;
+ try{await navigator.clipboard.writeText(paket);toast("Kopiert. Jetzt im Fobizz-Assistenten einfügen.");}
+ catch(err){toast("Kopieren nicht möglich. Bitte den Text von Hand markieren und kopieren.");}
+}
+async function stundeFeedbackAbschliessen(wocheId){
+ const t=($("stFeedback")?.value||"").trim();
+ await aptSetzen(wocheId,{feedbackText:t,feedbackErledigt:true,feedbackAm:serverTimestamp()},{tab:"feedback",motiv:true});
+}
+async function stundeFobizzLinkAendern(wocheId){
+ if(!isTeacher())return;
+ const links=await ladeTaskcardLinks().catch(()=>({}));
+ const url=prompt("Link zum Fobizz-Assistenten:",(links.fobizz_fachaufsatz||{}).url||"https://");
+ if(url===null)return;
+ try{await setDoc(doc(db,"taskcardLinks","fobizz_fachaufsatz"),{url:url.trim(),updatedAt:serverTimestamp(),updatedBy:currentUser.uid});toast("Link gespeichert.");await openAptDetail(wocheId,"aufsatz");}
+ catch(e){console.error(e);toast("Konnte nicht gespeichert werden.");}
+}
+// Lehrkraft: was hat diese Person in der Stunde gemacht?
+async function openStundeSchueler(wocheId,uid,zurueck){
+ if(!isTeacher())return;
+ try{
+  const [snap,students]=await Promise.all([getDoc(doc(db,"lehrplanFortschritt",`${uid}_${wocheId}`)),getAllUsersForLernstand()]);
+  const f=snap.exists()?snap.data():{};
+  const st=students.find(x=>x.uid===uid),e=lehrplanWocheById("paedagogik",wocheId),ph=projektPhaseByWoche(wocheId),c=ph?ppFarbe(ph):"#4a90d9";
+  const sc=aptSchritte(f),ea=f.einarbeitungAufgaben;
+  const wunsch=f.besprechungGewuenscht&&!f.besprechungErledigt;
+  const info=[
+   f.frageGelesen?`gelesen${f.frageAm?` am ${stDatum(f.frageAm)}`:""}`:"noch nicht gelesen",
+   f.einarbeitungAbgeschlossen?`abgeschlossen${f.einarbeitungAm?` am ${stDatum(f.einarbeitungAm)}`:""}${ea?.gesamt?` · Aufgaben: ${ea.richtig} von ${ea.gesamt} richtig`:""}`:(ea?.gesamt?`in Arbeit · Aufgaben: ${ea.richtig} von ${ea.gesamt} richtig`:"offen"),
+   f.aufsatzErledigt?`Text mit KI korrigiert${f.aufsatzKiAm?` am ${stDatum(f.aufsatzKiAm)}`:""}`:((f.aufsatzText||"").trim()?"Text geschrieben, KI-Korrektur noch offen":"noch kein Text"),
+   f.feedbackErledigt?`eingearbeitet${f.feedbackAm?` am ${stDatum(f.feedbackAm)}`:""}`:"offen"
+  ];
+  modal(`<button class="modal-close"onclick="closeModal()">×</button>
+   <div class="kicker"style="color:${c}">${esc(e?.lb||"")} · ${esc(st?.displayName||st?.email||"")}</div>
+   <h2>${esc(e?.thema||wocheId)}</h2>
+   <div class="list">${sc.map((d,i)=>`<div class="list-item"><div><strong>${d?"✓":"○"} ${esc(APT_SCHRITT_LABELS[i])}</strong><small>${esc(info[i])}</small></div></div>`).join("")}</div>
+   ${(f.aufsatzText||"").trim()?`<h3 class="apt-h3">Aufsatztext</h3><div class="card"style="padding:10px 14px;font-size:13px;white-space:pre-wrap;line-height:1.5">${esc(f.aufsatzText)}</div>`:""}
+   ${f.feedbackText?`<h3 class="apt-h3">Was die Person aus der Rückmeldung mitnimmt</h3><div class="card"style="padding:10px 14px;font-size:13px;white-space:pre-wrap">${esc(f.feedbackText)}</div>`:""}
+   ${wunsch?`<div class="st-wunsch"style="margin:12px 0">💬 Besprechung gewünscht${f.besprechungAm?` (${esc(stDatum(f.besprechungAm))})`:""} <button class="secondary"style="margin-left:8px"onclick="stundeBesprechungErledigt('${wocheId}','${uid}')">Als besprochen markieren</button></div>`:""}
+   <h3 class="apt-h3">Deine Rückmeldung an die Person</h3>
+   ${snap.exists()?`<div class="form"><textarea id="stLehrerFb"rows="4"placeholder="Kurze Rückmeldung, die die Person im Schritt „Feedback“ sieht.">${esc(f.lehrerFeedback||"")}</textarea>
+    <div class="form-actions"><button class="primary"onclick="stundeLehrerFeedback('${wocheId}','${uid}')">Rückmeldung speichern</button></div></div>`:`<div class="empty">Diese Person hat in dieser Stunde noch nichts gemacht.</div>`}
+   <div class="form-actions"style="margin-top:14px"><button class="secondary"onclick="${zurueck||`openAptDetail('${wocheId}')`}">← Zurück</button><button class="secondary"onclick="closeModal()">Schließen</button></div>`);
+ }catch(e){console.error(e);toast("Konnte nicht geladen werden.");}
+}
+async function stundeLehrerFeedback(wocheId,uid){
+ try{await setDoc(doc(db,"lehrplanFortschritt",`${uid}_${wocheId}`),{lehrerFeedback:($("stLehrerFb")?.value||"").trim(),lehrerFeedbackAm:serverTimestamp(),lehrerFeedbackVon:currentUser.uid},{merge:true});toast("Rückmeldung gespeichert.");await openStundeSchueler(wocheId,uid);}
+ catch(e){console.error(e);toast("Konnte nicht gespeichert werden.");}
+}
+async function stundeBesprechungErledigt(wocheId,uid){
+ try{await setDoc(doc(db,"lehrplanFortschritt",`${uid}_${wocheId}`),{besprechungErledigt:true,besprechungGewuenscht:false},{merge:true});toast("Als besprochen markiert.");await openStundeSchueler(wocheId,uid);}
+ catch(e){console.error(e);toast("Konnte nicht gespeichert werden.");}
+}
+// ---- Interaktive Einarbeitung (Overlay mit einarbeitung/player.html) ----
+// Nachrichten: einarbeitung:bereit → :init | :fortschritt {richtig,gesamt,fertig} | :abgeschlossen {richtig,gesamt}
+let einarbeitungHandler=null,einarbeitungWoche=null,einarbeitungGeaendert=false;
+function openEinarbeitung(wocheId){
+ closeEinarbeitung(true);
+ einarbeitungWoche=wocheId;einarbeitungGeaendert=false;
+ const ov=document.createElement("div");ov.id="einarbeitungOverlay";ov.className="exp-overlay";
+ ov.innerHTML=`<div class="exp-leiste"><b>📖 Einarbeitung</b><button type="button"class="secondary"onclick="closeEinarbeitung()">✕ Schließen</button></div><iframe id="einarbeitungFrame"title="Einarbeitung"src="einarbeitung/player.html?id=${encodeURIComponent(wocheId)}"></iframe>`;
+ document.body.appendChild(ov);document.body.classList.add("exp-offen");
+ einarbeitungHandler=ev=>{einarbeitungNachricht(ev);};
+ window.addEventListener("message",einarbeitungHandler);
+}
+async function closeEinarbeitung(still){
+ $("einarbeitungOverlay")?.remove();document.body.classList.remove("exp-offen");
+ if(einarbeitungHandler){window.removeEventListener("message",einarbeitungHandler);einarbeitungHandler=null;}
+ const id=einarbeitungWoche;einarbeitungWoche=null;
+ if(!still&&id&&einarbeitungGeaendert){einarbeitungGeaendert=false;await openAptDetail(id,"einarbeitung");}
+}
+async function einarbeitungSpeichern(id,patch){
+ const alt=await getLehrplanFortschritt(id);
+ const neu={...alt,...patch,uid:currentUser.uid,wocheId:id,fach:"paedagogik",updatedAt:serverTimestamp()};
+ neu.abgeschlossen=aptSchritte(neu).every(Boolean);
+ await setDoc(doc(db,"lehrplanFortschritt",`${currentUser.uid}_${id}`),neu);
+ ppDirty=true;einarbeitungGeaendert=true;
+}
+async function einarbeitungNachricht(ev){
+ const fr=$("einarbeitungFrame");
+ if(!fr||ev.source!==fr.contentWindow||ev.origin!==location.origin)return;
+ const m=ev.data||{};
+ if(typeof m.type!=="string"||!m.type.startsWith("einarbeitung:"))return;
+ const id=einarbeitungWoche;if(!id)return;
+ const senden=o=>fr.contentWindow?.postMessage(o,location.origin);
+ const zahl=v=>Math.max(0,Math.min(200,Math.floor(Number(v))||0));
+ try{
+  if(m.type==="einarbeitung:bereit"){
+   const f=await getLehrplanFortschritt(id);
+   senden({type:"einarbeitung:init",rolle:isTeacher()?"lehrkraft":"schueler",abgeschlossen:!!f.einarbeitungAbgeschlossen});
+  }else if(m.type==="einarbeitung:fortschritt"&&!isTeacher()){
+   await einarbeitungSpeichern(id,{einarbeitungAufgaben:{richtig:zahl(m.richtig),gesamt:zahl(m.gesamt),fertig:!!m.fertig}});
+  }else if(m.type==="einarbeitung:abgeschlossen"&&!isTeacher()){
+   await einarbeitungSpeichern(id,{einarbeitungAufgaben:{richtig:zahl(m.richtig),gesamt:zahl(m.gesamt),fertig:true},einarbeitungAbgeschlossen:true,einarbeitungAm:serverTimestamp(),materialBearbeitet:true,basischeckErledigt:true,basischeckUebersprungen:false});
+   senden({type:"einarbeitung:gespeichert"});
+   await closeEinarbeitung();
+  }
+ }catch(e){
+  console.error("Einarbeitung:",e);
+  senden({type:"einarbeitung:fehler",text:e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Konnte nicht gespeichert werden."});
+ }
+}
+Object.assign(window,{stundeEinarbeitungAbschliessen,stundeAufsatzSpeichern,stundeAufsatzKopieren,stundeFeedbackAbschliessen,stundeFobizzLinkAendern,openStundeSchueler,stundeLehrerFeedback,stundeBesprechungErledigt,openEinarbeitung,closeEinarbeitung});
 async function aptSetzen(wocheId,patch,opts={}){
  try{
   const alt=await getLehrplanFortschritt(wocheId);
@@ -4660,10 +4797,9 @@ async function ladeAptCheckDaten(){
 // Zustand von Schritt 4 für eine Person: "fertig" | "umsetzen" (Vorkorrektur
 // da, noch nicht umgesetzt) | "wartet" (hochgeladen, Vorkorrektur fehlt) | "offen".
 function aptSchritt4Zustand(f,produkte){
- if(f?.produktHochgeladen&&f?.vorkorrekturUmgesetzt)return"fertig";
- if(!produkte.length&&!f?.produktHochgeladen)return"offen";
- if(produkte.some(p=>p.vorkorrektur))return"umsetzen";
- return produkte.length?"wartet":"offen";
+ if(f?.feedbackErledigt||(f?.produktHochgeladen&&f?.vorkorrekturUmgesetzt))return"fertig";
+ if(f?.besprechungGewuenscht&&!f?.besprechungErledigt)return"wartet";   // Besprechung gewünscht
+ return"offen";
 }
 async function openFachaufsatzTrainingCheck(lbId,filter){
  if(!isTeacher()){toast("Nur Lehrkräfte können den APT-Gesamtcheck öffnen.");return}
@@ -4690,58 +4826,36 @@ async function openFachaufsatzTrainingCheck(lbId,filter){
  });
  const gefiltert=zeilen.filter(r=>aptCheckFilter==="hinterher"?r.hinterher:aptCheckFilter==="wartet"?r.wartet:aptCheckFilter==="umsetzen"?r.umsetzen:true);
  const dot=(done,i,z4)=>{
-  if(i===3&&!done&&z4==="wartet")return`<span class="apt-dot halb"title="Lernprodukt hochgeladen – Vorkorrektur fehlt">⏳</span>`;
+  if(i===3&&!done&&z4==="wartet")return`<span class="apt-dot halb"title="Besprechung gewünscht">💬</span>`;
   if(i===3&&!done&&z4==="umsetzen")return`<span class="apt-dot umsetzen"title="Vorkorrektur da – noch nicht umgesetzt">!</span>`;
   return`<span class="apt-dot${done?" an":""}"style="${done?`background:${c};border-color:${c}`:""}"title="${esc(APT_SCHRITT_LABELS[i])}">${done?"✓":i+1}</span>`;
  };
- const warten=d.produkte.filter(p=>ph.trainingWochen.includes(p.wocheId)&&!p.vorkorrektur);
+ const warten=d.fortschritt.filter(f=>ph.trainingWochen.includes(f.wocheId)&&f.besprechungGewuenscht&&!f.besprechungErledigt);
  modal(`<button class="modal-close"onclick="closeModal()">×</button>
   <div class="kicker">🎓 ABSCHLUSSPRÜFUNGS-TRAINING · GESAMTCHECK · NUR LEHRKRÄFTE</div>
   <h2>Trainingsstand der Klasse</h2>
   <div class="apt-check-tabs">${PROJEKT_PHASEN.map(p=>`<button type="button"class="${p.id===ph.id?"aktiv":""}"style="--c:${ppFarbe(p)}"onclick="openFachaufsatzTrainingCheck('${p.id}')">${esc(p.lb)}</button>`).join("")}
    <select onchange="openFachaufsatzTrainingCheck(null,this.value)">
-    ${[["alle","Alle anzeigen"],["hinterher","Hinter dem Zeitplan"],["wartet","Wartet auf Vorkorrektur"],["umsetzen","Vorkorrektur nicht umgesetzt"]].map(([k,l])=>`<option value="${k}"${aptCheckFilter===k?" selected":""}>${l}</option>`).join("")}
+    ${[["alle","Alle anzeigen"],["hinterher","Hinter dem Zeitplan"],["wartet","Besprechung gewünscht"]].map(([k,l])=>`<option value="${k}"${aptCheckFilter===k?" selected":""}>${l}</option>`).join("")}
    </select>
    <button type="button"class="secondary"onclick="aptCheckDaten=null;openFachaufsatzTrainingCheck()">↻</button>
   </div>
-  <p style="color:var(--muted);font-size:12px;margin:6px 0">Je Inhalt 4 Schritte: ① Prüfungsfrage · ② Inhalte & Eingrenzung · ③ Basis-Check · ④ Lernprodukt & Vorkorrektur umgesetzt. ⏳ = wartet auf deine Vorkorrektur · ! = Vorkorrektur noch nicht umgesetzt. Zelle antippen für Details. Zeitbudget: ${esc(budget.text)}.</p>
+  <p style="color:var(--muted);font-size:12px;margin:6px 0">Je Inhalt 4 Schritte: ① Prüfungsfrage · ② Einarbeitung · ③ Fachaufsatz üben · ④ Feedback. 💬 = Besprechung gewünscht. Zelle antippen für Details. Zeitbudget: ${esc(budget.text)}.</p>
   <div style="overflow-x:auto"><table class="ls-matrix apt-matrix">
    <thead><tr><th>Schüler:in</th>${ph.trainingWochen.map(id=>`<th title="${esc(lehrplanWocheById("paedagogik",id)?.thema||"")}">${esc(ppKurz(lehrplanWocheById("paedagogik",id)))}</th>`).join("")}<th>Stand</th></tr></thead>
    <tbody>${gefiltert.map(r=>`<tr><td>${esc(r.s.displayName||r.s.email||"Schüler/in")}</td>
     ${r.zellen.map(z=>`<td class="apt-zelle"onclick="openAptSchuelerDetail('${r.s.uid}','${z.id}')"><span class="apt-dots">${z.schritte.map((dn,i)=>dot(dn,i,z.z4)).join("")}</span></td>`).join("")}
     <td style="white-space:nowrap"><b>${r.prozent} %</b>${r.tempo?` <span class="pp-tempo"style="background:${r.tempo.farbe}">${esc(r.tempo.txt)}</span>`:""}</td></tr>`).join("")||`<tr><td colspan="${ph.trainingWochen.length+2}">Niemand in dieser Auswahl.</td></tr>`}</tbody>
   </table></div>
-  <h3 style="margin:18px 0 6px">✍️ ${esc(ph.lb)}: Warten auf Vorkorrektur (${warten.length})</h3>
-  <div class="list">${warten.map(p=>{const e=lehrplanWocheById("paedagogik",p.wocheId);return`<div class="list-item"style="cursor:pointer"onclick="openAptDetail('${p.wocheId}','produkt')"><div><strong>${esc(p.name||"")}</strong><small>${esc(e?.thema||p.wocheId)} · ${esc(p.titel||"")}</small></div><span>→</span></div>`;}).join("")||`<div class="empty">Alles vorkorrigiert.</div>`}</div>
+  <h3 style="margin:18px 0 6px">💬 ${esc(ph.lb)}: Besprechung gewünscht (${warten.length})</h3>
+  <div class="list">${warten.map(f=>{const e=lehrplanWocheById("paedagogik",f.wocheId),st=d.students.find(x=>x.uid===f.uid);return`<div class="list-item"style="cursor:pointer"onclick="openAptSchuelerDetail('${f.uid}','${f.wocheId}')"><div><strong>${esc(st?.displayName||st?.email||"Schüler/in")}</strong><small>${esc(e?.thema||f.wocheId)}${f.besprechungAm?" · "+esc(stDatum(f.besprechungAm)):""}</small></div><span>→</span></div>`;}).join("")||`<div class="empty">Keine offenen Besprechungswünsche.</div>`}</div>
   <div class="form-actions"style="margin-top:14px"><button class="secondary"onclick="closeModal()">Schließen</button></div>`);
 }
 window.openFachaufsatzTrainingCheck=openFachaufsatzTrainingCheck;
 async function openAptSchuelerDetail(uid,wocheId){
  if(!isTeacher())return;
- if(!aptCheckDaten){try{aptCheckDaten=await ladeAptCheckDaten();}catch(e){return}}
- const d=aptCheckDaten,s=d.students.find(x=>x.uid===uid),e=lehrplanWocheById("paedagogik",wocheId),ph=projektPhaseByWoche(wocheId);
- const f=d.fortschritt.find(x=>x.uid===uid&&x.wocheId===wocheId)||{};
- const pr=d.produkte.filter(p=>p.uid===uid&&p.wocheId===wocheId);
- const sch=aptSchritte(f),z4=aptSchritt4Zustand(f,pr),eg=f.eingrenzung||{};
- const c=ph?ppFarbe(ph):"#4a90d9";
- const info=[
-  f.frageGelesen?"gelesen":"noch nicht gelesen",
-  f.materialBearbeitet&&f.eingrenzung?"erledigt":f.eingrenzung?"Eingrenzung da, Inhalte noch nicht abgehakt":f.materialBearbeitet?"Inhalte bearbeitet, Eingrenzung fehlt":"offen",
-  f.basischeckErledigt?(f.basischeckUebersprungen?"übersprungen":"erledigt"):"offen",
-  z4==="fertig"?"Vorkorrektur umgesetzt":z4==="umsetzen"?"Vorkorrektur da – noch nicht umgesetzt":z4==="wartet"?"hochgeladen – wartet auf deine Vorkorrektur":"noch kein Lernprodukt"
- ];
- modal(`<button class="modal-close"onclick="closeModal()">×</button>
-  <div class="kicker"style="color:${c}">${esc(e?.lb||"")} · PRÜFUNGSTRAINING · ${esc(s?.displayName||s?.email||"")}</div>
-  <h2>${esc(e?.thema||wocheId)}</h2>
-  <div class="list">${sch.map((dn,i)=>`<div class="list-item"><div><strong>${dn?"✓":"○"} ${esc(APT_SCHRITT_LABELS[i])}</strong><small>${esc(info[i])}</small></div></div>`).join("")}</div>
-  ${f.eingrenzung?`<h3 class="apt-h3">Aufgabeneingrenzung</h3><div class="card"style="padding:10px 14px;font-size:13px"><b>Operator:</b> ${esc(eg.operator||"–")}<br><b>Gegenstand:</b> ${esc(eg.gegenstand||"–")}<br><b>Teilaufgaben:</b> <span style="white-space:pre-wrap">${esc(eg.teile||"–")}</span><br><b>Praxisbezug:</b> ${esc(eg.praxis||"–")}</div>`:""}
-  <h3 class="apt-h3">Lernprodukte</h3>
-  <div class="list">${pr.map(p=>`<div class="list-item"style="flex-direction:column;align-items:stretch;gap:6px"><div><strong>${esc(p.titel)}</strong><small>${esc(p.inhalt||"")}</small></div>
-   ${p.dateiUrl?dateiEmbedHTML(p.dateiUrl,p.dateiName):""}
-   ${p.vorkorrektur?`<div style="font-size:13px;border-left:4px solid ${ampelFarbe(p.vorkorrekturAmpel||"orange")};padding-left:8px"><b>Vorkorrektur:</b> ${esc(p.vorkorrektur)}</div>`:`<small style="color:#b3541e">⏳ Vorkorrektur fehlt noch</small>`}
-   ${p.reaktion?`<div style="font-size:13px;border-left:4px solid #3fa66a;padding-left:8px"><b>Umsetzung:</b> ${esc(p.reaktion)}</div>`:""}
-  </div>`).join("")||`<div class="empty">Noch kein Lernprodukt.</div>`}</div>
-  <div class="form-actions"style="margin-top:14px"><button class="secondary"onclick="openFachaufsatzTrainingCheck('${ph?.id||aptCheckLb}')">← Zurück zum Gesamtcheck</button>${pr.length?`<button class="primary"onclick="openAptDetail('${wocheId}','produkt')">Vorkorrektur geben</button>`:""}</div>`);
+ const ph=projektPhaseByWoche(wocheId);
+ return openStundeSchueler(wocheId,uid,`openFachaufsatzTrainingCheck('${ph?.id||aptCheckLb}')`);
 }
 window.openAptSchuelerDetail=openAptSchuelerDetail;
 
@@ -5650,6 +5764,7 @@ function showWocheTab(tabId){
 window.showWocheTab=showWocheTab;
 
 async function openWocheDetail(fach,wocheId,startTabOverride){
+ if(istStundeneinheit(wocheId))return openAptDetail(wocheId);
  const woche=lehrplanWocheById(fach,wocheId);
  if(!woche){toast("Diese Woche wurde nicht gefunden.");return}
  const [auftrag,materialien,teams,produkte,fortschritt,lsTasks,lsAttempts,basischeckFragen,meinBasischeck]=await Promise.all([

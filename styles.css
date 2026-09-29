@@ -687,3 +687,23 @@ body.exp-offen{overflow:hidden}
 .pp-weiter small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
 .pp-weg-liste{display:flex;flex-direction:column;gap:10px}
 .pp-weg-liste .pp-stunde{margin:0}
+
+/* ---------- Stundeninhalt: 4 Schritte, Fortschrittsbalken ---------- */
+.st-balken-wrap{margin:10px 0 14px}
+.st-balken{height:12px;background:#e6ebef;border-radius:999px;overflow:hidden}
+.st-balken i{display:block;height:100%;border-radius:999px;transition:width .3s}
+.st-balken-wrap small{display:block;margin-top:5px;color:var(--muted);font-size:12.5px}
+.st-schritte{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.st-schritt{border:1.5px solid #e2eaf0;border-radius:12px;background:#fff}
+.st-schritt[open]{border-color:var(--c);box-shadow:0 1px 0 rgba(0,0,0,.02)}
+.st-schritt summary{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;list-style:none;font-size:15px}
+.st-schritt summary::-webkit-details-marker{display:none}
+.st-schritt summary::after{content:"▾";margin-left:auto;color:var(--muted);transition:transform .2s}
+.st-schritt[open] summary::after{transform:rotate(180deg)}
+.st-nr{flex:none;width:28px;height:28px;border-radius:50%;border:2px solid var(--c);display:grid;place-items:center;font-weight:800;font-size:13px;color:var(--c)}
+.st-schritt.done .st-nr{background:var(--c);color:#fff}
+.st-body{padding:2px 14px 14px}
+.st-ein{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 14px;margin-bottom:10px;background:#f7fafc;border:1.5px solid #e2eaf0;border-left:5px solid var(--c);border-radius:12px}
+.st-ein small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+.st-fertig{margin-top:12px;color:#2d7a4f;font-weight:700;font-size:13px}
+.st-wunsch{display:inline-block;background:#fff4d6;border:1px solid #f1d78a;color:#6b4d00;border-radius:999px;padding:4px 10px;font-size:12.5px;font-weight:700}
