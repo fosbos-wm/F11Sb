@@ -1,0 +1,132 @@
+{
+ "entwurf": true,
+ "titel": "Grundlagen der Psychologie: Erleben, Verhalten und Handeln",
+ "einleitung": "Du lernst, was die Psychologie untersucht, wie sich **Erleben**, **Verhalten** und **Handeln** unterscheiden und welche Ziele die Psychologie verfolgt. Lies jeden Abschnitt und bearbeite dann die Aufgaben.",
+ "abschnitte": [
+  {
+   "titel": "1. Erleben, Verhalten und Handeln",
+   "text": [
+    "Die Psychologie ist die Wissenschaft vom **Erleben** und **Verhalten** des Menschen. Sie will verstehen, wie Menschen wahrnehmen, denken, fühlen und sich verhalten.",
+    "**Erleben** meint die inneren Vorgänge einer Person, zum Beispiel Wahrnehmungen, Gedanken, Gefühle und Wünsche. Sie sind nur der Person selbst direkt zugänglich. Andere erfahren davon nur, wenn die Person davon erzählt oder man sie aus ihrem Verhalten erschließt.",
+    "**Verhalten** meint alles, was man von außen beobachten kann, etwa Sprechen, Bewegungen, Mimik oder Körperreaktionen.",
+    "**Handeln** ist ein Teil des Verhaltens: Es ist zielgerichtet und meist bewusst geplant."
+   ],
+   "merke": "Erleben = innen, nicht direkt beobachtbar. Verhalten = außen, beobachtbar. Handeln = zielgerichtetes Verhalten mit einer Absicht.",
+   "aufgaben": [
+    {
+     "typ": "zuordnung",
+     "titel": "Ordne die Begriffe den Beispielen zu.",
+     "paare": [
+      [
+       "Erleben",
+       "Eine Schülerin hat vor der Klausur große Angst."
+      ],
+      [
+       "Verhalten",
+       "Ein Schüler zittert und wird beim Aufrufen rot."
+      ],
+      [
+       "Handeln",
+       "Eine Schülerin meldet sich gezielt, um die Aufgabe an der Tafel zu lösen."
+      ]
+     ]
+    },
+    {
+     "typ": "mc",
+     "frage": "Welche Aussage über das Erleben ist richtig?",
+     "optionen": [
+      "Erleben kann man mit einer Kamera aufzeichnen.",
+      "Erleben umfasst innere Vorgänge wie Gefühle und Gedanken.",
+      "Erleben ist dasselbe wie Handeln.",
+      "Erleben gibt es nur bei Erwachsenen."
+     ],
+     "richtig": 1,
+     "erklaerung": "Erleben sind innere, subjektive Vorgänge. Man sieht sie nicht direkt, sondern erschließt sie zum Beispiel aus Aussagen oder Verhalten."
+    }
+   ]
+  },
+  {
+   "titel": "2. Ziele der Psychologie",
+   "text": [
+    "Die Psychologie verfolgt vier Ziele. Sie will Erleben und Verhalten **beschreiben**, **erklären**, **vorhersagen** und **beeinflussen**.",
+    "- **Beschreiben:** genau festhalten, wie sich Menschen verhalten und was sie erleben.\n- **Erklären:** Ursachen und Bedingungen finden, zum Beispiel warum jemand Prüfungsangst hat.\n- **Vorhersagen:** einschätzen, wie sich Menschen unter bestimmten Bedingungen wahrscheinlich verhalten.\n- **Beeinflussen:** durch Beratung, Training oder Therapie Erleben und Verhalten verändern."
+   ],
+   "aufgaben": [
+    {
+     "typ": "lueckentext",
+     "titel": "Ergänze den Text.",
+     "text": "Die Psychologie will Erleben und Verhalten {{beschreiben}}, {{erklären}}, {{vorhersagen}} und {{beeinflussen}}.",
+     "woerter": [
+      "beschreiben",
+      "erklären",
+      "vorhersagen",
+      "beeinflussen",
+      "vergessen",
+      "bewerten"
+     ]
+    },
+    {
+     "typ": "mc",
+     "frage": "Eine Lehrkraft überlegt, warum ein Schüler im Unterricht oft abwesend wirkt, und sucht nach möglichen Ursachen. Welches Ziel der Psychologie steht im Vordergrund?",
+     "optionen": [
+      "Beschreiben",
+      "Erklären",
+      "Vorhersagen",
+      "Beeinflussen"
+     ],
+     "richtig": 1,
+     "erklaerung": "Wer nach Ursachen und Bedingungen fragt, will das Verhalten erklären."
+    }
+   ]
+  },
+  {
+   "titel": "3. Erleben und Verhalten beeinflussen sich",
+   "text": [
+    "Erleben und Verhalten hängen eng zusammen. Wer Angst erlebt, verhält sich anders, und wer sich erfolgreich verhält, erlebt sich oft selbstsicherer.",
+    "Beide werden von der **Person** (zum Beispiel Erfahrungen, Motive, Einstellungen) und von der **Situation** (zum Beispiel Umgebung, andere Menschen) beeinflusst."
+   ],
+   "aufgaben": [
+    {
+     "typ": "kprim",
+     "stamm": "Ein Schüler sitzt vor der Mathe-Klausur. Er sagt später, er habe sich sehr unter Druck gefühlt. Er hat dabei mit dem Stift geklopft und immer wieder auf die Uhr geschaut. Beurteile die Aussagen.",
+     "aussagen": [
+      {
+       "text": "Der Druck, den der Schüler spürt, gehört zum Erleben.",
+       "richtig": true,
+       "erklaerung": "Gefühle gehören zum Erleben."
+      },
+      {
+       "text": "Das Klopfen mit dem Stift ist Verhalten.",
+       "richtig": true,
+       "erklaerung": "Das Klopfen kann man von außen beobachten."
+      },
+      {
+       "text": "Das Erleben des Schülers kann man direkt von außen messen.",
+       "richtig": false,
+       "erklaerung": "Erleben ist nur der Person selbst direkt zugänglich."
+      },
+      {
+       "text": "Erleben und Verhalten haben nichts miteinander zu tun.",
+       "richtig": false,
+       "erklaerung": "Beide beeinflussen sich gegenseitig."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "titel": "4. Prüfungsaufgabe",
+   "text": [
+    "Beantworte die Aufgabe zuerst selbst. Danach siehst du eine Musterlösung zum Vergleichen."
+   ],
+   "aufgaben": [
+    {
+     "typ": "frei",
+     "frage": "Erläutern Sie den Unterschied zwischen Erleben und Verhalten an einem Beispiel aus Ihrem Praktikum.",
+     "hinweis": "Schreibe drei bis fünf Sätze. Nenne beide Begriffe und ein Beispiel.",
+     "muster": "Erleben bezeichnet die inneren, nur der Person selbst direkt zugänglichen Vorgänge wie Gefühle, Gedanken und Wahrnehmungen. Verhalten bezeichnet alles, was man von außen beobachten kann. Beispiel: Ein Kind im Kindergarten erlebt Trennungsangst (Erleben), man sieht aber nur, dass es weint, sich an die Erzieherin klammert und nicht zur Gruppe geht (Verhalten). Das Erleben erschließt man aus dem Verhalten und aus dem, was das Kind sagt."
+    }
+   ]
+  }
+ ]
+}

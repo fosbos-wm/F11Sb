@@ -1,0 +1,73 @@
+{
+ "entwurf": true,
+ "titel": "Titel der Einarbeitung",
+ "einleitung": "Kurze Einführung. **Fett** geht mit doppelten Sternen.",
+ "abschnitte": [
+  {
+   "titel": "1. Abschnitt",
+   "text": [
+    "Ein Absatz.",
+    "- Eine Liste\n- mit mehreren Punkten"
+   ],
+   "merke": "Kurzer Merksatz.",
+   "aufgaben": [
+    {
+     "typ": "mc",
+     "frage": "Frage?",
+     "optionen": [
+      "A",
+      "B",
+      "C"
+     ],
+     "richtig": 1,
+     "erklaerung": "Warum B stimmt."
+    },
+    {
+     "typ": "lueckentext",
+     "titel": "Ergänze.",
+     "text": "Ein {{Wort}} fehlt.",
+     "woerter": [
+      "Wort",
+      "Ablenker"
+     ]
+    },
+    {
+     "typ": "zuordnung",
+     "titel": "Ordne zu.",
+     "paare": [
+      [
+       "Begriff 1",
+       "Erklärung 1"
+      ],
+      [
+       "Begriff 2",
+       "Erklärung 2"
+      ]
+     ]
+    },
+    {
+     "typ": "kprim",
+     "stamm": "Ausgangssituation und Auftrag.",
+     "aussagen": [
+      {
+       "text": "Aussage 1",
+       "richtig": true,
+       "erklaerung": "Warum."
+      },
+      {
+       "text": "Aussage 2",
+       "richtig": false,
+       "erklaerung": "Warum."
+      }
+     ]
+    },
+    {
+     "typ": "frei",
+     "frage": "Offene Frage?",
+     "hinweis": "Wie viel soll geschrieben werden?",
+     "muster": "Musterlösung."
+    }
+   ]
+  }
+ ]
+}
