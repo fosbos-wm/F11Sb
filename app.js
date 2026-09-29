@@ -4421,7 +4421,12 @@ async function einarbeitungInfo(id){
  let r=null;
  try{
   const res=await fetch(`einarbeitung/inhalte/${encodeURIComponent(id)}.json`,{cache:"no-cache"});
-  if(res.ok){const j=await res.json();r={titel:j.titel||"",entwurf:!!j.entwurf,aufgaben:(j.abschnitte||[]).reduce((n,x)=>n+(x.aufgaben||[]).length,0)};}
+  if(res.ok){
+   const j=await res.json();
+   const ARTEN=["mc","lueckentext","zuordnung","sortieren","kprim","frei"];
+   const zahl=(j.abschnitte||[]).reduce((n,x)=>n+(x.aufgaben||[]).length+(x.bloecke||[]).filter(b=>ARTEN.includes(b.typ)).length,0);
+   r={titel:j.titel||"",entwurf:!!j.entwurf,aufgaben:zahl};
+  }
  }catch(e){r=null;}
  einarbeitungCache[id]=r;return r;
 }
