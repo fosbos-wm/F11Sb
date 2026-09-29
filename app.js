@@ -3716,7 +3716,7 @@ function ppWochenZellenHTML(wochen,farbe,heute){
  return`<div class="pp-wz-reihe">${wochen.map(w=>{
   const st=w.end<heute?"vorbei":(w.start<=heute&&heute<=w.end)?"jetzt":"kommend";
   const stil=st==="vorbei"?`background:${ppMix(farbe,.45)};border-color:${ppMix(farbe,.45)};color:#fff`:st==="jetzt"?`border-color:${farbe};color:${farbe};font-weight:800`:"";
-  return`<span class="pp-wz pp-wz-${st}"style="${stil}"title="Schulwoche ${fmtKurz(w.start)}–${fmtKurz(w.end)} · Freitag ${fmtKurz(w.end)}: Check-out (K-Prim)">${fmtKurz(w.start)}<i class="pp-wz-fr">🏁</i></span>`;
+  return`<span class="pp-wz pp-wz-${st}"style="${stil}"title="Schulwoche ${fmtKurz(w.start)}–${fmtKurz(w.end)} · Freitag ${fmtKurz(w.end)}: Check-out (K-Prim)">${fmtKurz(w.start)}<i class="pp-wz-fr">Fr</i></span>`;
  }).join("")}</div>`;
 }
 
@@ -3773,7 +3773,7 @@ function ppTeilKachelHTML(ph,teil,fortschrittMap,meinTeam,heute){
 
 // ---- Kompakter Zeitstrahl für Ebene 2 (oben am Rand) ----
 function ppMiniZeitstrahlHTML(fortschrittMap,meineTeams,heute,aktivKey,coDaten){
- return`<div class="pp-mini">${PROJEKT_PHASEN.map(ph=>{
+ return`<div class="pp-mini-wrap"><div class="pp-mini">${PROJEKT_PHASEN.map(ph=>{
   const c=ppFarbe(ph);
   return`<div class="pp-mini-block"style="flex:${ph.projektSchulwochen.length+ph.aptSchulwochen.length} 1 0">
    <div class="pp-mini-lb"style="color:${c}">${esc(ph.lb)}</div>
@@ -3784,11 +3784,11 @@ function ppMiniZeitstrahlHTML(fortschrittMap,meineTeams,heute,aktivKey,coDaten){
     const t=ppSaettigung(fs.prozent);
     return`<div class="pp-mini-spalte"style="flex:${n} 1 0">
      <button type="button"class="pp-mini-teil${key===aktivKey?" aktiv":""}"style="background:${ppMix(c,t)};color:${t>0.55?"#fff":"#17384f"};--c:${c}"onclick="openPhaseDetail('${key}')"title="${esc(ph.lb+" · "+ppTeilName(teil,ph)+" · "+fs.prozent+" %")}">${teil==="projekt"?(ph.einstieg?"E":"P"):"A"} ${fs.prozent}%</button>
-     <div class="pp-mini-fr">${wochen.map(w=>{const co=coFuerWoche(coDaten,w);return`<span class="pp-fr-marke${co?" "+co.status:""}"title="${esc("Freitag "+fmtKurz(w.end)+": Check-out (K-Prim)"+(co?" · "+(co.status==="live"?"läuft":co.status==="beendet"?"beendet":"Entwurf"):""))}">🏁</span>`;}).join("")}</div>
+     <div class="pp-mini-fr">${wochen.map(w=>{const co=coFuerWoche(coDaten,w);return`<span class="pp-fr-marke${co?" "+co.status:""}"title="${esc("Freitag "+fmtKurz(w.end)+": Check-out (K-Prim)"+(co?" · "+(co.status==="live"?"läuft":co.status==="beendet"?"beendet":"Entwurf"):""))}">Fr${co?.status==="beendet"?" ✓":""}</span>`;}).join("")}</div>
     </div>`;
    }).join("")}</div>
   </div>`;
- }).join("")}</div>`;
+ }).join("")}</div><div class="pp-mini-leg"><span class="pp-fr-marke">Fr</span> K-Prim-Check-out am Freitag</div></div>`;
 }
 // ---- Check-out am Freitag: Zuordnung Woche ↔ Check-out (über das Datum) ----
 function coFuerWoche(coDaten,w){
@@ -3807,28 +3807,65 @@ function coAktionHTML(c,d){
   :a?`<small style="color:var(--muted)">wird ausgewertet …</small>`:`<small style="color:var(--muted)">nicht teilgenommen</small>`;
 }
 // Karte auf Ebene 2 direkt unter dem Zeitstrahl: ein Check-out je Freitag.
-function ppFreitagsKarteHTML(ph,teil,coDaten,heute){
+// K-Prim-Aufgabeninfo (unter dem Inhalt der Ebene 2, einheitlich in Gelb):
+//  Schüler:in → Freitage dieser Etappe, eigene abgeschlossene Tests (Bibliothek), Kurzarbeit-Ersatz
+//  Lehrkraft  → Freitage mit Aktionen, Ergebnisse je Check-out, Ersatz-Einstellungen und PDFs
+function coStatChip(c,d){
+ if(c.status==="live")return`<span class="co-chip live"><span class="co-live-punkt"></span>läuft</span>`;
+ if(c.status==="beendet")return`<span class="co-chip fertig">beendet</span>`;
+ return`<span class="co-chip entwurf">Entwurf</span>`;
+}
+function ppKprimBereichHTML(ph,teil,coDaten,heute){
  if(!coDaten)return"";
- const wochen=ppTeilWochen(ph,teil),c=ppFarbe(ph),lehrer=isTeacher();
+ const d=coDaten,lehrer=isTeacher();
+ const wochen=ppTeilWochen(ph,teil);
  const ids=teil==="projekt"?ph.notwendigeWochen:ph.trainingWochen;
  const themen=ids.map(id=>ppKurz(lehrplanWocheById("paedagogik",id))).filter(Boolean).join(", ");
- const zeilen=wochen.map(w=>{
-  const co=coFuerWoche(coDaten,w);
-  const vorbei=w.end<heute;
-  const chip=co?(co.status==="live"?`<span class="co-chip live"><span class="co-live-punkt"></span>läuft</span>`:co.status==="beendet"?`<span class="co-chip fertig">beendet</span>`:`<span class="co-chip entwurf">Entwurf</span>`):"";
+ const stat=d.stat||{};
+ // --- Freitage dieser Etappe ---
+ const fr=wochen.map(w=>{
+  const co=coFuerWoche(d,w),vorbei=w.end<heute;
   let rechts="";
-  if(co)rechts=coAktionHTML(co,coDaten);
+  if(co)rechts=coAktionHTML(co,d);
   else if(lehrer)rechts=`<button class="primary"onclick="openCheckoutEditor(null,{datum:'${w.end}',lbNum:${ph.lbNum}})">＋ Check-out anlegen</button>`;
   else rechts=`<small style="color:var(--muted)">${vorbei?"kein Check-out":"Deine Lehrkraft schaltet ihn am Freitag frei."}</small>`;
-  return`<div class="co-zeile"style="--c:${c}">
-   <span class="co-lb">Fr ${fmtKurz(w.end)}</span>
-   <div class="co-titel"><b>${co?esc(co.titel||"Check-out"):"Check-out"}</b><small>${co?`${(co.aufgaben||[]).length} K-Prim-Aufgaben`:"K-Prim-Aufgaben zu den Themen der Woche"}</small></div>
-   ${chip}<div class="co-aktion">${rechts}</div>
-  </div>`;
+  const st=co&&lehrer&&co.status==="beendet"&&stat[co.id]?` · ${stat[co.id].n} ausgewertet · Ø ${(stat[co.id].summe/stat[co.id].n).toFixed(1).replace(".",",")} Punkte`:"";
+  return`<div class="co-zeile"><span class="co-lb">Fr ${fmtKurz(w.end)}</span>
+   <div class="co-titel"><b>${co?esc(co.titel||"Check-out"):"Check-out"}</b><small>${co?`${(co.aufgaben||[]).length} K-Prim-Aufgaben${st}`:"3 K-Prim-Aufgaben zu den Themen der Woche"}</small></div>
+   ${co?coStatChip(co,d):""}<div class="co-aktion">${rechts}</div></div>`;
  }).join("");
- return`<div class="card co-karte pp-fr-karte"style="margin-top:14px;border-left:5px solid ${c}">
-  <div class="co-kopf"><div><h3>🏁 Check-out am Freitag · K-Prim-Test</h3><small>Jeden Freitag folgt ein kurzer K-Prim-Test zu den Themen der Woche${themen?` (${esc(themen)})`:""}. Deine Lehrkraft schaltet ihn live frei.</small></div></div>
-  <div class="co-liste">${zeilen}</div>
+ // --- Bibliothek bzw. Ergebnisse ---
+ let mitte="",ersatz="";
+ if(lehrer){
+  const beendet=(d.checkouts||[]).filter(c=>c.status==="beendet");
+  mitte=`<div class="kicker pp-kp-h">ERGEBNISSE · ALLE BEENDETEN CHECK-OUTS (${beendet.length})</div>
+   <div class="co-liste">${beendet.map(c=>{const t=stat[c.id];return`<div class="co-zeile"><span class="co-lb">LB ${esc(c.lbNum||"")}</span>
+    <div class="co-titel"><b>${esc(c.titel||"Check-out")}</b><small>${coDatum(c.datum)} · ${t?`${t.n} ausgewertet · Ø ${(t.summe/t.n).toFixed(1).replace(".",",")} Punkte`:"noch keine Auswertung"}</small></div>
+    <div class="co-aktion"><button class="secondary"onclick="openCheckoutErgebnisse('${c.id}')">Ergebnisse</button><button class="secondary"onclick="coPdfKlasse('${c.id}')">PDF Klasse</button></div></div>`;}).join("")||`<div class="empty">Noch kein Check-out beendet. Die Ergebnisse erscheinen hier, sobald du einen Test beendet hast.</div>`}</div>`;
+  ersatz=`<div class="co-ersatz"><div><b>Kurzarbeit-Ersatz</b><small>Schüler:innen wählen ${d.einst.anzahlWaehlen} Tests aus ihrer Bibliothek · ${esc(coAuswahlStatus(d.einst).text)}</small></div>
+   <div class="co-aktion"><button class="secondary"onclick="openCheckoutEinstellungen()">Einstellungen</button><button class="primary"onclick="openCheckoutKlassenuebersicht()">Ergebnisse je Schüler:in</button><button class="secondary"onclick="coPdfRespizienzKlasse()">PDF Respizienz Klasse</button></div></div>`;
+ }else{
+  const fertig=(d.checkouts||[]).filter(c=>d.meineAbgaben?.[c.id]?.abgegeben);
+  mitte=`<div class="kicker pp-kp-h">MEINE ABGESCHLOSSENEN CHECK-OUTS (${fertig.length})</div>
+   <div class="co-liste">${fertig.map(c=>{const a=d.meineAbgaben[c.id];
+    return`<div class="co-zeile"><span class="co-lb">LB ${esc(c.lbNum||"")}</span>
+     <div class="co-titel"><b>${esc(c.titel||"Check-out")}</b><small>${esc(coTestDatum(c,a))}${a.ausgewertet?` · ${a.be} von ${a.maxBE} BE`:""}</small></div>
+     <div class="co-aktion">${a.ausgewertet?`<b class="co-np">${esc(npText(a.notenpunkte))}</b><button class="secondary"onclick="openCheckoutMeinErgebnis('${c.id}')">Ansehen</button><button class="secondary"onclick="coPdfSchueler('${c.id}')">PDF</button>`:`<small style="color:var(--muted)">wird ausgewertet …</small>`}</div></div>`;}).join("")||`<div class="empty">Noch kein Check-out abgeschlossen. Deine erledigten Tests erscheinen hier und bilden deine Bibliothek.</div>`}</div>`;
+  const pool=coPool(d.checkouts,d.einst).filter(c=>d.meineAbgaben?.[c.id]?.ausgewertet);
+  const status=coAuswahlStatus(d.einst);
+  const e=d.auswahl?coErsatz(d.auswahl.ids||[],d.meineAbgaben):null;
+  let aktion="";
+  if(status.offen)aktion=pool.length>=d.einst.anzahlWaehlen?`<button class="primary"onclick="openCheckoutAuswahl()">${d.auswahl?"Auswahl ändern":`${d.einst.anzahlWaehlen} Tests auswählen`}</button>`:`<small style="color:var(--muted)">Du brauchst mindestens ${d.einst.anzahlWaehlen} ausgewertete Tests (bisher ${pool.length}).</small>`;
+  else aktion=`<small style="color:var(--muted)">${esc(status.text)}</small>`;
+  ersatz=`<div class="co-ersatz"><div><b>Kurzarbeit-Ersatz</b><small>Wähle ${d.einst.anzahlWaehlen} Tests aus deiner Bibliothek (${pool.length} verfügbar). Der Durchschnitt der Notenpunkte ersetzt eine Kurzarbeit, ab ,5 wird aufgerundet.${e?` · <b>Deine Auswahl: Ø ${e.schnitt.toFixed(2).replace(".",",")} → ${esc(npText(e.np))}</b>`:""}</small></div>
+   <div class="co-aktion">${aktion}${d.auswahl?`<button class="secondary"onclick="coPdfRespizienz()">PDF Auswahl</button>`:""}${fertig.length?`<button class="secondary"onclick="coPdfSchuelerAlle()">PDF alle Ergebnisse</button>`:""}</div></div>`;
+ }
+ return`<div class="card co-karte pp-kp">
+  <div class="co-kopf"><div><h3>🏁 K-Prim-Aufgaben · Check-out am Freitag</h3><small>Jeden Freitag ein Test mit 3 K-Prim-Aufgaben (je 4 Aussagen richtig oder falsch) zu den Themen der Woche${themen?` (${esc(themen)})`:""}. Deine Lehrkraft schaltet ihn live frei, ausgewertet wird in Notenpunkten nach dem P/P-Bewertungsschlüssel.</small></div></div>
+  <div class="kicker pp-kp-h">FREITAGE IN DIESER ETAPPE</div>
+  <div class="co-liste">${fr}</div>
+  ${mitte}
+  ${ersatz}
  </div>`;
 }
 // ---- Nächster Schritt für Schüler:innen ----
@@ -4068,8 +4105,8 @@ function renderPPTeilAnsicht(ph,teil,fortschrittMap,meineTeams,heute,extra={}){
  return`<button class="secondary"onclick="closePhaseDetail()">← Zurück zum Zeitstrahl</button>
  ${ppMiniZeitstrahlHTML(fortschrittMap,meineTeams,heute,`${ph.id}:${teil}`,extra.coDaten)}
  ${kopf}
- ${ppFreitagsKarteHTML(ph,teil,extra.coDaten,heute)}
  <div class="card"style="margin-top:14px">${quer}${inhalt}</div>
+ ${ppKprimBereichHTML(ph,teil,extra.coDaten,heute)}
  ${footer()}`;
 }
 
@@ -4718,7 +4755,7 @@ const CHECKOUT_BE_NACH_FEHLERN=[4,2,1,0,0];
 // 15: 100–96 · 14: 95–91 · … · 3: 40–34 · 2: 33–27 · 1: 26–20 · 0: 19–0.
 // Zwischenwerte werden nicht aufgerundet (z. B. 95,5 % → 14 Punkte).
 const FOSBOS_SCHLUESSEL=[[15,96],[14,91],[13,86],[12,81],[11,76],[10,71],[9,66],[8,61],[7,56],[6,51],[5,46],[4,41],[3,34],[2,27],[1,20]];
-const CHECKOUT_MIN_AUFGABEN=3,CHECKOUT_MAX_AUFGABEN=5;
+const CHECKOUT_MIN_AUFGABEN=3,CHECKOUT_MAX_AUFGABEN=3; // immer genau 3 K-Prim-Aufgaben je Check-out
 function notenpunkteAusProzent(p){for(const [np,min] of FOSBOS_SCHLUESSEL)if(p>=min)return np;return 0;}
 function noteAusNotenpunkten(np){return np>=13?1:np>=10?2:np>=7?3:np>=4?4:np>=1?5:6;}
 function npText(np){return`${np} Punkte (${noteAusNotenpunkten(np)})`;}
@@ -4753,22 +4790,41 @@ async function ladeCheckoutDaten(){
   const checkouts=docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>String(a.datum||"").localeCompare(String(b.datum||""))||tsSek(a.createdAt)-tsSek(b.createdAt));
   let einst={};
   try{const e=await getDoc(doc(db,"checkoutEinstellungen","pp"));einst=e.exists()?e.data():{};}catch(e){}
-  const meineAbgaben={};let auswahl=null;
+  const meineAbgaben={};let auswahl=null;const stat={};
+  if(lehrer){
+   try{(await getDocs(collection(db,"checkoutAbgaben"))).docs.forEach(x=>{const a=x.data();if(!a.ausgewertet)return;const t=(stat[a.checkoutId]=stat[a.checkoutId]||{n:0,summe:0});t.n++;t.summe+=Number(a.notenpunkte)||0;});}catch(e){console.error("Check-out-Statistik:",e);}
+  }
   if(!lehrer){
    const s=await getDocs(query(collection(db,"checkoutAbgaben"),where("uid","==",currentUser.uid)));
    s.docs.forEach(d=>{const x=d.data();meineAbgaben[x.checkoutId]=x;});
    try{const a=await getDoc(doc(db,"checkoutAuswahl",currentUser.uid));auswahl=a.exists()?a.data():null;}catch(e){}
   }
-  return{checkouts,einst:{...basis,...einst},meineAbgaben,auswahl};
- }catch(e){console.error("Check-outs laden:",e);return{checkouts:[],einst:basis,meineAbgaben:{},auswahl:null,fehler:true};}
+  return{checkouts,einst:{...basis,...einst},meineAbgaben,auswahl,stat};
+ }catch(e){console.error("Check-outs laden:",e);return{checkouts:[],einst:basis,meineAbgaben:{},auswahl:null,stat:{},fehler:true};}
 }
 // Die für den Kurzarbeit-Ersatz zählenden Check-outs (beendet, „zählt").
-function coPool(checkouts,einst){return checkouts.filter(c=>c.status==="beendet"&&c.zaehlt!==false).slice(0,einst.anzahlGesamt||10);}
+// Bibliothek = alle beendeten Check-outs, die für den Kurzarbeit-Ersatz zählen.
+function coPool(checkouts,einst){return checkouts.filter(c=>c.status==="beendet"&&c.zaehlt!==false);}
+// Kaufmännisch runden: ,5 wird immer aufgerundet (Epsilon gegen Fließkomma-Fehler).
+function coRundenAuf(x){return Math.floor(x+0.5+1e-9);}
+function coTsDatum(ts){if(!ts)return null;if(typeof ts.toDate==="function")return ts.toDate();if(ts.seconds)return new Date(ts.seconds*1000);return ts instanceof Date?ts:null;}
+// Auswahlfenster: offen, wenn die Lehrkraft es von Hand geöffnet hat ODER heute
+// zwischen „Auswahl ab“ und (optional) „Auswahl bis“ liegt. Gleiche Logik wie in den Firestore-Regeln.
+function coAuswahlStatus(einst){
+ const jetzt=Date.now(),ab=coTsDatum(einst?.auswahlAb),bis=coTsDatum(einst?.auswahlBis);
+ const f=d=>d.toLocaleDateString("de-DE");
+ if(einst?.auswahlOffen)return{offen:true,text:"Die Auswahl ist freigeschaltet."};
+ if(ab&&jetzt<ab.getTime())return{offen:false,text:`Die Auswahl startet am ${f(ab)}.`};
+ if(ab&&(!bis||jetzt<=bis.getTime()))return{offen:true,text:bis?`Auswahl offen bis ${f(bis)}.`:"Die Auswahl ist freigeschaltet."};
+ if(ab&&bis)return{offen:false,vorbei:true,text:`Die Auswahl ist seit ${f(bis)} beendet.`};
+ return{offen:false,text:"Deine Lehrkraft legt fest, ab wann du auswählen kannst."};
+}
 function coErsatz(ids,abgabenByCo){
  const nps=ids.map(id=>abgabenByCo[id]).filter(a=>a?.ausgewertet).map(a=>Number(a.notenpunkte)||0);
  if(!nps.length)return null;
  const schnitt=nps.reduce((a,b)=>a+b,0)/nps.length;
- return{schnitt,np:Math.round(schnitt),anzahl:nps.length};
+ const as=ids.map(id=>abgabenByCo[id]).filter(a=>a?.ausgewertet);
+ return{schnitt,np:coRundenAuf(schnitt),anzahl:nps.length,be:as.reduce((x,a)=>x+(Number(a.be)||0),0),maxBE:as.reduce((x,a)=>x+(Number(a.maxBE)||0),0)};
 }
 
 // ---- Startseite: Hinweis, wenn ein Check-out gerade läuft ----
@@ -4812,14 +4868,14 @@ function checkoutSektionHTML(d){
  // Kurzarbeit-Ersatz
  let ersatz="";
  if(lehrer){
-  ersatz=`<div class="co-ersatz"><div><b>Kurzarbeit-Ersatz</b><small>${pool.length} von ${d.einst.anzahlGesamt} Check-outs gewertet · Schüler:innen wählen ${d.einst.anzahlWaehlen} aus · Auswahl ist ${d.einst.auswahlOffen?"<b>geöffnet</b>":"geschlossen"}</small></div>
+  ersatz=`<div class="co-ersatz"><div><b>Kurzarbeit-Ersatz</b><small>${pool.length} Check-outs beendet · Schüler:innen wählen ${d.einst.anzahlWaehlen} aus · ${esc(coAuswahlStatus(d.einst).text)}</small></div>
    <div class="co-aktion"><button class="secondary"onclick="openCheckoutEinstellungen()">Einstellungen</button><button class="secondary"onclick="openCheckoutKlassenuebersicht()">Klassenübersicht</button></div></div>`;
  }else{
   const aByCo=d.meineAbgaben;
   const gewertet=pool.filter(c=>aByCo[c.id]?.ausgewertet);
   const e=d.auswahl?coErsatz(d.auswahl.ids||[],aByCo):null;
-  ersatz=`<div class="co-ersatz"><div><b>Kurzarbeit-Ersatz</b><small>${gewertet.length} von ${d.einst.anzahlGesamt} Check-outs geschrieben · du wählst die ${d.einst.anzahlWaehlen} für dich besten aus${e?` · <b>deine Auswahl: Ø ${e.schnitt.toFixed(1).replace(".",",")} → ${npText(e.np)}</b>`:""}</small></div>
-   <div class="co-aktion">${d.einst.auswahlOffen?`<button class="primary"onclick="openCheckoutAuswahl()">${d.auswahl?"Auswahl ändern":`${d.einst.anzahlWaehlen} auswählen`}</button>`:`<small style="color:var(--muted)">Auswahl wird von deiner Lehrkraft freigeschaltet</small>`}${d.auswahl?`<button class="secondary"onclick="coPdfErsatzSchueler()">PDF</button>`:""}</div></div>`;
+  ersatz=`<div class="co-ersatz"><div><b>Kurzarbeit-Ersatz</b><small>${gewertet.length} Check-outs geschrieben · du wählst ${d.einst.anzahlWaehlen} aus deiner Bibliothek aus${e?` · <b>deine Auswahl: Ø ${e.schnitt.toFixed(1).replace(".",",")} → ${npText(e.np)}</b>`:""}</small></div>
+   <div class="co-aktion">${coAuswahlStatus(d.einst).offen?`<button class="primary"onclick="openCheckoutAuswahl()">${d.auswahl?"Auswahl ändern":`${d.einst.anzahlWaehlen} auswählen`}</button>`:`<small style="color:var(--muted)">${esc(coAuswahlStatus(d.einst).text)}</small>`}${d.auswahl?`<button class="secondary"onclick="coPdfErsatzSchueler()">PDF</button>`:""}</div></div>`;
  }
  return`<div class="card co-karte">
   <div class="co-kopf"><div><h3>🏁 Check-out – K-Prim-Test zum Wochenabschluss</h3><small>Am Ende der Woche schaltet deine Lehrkraft den Check-Out-Test live frei: eine Fallvignette mit 3–5 K-Prim-Aufgaben. Ausgewertet wird automatisch in FOSBOS-Notenpunkten.</small></div>
@@ -4923,7 +4979,7 @@ function coEditorRender(){
  modal(`<button class="modal-close"onclick="closeModal()">×</button>
   <div class="kicker">🏁 CHECK-OUT-TEST · ${e.id?"ENTWURF BEARBEITEN":"NEU ANLEGEN"} · NUR LEHRKRÄFTE</div>
   <h2>K-Prim-Test anlegen</h2>
-  <p class="co-ed-intro">Aufbau nach ISB-Vorgabe: <b>① Situation</b> → <b>② ${CHECKOUT_MIN_AUFGABEN}–${CHECKOUT_MAX_AUFGABEN} K-Prim-Aufgaben</b> (je Einleitungssatz + 4 Aussagen) → <b>③ Checkliste</b>. Wertung je Aufgabe: 4 richtig = ${be[0]} BE · 3 = ${be[1]} BE · 2 = ${be[2]} BE · sonst 0.</p>
+  <p class="co-ed-intro">Aufbau nach ISB-Vorgabe: <b>① Situation</b> → <b>② ${CHECKOUT_MAX_AUFGABEN} K-Prim-Aufgaben</b> (je Einleitungssatz + 4 Aussagen) → <b>③ Checkliste</b>. Wertung je Aufgabe: 4 richtig = ${be[0]} BE · 3 = ${be[1]} BE · 2 = ${be[2]} BE · sonst 0.</p>
   <div class="form">
    <div style="display:flex;gap:10px;flex-wrap:wrap">
     <label style="flex:2;min-width:200px">Titel<input id="coTitel"value="${esc(e.titel)}"placeholder="z. B. Kommunikation in der Lerngruppe"></label>
@@ -5037,6 +5093,7 @@ async function coEditorSpeichern(){
  const e=coEditor;
  if(!e.titel.trim()){toast("Bitte einen Titel eingeben.");return}
  if(!e.vignetteText.trim()){toast("Bitte die Situation (Vignette) eintragen.");return}
+ if(e.aufgaben.length!==CHECKOUT_MAX_AUFGABEN){toast(`Ein Check-out hat immer genau ${CHECKOUT_MAX_AUFGABEN} K-Prim-Aufgaben.`);return}
  const unvollst=e.aufgaben.findIndex(a=>!a.stamm.trim()||a.aussagen.some(s=>!s.text.trim()));
  if(unvollst>-1){toast(`Aufgabe ${unvollst+1}: Einleitungssatz und alle 4 Aussagen ausfüllen.`);return}
  const offen=CO_CHECKLISTE.length-e.checkliste.filter(Boolean).length;
@@ -5301,12 +5358,12 @@ async function coPdfKlasse(id){
 // ---- Kurzarbeit-Ersatz: 7 aus 10 ----
 async function openCheckoutAuswahl(){
  const d=await ladeCheckoutDaten();
- if(!d.einst.auswahlOffen){toast("Die Auswahl ist gerade nicht freigeschaltet.");return}
+ if(!coAuswahlStatus(d.einst).offen){toast("Die Auswahl ist gerade nicht freigeschaltet.");return}
  const pool=coPool(d.checkouts,d.einst).filter(c=>d.meineAbgaben[c.id]?.ausgewertet);
  const gewaehlt=new Set(d.auswahl?.ids||[]);
  modal(`<button class="modal-close"onclick="closeModal()">×</button>
-  <div class="kicker">🏁 KURZARBEIT-ERSATZ</div><h2>Wähle deine ${d.einst.anzahlWaehlen} Check-outs</h2>
-  <p style="font-size:13px;color:var(--muted);margin-top:0">Der Durchschnitt der Notenpunkte deiner Auswahl ersetzt eine Kurzarbeit (gerundet).</p>
+  <div class="kicker">🏁 KURZARBEIT-ERSATZ</div><h2>Wähle ${d.einst.anzahlWaehlen} Tests aus deiner Bibliothek</h2>
+  <p style="font-size:13px;color:var(--muted);margin-top:0">Der Durchschnitt der Notenpunkte deiner Auswahl ersetzt eine Kurzarbeit. Ab ,5 wird aufgerundet.</p>
   ${pool.length<d.einst.anzahlWaehlen?`<div class="empty">Du hast erst ${pool.length} gewertete Check-outs – du brauchst mindestens ${d.einst.anzahlWaehlen}.</div>`:""}
   <div class="list"id="coAuswahlListe">${pool.map(c=>{const a=d.meineAbgaben[c.id];return`<label class="list-item co-wahl"><input type="checkbox"value="${c.id}"data-np="${a.notenpunkte}"${gewaehlt.has(c.id)?" checked":""} onchange="coAuswahlStand(${d.einst.anzahlWaehlen})"><div style="flex:1"><strong>${esc(c.titel)}</strong><small>LB ${esc(c.lbNum)} · ${coDatum(c.datum)}</small></div><b>${npText(a.notenpunkte)}</b></label>`;}).join("")}</div>
   <div class="co-test-fuss"><span id="coAuswahlStand"></span><button class="primary"onclick="coAuswahlSpeichern(${d.einst.anzahlWaehlen})">Auswahl speichern</button></div>`);
@@ -5317,7 +5374,7 @@ function coAuswahlStand(soll){
  const nps=boxen.map(b=>Number(b.dataset.np)||0);
  const el=$("coAuswahlStand");if(!el)return;
  const schnitt=nps.length?nps.reduce((a,b)=>a+b,0)/nps.length:0;
- el.innerHTML=`${nps.length} von ${soll} gewählt${nps.length?` · Ø ${schnitt.toFixed(1).replace(".",",")} → <b>${npText(Math.round(schnitt))}</b>`:""}`;
+ el.innerHTML=`${nps.length} von ${soll} gewählt${nps.length?` · Ø ${schnitt.toFixed(1).replace(".",",")} → <b>${npText(coRundenAuf(schnitt))}</b>`:""}`;
  el.style.color=nps.length===soll?"#3e7a2a":"var(--muted)";
 }
 async function coAuswahlSpeichern(soll){
@@ -5328,32 +5385,107 @@ async function coAuswahlSpeichern(soll){
   toast("Auswahl gespeichert.");closeModal();await render();
  }catch(e){console.error(e);toast(e?.code==="permission-denied"?"Die Auswahl ist nicht (mehr) freigeschaltet.":"Konnte nicht gespeichert werden.");}
 }
-async function coPdfErsatzSchueler(){
- const d=await ladeCheckoutDaten();
- const pool=coPool(d.checkouts,d.einst);const ids=new Set(d.auswahl?.ids||[]);
- const e=d.auswahl?coErsatz(d.auswahl.ids||[],d.meineAbgaben):null;
- const tab=`<table><thead><tr><th>Check-out</th><th>Datum</th><th>Ergebnis</th><th>gewählt</th></tr></thead><tbody>${pool.map(c=>{const a=d.meineAbgaben[c.id];return`<tr><td>${escPDF(c.titel)}</td><td>${coDatum(c.datum)}</td><td>${a?.ausgewertet?npText(a.notenpunkte):"–"}</td><td>${ids.has(c.id)?"✓":""}</td></tr>`;}).join("")}</tbody></table>`;
- openToolPrintWindow("Kurzarbeit-Ersatz – Check-outs",`<div class="item"style="background:#f5f7f8"><strong>${escPDF(profile?.displayName||"")}</strong><div>${e?`Ø ${e.schnitt.toFixed(2).replace(".",",")} → <b>${npText(e.np)}</b> (${e.anzahl} gewählte Check-outs)`:"Noch keine Auswahl"}</div></div>${tab}`,"F11Sb · Pädagogik/Psychologie");
+// Alle Daten einer Person für die PDFs (Schüler:in: nur eigene, Lehrkraft: jede Person).
+async function coLadeSchueler(uid){
+ uid=uid||currentUser.uid;
+ const [cs,ab,aw]=await Promise.all([
+  getDocs(query(collection(db,"checkouts"),where("status","==","beendet"))),
+  getDocs(query(collection(db,"checkoutAbgaben"),where("uid","==",uid))),
+  getDoc(doc(db,"checkoutAuswahl",uid))
+ ]);
+ const checkouts=cs.docs.map(x=>({id:x.id,...x.data()})).sort((a,b)=>String(a.datum||"").localeCompare(String(b.datum||""))||tsSek(a.createdAt)-tsSek(b.createdAt));
+ const abgaben={};let name="";
+ ab.docs.forEach(x=>{const a=x.data();abgaben[a.checkoutId]=a;if(!name&&a.name)name=a.name;});
+ if(!name&&uid===currentUser.uid)name=profile?.displayName||"";
+ return{uid,name,checkouts,abgaben,auswahl:aw.exists()?aw.data():null};
 }
+// Tag, an dem der Test gemacht wurde (Abgabe), sonst das Datum des Check-outs.
+function coTestDatum(co,a){const d=coTsDatum(a?.abgegebenAt);return d?d.toLocaleDateString("de-DE"):coDatum(co.datum);}
+function coProz(x){return String(Math.round(x*10)/10).replace(".",",");}
+// Ein Respizienz-Blatt: alle Angaben zur Ablage der gewählten Tests einer Person.
+function coRespizienzHTML(name,tests,abgaben,einst){
+ const zeilen=tests.map(c=>({c,a:abgaben[c.id]})).filter(x=>x.a?.ausgewertet);
+ if(!zeilen.length)return`<div class="item"><strong>${escPDF(name)}</strong><div>Keine ausgewerteten Tests in der Auswahl.</div></div>`;
+ const nA=Math.max(...zeilen.map(x=>(x.a.auswertung||[]).length));
+ const e=coErsatz(zeilen.map(x=>x.c.id),abgaben);
+ const gesamtProz=e.maxBE?e.be/e.maxBE*100:0;
+ const kopfA=Array.from({length:nA},(_,k)=>`<th>A${k+1}</th>`).join("");
+ const zl=zeilen.map((x,i)=>{const a=x.a,p=Number(a.prozent)||0;
+  return`<tr><td>${i+1}</td><td>${escPDF(coTestDatum(x.c,a))}</td><td>${escPDF(x.c.titel||"Check-out")}</td><td>LB ${escPDF(x.c.lbNum||"")}</td>${Array.from({length:nA},(_,k)=>`<td style="text-align:center">${a.auswertung?.[k]?a.auswertung[k].be:"–"}</td>`).join("")}<td style="text-align:center"><b>${a.be}</b></td><td style="text-align:center">${a.maxBE}</td><td style="text-align:center">${coProz(p)}</td><td style="text-align:center"><b>${a.notenpunkte}</b></td><td style="width:70px"><div style="background:#e6ebef;height:9px;border-radius:5px"><div style="width:${Math.max(0,Math.min(100,p))}%;height:9px;border-radius:5px;background:#5a7f99"></div></div></td></tr>`;}).join("");
+ const summe=`<tr style="border-top:2px solid #999"><td colspan="${4+nA}"><b>Gesamt (${zeilen.length} Tests)</b></td><td style="text-align:center"><b>${e.be}</b></td><td style="text-align:center"><b>${e.maxBE}</b></td><td style="text-align:center"><b>${coProz(gesamtProz)}</b></td><td style="text-align:center"><b>Ø ${e.schnitt.toFixed(2).replace(".",",")}</b></td><td></td></tr>`;
+ const schl=FOSBOS_SCHLUESSEL.map(([np,min])=>`${np}: ab ${min} %`).join(" · ");
+ return`<div class="item"style="background:#f5f7f8"><strong style="font-size:15px">${escPDF(name)}</strong>
+  <div>F11Sb · FOSBOS Weilheim · Pädagogik/Psychologie · Schuljahr 2026/27</div>
+  <div>Kurzarbeit-Ersatz: ${zeilen.length} von der Schülerin / dem Schüler gewählte Check-outs (jeweils ${nA} K-Prim-Aufgaben)</div></div>
+ <table style="font-size:11.5px"><thead><tr><th>Nr.</th><th>Datum</th><th>Check-out</th><th>LB</th>${kopfA}<th>BE</th><th>max.</th><th>%</th><th>NP</th><th>Verteilung</th></tr></thead><tbody>${zl}${summe}</tbody></table>
+ <div class="item"style="margin-top:12px"><div><b>Ergebnis:</b> Durchschnitt der Notenpunkte ${e.schnitt.toFixed(2).replace(".",",")}, gerundet (ab ,5 wird aufgerundet): <b style="font-size:15px">${escPDF(npText(e.np))}</b></div>
+  <div>Summe der Bewertungseinheiten: ${e.be} von ${e.maxBE} BE (${coProz(gesamtProz)} %), zur Information.</div></div>
+ <div style="font-size:10.5px;color:#666;margin-top:6px">A1–A${nA}: Bewertungseinheiten (BE) je K-Prim-Aufgabe, ${CHECKOUT_BE_NACH_FEHLERN.slice(0,3).join("/")} BE bei 0/1/2 Fehlern, sonst 0 BE. BE = erreichte, max. = mögliche Bewertungseinheiten des Tests. Notenpunkte nach dem P/P-Bewertungsschlüssel (FOSBOS Bayern, Stand 13.09.2022): ${schl}, darunter 0.</div>
+ <div style="margin-top:26px;font-size:12px">Respizienz: Datum ______________ &nbsp;&nbsp; Unterschrift ______________________</div>`;
+}
+async function coPdfRespizienz(uid){
+ try{
+  const s=await coLadeSchueler(uid);
+  const ids=s.auswahl?.ids||[];
+  if(!ids.length){toast("Es liegt noch keine Auswahl vor.");return}
+  const tests=ids.map(id=>s.checkouts.find(c=>c.id===id)).filter(Boolean).sort((a,b)=>String(a.datum||"").localeCompare(String(b.datum||"")));
+  openToolPrintWindow(`Respizienz – ${s.name||"Schüler:in"}`,coRespizienzHTML(s.name||"Schüler:in",tests,s.abgaben),`F11Sb · Pädagogik/Psychologie · Kurzarbeit-Ersatz · erstellt am ${new Date().toLocaleDateString("de-DE")}`);
+ }catch(e){console.error(e);toast("PDF konnte nicht erstellt werden.");}
+}
+// Alle Ergebnisse einer Person: Übersicht + jeder Test mit Aufgaben und Lösung.
+async function coPdfSchuelerAlle(uid){
+ try{
+  const s=await coLadeSchueler(uid);
+  const mit=s.checkouts.filter(c=>s.abgaben[c.id]);
+  if(!mit.length){toast("Es liegen noch keine Ergebnisse vor.");return}
+  const tab=`<table style="font-size:12px"><thead><tr><th>Datum</th><th>Check-out</th><th>LB</th><th>BE</th><th>%</th><th>Notenpunkte (Note)</th></tr></thead><tbody>${mit.map(c=>{const a=s.abgaben[c.id];return`<tr><td>${escPDF(coTestDatum(c,a))}</td><td>${escPDF(c.titel||"")}</td><td>LB ${escPDF(c.lbNum||"")}</td>${a.ausgewertet?`<td>${a.be}/${a.maxBE}</td><td>${coProz(Number(a.prozent)||0)}</td><td><b>${escPDF(npText(a.notenpunkte))}</b></td>`:`<td colspan="3">noch nicht ausgewertet</td>`}</tr>`;}).join("")}</tbody></table>`;
+  const einzel=mit.filter(c=>s.abgaben[c.id].ausgewertet).map(c=>`<div style="break-before:page"><h2>${escPDF(c.titel||"")} · ${escPDF(coTestDatum(c,s.abgaben[c.id]))}</h2>${coVignettePdf(c)}${coPdfBlock(c,s.abgaben[c.id],s.name)}</div>`).join("");
+  openToolPrintWindow(`Check-out-Ergebnisse – ${s.name||"Schüler:in"}`,`<div class="item"style="background:#f5f7f8"><strong>${escPDF(s.name||"Schüler:in")}</strong><div>${mit.length} Check-outs</div></div>${tab}${einzel}`,`F11Sb · Pädagogik/Psychologie · erstellt am ${new Date().toLocaleDateString("de-DE")}`);
+ }catch(e){console.error(e);toast("PDF konnte nicht erstellt werden.");}
+}
+async function coPdfRespizienzKlasse(){
+ if(!isTeacher())return;
+ try{
+  const {d,students,abgaben,auswahl}=await coLadeKlasse();
+  const mit=students.filter(x=>(auswahl[x.uid]?.ids||[]).length);
+  if(!mit.length){toast("Noch keine Auswahl vorhanden.");return}
+  const ohne=students.filter(x=>!(auswahl[x.uid]?.ids||[]).length).map(x=>escPDF(x.displayName||x.email||"")).join(", ");
+  const seiten=mit.map(x=>{
+   const ab=abgaben[x.uid]||{};
+   const tests=(auswahl[x.uid].ids||[]).map(id=>d.checkouts.find(c=>c.id===id)).filter(Boolean).sort((a,b)=>String(a.datum||"").localeCompare(String(b.datum||"")));
+   return`<div style="break-before:page">${coRespizienzHTML(x.displayName||x.email||"Schüler:in",tests,ab)}</div>`;
+  }).join("");
+  const uebersicht=`<h2>Übersicht Kurzarbeit-Ersatz</h2><table><thead><tr><th>Schüler:in</th><th>BE gesamt</th><th>Ø Notenpunkte</th><th>Ersatznote</th></tr></thead><tbody>${mit.map(x=>{const e=coErsatz(auswahl[x.uid].ids||[],abgaben[x.uid]||{});return`<tr><td>${escPDF(x.displayName||x.email||"")}</td><td>${e?`${e.be}/${e.maxBE}`:"–"}</td><td>${e?e.schnitt.toFixed(2).replace(".",","):"–"}</td><td><b>${e?escPDF(npText(e.np)):"–"}</b></td></tr>`;}).join("")}</tbody></table>${ohne?`<p class="empty">Keine Auswahl: ${ohne}</p>`:""}`;
+  openToolPrintWindow("Respizienz – Kurzarbeit-Ersatz (Klasse)",uebersicht+seiten,`F11Sb · Pädagogik/Psychologie · erstellt am ${new Date().toLocaleDateString("de-DE")}`);
+ }catch(e){console.error(e);toast("PDF konnte nicht erstellt werden.");}
+}
+async function coPdfErsatzSchueler(){return coPdfRespizienz(currentUser.uid);}
 async function openCheckoutEinstellungen(){
  if(!isTeacher())return;
  const d=await ladeCheckoutDaten();const e=d.einst;
+ const tag=t=>{const x=coTsDatum(t);return x?`${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,"0")}-${String(x.getDate()).padStart(2,"0")}`:"";};
  modal(`<button class="modal-close"onclick="closeModal()">×</button>
   <div class="kicker">🏁 KURZARBEIT-ERSATZ · EINSTELLUNGEN</div><h2>Check-outs als Kurzarbeit-Ersatz</h2>
   <div class="form">
+   <label>Wie viele Tests wählen die Schüler:innen aus ihrer Bibliothek aus?<input id="coEWaehlen"type="number"min="1"max="30"value="${e.anzahlWaehlen}"></label>
    <div style="display:flex;gap:10px;flex-wrap:wrap">
-    <label style="flex:1">Anzahl gewerteter Check-outs<input id="coEGesamt"type="number"min="1"max="30"value="${e.anzahlGesamt}"></label>
-    <label style="flex:1">Davon auswählen<input id="coEWaehlen"type="number"min="1"max="30"value="${e.anzahlWaehlen}"></label>
+    <label style="flex:1;min-width:150px">Auswahl ab (Datum)<input id="coEAb"type="date"value="${esc(tag(e.auswahlAb))}"></label>
+    <label style="flex:1;min-width:150px">Auswahl bis (optional)<input id="coEBis"type="date"value="${esc(tag(e.auswahlBis))}"></label>
    </div>
-   <label class="check"><input id="coEOffen"type="checkbox"${e.auswahlOffen?" checked":""}> Schüler:innen dürfen jetzt auswählen</label>
-   <p style="font-size:12px;color:var(--muted)">Es zählen die ersten ${e.anzahlGesamt} beendeten Check-outs (nach Datum), die für den Kurzarbeit-Ersatz markiert sind. Nimmst du das Häkchen wieder heraus, ist die Auswahl eingefroren.</p>
+   <label class="check"><input id="coEOffen"type="checkbox"${e.auswahlOffen?" checked":""}> Auswahl sofort öffnen, unabhängig vom Datum</label>
+   <p style="font-size:12px;color:var(--muted)">Ab dem Datum „ab“ können die Schüler:innen aus allen beendeten Check-outs, die für den Ersatz zählen, ihre ${e.anzahlWaehlen} Tests wählen. Nach dem Datum „bis“ ist die Auswahl eingefroren. Aktuell: ${esc(coAuswahlStatus(e).text)}</p>
    <div class="form-actions"><button class="secondary"onclick="closeModal()">Abbrechen</button><button class="primary"onclick="coEinstellungenSpeichern()">Speichern</button></div>
   </div>`);
 }
 async function coEinstellungenSpeichern(){
- const anzahlGesamt=Math.max(1,Number($("coEGesamt").value)||10),anzahlWaehlen=Math.max(1,Math.min(anzahlGesamt,Number($("coEWaehlen").value)||7));
- try{await setDoc(doc(db,"checkoutEinstellungen","pp"),{anzahlGesamt,anzahlWaehlen,auswahlOffen:$("coEOffen").checked,updatedAt:serverTimestamp()},{merge:true});toast("Gespeichert.");closeModal();await render();}
- catch(e){console.error(e);toast("Konnte nicht gespeichert werden.");}
+ const anzahlWaehlen=Math.max(1,Math.min(30,Number($("coEWaehlen").value)||7));
+ const ab=$("coEAb").value,bis=$("coEBis").value;
+ if(ab&&bis&&bis<ab){toast("„Bis“ darf nicht vor „ab“ liegen.");return}
+ try{
+  await setDoc(doc(db,"checkoutEinstellungen","pp"),{anzahlWaehlen,auswahlOffen:$("coEOffen").checked,
+   auswahlAb:ab?new Date(ab+"T00:00:00"):null,auswahlBis:bis?new Date(bis+"T23:59:59"):null,updatedAt:serverTimestamp()},{merge:true});
+  toast("Gespeichert.");closeModal();await render();
+ }catch(e){console.error(e);toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Konnte nicht gespeichert werden.");}
 }
 async function coLadeKlasse(){
  const d=await ladeCheckoutDaten();
@@ -5368,12 +5500,12 @@ async function openCheckoutKlassenuebersicht(){
  let k;try{k=await coLadeKlasse();}catch(e){console.error(e);toast("Konnte nicht geladen werden.");return}
  const {pool,students,abgaben,auswahl,d}=k;
  modal(`<button class="modal-close"onclick="closeModal()">×</button>
-  <div class="kicker">🏁 KURZARBEIT-ERSATZ · KLASSENÜBERSICHT</div><h2>Check-outs der Klasse</h2>
-  <p style="font-size:12px;color:var(--muted);margin-top:0">Markiert = von der Schülerin / dem Schüler für den Ersatz gewählt (${d.einst.anzahlWaehlen} aus ${d.einst.anzahlGesamt}).</p>
-  <div style="overflow-x:auto"><table class="ls-matrix co-erg-matrix"><thead><tr><th>Schüler:in</th>${pool.map((c,i)=>`<th title="${esc(c.titel)}">${i+1}</th>`).join("")}<th>Ersatz</th></tr></thead>
+  <div class="kicker">🏁 CHECK-OUTS · ERGEBNISSE JE SCHÜLER:IN</div><h2>Ergebnisse und Kurzarbeit-Ersatz</h2>
+  <p style="font-size:12px;color:var(--muted);margin-top:0">Zahlen = Notenpunkte je Check-out (Spalten nach Datum). Grün markiert = von der Schülerin / dem Schüler für den Ersatz gewählt (${d.einst.anzahlWaehlen} Tests). PDF Ergebnisse = alle Tests der Person, PDF Respizienz = die gewählten Tests mit allen Angaben zur Ablage.</p>
+  <div style="overflow-x:auto"><table class="ls-matrix co-erg-matrix"><thead><tr><th>Schüler:in</th>${pool.map((c,i)=>`<th title="${esc(c.titel)}">${i+1}</th>`).join("")}<th>Ersatz</th><th>PDF</th></tr></thead>
   <tbody>${students.map(s=>{const a=abgaben[s.uid]||{},w=new Set(auswahl[s.uid]?.ids||[]);const e=auswahl[s.uid]?coErsatz([...w],a):null;
-   return`<tr><td>${esc(s.displayName||s.email||"")}</td>${pool.map(c=>`<td class="${w.has(c.id)?"co-gewaehlt":""}"style="text-align:center">${a[c.id]?.ausgewertet?a[c.id].notenpunkte:"–"}</td>`).join("")}<td><b>${e?npText(e.np):"–"}</b></td></tr>`;}).join("")}</tbody></table></div>
-  <div class="form-actions"style="margin-top:14px"><button class="primary"onclick="coPdfErsatzKlasse()">PDF Klasse</button><button class="secondary"onclick="closeModal()">Schließen</button></div>`);
+   return`<tr><td>${esc(s.displayName||s.email||"")}</td>${pool.map(c=>`<td class="${w.has(c.id)?"co-gewaehlt":""}"style="text-align:center">${a[c.id]?.ausgewertet?a[c.id].notenpunkte:"–"}</td>`).join("")}<td><b>${e?npText(e.np):"–"}</b></td><td style="white-space:nowrap"><button class="secondary"style="font-size:11px"onclick="coPdfSchuelerAlle('${s.uid}')">Ergebnisse</button> <button class="secondary"style="font-size:11px"onclick="coPdfRespizienz('${s.uid}')"${e?"":" disabled"}>Respizienz</button></td></tr>`;}).join("")}</tbody></table></div>
+  <div class="form-actions"style="margin-top:14px"><button class="primary"onclick="coPdfRespizienzKlasse()">PDF Respizienz Klasse</button><button class="secondary"onclick="coPdfErsatzKlasse()">PDF Übersicht Klasse</button><button class="secondary"onclick="closeModal()">Schließen</button></div>`);
 }
 async function coPdfErsatzKlasse(){
  if(!isTeacher())return;
@@ -5382,12 +5514,12 @@ async function coPdfErsatzKlasse(){
   const legende=`<div class="item">${pool.map((c,i)=>`${i+1}: ${escPDF(c.titel)} (${coDatum(c.datum)})`).join(" · ")}</div>`;
   const tab=`<table><thead><tr><th>Schüler:in</th>${pool.map((c,i)=>`<th>${i+1}</th>`).join("")}<th>Ø Auswahl</th><th>Ersatznote</th></tr></thead><tbody>${students.map(s=>{const a=abgaben[s.uid]||{},w=new Set(auswahl[s.uid]?.ids||[]);const e=auswahl[s.uid]?coErsatz([...w],a):null;
    return`<tr><td>${escPDF(s.displayName||s.email||"")}</td>${pool.map(c=>`<td>${a[c.id]?.ausgewertet?(w.has(c.id)?`<b>[${a[c.id].notenpunkte}]</b>`:a[c.id].notenpunkte):"–"}</td>`).join("")}<td>${e?e.schnitt.toFixed(2).replace(".",","):"–"}</td><td><b>${e?npText(e.np):"–"}</b></td></tr>`;}).join("")}</tbody></table>`;
-  openToolPrintWindow("Kurzarbeit-Ersatz – Check-outs (Klasse)",legende+tab,`F11Sb · Pädagogik/Psychologie · [x] = gewählt · ${d.einst.anzahlWaehlen} aus ${d.einst.anzahlGesamt}`);
+  openToolPrintWindow("Kurzarbeit-Ersatz – Check-outs (Klasse)",legende+tab,`F11Sb · Pädagogik/Psychologie · [x] = gewählt · ${d.einst.anzahlWaehlen} Tests je Schüler:in`);
  }catch(e){console.error(e);toast("PDF konnte nicht erstellt werden.");}
 }
 Object.assign(window,{coEditorPruefen,coEditorLesen,coPoolExport,openCheckoutEditor,coEditorAufgabe,coEditorVorschlag,coEditorImport,coEditorSpeichern,coLoeschen,coLiveStarten,openCheckoutMonitor,coBeenden,coNeuAuswerten,
  openCheckoutTest,coAntwort,coAbgeben,openCheckoutMeinErgebnis,openCheckoutErgebnisse,openCheckoutSchuelerErgebnis,coPdfSchueler,coPdfKlasse,
- openCheckoutAuswahl,coAuswahlStand,coAuswahlSpeichern,coPdfErsatzSchueler,openCheckoutEinstellungen,coEinstellungenSpeichern,openCheckoutKlassenuebersicht,coPdfErsatzKlasse});
+ openCheckoutAuswahl,coAuswahlStand,coAuswahlSpeichern,coPdfErsatzSchueler,openCheckoutEinstellungen,coEinstellungenSpeichern,openCheckoutKlassenuebersicht,coPdfErsatzKlasse,coPdfRespizienz,coPdfRespizienzKlasse,coPdfSchuelerAlle});
 
 async function renderFachDetail(){
  if(!activeFach)return await renderFaecherUebersicht();

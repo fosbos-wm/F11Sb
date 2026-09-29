@@ -637,19 +637,30 @@ main#content{flex:1;min-width:0;padding:28px 34px 60px;max-width:1500px}
 .co-auf-kopf{display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.03em}
 .co-ed-aussage{align-items:flex-start}.co-ed-aussage textarea{flex:1;min-height:44px;resize:vertical;font-family:inherit;font-size:13.5px}.co-ed-aussage span{padding-top:10px}
 
-/* ---------- P/P: Freitags-Check-out im Zeitstrahl, Projektauftrag, Einstiegsstunde ---------- */
-.pp-wz-fr{font-style:normal;font-size:9px;margin-left:3px}
-.pp-mini-spalte{min-width:0;display:flex;flex-direction:column;gap:2px}
+/* ---------- P/P: Freitags-Check-out im Zeitstrahl (einheitlich gelb) ---------- */
+:root{--fr:#F1B928;--fr-dunkel:#5c4300;--fr-hell:#FFF8E1;--fr-linie:#efdca0}
+.pp-wz-fr{font-style:normal;font-size:8.5px;font-weight:800;margin-left:3px;padding:0 3px;border-radius:3px;background:var(--fr);color:var(--fr-dunkel)}
+.pp-mini-wrap{margin:12px 0}
+.pp-mini-wrap .pp-mini{margin:0}
+.pp-mini-leg{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);margin-top:5px}
+.pp-mini-spalte{min-width:0;display:flex;flex-direction:column;gap:3px}
 .pp-mini-spalte .pp-mini-teil{width:100%}
-.pp-mini-fr{display:flex}
-.pp-fr-marke{flex:1 1 0;text-align:right;font-size:10px;line-height:1;opacity:.4;filter:grayscale(1);min-width:0}
-.pp-fr-marke.entwurf{opacity:.85;filter:none}
-.pp-fr-marke.live{opacity:1;filter:none;animation:pp-fr-puls 1.6s ease-in-out infinite}
-.pp-fr-marke.beendet{opacity:1;filter:none}
-@keyframes pp-fr-puls{50%{transform:scale(1.35)}}
+.pp-mini-fr{display:flex;gap:2px}
+.pp-fr-marke{flex:1 1 0;min-width:0;text-align:center;font-size:9px;font-weight:800;line-height:1;padding:3px 0;border-radius:4px;background:var(--fr);color:var(--fr-dunkel);white-space:nowrap;overflow:hidden}
+.pp-mini-leg .pp-fr-marke{flex:0 0 auto;padding:3px 7px}
+.pp-fr-marke.live{animation:pp-fr-puls 1.6s ease-in-out infinite}
+@keyframes pp-fr-puls{50%{box-shadow:0 0 0 3px rgba(241,185,40,.45)}}
 @media(prefers-reduced-motion:reduce){.pp-fr-marke.live{animation:none}}
-.pp-fr-karte .co-lb{min-width:74px;text-align:center}
 
+/* K-Prim-Bereich: einheitlich gelb hinterlegt, unabhängig vom Lernbereich */
+.pp-kp{background:var(--fr-hell);border:1px solid var(--fr-linie);border-left:5px solid var(--fr);margin-top:14px}
+.pp-kp .co-kopf h3{margin:0 0 3px}
+.pp-kp .co-kopf small{max-width:75ch;display:block;line-height:1.45}
+.pp-kp .co-zeile{border-top-color:var(--fr-linie)}
+.pp-kp .co-lb{background:var(--fr);color:var(--fr-dunkel);min-width:74px;text-align:center}
+.pp-kp .pp-kp-h{margin:16px 0 4px;color:var(--fr-dunkel)}
+.pp-kp .co-ersatz{background:#fff;border:1px solid var(--fr-linie)}
+.pp-kp .empty{background:#fff}
 .pp-auftrag{background:#f7fafc;border:1.5px solid #e2eaf0;border-left:5px solid var(--c);border-radius:12px;padding:14px 16px;margin-bottom:6px}
 .pp-auftrag h3{margin:2px 0 8px;font-size:17px}
 .pp-auftrag p{margin:0;white-space:pre-wrap;line-height:1.55;max-width:75ch}
