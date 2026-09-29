@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Einarbeitung</title>
+<style>
+:root{--ink:#17384f;--muted:#647985;--line:#dfe7ec;--accent:#3F7FC1;--ok:#2d7a4f;--okbg:#e9f7ee;--no:#a3402a;--nobg:#fdeeea;--bg:#f4f8fb}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+main{max-width:760px;margin:0 auto;padding:18px 16px 60px}
+h1{font-size:clamp(1.4rem,4.5vw,1.9rem);line-height:1.25;margin:4px 0 6px}
+h2{font-size:1.2rem;margin:34px 0 8px}
+p{margin:0 0 12px}
+.lead{color:var(--muted)}
+.banner{background:#fff4d6;border:1px solid #f1d78a;color:#6b4d00;border-radius:10px;padding:8px 12px;font-size:13px;margin:10px 0}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:12px 0}
+.merke{background:#eef5fb;border-left:5px solid var(--accent);border-radius:10px;padding:10px 14px;margin:12px 0}
+.merke b{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
+ul.l{margin:0 0 12px;padding-left:22px}
+.q{font-weight:700;margin-bottom:8px}
+.sub{font-size:13px;color:var(--muted);margin:-4px 0 8px}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:7px 8px;border-radius:9px;cursor:pointer}
+.opt:hover{background:#f4f8fb}
+.opt input{margin-top:5px;width:18px;height:18px;accent-color:var(--accent)}
+select,textarea{font:inherit;color:inherit;border:1.5px solid var(--line);border-radius:9px;padding:6px 8px;background:#fff;max-width:100%}
+select.gap{margin:0 2px}
+textarea{width:100%;min-height:130px}
+.btn{font:inherit;font-weight:700;border:0;border-radius:10px;padding:10px 16px;background:var(--accent);color:#fff;cursor:pointer;margin-top:8px}
+.btn.big{padding:13px 20px;font-size:1.02rem}
+.btn.ghost{background:#fff;color:var(--accent);border:1.5px solid var(--accent)}
+.btn.small{padding:6px 12px;font-size:.85rem}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.fb{margin-top:10px;padding:9px 12px;border-radius:10px;font-size:.95rem}
+.fb.ok{background:var(--okbg);color:var(--ok)}
+.fb.no{background:var(--nobg);color:var(--no)}
+.fb.info{background:#eef5fb;color:var(--ink)}
+.mark-ok{outline:2px solid #3fa66a;border-radius:6px}
+.mark-no{outline:2px solid #d9573a;border-radius:6px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:6px 0}
+.row .t{flex:1;min-width:180px}
+.kp{display:grid;grid-template-columns:1fr auto auto;gap:6px 14px;align-items:center;margin:6px 0}
+.kp label{display:flex;align-items:center;gap:5px;font-size:.9rem}
+.kp .a{padding:4px 6px;border-radius:6px}
+.top{position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0 10px;margin:0 0 6px}
+.bar{height:10px;background:#e2eaef;border-radius:999px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);border-radius:999px;transition:width .25s}
+.top small{display:block;margin-top:4px;color:var(--muted);font-size:.85rem}
+.done-note{color:var(--ok);font-weight:700}
+</style>
+</head>
+<body>
+<main id="app"><p class="lead">Lade Einarbeitung …</p></main>
+<script>
+(function(){
+'use strict';
+var params=new URLSearchParams(location.search);
+var ID=(params.get('id')||'').replace(/[^A-Za-z0-9_-]/g,'');
+var EMBED=window.parent!==window;
+var LINK={aktiv:false,rolle:'schueler',abgeschlossen:false,gespeichert:false,fehler:''};
+function toParent(o){try{window.parent.postMessage(o,location.origin);}catch(e){}}
+var store={
+  get:function(k,d){try{var v=localStorage.getItem('einarb:'+ID+':'+k);return v===null?d:JSON.parse(v);}catch(e){return d;}},
+  set:function(k,v){try{localStorage.setItem('einarb:'+ID+':'+k,JSON.stringify(v));}catch(e){}}
+};
+var RES=store.get('res',{});     // Aufgabe -> true/false (richtig?)
+var TXT=store.get('txt',{});     // Freitext-Antworten (nur lokal)
+var CONTENT=null,TOTAL=0;
+
+function h(tag,attrs){
+  var el=document.createElement(tag);
+  if(attrs)for(var k in attrs){
+    if(k==='class')el.className=attrs[k];
+    else if(k.slice(0,2)==='on')el.addEventListener(k.slice(2),attrs[k]);
+    else if(attrs[k]!==false&&attrs[k]!==null&&attrs[k]!==undefined)el.setAttribute(k,attrs[k]);
+  }
+  for(var i=2;i<arguments.length;i++){
+    var c=arguments[i];
+    if(c===null||c===undefined||c===false)continue;
+    if(Array.isArray(c))c.forEach(function(x){if(x)el.append(x.nodeType?x:document.createTextNode(String(x)));});
+    else el.append(c.nodeType?c:document.createTextNode(String(c)));
+  }
+  return el;
+}
+// **fett** wird zu <strong>, alles andere bleibt Text (kein HTML aus den Inhaltsdateien).
+function md(el,str){
+  String(str).split('**').forEach(function(part,i){
+    if(!part)return;
+    el.append(i%2?h('strong',null,part):document.createTextNode(part));
+  });
+  return el;
+}
+function para(str){
+  str=String(str);
+  if(str.indexOf('- ')===0){return h('ul',{class:'l'},str.split('\n').map(function(l){return h('li',null,md(h('span'),l.replace(/^- /,'')));}));}
+  return md(h('p'),str);
+}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function norm(x){return String(x).trim().toLowerCase();}
+
+/* ---------- Fortschritt ---------- */
+function stand(){var done=0,ok=0;Object.keys(RES).forEach(function(k){done++;if(RES[k])ok++;});return{done:done,ok:ok};}
+function updateProgress(){
+  var st=stand();
+  var bar=document.getElementById('barI'),txt=document.getElementById('barT');
+  if(bar)bar.style.width=(TOTAL?st.done/TOTAL*100:0)+'%';
+  if(txt)txt.textContent=st.done+' von '+TOTAL+' Aufgaben bearbeitet';
+  var fin=document.getElementById('final');
+  if(fin)renderFinal(fin);
+  if(EMBED&&LINK.aktiv&&LINK.rolle!=='lehrkraft')toParent({type:'einarbeitung:fortschritt',richtig:st.ok,gesamt:TOTAL,fertig:st.done>=TOTAL});
+}
+
+/* ---------- Aufgaben-Rahmen: gespeicherte Ergebnisse, „Nochmal“ ---------- */
+function qText(t){return t.frage||t.stamm||t.titel||'Aufgabe';}
+function shell(t,key,build){
+  var wrap=h('div',{class:'card task'});
+  function draw(){
+    wrap.replaceChildren();
+    if(key in RES){
+      wrap.append(
+        h('div',{class:'q'},qText(t)),
+        h('div',{class:'fb '+(RES[key]?'ok':'no')},RES[key]?'✓ Bearbeitet und richtig.':'✗ Bearbeitet, noch nicht ganz richtig.'),
+        h('button',{class:'btn ghost small',type:'button',onclick:function(){delete RES[key];store.set('res',RES);draw();updateProgress();}},'Nochmal versuchen'));
+      return;
+    }
+    build(wrap,function(ok){RES[key]=!!ok;store.set('res',RES);updateProgress();});
+  }
+  draw();
+  return wrap;
+}
+
+/* ---------- Aufgabentypen ---------- */
+function taskMC(t,key){
+  return shell(t,key,function(box,finish){
+    var name='mc'+key,inputs=[];
+    box.append(h('div',{class:'q'},t.frage));
+    (t.optionen||[]).forEach(function(o,i){
+      var inp=h('input',{type:'radio',name:name,value:String(i)});inputs.push(inp);
+      box.append(h('label',{class:'opt'},inp,h('span',null,o)));
+    });
+    var fb=h('div');
+    var btn=h('button',{class:'btn',type:'button',onclick:function(){
+      var sel=inputs.findIndex(function(i){return i.checked;});
+      if(sel<0){fb.className='fb info';fb.textContent='Bitte wähle eine Antwort.';return;}
+      var ok=sel===t.richtig;
+      inputs.forEach(function(i){i.disabled=true;});
+      btn.disabled=true;
+      fb.className='fb '+(ok?'ok':'no');
+      fb.textContent=(ok?'✓ Richtig. ':'✗ Nicht ganz. Richtig ist: „'+t.optionen[t.richtig]+'“. ')+(t.erklaerung||'');
+      finish(ok);
+    }},'Überprüfen');
+    box.append(btn,fb);
+  });
+}
+function taskLuecke(t,key){
+  return shell(t,key,function(box,finish){
+    var gaps=[],parts=String(t.text).split(/\{\{(.*?)\}\}/);
+    var bank=shuffle(t.woerter&&t.woerter.length?t.woerter:parts.filter(function(_,i){return i%2;}));
+    var line=h('p');
+    parts.forEach(function(p,i){
+      if(i%2){
+        var sel=h('select',{class:'gap','aria-label':'Lücke'},h('option',{value:''},'–'),bank.map(function(w){return h('option',{value:w},w);}));
+        gaps.push({sel:sel,soll:p});line.append(sel);
+      }else line.append(document.createTextNode(p));
+    });
+    box.append(h('div',{class:'q'},t.titel||'Lückentext'),h('div',{class:'sub'},'Wähle für jede Lücke das passende Wort.'),line);
+    var fb=h('div');
+    var btn=h('button',{class:'btn',type:'button',onclick:function(){
+      if(gaps.some(function(g){return !g.sel.value;})){fb.className='fb info';fb.textContent='Bitte fülle alle Lücken aus.';return;}
+      var ok=true;
+      gaps.forEach(function(g){var r=norm(g.sel.value)===norm(g.soll);g.sel.classList.add(r?'mark-ok':'mark-no');g.sel.disabled=true;if(!r)ok=false;});
+      btn.disabled=true;
+      fb.className='fb '+(ok?'ok':'no');
+      fb.textContent=ok?'✓ Alles richtig.':'✗ Richtig wäre: '+gaps.map(function(g){return g.soll;}).join(', ')+'.';
+      finish(ok);
+    }},'Überprüfen');
+    box.append(btn,fb);
+  });
+}
+function taskZuordnung(t,key){
+  return shell(t,key,function(box,finish){
+    var paare=t.paare||[],bank=shuffle(paare.map(function(p){return p[1];})),sels=[];
+    box.append(h('div',{class:'q'},t.titel||'Zuordnung'),h('div',{class:'sub'},'Ordne jedem Begriff die passende Erklärung zu.'));
+    paare.forEach(function(p){
+      var sel=h('select',{'aria-label':'Zuordnung zu '+p[0]},h('option',{value:''},'– wählen –'),bank.map(function(w){return h('option',{value:w},w);}));
+      sels.push(sel);
+      box.append(h('div',{class:'row'},h('div',{class:'t'},h('strong',null,p[0])),sel));
+    });
+    var fb=h('div');
+    var btn=h('button',{class:'btn',type:'button',onclick:function(){
+      if(sels.some(function(s){return !s.value;})){fb.className='fb info';fb.textContent='Bitte ordne alle Begriffe zu.';return;}
+      var ok=true;
+      sels.forEach(function(s,i){var r=s.value===paare[i][1];s.classList.add(r?'mark-ok':'mark-no');s.disabled=true;if(!r)ok=false;});
+      btn.disabled=true;
+      fb.className='fb '+(ok?'ok':'no');
+      fb.textContent=ok?'✓ Alle Zuordnungen stimmen.':'✗ Nicht alle Zuordnungen stimmen. Richtig: '+paare.map(function(p){return p[0]+' = '+p[1];}).join(' · ');
+      finish(ok);
+    }},'Überprüfen');
+    box.append(btn,fb);
+  });
+}
+function taskKprim(t,key){
+  return shell(t,key,function(box,finish){
+    box.append(h('div',{class:'q'},t.stamm),h('div',{class:'sub'},'Ist die Aussage richtig oder falsch?'));
+    var zeilen=[],grid=h('div',{class:'kp'});
+    (t.aussagen||[]).forEach(function(a,i){
+      var name='kp'+key+'_'+i,r=h('input',{type:'radio',name:name,value:'r'}),f=h('input',{type:'radio',name:name,value:'f'});
+      var txt=h('div',{class:'a'},a.text);
+      grid.append(txt,h('label',null,r,'richtig'),h('label',null,f,'falsch'));
+      zeilen.push({r:r,f:f,txt:txt,a:a});
+    });
+    box.append(grid);
+    var fb=h('div');
+    var btn=h('button',{class:'btn',type:'button',onclick:function(){
+      if(zeilen.some(function(z){return !z.r.checked&&!z.f.checked;})){fb.className='fb info';fb.textContent='Bitte beurteile alle Aussagen.';return;}
+      var fehler=0,erkl=[];
+      zeilen.forEach(function(z){
+        var ok=(z.r.checked&&z.a.richtig)||(z.f.checked&&!z.a.richtig);
+        z.txt.classList.add(ok?'mark-ok':'mark-no');z.r.disabled=true;z.f.disabled=true;
+        if(!ok){fehler++;if(z.a.erklaerung)erkl.push(z.a.erklaerung);}
+      });
+      btn.disabled=true;
+      var ok=fehler===0;
+      fb.className='fb '+(ok?'ok':'no');
+      fb.textContent=ok?'✓ Alle '+zeilen.length+' Aussagen richtig.':'✗ '+(zeilen.length-fehler)+' von '+zeilen.length+' Aussagen richtig. '+erkl.join(' ');
+      finish(ok);
+    }},'Überprüfen');
+    box.append(btn,fb);
+  });
+}
+function taskFrei(t,key){
+  return shell(t,key,function(box,finish){
+    box.append(h('div',{class:'q'},t.frage));
+    if(t.hinweis)box.append(h('div',{class:'sub'},t.hinweis));
+    var ta=h('textarea',{'aria-label':'Deine Antwort',placeholder:'Schreibe zuerst deine eigene Antwort …'});
+    ta.value=TXT[key]||'';
+    ta.addEventListener('input',function(){TXT[key]=ta.value;store.set('txt',TXT);btn.disabled=ta.value.trim().length<40;});
+    var out=h('div');
+    var btn=h('button',{class:'btn',type:'button',disabled:ta.value.trim().length<40?'':false,onclick:function(){
+      out.replaceChildren(
+        h('div',{class:'fb info'},h('strong',null,'Musterlösung: '),md(h('span'),t.muster||'')),
+        h('label',{class:'opt'},h('input',{type:'checkbox',onchange:function(e){if(e.target.checked){e.target.disabled=true;ta.disabled=true;finish(true);}}}),h('span',null,'Ich habe meine Antwort mit der Musterlösung verglichen und bei Bedarf ergänzt.')));
+      btn.disabled=true;
+    }},'Musterlösung anzeigen');
+    btn.disabled=ta.value.trim().length<40;
+    box.append(ta,h('div',{class:'sub'},'Die Musterlösung erscheint, sobald du mindestens ein paar Sätze geschrieben hast.'),btn,out);
+  });
+}
+var TYPEN={mc:taskMC,lueckentext:taskLuecke,zuordnung:taskZuordnung,kprim:taskKprim,frei:taskFrei};
+
+/* ---------- Abschluss ---------- */
+function renderFinal(box){
+  var st=stand(),alle=st.done>=TOTAL&&TOTAL>0;
+  box.replaceChildren(h('h2',null,'Abschluss'));
+  if(!alle){
+    box.append(h('p',{class:'lead'},'Bearbeite alle Aufgaben, dann kannst du die Einarbeitung abschließen. Noch offen: '+(TOTAL-st.done)+'.'));
+  }else{
+    box.append(h('div',{class:'fb ok'},'Geschafft! '+st.ok+' von '+TOTAL+' Aufgaben waren beim Bearbeiten richtig.'));
+  }
+  if(LINK.rolle==='lehrkraft'){box.append(h('p',{class:'lead'},'Ansicht der Lehrkraft: hier wird nichts gespeichert.'));return;}
+  if(EMBED){
+    if(LINK.gespeichert||LINK.abgeschlossen)box.append(h('p',{class:'done-note'},'✓ Die Einarbeitung ist als abgeschlossen gespeichert.'));
+    box.append(h('button',{class:'btn big',type:'button',disabled:alle?false:'',onclick:function(){toParent({type:'einarbeitung:abgeschlossen',richtig:stand().ok,gesamt:TOTAL});}},'Ich habe die Einarbeitung abgeschlossen'));
+    if(!alle)box.lastChild.disabled=true;
+    if(LINK.fehler)box.append(h('div',{class:'fb no'},LINK.fehler));
+  }
+}
+
+/* ---------- Aufbau ---------- */
+function build(){
+  var app=document.getElementById('app');app.replaceChildren();
+  TOTAL=0;
+  (CONTENT.abschnitte||[]).forEach(function(s){TOTAL+=(s.aufgaben||[]).length;});
+  app.append(h('h1',null,CONTENT.titel||'Einarbeitung'));
+  if(CONTENT.entwurf)app.append(h('div',{class:'banner'},'Entwurf: Dieser Inhalt ist ein Vorschlag und wird durch die Vorlage der Lehrkraft ersetzt.'));
+  if(CONTENT.einleitung)app.append(md(h('p',{class:'lead'}),CONTENT.einleitung));
+  app.append(h('div',{class:'top'},h('div',{class:'bar'},h('i',{id:'barI'})),h('small',{id:'barT'})));
+  (CONTENT.abschnitte||[]).forEach(function(s,si){
+    app.append(h('h2',null,s.titel||''));
+    (s.text||[]).forEach(function(p){app.append(para(p));});
+    if(s.merke)app.append(h('div',{class:'merke'},h('b',null,'Merke'),md(h('span'),s.merke)));
+    (s.aufgaben||[]).forEach(function(t,ti){
+      var f=TYPEN[t.typ];
+      if(f)app.append(f(t,si+'-'+ti));
+    });
+  });
+  app.append(h('div',{id:'final'}));
+  updateProgress();
+}
+window.addEventListener('message',function(ev){
+  if(!EMBED||ev.source!==window.parent||ev.origin!==location.origin)return;
+  var m=ev.data||{};if(typeof m.type!=='string'||m.type.indexOf('einarbeitung:')!==0)return;
+  if(m.type==='einarbeitung:init'){LINK.aktiv=true;LINK.rolle=m.rolle||'schueler';LINK.abgeschlossen=!!m.abgeschlossen;if(CONTENT)updateProgress();}
+  else if(m.type==='einarbeitung:gespeichert'){LINK.gespeichert=true;LINK.fehler='';var f=document.getElementById('final');if(f)renderFinal(f);}
+  else if(m.type==='einarbeitung:fehler'){LINK.fehler=m.text||'Das hat nicht geklappt.';var g=document.getElementById('final');if(g)renderFinal(g);}
+});
+function laden(){
+  if(!ID){document.getElementById('app').textContent='Keine Einheit angegeben.';return;}
+  fetch('inhalte/'+ID+'.json',{cache:'no-cache'}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
+  .then(function(j){CONTENT=j;document.title=j.titel||'Einarbeitung';build();})
+  .catch(function(){document.getElementById('app').replaceChildren(h('h1',null,'Keine Einarbeitung vorhanden'),h('p',{class:'lead'},'Für diese Stunde gibt es noch keine interaktive Einarbeitung.'));});
+  if(EMBED)toParent({type:'einarbeitung:bereit'});
+}
+laden();
+})();
+</script>
+</body>
+</html>
