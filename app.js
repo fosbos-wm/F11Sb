@@ -14857,3 +14857,11 @@ try{ if(typeof closeResilienzModal==="function") window.closeResilienzModal=clos
  },true);
 })();
 
+// ---------------------------------------------------------------
+// Inline-Handler (onclick="…", onchange="…") laufen im globalen Bereich. Weil app.js ein
+// Modul ist, muss alles, was sie aufrufen, am window hängen. (Ohne diese Zeile tun die
+// Knöpfe „Vorschau (Schüleransicht)“, „Aus der Aufgabenbank einsetzen“ und
+// „Ganzen Test aus Vorlage einsetzen“ nichts, ebenso die Haken „Prüfungsfrage gelesen“,
+// „mit KI korrigiert“ und der Besprechungswunsch, die serverTimestamp() nutzen.)
+Object.assign(window,{coEditorVorschau,coEditorVorschauZurueck,coBankEinsetzen,coVorlageWaehlen,coStandAktualisieren,reopenDetail,$,
+ serverTimestamp:(...a)=>serverTimestamp(...a)});
