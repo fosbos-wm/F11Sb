@@ -4173,7 +4173,6 @@ function renderPPTeilAnsicht(ph,teil,fortschrittMap,meineTeams,heute,extra={}){
    ${ppWochenZellenHTML(wochen,c,heute)}
   </div>
  </div>`;
- const quer=`<button type="button"class="pp-quer"style="--c:${ppFarbe(ph)}"onclick="openPhaseDetail('${ph.id}:${anderer}')">${ppTeilIcon(anderer,ph)} Zum ${anderer==="apt"?"Abschlussprüfungs-Training":ppTeilName("projekt",ph)} ${esc(ph.lb)} wechseln →</button>`;
 
  let inhalt="";
  if(teil==="projekt"&&ph.einstieg){
@@ -4217,7 +4216,7 @@ function renderPPTeilAnsicht(ph,teil,fortschrittMap,meineTeams,heute,extra={}){
  return`<button class="secondary"onclick="closePhaseDetail()">← Zurück zum Zeitstrahl</button>
  ${ppMiniZeitstrahlHTML(fortschrittMap,meineTeams,heute,`${ph.id}:${teil}`,extra.coDaten)}
  ${kopf}
- <div class="card"style="margin-top:14px">${quer}${inhalt}</div>
+ <div class="card"style="margin-top:14px">${inhalt}</div>
  ${ppKprimBereichHTML(ph,teil,extra.coDaten,heute)}
  ${footer()}`;
 }
