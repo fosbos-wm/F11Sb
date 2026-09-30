@@ -3936,9 +3936,9 @@ function ppKprimBereichHTML(ph,teil,coDaten,heute){
   let rechts="";
   if(co)rechts=coAktionHTML(co,d);
   else if(lehrer){
-   const vl=CHECKOUT_VORLAGEN.find(v=>v.datum===w.end);
-   rechts=(vl?`<button class="primary"onclick="openCheckoutEditor(null,{datum:'${w.end}',lbNum:${ph.lbNum},vorlage:'${vl.id}'})">📋 Vorlage „${esc(vl.titel)}“ einsetzen</button>`:"")
-    +`<button class="${vl?"secondary":"primary"}"onclick="openCheckoutEditor(null,{datum:'${w.end}',lbNum:${ph.lbNum}})">＋ Check-out anlegen</button>`;
+   const vls=CHECKOUT_VORLAGEN.filter(v=>v.datum===w.end);
+   rechts=vls.map((vl,k)=>`<button class="${k===0?"primary":"secondary"}"onclick="openCheckoutEditor(null,{datum:'${w.end}',lbNum:${ph.lbNum},vorlage:'${vl.id}'})">📋 Vorlage „${esc(vl.titel)}“ einsetzen</button>`).join("")
+    +`<button class="${vls.length?"secondary":"primary"}"onclick="openCheckoutEditor(null,{datum:'${w.end}',lbNum:${ph.lbNum}})">＋ Check-out anlegen</button>`;
   }
   else rechts=`<small style="color:var(--muted)">${vorbei?"kein Check-out":"Deine Lehrkraft schaltet ihn am Freitag frei."}</small>`;
   const st=co&&lehrer&&co.status==="beendet"&&stat[co.id]?` · ${stat[co.id].n} ausgewertet · Ø ${(stat[co.id].summe/stat[co.id].n).toFixed(1).replace(".",",")} Punkte`:"";
@@ -5139,179 +5139,317 @@ function checkoutLiveBannerHTML(d){
 // „erklaerung“ ist eine kurze Begründung, die Schüler:innen erst NACH der Auswertung sehen.
 const CO_AUFGABENBANK=[
  {
-  "id": "tim-max",
-  "titel": "Tim und Max – Alltagspsychologie",
+  "id": "paed-beziehung",
+  "titel": "Pädagogische Beziehung",
   "lbNum": 1,
   "vignette": {
-   "titel": "Kindergarten „Wirbelwind“",
-   "text": "Sie absolvieren Ihr Praktikum im Kindergarten „Wirbelwind“ in Wendelstein. Seit Beginn Ihres Praktikums vor drei Wochen beobachten Sie immer wieder zwei Geschwisterkinder, die beide in Ihrer Gruppe sind. Der 3-jährige Max ist neu in den Kindergarten gekommen und hält sich fast immer in der Nähe seines Bruders Tim auf, der mit seinen fünf Jahren zu den Vorschulkindern gehört. Er will, dass Tim immer nur mit ihm spielt. Sie beobachten immer wieder, wie Tim genervt die Augen verdreht und versucht, Max abzuschütteln, zum Beispiel indem er zu ihm sagt, dass er sich mal andere Kinder zum Spielen suchen soll oder indem er einfach davonrennt. Daraufhin lässt Max immer den Kopf und die Schultern hängen, Tränen laufen ihm über die Wangen und er streckt seinen Arm nach Tim aus. Regelmäßig hat dies zur Folge, dass Tim dann einlenkt, seinem Bruder den Arm um die Schultern legt und ihn dann doch mit sich nimmt. Ihnen tun beide irgendwie leid und Sie erzählen der Erzieherin Moni davon.",
-   "zeilen": false
-  },
-  "kontext": "Pädagogische/psychologische Kompetenz bedeutet auch, fachlich fundierte Einschätzungen vorzunehmen und begründetes Handeln abzuleiten.\nIm Teamgespräch nimmt die Erzieherin Moni Bezug zu Ihren Beobachtungen im Alltag. Da Tim häufig genervt reagiert, wenn Max seine Nähe sucht und dabei die Augen verdreht oder weggeht, stellt sie fest: „Tim mag seinen Bruder einfach nicht!“",
-  "stamm": "Diese Aussage ist alltagstheoretisch, wenn …",
-  "aussagen": [
-   {
-    "text": "… Monis Schlussfolgerung sich aus einem umfassenden Bestand von fachlichen Eindrücken, die sie im Laufe ihres langjährigen beruflichen Alltags zufällig angesammelt hat, bildet.",
-    "richtig": true,
-    "erklaerung": "Fehlende Systematik"
-   },
-   {
-    "text": "… Monis Aussage sich als gesichertes Ergebnis einstufen lässt, da die Information durch mehrere Elterngespräche zur sozial-emotionalen Entwicklung sowie wiederholte gezielte Beobachtungen mit einem Beobachtungsbogen gewonnen wurde.",
-    "richtig": false,
-    "erklaerung": "Systematik: gezielte, wiederholte Beobachtung spricht für eine wissenschaftliche Aussage"
-   },
-   {
-    "text": "… Monis Kollegin Sarah aufgrund ihrer langjährigen Berufserfahrung durch die Beobachtung der gleichen Spielsituationen zwischen den Brüdern die Emotion von Tim als natürliches Wetteifern unter Brüdern deutet.",
-    "richtig": true,
-    "erklaerung": "Subjektivität"
-   },
-   {
-    "text": "… Monis Erkenntnis aus mehreren geplanten Beobachtungen aus den letzten zwei Kindergartenjahren stammt, in denen sie bei allen wiederholt konfliktreiche Situationen zwischen den zwei Brüdern beobachten konnte.",
-    "richtig": false,
-    "erklaerung": "Keine unzulässige Verallgemeinerung/Allgemeingültigkeit"
-   }
-  ]
- },
- {
-  "id": "hannes",
-  "titel": "Hannes und Herr Kluge – wissenschaftliche Kriterien",
-  "lbNum": 1,
-  "vignette": {
-   "titel": "Fallbeispiel: Hannes",
-   "text": "Hannes (3,5 Jahre) ist seit 3 Monaten in der Kindergartengruppe „Sternchen“ und hat sich\nmittlerweile gut eingewöhnt. Doch seit zwei Wochen fällt Erzieher Martin Kluge sein Verhalten\nauf: Hannes zwickt die anderen Kinder und wird schnell wütend, wenn er ein Spielzeug nicht\nsofort bekommen kann. Einmal hat er sogar gesehen, wie Hannes einem Mädchen ins Gesicht\ngespuckt hat. Herr Kluge zieht die Notbremse und holt die Eltern von Hannes Jung zum\nGespräch in die Einrichtung.\nHerr Kluge: „Nun, da ich Ihnen den Fall geschildert habe, müssen wir überlegen, wie wir mit dem\naggressiven Verhalten von Hannes umgehen.“\nFrau Jung: „Ist er denn wirklich so aggressiv? Die Kinderpflegerin Fatima meinte neulich zu mir,\nsie erlebe ihn eher als ausgeglichenen, neugierigen Jungen.“\nHerr Kluge: „Ich sehe das anders. Und aus diesem Grund müssen wir handeln. Letztens waren\nwir zu zweit in der Puppenecke und er hat so wütend auf die Puppen eingeschlagen und – ja,\nauch wenn Sie das jetzt nicht glauben wollen, genau so war es – das hat mir echt Angst\ngemacht. Sehen Sie doch: Wenn Hannes sein aggressives Verhalten nicht bald in den Griff\nbekommt, wird aus ihm später ein gewalttätiger Schläger! Während meiner Ausbildung hatten\nwir auch so ein Kind in der Gruppe, er zeigte das gleiche Verhalten wie Hannes – der sitzt jetzt\nim Gefängnis.“\nHerr Jung: „Also, ich weiß nicht. Gibt es da vielleicht so etwas wie einen Aggressions-Test oder\nFragebogen, den man dazu durchführen könnte? Dann wüssten wir genauer, ob…“\nHerr Kluge (unterbrochen): „Ach, da brauche ich keinen Test, sowas kann ich selbst einschätzen.\nDafür arbeite ich lange genug! Vertrauen Sie mir.“\nDie Personen verabreden sich zu einem weiteren Treffen und Herr und Frau Jung gehen\nbedrückt und unsicher aus der Einrichtung.",
-   "zeilen": true
-  },
-  "kontext": "Fachkräfte in der pädagogischen Arbeit sind angewiesen, stets nur wissenschaftlich fundierte Aussagen und Entscheidungen zu treffen.",
-  "stamm": "Herr Kluge würde Hannes‘ Fall nach wissenschaftlichen Kriterien beurteilen, wenn …",
-  "aussagen": [
-   {
-    "text": "… neben ihm auch der Vater Gewalthandlungen von Hannes beobachtet hätten, da dann das Merkmal der Objektivität vorliegen würde.",
-    "richtig": false,
-    "erklaerung": ""
-   },
-   {
-    "text": "… er Beweise für die in Z. 15‒17 getätigte Aussage vorlegen könnte, um eine objektive Einschätzung zu treffen.",
-    "richtig": false,
-    "erklaerung": ""
-   },
-   {
-    "text": "… er sich selbst einen Aggressionstest ausdenken und mit Hannes durchführen würde. Das Vorgehen wäre systematisch und die Aussagen daraus allgemeingültig.",
-    "richtig": false,
-    "erklaerung": ""
-   },
-   {
-    "text": "… er und Fatima Hannes‘ Verhalten über mehrere Wochen beobachten und systematisch dokumentieren würden, um nachvollziehbare und vergleichbare Aussagen zu Hannes tätigen zu können.",
-    "richtig": true,
-    "erklaerung": ""
-   }
-  ]
- },
- {
-  "id": "schlaf",
-  "titel": "Schlaf und Experiment – Studie",
-  "lbNum": 1,
-  "vignette": {
-   "titel": "Lernnachmittag vor der Schulaufgabe",
-   "text": "Am Tag vor der nächsten Schulaufgabe in Mathematik treffen Sie sich am Nachmittag mit Ihren Schulfreundinnen Larissa, Klara und Tina zum Lernen.\nKlara begrüßt Sie gar nicht richtig, sondern meint gleich zu Larissa: „Mensch du siehst aber gar nicht gut aus. Bist du krank?“\nLarissa erwidert darauf: „Nein, ich schlafe nur unglaublich schlecht. Seit mein Freund bei mir eingezogen ist und wir jede Nacht nebeneinander schlafen, mach ich nachts kaum noch ein Auge zu.“\nKlara nickt zustimmend: „Das kann ich mir gut vorstellen. Ich schlafe auch richtig schlecht, wenn jemand neben mir liegt. Es ist viel besser alleine zu schlafen. Wenn man nämlich alleine schläft, steigt die Leistungsfähigkeit des Menschen spürbar an. Durch die Bewegungen, die dein Partner nachts macht, wird auch dein Schlaf gestört. Heute solltest du unbedingt alleine schlafen, damit du für die Schulaufgabe morgen fit bist.“\nTina runzelt die Stirn und meint: „Also das glaube ich nicht.“\nLarissa wirft ein: „Doch, das macht echt Sinn. Solange ich nämlich noch meine 8 Stunden jede Nacht durchgeschlafen habe, hat mir auch niemand unterstellt, ich sähe krank aus. Da konnte ich mich nachts richtig erholen und war viel fitter.“\nTina gibt zu: „Ja, es stimmt schon, dass sich die Schlafqualität und Schlafdauer darauf auswirkt, wie du von anderen wahrgenommen wirst. Dazu habe ich erst vor kurzem etwas gelesen. Aber, dass es an deinem Freund liegt, dass du schlecht schläfst, das kann ich mir nicht vorstellen. Ich liege auch neben meinem Partner und ich schlafe richtig gut. Aber wartet mal, ich zeige euch noch kurz die Studie, die ich da gelesen habe. Danach müssen wir aber unbedingt mit Mathe anfangen.“",
-   "zeilen": false
-  },
-  "kontext": "Tina meint, dass die Schlafqualität und die Schlafdauer eine Auswirkung auf die wahrgenommene Gesundheit, Attraktivität und Müdigkeit einer Person haben. Sie bezieht sich dabei auf eine experimentelle Studie (vgl. Material). Jedes Experiment muss die Kriterien Willkürlichkeit, Variierbarkeit und Wiederholbarkeit erfüllen, um als wissenschaftliche Methode anerkannt zu sein.",
-  "material": {
-   "titel": "Schönheitsschlaf: Experimentelle Studie zur wahrgenommenen Gesundheit und Attraktivität von Menschen mit Schlafentzug",
-   "text": "Die experimentelle Studie „Schönheitsschlaf: Wahrgenommene Gesundheit und Attraktivität von Menschen mit Schlafentzug“ untersuchte, ob Personen nach einer Nacht mit Schlafentzug im Vergleich zu einer normalen Nachtruhe als weniger gesund, weniger attraktiv und müder wahrgenommen werden. Die Untersuchung wurde in einem Schlaflabor in Stockholm, Schweden, durchgeführt. An der Studie nahmen 23 gesunde Erwachsene im Alter von 18 bis 31 Jahren teil, die fotografiert wurden, sowie 65 ungeschulte Beobachter im Alter von 18 bis 61 Jahren, die diese Fotos bewerteten. Die Teilnehmer wurden nach einer normalen Nachtruhe von acht Stunden sowie nach einer Phase des Schlafentzugs fotografiert. Der Schlafentzug bestand aus 31 Stunden Wachsein nach einer Nacht mit verkürzter Schlafdauer. Anschließend wurden die Fotos in zufälliger Reihenfolge den Beobachtern präsentiert. Diese bewerteten die wahrgenommene Gesundheit, Attraktivität und Müdigkeit der abgebildeten Personen […]. Teilnehmer mit Schlafentzug wurden als weniger gesund wahrgenommen als nach einer normalen Nachtruhe […]. Zudem wirkten sie deutlich müder […] und etwas weniger attraktiv […].\nZusammenfassend verdeutlichen die Ergebnisse, dass Schlafentzug das äußere Erscheinungsbild beeinflusst und dazu führt, dass Menschen als weniger gesund, weniger attraktiv und müder wahrgenommen werden.",
-   "quelle": "Quelle: BMJ 2010; 341 doi. Veröffentlicht am: 15. Dezember 2010. Internetpublikation unter: https://www-bmj-com.translate.goog/content/341/bmj.c6614?_x_tr_sl=en&_x_tr_tl=de&_x_tr_hl=de&_x_tr_pto=sc, aufgerufen am 11.06.2026."
-  },
-  "stamm": "Beurteilen Sie die folgenden Aussagen zur geschilderten Studie.",
-  "aussagen": [
-   {
-    "text": "Die geschilderte Studie erfüllt das Kriterium der Willkürlichkeit, da die Schlafdauer für jede Person zufällig gewählt worden ist.",
-    "richtig": false,
-    "erklaerung": ""
-   },
-   {
-    "text": "Die geschilderte Studie erfüllt das Kriterium der Variierbarkeit, da die Schlafbedingungen (normale Nachtruhe vs. Schlafentzug) systematisch variiert worden sind.",
-    "richtig": true,
-    "erklaerung": ""
-   },
-   {
-    "text": "Die geschilderte Studie erfüllt das Kriterium der Wiederholbarkeit, da das Schlaflaborprozedere und der Ablauf der Fotodarbietung genau beschrieben worden sind.",
-    "richtig": true,
-    "erklaerung": ""
-   },
-   {
-    "text": "Die geschilderte Studie bestätigt Tinas Aussage, dass Schlafqualität und Schlafdauer eine Auswirkung auf die wahrgenommene Gesundheit, Attraktivität und Müdigkeit einer Person haben.",
-    "richtig": false,
-    "erklaerung": ""
-   }
-  ]
- },
- {
-  "id": "luan-a",
-  "titel": "Luan und ADHS – Variante A",
-  "lbNum": 1,
-  "vignette": {
-   "titel": "Erziehungsberatungsstelle",
-   "text": "Frau Müller kommt mit ihrem 5-jährigen Sohn Luan in die Erziehungsberatungsstelle, da sie mit der Erziehung ihres sehr lebhaften und aufbrausenden Sohnes überfordert ist. Frau Müller berichtet der Sozialpädagogin, dass ihr Sohn bei jeder Kleinigkeit ausflippe. Neulich, als ihre Freundin zu Besuch war, schmiss er vor lauter Wut einen Teller auf den Boden, weil er kein weiteres Stück Kuchen bekam. Ihre Freundin habe ihr nun empfohlen, sich Hilfe bei einer Beratungsstelle zu holen. Die Freundin sei sich sicher, Luan würde ADHS haben, schließlich sei er so aggressiv wie der Sohn der Nachbarin. Und der habe schließlich auch ADHS. Außerdem würde er ja auch gar nicht folgen. Das wäre ja wohl auch typisch für Kinder mit ADHS. Luans Erzieherin sieht das Ganze aber weniger dramatisch. Er könne sich in der Gruppe doch sehr gut an Regeln halten.",
-   "zeilen": false
+   "titel": "Ganztagsbetreuung einer Grundschule",
+   "zeilen": false,
+   "text": "Sie absolvieren Ihr Praktikum in der Ganztagsbetreuung einer Grundschule. Der achtjährige Felix ist seit dem Schulwechsel zurückhaltend. Betreuerin Frau Öztürk begrüßt ihn morgens mit Namen und fragt, woran er gerade arbeitet. Löst er eine Aufgabe falsch, bemerkt sie seine Unsicherheit, sagt ruhig, Fehler gehörten zum Üben dazu, und zeigt ihm einen anderen Weg. Sie bringt ihm wie versprochen ein Schachspiel mit und erklärt, dass sie auch andere Kinder unterstützen muss. Nach einigen Wochen bittet Felix von sich aus eine Mitschülerin um Hilfe."
   },
   "kontext": "",
-  "stamm": "Die Sozialpädagogin gibt eine wissenschaftsbasierte Einschätzung zu Luan ab, wenn …",
-  "pruefen": "Im Word-Dokument war keine Lösung angekreuzt. Die Lösung wurde aus dem Inhalt abgeleitet – bitte fachlich prüfen.",
+  "stamm": "Frau Öztürk gestaltet die pädagogische Beziehung förderlich, wenn …",
+  "pruefen": "Neu erstellt (Claude) nach der ISB-Checkliste der App. Bitte fachlich und passend zu deinem Unterricht prüfen.",
   "aussagen": [
    {
-    "text": "… sie die Vermutung der Freundin aufgrund der Ähnlichkeit zum Nachbarskind als Bestätigung für eine ADHS-Diagnose übernimmt.",
+    "text": "… sie Felix durch persönliche Begrüßung und Interesse an seiner Arbeit Wertschätzung entgegenbringt und ihm damit Sicherheit vermittelt.",
+    "richtig": true,
+    "erklaerung": "Wertschätzung ist ein zentrales Merkmal einer förderlichen Beziehung."
+   },
+   {
+    "text": "… sie ihre Zusage einhält und ihre begrenzte Zeit offen darlegt, sodass Felix sich auf sie verlassen kann.",
+    "richtig": true,
+    "erklaerung": "Verlässlichkeit und Echtheit schaffen Vertrauen."
+   },
+   {
+    "text": "… sie Felix bei Schwierigkeiten sofort die Lösung vorgibt, weil eine förderliche Beziehung das Kind vor Misserfolgen bewahren soll.",
     "richtig": false,
-    "erklaerung": ""
+    "erklaerung": "Eine förderliche Beziehung unterstützt die Selbstständigkeit und lässt Fehler als Lernchance zu."
    },
    {
-    "text": "… sie eine differenzierte Verhaltensbeobachtung in verschiedenen Lebenswelten (z. B. Schule, Zuhause) durchführt.",
+    "text": "… sie sein Unbehagen wahrnimmt und sich in seine Lage einfühlt, bevor sie eine alternative Vorgehensweise vorschlägt.",
     "richtig": true,
-    "erklaerung": ""
-   },
-   {
-    "text": "… sie standardisierte Fragebögen oder klinische Interviews zur Erhebung der Symptomatik einsetzt.",
-    "richtig": true,
-    "erklaerung": ""
-   },
-   {
-    "text": "… sie eine interdisziplinäre Zusammenarbeit mit Lehrkräften, Eltern und medizinischem Fachpersonal anstrebt, um ein ganzheitliches Bild zu erhalten.",
-    "richtig": true,
-    "erklaerung": ""
+    "erklaerung": "Einfühlungsvermögen (Empathie) ist ein Merkmal einer förderlichen Beziehung."
    }
   ]
  },
  {
-  "id": "luan-b",
-  "titel": "Luan und ADHS – Variante B",
+  "id": "erz-einrichtungen",
+  "titel": "Einrichtungen der Erziehung",
   "lbNum": 1,
   "vignette": {
-   "titel": "Erziehungsberatungsstelle",
-   "text": "Frau Müller kommt mit ihrem 5-jährigen Sohn Luan in die Erziehungsberatungsstelle, da sie mit der Erziehung ihres sehr lebhaften und aufbrausenden Sohnes überfordert ist. Frau Müller berichtet der Sozialpädagogin, dass ihr Sohn bei jeder Kleinigkeit ausflippe. Neulich, als ihre Freundin zu Besuch war, schmiss er vor lauter Wut einen Teller auf den Boden, weil er kein weiteres Stück Kuchen bekam. Ihre Freundin habe ihr nun empfohlen, sich Hilfe bei einer Beratungsstelle zu holen. Die Freundin sei sich sicher, Luan würde ADHS haben, schließlich sei er so aggressiv wie der Sohn der Nachbarin. Und der habe schließlich auch ADHS. Außerdem würde er ja auch gar nicht folgen. Das wäre ja wohl auch typisch für Kinder mit ADHS. Luans Erzieherin sieht das Ganze aber weniger dramatisch. Er könne sich in der Gruppe doch sehr gut an Regeln halten.",
-   "zeilen": false
+   "titel": "Wohngruppe „Brückenhaus“",
+   "zeilen": false,
+   "text": "In Ihrem Praktikum in der Wohngruppe „Brückenhaus“ lernen Sie die zehnjährige Sofia kennen. Sie lebt seit vier Monaten dort, weil ihre Mutter schwer erkrankt ist und ihr Vater die Betreuung nicht übernehmen kann. Die Wohngruppe sichert Versorgung, Tagesstruktur und Beziehungsangebote. Sofia besucht vormittags die Grundschule. An zwei Nachmittagen pro Woche geht sie in den Hort in der Nachbarschaft und macht dort ihre Hausaufgaben. Am Wochenende besucht sie ihre Mutter im Krankenhaus."
   },
   "kontext": "",
-  "stamm": "Die Sozialpädagogin gibt eine wissenschaftsbasierte Einschätzung zu Luan ab, wenn …",
-  "pruefen": "Im Word-Dokument war keine Lösung angekreuzt. Die Lösung wurde aus dem Inhalt abgeleitet – bitte fachlich prüfen.",
+  "stamm": "Die Einrichtungen werden fachlich zutreffend zugeordnet, wenn …",
+  "pruefen": "Neu erstellt (Claude) nach der ISB-Checkliste der App. Bitte fachlich und passend zu deinem Unterricht prüfen.",
   "aussagen": [
    {
-    "text": "… sie ausgewertete Fragebögen von den wichtigen Bezugspersonen (Mutter, Vater, Erzieherinnen) mit einbezieht.",
+    "text": "… die Wohngruppe als familienersetzende Einrichtung gilt, weil sie Aufgaben der Familie im Lebensalltag des Mädchens übernimmt.",
     "richtig": true,
-    "erklaerung": ""
+    "erklaerung": "Heimerziehung und Wohngruppen ersetzen die Familie, wenn Kinder dort nicht leben können."
    },
    {
-    "text": "… sie ihre Einschätzung auf die detaillierten Schilderungen der Mutter stützt, da diese Luan im Alltag intensiv erlebt.",
-    "richtig": false,
-    "erklaerung": ""
-   },
-   {
-    "text": "… sie einen standardisierten Beobachtungsbogen verwendet, um Luans Verhalten über einen längeren Zeitraum zu erfassen.",
+    "text": "… der Hort als familienergänzende Einrichtung gilt, da er Begleitung und Förderung neben dem Elternhaus anbietet.",
     "richtig": true,
-    "erklaerung": ""
+    "erklaerung": "Der Hort begleitet Schulkinder in der Freizeit und unterstützt die Familie, ohne sie zu ersetzen."
    },
    {
-    "text": "… sie die Einschätzung aufgrund des Vorfalls mit dem auf den Boden geschmissenen Teller trifft, weil dieser sehr eindrücklich ist.",
+    "text": "… die Schule als familienersetzende Einrichtung gilt, weil sie den Kindern verpflichtende Bildungsangebote macht.",
     "richtig": false,
-    "erklaerung": ""
+    "erklaerung": "Die Schule hat einen Bildungs- und Erziehungsauftrag, ersetzt die Familie aber nicht."
+   },
+   {
+    "text": "… Wohngruppe und Hort dieselbe Zielgruppe haben, weil beide Angebote sich an Kinder in familiären Krisen richten.",
+    "richtig": false,
+    "erklaerung": "Der Hort richtet sich an Schulkinder allgemein; die Wohngruppe an Kinder, die vorübergehend oder dauerhaft nicht in ihrer Familie leben können."
+   }
+  ]
+ },
+ {
+  "id": "erleben-verhalten-handeln",
+  "titel": "Erleben, Verhalten und Handeln in der Praxis",
+  "lbNum": 1,
+  "vignette": {
+   "titel": "Grundschulklasse",
+   "zeilen": false,
+   "text": "In Ihrem Praktikum in einer Grundschulklasse beobachten Sie den siebenjährigen Leon. Bei der Rückgabe der Mathematikarbeit senkt er den Blick, zerknüllt das Blatt und schiebt es in seinen Ranzen. Später erzählt er der Lehrerin Frau Brandt, dass er Sorge hatte, seine Eltern könnten schimpfen. Frau Brandt setzt sich in der Pause zu ihm, bespricht Lernwege mit ihm und vereinbart, die nächste Arbeit gemeinsam vorzubereiten. Leon entschließt sich daraufhin, täglich zehn Minuten zu üben, und legt dafür einen Plan an."
+  },
+  "kontext": "",
+  "stamm": "Die Situation wird fachlich zutreffend beschrieben, wenn …",
+  "pruefen": "Neu erstellt (Claude) nach der ISB-Checkliste der App. Bitte fachlich und passend zu deinem Unterricht prüfen.",
+  "aussagen": [
+   {
+    "text": "… das Zerknüllen des Blattes als beobachtbares Verhalten eingeordnet wird, weil Außenstehende es unmittelbar wahrnehmen können.",
+    "richtig": true,
+    "erklaerung": "Verhalten umfasst alle von außen beobachtbaren Äußerungen."
+   },
+   {
+    "text": "… Leons Sorge als Verhalten eingeordnet wird, weil er sie einer Erwachsenen mitteilt und sie damit für andere sichtbar wird.",
+    "richtig": false,
+    "erklaerung": "Die Sorge ist Erleben und nur ihm selbst zugänglich. Beobachtbar ist seine Mitteilung darüber."
+   },
+   {
+    "text": "… Leons Entschluss, nach Plan zu üben, als Handeln gilt, da er bewusst und mit Absicht ein Ziel verfolgt.",
+    "richtig": true,
+    "erklaerung": "Handeln ist bewusstes, zielgerichtetes Verhalten mit einer Absicht."
+   },
+   {
+    "text": "… die Beschäftigung mit Leons Sorge der Psychologie zuzuordnen ist, während die Frage nach Frau Brandts absichtsvoller Unterstützung Gegenstand der Pädagogik ist.",
+    "richtig": true,
+    "erklaerung": "Psychologie untersucht Erleben und Verhalten; die Pädagogik untersucht Erziehung als absichtsvolle Einwirkung."
+   }
+  ]
+ },
+ {
+  "id": "eve-beobachtung",
+  "titel": "Erleben und Verhalten beobachten",
+  "lbNum": 1,
+  "vignette": {
+   "titel": "Kita „Zwergenland“",
+   "zeilen": false,
+   "text": "In Ihrem Praktikum in der Kita „Zwergenland“ beobachten Sie den fünfjährigen Ben beim Bauen. Er hält den Turm aus Bausteinen mit beiden Händen fest, atmet schnell und sagt zu Ihnen: „Der darf nicht kaputt gehen!“ Im Beobachtungsbogen notiert Ihre Anleiterin: „Ben ist ängstlich.“"
+  },
+  "kontext": "",
+  "stamm": "Die Beobachtung wird fachlich zutreffend eingeordnet, wenn …",
+  "pruefen": "Neu erstellt (Claude) nach der ISB-Checkliste der App. Bitte fachlich und passend zu deinem Unterricht prüfen.",
+  "aussagen": [
+   {
+    "text": "… der Eintrag im Bogen als Schlussfolgerung auf Bens Erleben gilt, die weitere Belege oder eine Selbstauskunft erfordert.",
+    "richtig": true,
+    "erklaerung": "Erleben ist von außen nicht beobachtbar; Fremdbeobachtung kann es nur erschließen."
+   },
+   {
+    "text": "… Bens Ausruf als Erleben eingeordnet wird, da er die Gedanken des Kindes wiedergibt und damit sein Innenleben betrifft.",
+    "richtig": false,
+    "erklaerung": "Sprechen ist beobachtbares Verhalten. Über die Äußerung ist Erleben zugänglich, sie selbst ist aber Verhalten."
+   },
+   {
+    "text": "… Bens Festhalten und seine mögliche Sorge als zusammengehörig gelten, weil sich Erleben im Verhalten ausdrückt und beides gleichzeitig auftritt.",
+    "richtig": true,
+    "erklaerung": "Erleben und Verhalten stehen in Wechselwirkung und sind eins im psychischen Geschehen."
+   },
+   {
+    "text": "… die Wahrnehmung der Fachkraft als Fremdbeobachtung gilt, wohingegen Ben durch Selbstbeobachtung Zugang zu seinem Erleben hat.",
+    "richtig": true,
+    "erklaerung": "Verhalten wird durch Fremdbeobachtung erschlossen, Erleben ist Gegenstand der Selbstbeobachtung."
+   }
+  ]
+ },
+ {
+  "id": "wiss-alltag-geschwister",
+  "titel": "Alltagspsychologische und wissenschaftliche Aussagen",
+  "lbNum": 1,
+  "vignette": {
+   "titel": "Elterngespräch in der Grundschule",
+   "zeilen": false,
+   "text": "In einem Elterngespräch der Grundschule, an dem Sie als Praktikantin teilnehmen, sagt Lehrer Herr Wolf: „Kinder mit vielen Geschwistern sind sozial kompetenter. Das war in meinen 25 Berufsjahren so.“ Sie möchten diese Vermutung prüfen und planen, in fünf Klassen mit einem standardisierten Bogen soziale Kompetenz zu erfassen und die Geschwisterzahl per Elternfragebogen zu erheben."
+  },
+  "kontext": "",
+  "stamm": "Die Situation wird fachlich zutreffend beurteilt, wenn …",
+  "pruefen": "Neu erstellt (Claude) nach der ISB-Checkliste der App. Bitte fachlich und passend zu deinem Unterricht prüfen.",
+  "aussagen": [
+   {
+    "text": "… Herrn Wolfs Aussage als alltagspsychologisch gilt, da sie auf zufällig gesammelten Eindrücken beruht und ungeprüft verallgemeinert wird.",
+    "richtig": true,
+    "erklaerung": "Zufällige Erkenntnisgewinnung, fehlende Überprüfung und unzulässige Verallgemeinerung kennzeichnen alltagspsychologische Aussagen."
+   },
+   {
+    "text": "… der standardisierte Bogen das Merkmal der Objektivität verletzt, weil er die Erhebung an mehreren Orten vereinheitlicht.",
+    "richtig": false,
+    "erklaerung": "Standardisierung erhöht die Objektivität, weil die Erhebung unabhängig von der Person durchgeführt und ausgewertet werden kann."
+   },
+   {
+    "text": "… aus der Annahme die Hypothese abgeleitet wird, dass Kinder aus geschwisterreichen Familien im Bogen höhere Werte erreichen.",
+    "richtig": true,
+    "erklaerung": "Eine überprüfbare Hypothese benennt messbare Größen und den erwarteten Zusammenhang."
+   },
+   {
+    "text": "… sich Herrn Wolfs Aussage bestätigen lässt, sobald drei Kinder aus größeren Familien im Unterricht hilfsbereit wirken.",
+    "richtig": false,
+    "erklaerung": "Einzelne subjektive Eindrücke reichen nicht aus; wissenschaftliche Aussagen brauchen systematische, überprüfbare Daten."
+   }
+  ]
+ },
+ {
+  "id": "exp-kaugummi",
+  "titel": "Das Experiment als wissenschaftliche Methode",
+  "lbNum": 1,
+  "vignette": {
+   "titel": "Lernversuch im Unterricht",
+   "zeilen": false,
+   "text": "Im Psychologieunterricht prüft Ihre Klasse, ob Kaugummikauen das Behalten von Vokabeln verbessert. Die Lehrerin teilt 24 Lernende per Los in zwei Gruppen. Beide lernen zehn Vokabeln fünf Minuten lang im selben Raum, Gruppe A mit Kaugummi, Gruppe B ohne. Zehn Minuten später schreiben alle einen Test. Gruppe A erreicht im Durchschnitt 6,8, Gruppe B 6,1 Punkte."
+  },
+  "kontext": "",
+  "stamm": "Das Experiment wird fachlich zutreffend beschrieben, wenn …",
+  "pruefen": "Neu erstellt (Claude) nach der ISB-Checkliste der App. Bitte fachlich und passend zu deinem Unterricht prüfen.",
+  "aussagen": [
+   {
+    "text": "… die erreichte Punktzahl als unabhängige Variable gilt, weil sie je nach Lernbedingung unterschiedlich ausfällt.",
+    "richtig": false,
+    "erklaerung": "Die Punktzahl ist die abhängige Variable, sie wird gemessen. Die unabhängige Variable wird gezielt verändert."
+   },
+   {
+    "text": "… die Lernbedingung mit oder ohne Zusatz als unabhängige Variable gilt, da die Lehrperson sie gezielt verändert.",
+    "richtig": true,
+    "erklaerung": "Die unabhängige Variable ist die Bedingung, die der Versuchsleiter variiert."
+   },
+   {
+    "text": "… Gruppe B als Kontrollgruppe dient, weil sie Vergleichswerte für die veränderte Lernbedingung liefert.",
+    "richtig": true,
+    "erklaerung": "Die Kontrollgruppe erhält die Bedingung nicht und ermöglicht den Vergleich."
+   },
+   {
+    "text": "… der Unterschied von 0,7 Punkten beweist, dass sich die Merkleistung beim Lernen allgemein verbessern lässt.",
+    "richtig": false,
+    "erklaerung": "Ein kleiner Unterschied in einer kleinen Stichprobe belegt keine allgemeine Wirkung; das Ergebnis müsste wiederholt und geprüft werden."
+   }
+  ]
+ },
+ {
+  "id": "erz-bildung-jugendtreff",
+  "titel": "Erziehung und Bildung im Jugendtreff",
+  "lbNum": 1,
+  "vignette": {
+   "titel": "Jugendtreff",
+   "zeilen": false,
+   "text": "In Ihrem Praktikum im Jugendtreff bietet Sozialpädagoge Herr Yilmaz einen Kochabend an. Als der 15-jährige Jan abfällig über eine Mitschülerin spricht, weist Herr Yilmaz ihn ruhig darauf hin, wie das bei ihr ankommt. Die 16-jährige Lara liest nach dem Abend selbst über gesunde Ernährung nach und bereitet zu Hause zwei neue Rezepte zu."
+  },
+  "kontext": "",
+  "stamm": "Erziehung und Bildung werden fachlich zutreffend unterschieden, wenn …",
+  "pruefen": "Neu erstellt (Claude) nach der ISB-Checkliste der App. Bitte fachlich und passend zu deinem Unterricht prüfen.",
+  "aussagen": [
+   {
+    "text": "… der Hinweis an Jan als Erziehungshandlung gilt, weil Herr Yilmaz dessen Verhalten absichtsvoll beeinflussen möchte.",
+    "richtig": true,
+    "erklaerung": "Erziehung ist durch die Absicht der Erziehenden bestimmt, Verhalten oder Fähigkeiten zu beeinflussen."
+   },
+   {
+    "text": "… Laras Recherche und ihr Ausprobieren als Bildungsprozess gelten, da sie ihr Wissen und Können durch eigene Tätigkeit erweitert.",
+    "richtig": true,
+    "erklaerung": "Bildung ist die aktive Auseinandersetzung des Menschen mit der Welt und seine Selbstentwicklung."
+   },
+   {
+    "text": "… Bildung erst außerhalb pädagogischer Einrichtungen möglich wird, sodass das Angebot des Abends als Erziehung eingeordnet werden muss.",
+    "richtig": false,
+    "erklaerung": "Bildung kann auch in Einrichtungen stattfinden und durch Angebote angeregt werden."
+   },
+   {
+    "text": "… Erziehung und Bildung unabhängig voneinander verlaufen, weshalb die Angebote des Sozialpädagogen Laras Lernen unbeeinflusst lassen.",
+    "richtig": false,
+    "erklaerung": "Erziehung kann Bildung anregen und unterstützen; beide beeinflussen sich wechselseitig."
+   }
+  ]
+ },
+ {
+  "id": "erz-wiss-praxis-kinderhaus",
+  "titel": "Erziehungswissenschaft und Erziehungspraxis im Kinderhaus",
+  "lbNum": 1,
+  "vignette": {
+   "titel": "Kinderhaus",
+   "zeilen": false,
+   "text": "Im Team des Kinderhauses, in dem Sie Ihr Praktikum absolvieren, wird ein Fachartikel gelesen, der verschiedene Erziehungsstile untersucht und Ergebnisse aus mehreren Studien zusammenfasst. Leiterin Frau Roth erkennt, dass ihr eigener Umgang mit Grenzen von den Erfahrungen ihrer Kindheit geprägt ist. Sie entwickelt mit dem Team einen Leitfaden zum Grenzensetzen und wertet ihn nach drei Monaten in einer Teamsitzung aus."
+  },
+  "kontext": "",
+  "stamm": "Erziehungswissenschaft und Erziehungspraxis werden fachlich zutreffend zugeordnet, wenn …",
+  "pruefen": "Neu erstellt (Claude) nach der ISB-Checkliste der App. Bitte fachlich und passend zu deinem Unterricht prüfen.",
+  "aussagen": [
+   {
+    "text": "… die gelesene Veröffentlichung als Erziehungswissenschaft gilt, da sie Erziehung systematisch erforscht und begründete, verallgemeinerbare Aussagen anbietet.",
+    "richtig": true,
+    "erklaerung": "Erziehungswissenschaft gewinnt systematisch Erkenntnisse über Erziehung."
+   },
+   {
+    "text": "… die Auswertung im Team als Erziehungswissenschaft gilt, weil dort Beobachtungen aus einer einzigen Einrichtung gesammelt werden.",
+    "richtig": false,
+    "erklaerung": "Die Teamauswertung ist Reflexion der Praxis; für allgemeingültige Aussagen reichen Erfahrungen aus einer Einrichtung nicht."
+   },
+   {
+    "text": "… Frau Roths Selbstreflexion zeigt, dass Erziehungspraxis auch von der eigenen Biografie der Erziehenden beeinflusst wird.",
+    "richtig": true,
+    "erklaerung": "Erziehungspraxis wird auch von eigenen Erfahrungen und Alltagstheorien geprägt."
+   },
+   {
+    "text": "… das gemeinsam entwickelte Regelwerk als Erziehungspraxis gilt, weil es das Handeln im Alltag der Kinder gestaltet.",
+    "richtig": true,
+    "erklaerung": "Erziehungspraxis ist konkretes erzieherisches Handeln im Alltag."
+   }
+  ]
+ },
+ {
+  "id": "erz-ziele-klassendienst",
+  "titel": "Erziehungsziele und Erziehungshandlungen in der Ganztagsklasse",
+  "lbNum": 1,
+  "vignette": {
+   "titel": "Ganztagsklasse",
+   "zeilen": false,
+   "text": "In der Ganztagsklasse, in der Sie Ihr Praktikum absolvieren, hat das Team das Erziehungsziel „Verantwortungsbewusstsein“ vereinbart. Lehrer Herr Baum überträgt den Kindern reihum das Amt des Klassendienstes und bespricht freitags mit ihnen, was gut geklappt hat. Kollegin Frau Sander prüft täglich, ob die Tafel gewischt wurde, und teilt den Dienst bei Mängeln kommentarlos neu zu. Viele Eltern wünschen sich vor allem gute Noten."
+  },
+  "kontext": "",
+  "stamm": "Erziehungsziele und Erziehungshandlungen werden fachlich zutreffend aufeinander bezogen, wenn …",
+  "pruefen": "Neu erstellt (Claude) nach der ISB-Checkliste der App. Bitte fachlich und passend zu deinem Unterricht prüfen.",
+  "aussagen": [
+   {
+    "text": "… die Übertragung eines Amtes mit anschließender Besprechung das gemeinsam festgelegte Ziel unterstützt, weil die Kinder Verantwortung erproben und reflektieren.",
+    "richtig": true,
+    "erklaerung": "Selbst Verantwortung übernehmen und darüber sprechen fördert Verantwortungsbewusstsein."
+   },
+   {
+    "text": "… die tägliche Kontrolle mit Neuzuteilung verantwortliches Handeln aufbaut, da die Kinder klare Folgen erleben.",
+    "richtig": false,
+    "erklaerung": "Fremdkontrolle ohne Gespräch fördert eher Anpassung als eigene Verantwortung."
+   },
+   {
+    "text": "… der Wunsch der Eltern automatisch zum verbindlichen Erziehungsziel der Klasse wird, obwohl das Team eigene Ziele festgelegt hat.",
+    "richtig": false,
+    "erklaerung": "Erziehungsziele stammen aus mehreren Quellen (z. B. Eltern, Gesellschaft, Einrichtung) und werden abgewogen."
+   },
+   {
+    "text": "… das gemeinsame Ziel den Lehrkräften Orientierung bietet und einen Maßstab liefert, an dem sich die Wirkung ihrer Maßnahmen beurteilen lässt.",
+    "richtig": true,
+    "erklaerung": "Erziehungsziele geben Orientierung und dienen als Bewertungsmaßstab."
    }
   ]
  }
@@ -5320,13 +5458,35 @@ const CO_AUFGABENBANK=[
 const CHECKOUT_VORLAGEN=[
  {
   "id": "lb1-woche1",
-  "titel": "Alltags- und Wissenschaftstheorie",
+  "titel": "Erleben, Verhalten und wissenschaftliches Denken",
   "lbNum": 1,
   "datum": "2026-10-09",
   "aufgaben": [
-   "tim-max",
-   "hannes",
-   "schlaf"
+   "eve-beobachtung",
+   "wiss-alltag-geschwister",
+   "exp-kaugummi"
+  ]
+ },
+ {
+  "id": "lb1-woche2",
+  "titel": "Erziehung, Bildung und Erziehungsziele",
+  "lbNum": 1,
+  "datum": "2026-10-16",
+  "aufgaben": [
+   "erz-bildung-jugendtreff",
+   "erz-wiss-praxis-kinderhaus",
+   "erz-ziele-klassendienst"
+  ]
+ },
+ {
+  "id": "lb1-woche3",
+  "titel": "Beziehung, Einrichtungen und Gegenstand der Psychologie",
+  "lbNum": 1,
+  "datum": "2026-10-23",
+  "aufgaben": [
+   "paed-beziehung",
+   "erz-einrichtungen",
+   "erleben-verhalten-handeln"
   ]
  }
 ];
@@ -5498,6 +5658,7 @@ AUFGABE: …</pre>
    </details>
    <div class="form-actions co-ed-fuss">
     ${e.id?`<button class="secondary"onclick="coLoeschen('${e.id}')">Löschen</button>`:""}
+    <button class="secondary"onclick="coEditorVorschau()">👁 Vorschau (Schüleransicht)</button>
     <button class="secondary"onclick="coEditorLesen();coPoolExport('pdf')">PDF für Aufgabenpool</button>
     <button class="secondary"onclick="coEditorLesen();coPoolExport('word')">Word für Aufgabenpool</button>
     <span style="flex:1"></span>
@@ -5515,6 +5676,16 @@ function coBankEinsetzen(i){
  coEditor.aufgaben[i]=coAufgabeAusBank(id);
  coEditorRender();toast("Aufgabe eingesetzt – bitte prüfen.");
 }
+function coEditorVorschau(){
+ coEditorLesen();
+ const e=coEditor;
+ const co={id:"vorschau",titel:e.titel||"(ohne Titel)",lbNum:e.lbNum,datum:e.datum,status:"live",
+  aufgaben:e.aufgaben.map(a=>{const q={stamm:a.stamm,aussagen:a.aussagen.map(s=>s.text),vignette:{titel:a.vTitel,text:a.vText,zeilen:!!a.vZeilen}};
+   if(a.kontext.trim())q.kontext=a.kontext;if(a.mText.trim())q.material={titel:a.mTitel,text:a.mText,quelle:a.mQuelle};return q;})};
+ modal(coTestInhaltHTML(co,"vorschau",{},PP_FARBEN[e.lbNum]||"#4a90d9",true));
+ coStandAktualisieren(co);
+}
+function coEditorVorschauZurueck(){coEditorRender();}
 function coVorlageWaehlen(){
  coEditorLesen();
  const id=$("coVorlage")?.value;if(!id)return;
@@ -5740,22 +5911,7 @@ async function openCheckoutTest(id){
  const ant=a?.antworten||{};
  const c=PP_FARBEN[co.lbNum]||"#4a90d9";
  const glob=coGemeinsameSituation(co);
- modal(`<div id="coTest"class="kp-test">
-  <div class="kicker"style="color:${c}">🏁 CHECK-OUT · LB ${esc(co.lbNum)} · ${coDatum(co.datum)}</div>
-  <h2>${esc(co.titel)}</h2>
-  <div class="kp-fortschritt"><div class="kp-balken"><i id="coBalken"style="background:${c}"></i></div><span id="coStand"></span></div>
-  <details class="kp-hilfe"><summary>So funktioniert der Test</summary>
-   <p>Lies zu jeder Aufgabe zuerst die Fallvignette. Entscheide dann bei <b>jeder</b> der 4 Aussagen, ob sie richtig oder falsch ist. Eine leere Aussage zählt als Fehler. Deine Antworten werden automatisch gespeichert.</p>
-   <p class="kp-wertung">Wertung je Aufgabe: 4 richtig = ${CHECKOUT_BE_NACH_FEHLERN[0]} BE · 3 richtig = ${CHECKOUT_BE_NACH_FEHLERN[1]} BE · 2 richtig = ${CHECKOUT_BE_NACH_FEHLERN[2]} BE · weniger = 0 BE</p></details>
-  ${glob?`<div class="kp-vig"style="border-left-color:${c}"><div class="kp-label">📖 Situation</div>${coSituationHTML(glob,false,true,false)}</div>`:""}
-  ${(co.aufgaben||[]).map((q,i)=>`<section class="kp-karte"style="--c:${c}">
-   <header class="kp-kopf"><span class="kp-nummer">${i+1}</span><div><b>Aufgabe ${i+1} von ${(co.aufgaben||[]).length}</b><small>bis zu ${CHECKOUT_BE_NACH_FEHLERN[0]} BE</small></div><span class="kp-fort">0/4</span></header>
-   ${coFallHTML(q)}
-   <div class="kp-liste">${(q.aussagen||[]).map((t,j)=>`<div class="kp-zeile"><span class="kp-num">${j+1}</span><p class="kp-text">${esc(t)}</p>
-    <div class="kp-wahl"role="radiogroup"aria-label="Aussage ${j+1}">${[["r","✓ Richtig"],["f","✗ Falsch"]].map(([v,l])=>`<label class="kp-opt ${v}"><input type="radio"name="coT${i}_${j}"value="${v}"aria-label="Aussage ${j+1}: ${v==="r"?"richtig":"falsch"}"${ant[`${i}_${j}`]===v?" checked":""} onchange="coAntwort('${id}','${i}_${j}','${v}')"><span>${l}</span></label>`).join("")}</div></div>`).join("")}</div>
-  </section>`).join("")}
-  <div class="co-test-fuss"><span id="coStand2"></span><button class="primary"onclick="coAbgeben('${id}')">Abgeben</button></div>
- </div>`);
+ modal(coTestInhaltHTML(co,id,ant,c,false));
  coStandAktualisieren(co);
  // Beendet die Lehrkraft den Test, wird die Bearbeitung sofort gesperrt.
  window.__coUnsub=onSnapshot(doc(db,"checkouts",id),snap=>{
@@ -5763,6 +5919,28 @@ async function openCheckoutTest(id){
   const x=snap.data();
   if(x&&x.status!=="live"){coUnsubAll();$("coTest").innerHTML=`<h2>Der Check-out wurde beendet.</h2><p>Deine gespeicherten Antworten werden gewertet. Das Ergebnis erscheint in deinem Lernweg.</p><div class="form-actions"><button class="primary"onclick="closeModal();render()">OK</button></div>`;}
  });
+}
+// Inhalt des Tests. vorschau=true: Ansicht für Lehrkräfte im Editor (nichts wird gespeichert).
+function coTestInhaltHTML(co,id,ant,c,vorschau){
+ const glob=coGemeinsameSituation(co);
+ const n=(co.aufgaben||[]).length;
+ return`<div id="coTest"class="kp-test">
+  ${vorschau?`<div class="kp-vorschau-band">👁 <b>Vorschau</b> · So sehen Schüler:innen den Test. Es wird nichts gespeichert. <button class="secondary"type="button"onclick="coEditorVorschauZurueck()">← Zurück zum Editor</button></div>`:""}
+  <div class="kicker"style="color:${c}">🏁 CHECK-OUT · LB ${esc(co.lbNum)} · ${coDatum(co.datum)}</div>
+  <h2>${esc(co.titel)}</h2>
+  <div class="kp-fortschritt"><div class="kp-balken"><i id="coBalken"style="background:${c}"></i></div><span id="coStand"></span></div>
+  <details class="kp-hilfe"><summary>So funktioniert der Test</summary>
+   <p>Lies zu jeder Aufgabe zuerst die Fallvignette. Entscheide dann bei <b>jeder</b> der 4 Aussagen, ob sie richtig oder falsch ist. Eine leere Aussage zählt als Fehler.${vorschau?"":" Deine Antworten werden automatisch gespeichert."}</p>
+   <p class="kp-wertung">Wertung je Aufgabe: 4 richtig = ${CHECKOUT_BE_NACH_FEHLERN[0]} BE · 3 richtig = ${CHECKOUT_BE_NACH_FEHLERN[1]} BE · 2 richtig = ${CHECKOUT_BE_NACH_FEHLERN[2]} BE · weniger = 0 BE</p></details>
+  ${glob?`<div class="kp-vig"style="border-left-color:${c}"><div class="kp-label">📖 Situation</div>${coSituationHTML(glob,false,true,false)}</div>`:""}
+  ${(co.aufgaben||[]).map((q,i)=>`<section class="kp-karte"style="--c:${c}">
+   <header class="kp-kopf"><span class="kp-nummer">${i+1}</span><div><b>Aufgabe ${i+1} von ${n}</b><small>bis zu ${CHECKOUT_BE_NACH_FEHLERN[0]} BE</small></div><span class="kp-fort">0/4</span></header>
+   ${coFallHTML(q)}
+   <div class="kp-liste">${(q.aussagen||[]).map((t,j)=>`<div class="kp-zeile"><span class="kp-num">${j+1}</span><p class="kp-text">${esc(t)}</p>
+    <div class="kp-wahl"role="radiogroup"aria-label="Aussage ${j+1}">${[["r","✓ Richtig"],["f","✗ Falsch"]].map(([v,l])=>`<label class="kp-opt ${v}"><input type="radio"name="coT${i}_${j}"value="${v}"aria-label="Aussage ${j+1}: ${v==="r"?"richtig":"falsch"}"${(ant||{})[`${i}_${j}`]===v?" checked":""} onchange="${vorschau?"coStandAktualisieren()":`coAntwort('${id}','${i}_${j}','${v}')`}"><span>${l}</span></label>`).join("")}</div></div>`).join("")}</div>
+  </section>`).join("")}
+  <div class="co-test-fuss"><span id="coStand2"></span>${vorschau?`<button class="secondary"type="button"onclick="coEditorVorschauZurueck()">← Zurück zum Editor</button>`:`<button class="primary"onclick="coAbgeben('${id}')">Abgeben</button>`}</div>
+ </div>`;
 }
 function coStandAktualisieren(co){
  const n=document.querySelectorAll("#coTest .kp-zeile").length||(co?.aufgaben||[]).length*4;
