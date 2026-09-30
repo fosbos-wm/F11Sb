@@ -3941,6 +3941,7 @@ function ppKprimBereichHTML(ph,teil,coDaten,heute){
     +`<button class="${vls.length?"secondary":"primary"}"onclick="openCheckoutEditor(null,{datum:'${w.end}',lbNum:${ph.lbNum}})">＋ Check-out anlegen</button>`;
   }
   else rechts=`<small style="color:var(--muted)">${vorbei?"kein Check-out":"Deine Lehrkraft schaltet ihn am Freitag frei."}</small>`;
+  if(lehrer&&(co||CHECKOUT_VORLAGEN.some(v=>v.datum===w.end)))rechts=`<button class="secondary"onclick="openKprimVorschau(0,'${w.end}')">👁 Vorschau</button>`+rechts;
   const st=co&&lehrer&&co.status==="beendet"&&stat[co.id]?` · ${stat[co.id].n} ausgewertet · Ø ${(stat[co.id].summe/stat[co.id].n).toFixed(1).replace(".",",")} Punkte`:"";
   return`<div class="co-zeile"><span class="co-lb">Fr ${fmtKurz(w.end)}</span>
    <div class="co-titel"><b>${co?esc(co.titel||"Check-out"):"Check-out"}</b><small>${co?`${(co.aufgaben||[]).length} K-Prim-Aufgaben${st}`:"3 K-Prim-Aufgaben zu den Themen der Woche"}</small></div>
@@ -3955,7 +3956,7 @@ function ppKprimBereichHTML(ph,teil,coDaten,heute){
     <div class="co-titel"><b>${esc(c.titel||"Check-out")}</b><small>${coDatum(c.datum)} · ${t?`${t.n} ausgewertet · Ø ${(t.summe/t.n).toFixed(1).replace(".",",")} Punkte`:"noch keine Auswertung"}</small></div>
     <div class="co-aktion"><button class="secondary"onclick="openCheckoutErgebnisse('${c.id}')">Ergebnisse</button><button class="secondary"onclick="coPdfKlasse('${c.id}')">PDF Klasse</button></div></div>`;}).join("")||`<div class="empty">Noch kein Check-out beendet. Die Ergebnisse erscheinen hier, sobald du einen Test beendet hast.</div>`}</div>`;
   ersatz=`<div class="co-ersatz"><div><b>Kurzarbeit-Ersatz</b><small>Schüler:innen wählen ${d.einst.anzahlWaehlen} Tests aus ihrer Bibliothek · ${esc(coAuswahlStatus(d.einst).text)}</small></div>
-   <div class="co-aktion"><button class="secondary"onclick="openCheckoutEinstellungen()">Einstellungen</button><button class="primary"onclick="openCheckoutKlassenuebersicht()">Ergebnisse je Schüler:in</button><button class="secondary"onclick="coPdfRespizienzKlasse()">PDF Respizienz Klasse</button></div></div>`;
+   <div class="co-aktion"><button class="primary"onclick="openKprimUebersicht()">🗂 Alle Freitage &amp; Vorschau</button><button class="secondary"onclick="openCheckoutEinstellungen()">Einstellungen</button><button class="secondary"onclick="openCheckoutKlassenuebersicht()">Ergebnisse je Schüler:in</button><button class="secondary"onclick="coPdfRespizienzKlasse()">PDF Respizienz Klasse</button></div></div>`;
  }else{
   const fertig=(d.checkouts||[]).filter(c=>d.meineAbgaben?.[c.id]?.abgegeben);
   mitte=`<div class="kicker pp-kp-h">MEINE ABGESCHLOSSENEN CHECK-OUTS (${fertig.length})</div>
@@ -5104,7 +5105,7 @@ function checkoutSektionHTML(d){
  let ersatz="";
  if(lehrer){
   ersatz=`<div class="co-ersatz"><div><b>Kurzarbeit-Ersatz</b><small>${pool.length} Check-outs beendet · Schüler:innen wählen ${d.einst.anzahlWaehlen} aus · ${esc(coAuswahlStatus(d.einst).text)}</small></div>
-   <div class="co-aktion"><button class="secondary"onclick="openCheckoutEinstellungen()">Einstellungen</button><button class="secondary"onclick="openCheckoutKlassenuebersicht()">Klassenübersicht</button></div></div>`;
+   <div class="co-aktion"><button class="primary"onclick="openKprimUebersicht()">🗂 Alle Freitage &amp; Vorschau</button><button class="secondary"onclick="openCheckoutEinstellungen()">Einstellungen</button><button class="secondary"onclick="openCheckoutKlassenuebersicht()">Klassenübersicht</button></div></div>`;
  }else{
   const aByCo=d.meineAbgaben;
   const gewertet=pool.filter(c=>aByCo[c.id]?.ausgewertet);
@@ -5720,6 +5721,110 @@ function coEditorVorschau(){
  coStandAktualisieren(co);
 }
 function coEditorVorschauZurueck(){coEditorRender();}
+// ============================================================
+// LEHRKRAFT: alle Freitagstests des Schuljahres ansehen und durchblättern
+// Übersicht (Liste aller Freitage) → Vorschau (Schüleransicht, mit ‹ › durch alle Freitage,
+// Lösungen einblendbar) → Bearbeiten / Vorlage einsetzen / Live schalten.
+// Quelle je Freitag: gespeicherter Check-out, sonst die Vorlage der App.
+// ============================================================
+let kpv={liste:[],i:0,loesung:false,d:null};
+function kpvFreitage(){
+ const out=[];
+ PROJEKT_PHASEN.forEach(ph=>["projekt","apt"].forEach(teil=>ppTeilWochen(ph,teil).forEach(w=>out.push({w,ph,teil}))));
+ return out.sort((a,b)=>String(a.w.start).localeCompare(String(b.w.start)));
+}
+function kpvEintraege(d){
+ return kpvFreitage().map(f=>{
+  const co=coFuerWoche(d,f.w),vl=CHECKOUT_VORLAGEN.find(v=>v.datum===f.w.end)||null;
+  return{...f,co,vl,hat:!!(co||vl)};
+ });
+}
+function kpvOrt(x){return`${x.ph.lb} · ${x.teil==="projekt"?ppTeilName("projekt",x.ph):"Prüfungstraining"}`;}
+async function openKprimUebersicht(){
+ if(!isTeacher())return;
+ const d=await ladeCheckoutDaten();kpv.d=d;
+ const e=kpvEintraege(d);
+ const chip=x=>x.co?(x.co.status==="live"?`<span class="co-chip live"><span class="co-live-punkt"></span>läuft</span>`:x.co.status==="beendet"?`<span class="co-chip fertig">beendet</span>`:`<span class="co-chip entwurf">Entwurf</span>`)
+  :x.vl?`<span class="co-chip vorlage">Vorlage bereit</span>`:`<span class="co-chip leer">leer</span>`;
+ const zeilen=e.map((x,k)=>{
+  const c=PP_FARBEN[x.ph.lbNum]||"#8a99a3";
+  const idx=e.slice(0,k+1).filter(y=>y.hat).length-1;
+  let akt="";
+  if(x.hat)akt+=`<button class="secondary"onclick="openKprimVorschau(0,'${x.w.end}')">👁 Vorschau</button>`;
+  if(x.co){
+   akt+=x.co.status==="entwurf"?`<button class="secondary"onclick="openCheckoutEditor('${x.co.id}')">✎ Bearbeiten</button><button class="primary"onclick="coLiveStarten('${x.co.id}')">▶ Live freischalten</button>`
+    :x.co.status==="live"?`<button class="primary"onclick="openCheckoutMonitor('${x.co.id}')">Live-Übersicht</button>`
+    :`<button class="secondary"onclick="openCheckoutErgebnisse('${x.co.id}')">Ergebnisse</button>`;
+  }else if(x.vl)akt+=`<button class="primary"onclick="openCheckoutEditor(null,{datum:'${x.w.end}',lbNum:${x.ph.lbNum},vorlage:'${x.vl.id}'})">📋 Vorlage einsetzen</button>`;
+  else akt+=`<button class="secondary"onclick="openCheckoutEditor(null,{datum:'${x.w.end}',lbNum:${x.ph.lbNum}})">＋ Check-out anlegen</button>`;
+  return`<div class="co-zeile"style="--c:${c}"><span class="co-lb">Fr ${fmtKurz(x.w.end)}</span>
+   <div class="co-titel"><b>${esc(x.co?.titel||x.vl?.titel||"Noch nichts angelegt")}</b><small>${esc(kpvOrt(x))}${x.co&&x.vl&&x.co.titel!==x.vl.titel?` · Vorlage: ${esc(x.vl.titel)}`:""}</small></div>
+   ${chip(x)}<div class="co-aktion">${akt}</div></div>`;
+ }).join("");
+ const mit=e.filter(x=>x.hat).length;
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+  <div class="kicker">🏁 K-PRIM-TESTS · NUR LEHRKRÄFTE</div><h2>Alle Freitagstests im Überblick</h2>
+  <p style="font-size:13px;color:var(--muted);margin-top:0">${e.length} Freitage im Schuljahr, davon ${mit} mit Test oder Vorlage. Mit „👁 Vorschau“ siehst du jeden Test so, wie ihn Schüler:innen sehen, und blätterst mit ‹ › durch alle Freitage. Die Lösungen lassen sich einblenden.</p>
+  <div class="co-liste">${zeilen}</div>
+  <div class="form-actions"style="margin-top:14px"><button class="secondary"onclick="closeModal()">Schließen</button>${mit?`<button class="primary"onclick="openKprimVorschau(0)">👁 Alle nacheinander ansehen</button>`:""}</div>`);
+}
+async function openKprimVorschau(idx,startDatum){
+ if(!isTeacher())return;
+ try{kpv.d=await ladeCheckoutDaten();}catch(e){console.error(e);toast("Konnte nicht geladen werden.");return}
+ kpv.liste=kpvEintraege(kpv.d).filter(x=>x.hat);
+ if(!kpv.liste.length){toast("Es gibt noch keine Tests oder Vorlagen zum Ansehen.");return}
+ if(startDatum){const k=kpv.liste.findIndex(x=>x.w.end===startDatum);kpv.i=k>=0?k:0;}
+ else kpv.i=Math.max(0,Math.min(kpv.liste.length-1,Number(idx)||0));
+ await kpvZeigen();
+}
+async function kpvZeigen(){
+ const x=kpv.liste[kpv.i];if(!x)return;
+ let co,loesung=null,quelle;
+ if(x.co){
+  co={...x.co};
+  quelle=x.co.status==="live"?"gespeichert · läuft gerade":x.co.status==="beendet"?"gespeichert · beendet":"gespeichert · Entwurf";
+  try{const l=await getDoc(doc(db,"checkoutLoesungen",x.co.id));if(l.exists())loesung=l.data();}catch(e){console.error("Lösung laden:",e);}
+ }else{
+  const ed=x.vl.aufgaben.map(coAufgabeAusBank);
+  co={id:"vorschau",titel:x.vl.titel,lbNum:x.vl.lbNum,datum:x.vl.datum,status:"vorlage",
+   aufgaben:ed.map(a=>{const q={stamm:a.stamm,aussagen:a.aussagen.map(s=>s.text),vignette:{titel:a.vTitel,text:a.vText,zeilen:!!a.vZeilen}};
+    if(a.kontext.trim())q.kontext=a.kontext;if(a.mText.trim())q.material={titel:a.mTitel,text:a.mText,quelle:a.mQuelle};return q;})};
+  loesung={aufgaben:ed.map(a=>({richtig:a.aussagen.map(s=>!!s.richtig),erklaerung:a.aussagen.map(s=>s.erklaerung||"")}))};
+  quelle="Vorlage der App · noch nicht gespeichert";
+ }
+ const n=kpv.liste.length;
+ const aktion=x.co?(x.co.status==="entwurf"?"✎ Bearbeiten":x.co.status==="live"?"Live-Übersicht":"Ergebnisse"):"📋 Vorlage einsetzen";
+ const band=`<div class="kp-nav-band">
+   <div class="kp-nav-zeile"><button class="secondary"type="button"onclick="kprimVorschauSpringe(-1)"aria-label="Vorheriger Freitag">‹ Zurück</button>
+    <div class="kp-nav-mitte"><b>Fr ${fmtKurz(x.w.end)} · ${esc(kpvOrt(x))}</b><small>${esc(quelle)} · ${kpv.i+1} von ${n}</small></div>
+    <button class="secondary"type="button"onclick="kprimVorschauSpringe(1)"aria-label="Nächster Freitag">Weiter ›</button></div>
+   <div class="kp-nav-zeile kp-nav-aktionen">
+    <select onchange="kprimVorschauSpringeZu(this.value)"aria-label="Zu einem Freitag springen">${kpv.liste.map((y,k)=>`<option value="${k}"${k===kpv.i?" selected":""}>Fr ${fmtKurz(y.w.end)} · ${esc(y.co?.titel||y.vl?.titel||"")}</option>`).join("")}</select>
+    <button class="secondary"type="button"id="kpvLsgBtn"onclick="kprimLoesungUmschalten()">${kpv.loesung?"🔑 Lösungen ausblenden":"🔑 Lösungen einblenden"}</button>
+    <button class="primary"type="button"onclick="kprimVorschauAktion()">${aktion}</button>
+   </div>
+   <div class="kp-nav-hinweis">👁 Vorschau für Lehrkräfte: Antworten werden nicht gespeichert.</div></div>`;
+ modal(coTestInhaltHTML(co,"vorschau",{},PP_FARBEN[co.lbNum]||"#4a90d9",true,{loesung:loesung?.aufgaben||null,loesungAn:kpv.loesung,bandHTML:band,zurueckOnclick:"openKprimUebersicht()",zurueckLabel:"← Zur Übersicht"}));
+ coStandAktualisieren(co);
+}
+async function kprimVorschauSpringe(dir){const n=kpv.liste.length;if(!n)return;kpv.i=(kpv.i+Number(dir)+n)%n;await kpvZeigen();}
+async function kprimVorschauSpringeZu(k){kpv.i=Math.max(0,Math.min(kpv.liste.length-1,Number(k)||0));await kpvZeigen();}
+function kprimLoesungUmschalten(){
+ kpv.loesung=!kpv.loesung;
+ const t=$("coTest");if(t)t.classList.toggle("kp-lsg-an",kpv.loesung);
+ const b=$("kpvLsgBtn");if(b)b.textContent=kpv.loesung?"🔑 Lösungen ausblenden":"🔑 Lösungen einblenden";
+}
+function kprimVorschauAktion(){
+ const x=kpv.liste[kpv.i];if(!x)return;
+ if(x.co){
+  if(x.co.status==="entwurf")return openCheckoutEditor(x.co.id);
+  if(x.co.status==="live")return openCheckoutMonitor(x.co.id);
+  return openCheckoutErgebnisse(x.co.id);
+ }
+ return openCheckoutEditor(null,{datum:x.w.end,lbNum:x.ph.lbNum,vorlage:x.vl.id});
+}
+Object.assign(window,{openKprimUebersicht,openKprimVorschau,kprimVorschauSpringe,kprimVorschauSpringeZu,kprimLoesungUmschalten,kprimVorschauAktion});
+
 function coVorlageWaehlen(){
  coEditorLesen();
  const id=$("coVorlage")?.value;if(!id)return;
@@ -5955,11 +6060,15 @@ async function openCheckoutTest(id){
  });
 }
 // Inhalt des Tests. vorschau=true: Ansicht für Lehrkräfte im Editor (nichts wird gespeichert).
-function coTestInhaltHTML(co,id,ant,c,vorschau){
+function coTestInhaltHTML(co,id,ant,c,vorschau,opt){
+ opt=opt||{};
  const glob=coGemeinsameSituation(co);
  const n=(co.aufgaben||[]).length;
- return`<div id="coTest"class="kp-test">
-  ${vorschau?`<div class="kp-vorschau-band">👁 <b>Vorschau</b> · So sehen Schüler:innen den Test. Es wird nichts gespeichert. <button class="secondary"type="button"onclick="coEditorVorschauZurueck()">← Zurück zum Editor</button></div>`:""}
+ const lsg=opt.loesung||null;
+ const band=vorschau?(opt.bandHTML||`<div class="kp-vorschau-band">👁 <b>Vorschau</b> · So sehen Schüler:innen den Test. Es wird nichts gespeichert. <button class="secondary"type="button"onclick="coEditorVorschauZurueck()">← Zurück zum Editor</button></div>`):"";
+ const zurueck=opt.zurueckOnclick||"coEditorVorschauZurueck()",zLabel=opt.zurueckLabel||"← Zurück zum Editor";
+ return`<div id="coTest"class="kp-test${opt.loesungAn?" kp-lsg-an":""}">
+  ${band}
   <div class="kicker"style="color:${c}">🏁 CHECK-OUT · LB ${esc(co.lbNum)} · ${coDatum(co.datum)}</div>
   <h2>${esc(co.titel)}</h2>
   <div class="kp-fortschritt"><div class="kp-balken"><i id="coBalken"style="background:${c}"></i></div><span id="coStand"></span></div>
@@ -5970,10 +6079,10 @@ function coTestInhaltHTML(co,id,ant,c,vorschau){
   ${(co.aufgaben||[]).map((q,i)=>`<section class="kp-karte"style="--c:${c}">
    <header class="kp-kopf"><span class="kp-nummer">${i+1}</span><div><b>Aufgabe ${i+1} von ${n}</b><small>bis zu ${CHECKOUT_BE_NACH_FEHLERN[0]} BE</small></div><span class="kp-fort">0/4</span></header>
    ${coFallHTML(q)}
-   <div class="kp-liste">${(q.aussagen||[]).map((t,j)=>`<div class="kp-zeile"><span class="kp-num">${j+1}</span><p class="kp-text">${esc(t)}</p>
-    <div class="kp-wahl"role="radiogroup"aria-label="Aussage ${j+1}">${[["r","✓ Richtig"],["f","✗ Falsch"]].map(([v,l])=>`<label class="kp-opt ${v}"><input type="radio"name="coT${i}_${j}"value="${v}"aria-label="Aussage ${j+1}: ${v==="r"?"richtig":"falsch"}"${(ant||{})[`${i}_${j}`]===v?" checked":""} onchange="${vorschau?"coStandAktualisieren()":`coAntwort('${id}','${i}_${j}','${v}')`}"><span>${l}</span></label>`).join("")}</div></div>`).join("")}</div>
+   <div class="kp-liste">${(q.aussagen||[]).map((t,j)=>{const l=lsg?.[i];const r=l?.richtig?.[j];return`<div class="kp-zeile"><span class="kp-num">${j+1}</span>${l?`<div class="kp-text"><p style="margin:0">${esc(t)}</p><div class="kp-lsg ${r?"r":"f"}">🔑 <b>${r?"Richtig":"Falsch"}</b>${l.erklaerung?.[j]?` · ${esc(l.erklaerung[j])}`:""}</div></div>`:`<p class="kp-text">${esc(t)}</p>`}
+    <div class="kp-wahl"role="radiogroup"aria-label="Aussage ${j+1}">${[["r","✓ Richtig"],["f","✗ Falsch"]].map(([v,lab])=>`<label class="kp-opt ${v}"><input type="radio"name="coT${i}_${j}"value="${v}"aria-label="Aussage ${j+1}: ${v==="r"?"richtig":"falsch"}"${(ant||{})[`${i}_${j}`]===v?" checked":""} onchange="${vorschau?"coStandAktualisieren()":`coAntwort('${id}','${i}_${j}','${v}')`}"><span>${lab}</span></label>`).join("")}</div></div>`;}).join("")}</div>
   </section>`).join("")}
-  <div class="co-test-fuss"><span id="coStand2"></span>${vorschau?`<button class="secondary"type="button"onclick="coEditorVorschauZurueck()">← Zurück zum Editor</button>`:`<button class="primary"onclick="coAbgeben('${id}')">Abgeben</button>`}</div>
+  <div class="co-test-fuss"><span id="coStand2"></span>${vorschau?`<button class="secondary"type="button"onclick="${zurueck}">${zLabel}</button>`:`<button class="primary"onclick="coAbgeben('${id}')">Abgeben</button>`}</div>
  </div>`;
 }
 function coStandAktualisieren(co){
