@@ -5244,111 +5244,6 @@ const CO_AUFGABENBANK=[
   ]
  },
  {
-  "id": "eve-beobachtung",
-  "titel": "Erleben und Verhalten beobachten",
-  "lbNum": 1,
-  "vignette": {
-   "titel": "Kita „Zwergenland“",
-   "zeilen": false,
-   "text": "In Ihrem Praktikum in der Kita „Zwergenland“ beobachten Sie den fünfjährigen Ben beim Bauen. Er hält den Turm aus Bausteinen mit beiden Händen fest, atmet schnell und sagt zu Ihnen: „Der darf nicht kaputt gehen!“ Im Beobachtungsbogen notiert Ihre Anleiterin: „Ben ist ängstlich.“"
-  },
-  "kontext": "",
-  "stamm": "Die Beobachtung wird fachlich zutreffend eingeordnet, wenn …",
-  "pruefen": "Neu erstellt (Claude) nach der ISB-Checkliste der App. Bitte fachlich und passend zu deinem Unterricht prüfen.",
-  "aussagen": [
-   {
-    "text": "… der Eintrag im Bogen als Schlussfolgerung auf Bens Erleben gilt, die weitere Belege oder eine Selbstauskunft erfordert.",
-    "richtig": true,
-    "erklaerung": "Erleben ist von außen nicht beobachtbar; Fremdbeobachtung kann es nur erschließen."
-   },
-   {
-    "text": "… Bens Ausruf als Erleben eingeordnet wird, da er die Gedanken des Kindes wiedergibt und damit sein Innenleben betrifft.",
-    "richtig": false,
-    "erklaerung": "Sprechen ist beobachtbares Verhalten. Über die Äußerung ist Erleben zugänglich, sie selbst ist aber Verhalten."
-   },
-   {
-    "text": "… Bens Festhalten und seine mögliche Sorge als zusammengehörig gelten, weil sich Erleben im Verhalten ausdrückt und beides gleichzeitig auftritt.",
-    "richtig": true,
-    "erklaerung": "Erleben und Verhalten stehen in Wechselwirkung und sind eins im psychischen Geschehen."
-   },
-   {
-    "text": "… die Wahrnehmung der Fachkraft als Fremdbeobachtung gilt, wohingegen Ben durch Selbstbeobachtung Zugang zu seinem Erleben hat.",
-    "richtig": true,
-    "erklaerung": "Verhalten wird durch Fremdbeobachtung erschlossen, Erleben ist Gegenstand der Selbstbeobachtung."
-   }
-  ]
- },
- {
-  "id": "wiss-alltag-geschwister",
-  "titel": "Alltagspsychologische und wissenschaftliche Aussagen",
-  "lbNum": 1,
-  "vignette": {
-   "titel": "Elterngespräch in der Grundschule",
-   "zeilen": false,
-   "text": "In einem Elterngespräch der Grundschule, an dem Sie als Praktikantin teilnehmen, sagt Lehrer Herr Wolf: „Kinder mit vielen Geschwistern sind sozial kompetenter. Das war in meinen 25 Berufsjahren so.“ Sie möchten diese Vermutung prüfen und planen, in fünf Klassen mit einem standardisierten Bogen soziale Kompetenz zu erfassen und die Geschwisterzahl per Elternfragebogen zu erheben."
-  },
-  "kontext": "",
-  "stamm": "Die Situation wird fachlich zutreffend beurteilt, wenn …",
-  "pruefen": "Neu erstellt (Claude) nach der ISB-Checkliste der App. Bitte fachlich und passend zu deinem Unterricht prüfen.",
-  "aussagen": [
-   {
-    "text": "… Herrn Wolfs Aussage als alltagspsychologisch gilt, da sie auf zufällig gesammelten Eindrücken beruht und ungeprüft verallgemeinert wird.",
-    "richtig": true,
-    "erklaerung": "Zufällige Erkenntnisgewinnung, fehlende Überprüfung und unzulässige Verallgemeinerung kennzeichnen alltagspsychologische Aussagen."
-   },
-   {
-    "text": "… der standardisierte Bogen das Merkmal der Objektivität verletzt, weil er die Erhebung an mehreren Orten vereinheitlicht.",
-    "richtig": false,
-    "erklaerung": "Standardisierung erhöht die Objektivität, weil die Erhebung unabhängig von der Person durchgeführt und ausgewertet werden kann."
-   },
-   {
-    "text": "… aus der Annahme die Hypothese abgeleitet wird, dass Kinder aus geschwisterreichen Familien im Bogen höhere Werte erreichen.",
-    "richtig": true,
-    "erklaerung": "Eine überprüfbare Hypothese benennt messbare Größen und den erwarteten Zusammenhang."
-   },
-   {
-    "text": "… sich Herrn Wolfs Aussage bestätigen lässt, sobald drei Kinder aus größeren Familien im Unterricht hilfsbereit wirken.",
-    "richtig": false,
-    "erklaerung": "Einzelne subjektive Eindrücke reichen nicht aus; wissenschaftliche Aussagen brauchen systematische, überprüfbare Daten."
-   }
-  ]
- },
- {
-  "id": "exp-kaugummi",
-  "titel": "Das Experiment als wissenschaftliche Methode",
-  "lbNum": 1,
-  "vignette": {
-   "titel": "Lernversuch im Unterricht",
-   "zeilen": false,
-   "text": "Im Psychologieunterricht prüft Ihre Klasse, ob Kaugummikauen das Behalten von Vokabeln verbessert. Die Lehrerin teilt 24 Lernende per Los in zwei Gruppen. Beide lernen zehn Vokabeln fünf Minuten lang im selben Raum, Gruppe A mit Kaugummi, Gruppe B ohne. Zehn Minuten später schreiben alle einen Test. Gruppe A erreicht im Durchschnitt 6,8, Gruppe B 6,1 Punkte."
-  },
-  "kontext": "",
-  "stamm": "Das Experiment wird fachlich zutreffend beschrieben, wenn …",
-  "pruefen": "Neu erstellt (Claude) nach der ISB-Checkliste der App. Bitte fachlich und passend zu deinem Unterricht prüfen.",
-  "aussagen": [
-   {
-    "text": "… die erreichte Punktzahl als unabhängige Variable gilt, weil sie je nach Lernbedingung unterschiedlich ausfällt.",
-    "richtig": false,
-    "erklaerung": "Die Punktzahl ist die abhängige Variable, sie wird gemessen. Die unabhängige Variable wird gezielt verändert."
-   },
-   {
-    "text": "… die Lernbedingung mit oder ohne Zusatz als unabhängige Variable gilt, da die Lehrperson sie gezielt verändert.",
-    "richtig": true,
-    "erklaerung": "Die unabhängige Variable ist die Bedingung, die der Versuchsleiter variiert."
-   },
-   {
-    "text": "… Gruppe B als Kontrollgruppe dient, weil sie Vergleichswerte für die veränderte Lernbedingung liefert.",
-    "richtig": true,
-    "erklaerung": "Die Kontrollgruppe erhält die Bedingung nicht und ermöglicht den Vergleich."
-   },
-   {
-    "text": "… der Unterschied von 0,7 Punkten beweist, dass sich die Merkleistung beim Lernen allgemein verbessern lässt.",
-    "richtig": false,
-    "erklaerung": "Ein kleiner Unterschied in einer kleinen Stichprobe belegt keine allgemeine Wirkung; das Ergebnis müsste wiederholt und geprüft werden."
-   }
-  ]
- },
- {
   "id": "erz-bildung-jugendtreff",
   "titel": "Erziehung und Bildung im Jugendtreff",
   "lbNum": 1,
@@ -5452,29 +5347,169 @@ const CO_AUFGABENBANK=[
     "erklaerung": "Erziehungsziele geben Orientierung und dienen als Bewertungsmaßstab."
    }
   ]
+ },
+ {
+  "id": "psy-nora",
+  "titel": "Gegenstand der Psychologie: Verhalten und Erleben",
+  "lbNum": 1,
+  "vignette": {
+   "titel": "Grundschule",
+   "zeilen": false,
+   "text": "Im Praktikum in einer Grundschule beobachten Sie die achtjährige Nora nach der Mathematikarbeit: Sie sitzt still am Platz, schaut auf ihre Hände und seufzt leise. Auf die Nachfrage der Lehrerin antwortet sie: „Ich habe Angst, dass ich wieder schlecht bin.“ Ihre Banknachbarin flüstert: „Nora ärgert sich bestimmt.“"
+  },
+  "kontext": "",
+  "stamm": "Die Situation wird fachlich zutreffend beschrieben, wenn …",
+  "pruefen": "Neu erstellt (Claude) auf Basis der Lehrtexte (PDF 01–05) und der ISB-Checkliste der App. Bitte fachlich und passend zu deinem Unterricht prüfen.",
+  "aussagen": [
+   {
+    "text": "… das Seufzen und der Blick auf die Hände als Verhalten gelten, weil Außenstehende beides wahrnehmen können.",
+    "richtig": true,
+    "erklaerung": "Verhalten umfasst alle Äußerungen, die andere von außen beobachten können (z. B. Sprechen, Körperbewegungen, Mimik)."
+   },
+   {
+    "text": "… Noras Angst als Verhalten gilt, da sie diese ausspricht und dadurch anderen zugänglich macht.",
+    "richtig": false,
+    "erklaerung": "Die Angst ist Erleben, das nur Nora selbst wahrnehmen kann. Beobachtbar ist ihre Äußerung darüber, also Verhalten."
+   },
+   {
+    "text": "… die Bemerkung der Mitschülerin als Vermutung über Noras Erleben gilt, die nur Nora selbst bestätigen oder korrigieren kann.",
+    "richtig": true,
+    "erklaerung": "Erleben wird nur durch Selbstbeobachtung zugänglich; Fremdbeobachtung kann es allenfalls erschließen."
+   },
+   {
+    "text": "… Noras Gefühl und ihr sichtbares Verhalten als zwei Seiten desselben psychischen Geschehens gelten, die gleichzeitig auftreten.",
+    "richtig": true,
+    "erklaerung": "Erleben und Verhalten laufen nicht nacheinander ab, sondern gleichzeitig und hängen eng zusammen."
+   }
+  ]
+ },
+ {
+  "id": "paed-lehner",
+  "titel": "Gegenstand der Pädagogik",
+  "lbNum": 1,
+  "vignette": {
+   "titel": "Studie und Schulalltag",
+   "zeilen": false,
+   "text": "Die Erziehungswissenschaftlerin Frau Dr. Lehner untersucht in einer Studie, wie sich das Vertrauen von Jugendlichen zu ihrer Lehrkraft darauf auswirkt, ob sie Kritik annehmen. Lehrer Herr Schulz führt in seiner achten Klasse Rückmeldegespräche ein, in denen er jedem Kind ein persönliches Lernziel vorschlägt. Im Praktikum lesen Sie den Studienbericht und Herrn Schulz’ Erfahrungsnotizen."
+  },
+  "kontext": "",
+  "stamm": "Pädagogik wird fachlich zutreffend eingeordnet, wenn …",
+  "pruefen": "Neu erstellt (Claude) auf Basis der Lehrtexte (PDF 01–05) und der ISB-Checkliste der App. Bitte fachlich und passend zu deinem Unterricht prüfen.",
+  "aussagen": [
+   {
+    "text": "… Frau Dr. Lehners Studie der Erziehungswissenschaft und Herrn Schulz’ Gesprächsangebote der Erziehungspraxis zugeordnet werden.",
+    "richtig": true,
+    "erklaerung": "Erziehungswissenschaft untersucht, wie Erziehung abläuft und wirkt. Erziehungspraxis ist das tatsächliche erzieherische Handeln mit erzieherischer Absicht."
+   },
+   {
+    "text": "… die Frage nach der Wirkung des Vertrauensverhältnisses auf die Akzeptanz von Kritik dem Bereich „Beziehung zwischen Erzieher und zu Erziehendem“ zugeordnet wird.",
+    "richtig": true,
+    "erklaerung": "Vertrauen prägt die Beziehung und beeinflusst, ob Kritik oder Unterstützung angenommen wird."
+   },
+   {
+    "text": "… Herrn Schulz’ Gespräche der Erziehungswissenschaft zugerechnet werden, weil sie geplant sind und mit Zielen verbunden werden.",
+    "richtig": false,
+    "erklaerung": "Geplantes erzieherisches Handeln mit Absicht ist Erziehungspraxis. Erziehungswissenschaft untersucht Erziehung."
+   },
+   {
+    "text": "… die vorgeschlagenen Lernziele dem Bereich „Ziele und Handlungen der Erziehung“ zugeordnet werden, weil sie festlegen, wohin die Erziehung führen soll.",
+    "richtig": true,
+    "erklaerung": "Erziehung verfolgt Ziele; aus ihnen ergeben sich konkrete Handlungen wie Gespräche oder Regeln."
+   }
+  ]
+ },
+ {
+  "id": "alltag-bauer",
+  "titel": "Alltagstheorie und wissenschaftliche Aussagen",
+  "lbNum": 1,
+  "vignette": {
+   "titel": "Lehrerkonferenz",
+   "zeilen": false,
+   "text": "In der Lehrerkonferenz sagt Frau Bauer: „Kinder, die viel fernsehen, sind aggressiver. Bei meinen drei Söhnen war das so.“ Herr Tan entgegnet, er kenne eine Studie, in der 300 Kinder mit einem standardisierten Bogen beobachtet wurden. Zwei geschulte Beobachterinnen kamen unabhängig voneinander zu gleichen Einschätzungen. Die Studie beschreibt einen wahrscheinlichen Zusammenhang und nennt einzelne Ausnahmen."
+  },
+  "kontext": "",
+  "stamm": "Die beiden Aussagen werden fachlich zutreffend beurteilt, wenn …",
+  "pruefen": "Neu erstellt (Claude) auf Basis der Lehrtexte (PDF 01–05) und der ISB-Checkliste der App. Bitte fachlich und passend zu deinem Unterricht prüfen.",
+  "aussagen": [
+   {
+    "text": "… Frau Bauers Aussage als überprüfbar gilt, weil sie ihre drei Söhne über viele Jahre genau verfolgt hat.",
+    "richtig": false,
+    "erklaerung": "Überprüfbar heißt, dass andere die Aussage und ihre Gewinnung nachvollziehen und wiederholen können. Persönliche Erfahrung erfüllt das nicht."
+   },
+   {
+    "text": "… Frau Bauers Aussage als Alltagstheorie gilt, weil sie aus persönlicher Erfahrung stammt und auf Kinder allgemein übertragen wird.",
+    "richtig": true,
+    "erklaerung": "Alltagstheorien sind subjektiv, nicht systematisch gewonnen und verallgemeinern oft unzulässig („von einem auf alle“)."
+   },
+   {
+    "text": "… die übereinstimmenden Ergebnisse der zwei unabhängigen Auswertenden das Merkmal der Objektivität stützen.",
+    "richtig": true,
+    "erklaerung": "Objektiv bedeutet: Verschiedene Forscher kommen bei gleichem Sachverhalt und gleichen Bedingungen zum gleichen Ergebnis."
+   },
+   {
+    "text": "… die Studie ihren wissenschaftlichen Anspruch verliert, weil manche Kinder vom beschriebenen Befund abweichen und nur Wahrscheinlichkeiten angegeben werden.",
+    "richtig": false,
+    "erklaerung": "Absolute Aussagen über Menschen sind kaum möglich. Wissenschaftliche Aussagen sind Wahrscheinlichkeitsaussagen, Ausnahmen bleiben möglich."
+   }
+  ]
+ },
+ {
+  "id": "exp-pausen",
+  "titel": "Das Experiment",
+  "lbNum": 1,
+  "vignette": {
+   "titel": "Schulpsychologische Studie",
+   "zeilen": false,
+   "text": "Eine Schulpsychologin möchte wissen, ob eine Bewegungspause den Lernerfolg verbessert. Sie legt selbst fest, dass in zwei achten Klassen nach 45 Minuten Unterricht zehn Minuten lang entweder Bewegung (Klasse A) oder Ruhe (Klasse B) stattfindet, und zählt danach, wie viele Rechenaufgaben die Lernenden in fünf Minuten lösen. Im nächsten Schuljahr führt sie denselben Ablauf mit zwei weiteren Klassen durch."
+  },
+  "kontext": "",
+  "stamm": "Das Vorgehen wird fachlich zutreffend beschrieben, wenn …",
+  "pruefen": "Neu erstellt (Claude) auf Basis der Lehrtexte (PDF 01–05) und der ISB-Checkliste der App. Bitte fachlich und passend zu deinem Unterricht prüfen.",
+  "aussagen": [
+   {
+    "text": "… die Festlegung von Zeitpunkt, Länge und Art der Pause durch die Psychologin dem Kriterium der Willkürlichkeit entspricht.",
+    "richtig": true,
+    "erklaerung": "Willkürlichkeit bedeutet, dass der Forscher Bedingungen, Situation, Ort und Zeit selbst bestimmen kann."
+   },
+   {
+    "text": "… die spätere Wiederholung mit anderen Lerngruppen als Variierbarkeit gilt, weil derselbe Ablauf erneut umgesetzt wird.",
+    "richtig": false,
+    "erklaerung": "Das erneute Durchführen ist Wiederholbarkeit. Variierbarkeit meint das Verändern der Bedingungen (hier Bewegung oder Ruhe)."
+   },
+   {
+    "text": "… es sich um ein Laborexperiment handelt, weil die Psychologin die Bedingungen selbst bestimmt.",
+    "richtig": false,
+    "erklaerung": "Die Untersuchung findet im Schulalltag statt und ist daher ein Feldexperiment. Das Laborexperiment findet unter kontrollierten Bedingungen im Labor statt."
+   },
+   {
+    "text": "… das Vorgehen als Beobachtung gilt, weil die Psychologin das Verhalten der Lerngruppen im Schulalltag aufzeichnet.",
+    "richtig": false,
+    "erklaerung": "Sie führt die Situation absichtlich selbst herbei. Das unterscheidet ein Experiment von einer bloßen Beobachtung."
+   }
+  ]
  }
 ];
 // Vorlage = Check-out mit genau 3 Aufgaben aus der Bank; wird am passenden Freitag per Klick eingesetzt.
 const CHECKOUT_VORLAGEN=[
  {
   "id": "lb1-woche1",
-  "titel": "Erleben, Verhalten und wissenschaftliches Denken",
+  "titel": "Erleben und Verhalten, Alltagstheorie und Experiment",
   "lbNum": 1,
   "datum": "2026-10-09",
   "aufgaben": [
-   "eve-beobachtung",
-   "wiss-alltag-geschwister",
-   "exp-kaugummi"
+   "psy-nora",
+   "alltag-bauer",
+   "exp-pausen"
   ]
  },
  {
   "id": "lb1-woche2",
-  "titel": "Erziehung, Bildung und Erziehungsziele",
+  "titel": "Gegenstand der Pädagogik, Erziehung und Erziehungsziele",
   "lbNum": 1,
   "datum": "2026-10-16",
   "aufgaben": [
+   "paed-lehner",
    "erz-bildung-jugendtreff",
-   "erz-wiss-praxis-kinderhaus",
    "erz-ziele-klassendienst"
   ]
  },
