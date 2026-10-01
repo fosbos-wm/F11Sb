@@ -3818,18 +3818,10 @@ function pp12CssBausteine(){
  </style>`;
 }
 
-// Kleiner Hinweis an den Stationen des Lernwegs: Projekt = Phase II, Prüfungstraining = Phase I (Vorschlag).
-function pp11DidChip(teil){
- if(!pp12HinweiseAn())return"";
- const n=teil==="projekt"?2:1,P=PP12_PHASEN[n];
- const stil=n===1?"background:#fff;color:#17384f":"background:#c3d4e2;color:#17384f";
- const txt=isTeacher()?`${P.kurz} · ${P.name}`:P.schueler;
- return`<span title="Didaktik-Hinweis (Vorschlag): Phase ${P.kurz} – ${esc(P.name)}"style="display:inline-flex;align-items:center;height:22px;padding:0 9px;margin-top:4px;border-radius:11px;border:1.5px solid #17384f;font-size:11px;font-weight:700;${stil}">${esc(txt)}</span>`;
-}
 Object.assign(window,{pp12HinweiseSchalter,pp12KompassDrucken});
 
 async function renderFaecherUebersicht(){
- return`${pageHead("LEHRPLAN & LERNINHALTE","Fächer 11. Klasse","Wähle ein Fach, um den Lehrplan-Zeitstrahl mit Themen, Aufträgen und Material zu öffnen.",`<button class="secondary"type="button"onclick="pp12HinweiseSchalter()">Didaktik-Hinweise: ${pp12HinweiseAn()?"an":"aus"}</button>${isTeacher()?`<button class="secondary"type="button"onclick="go('didaktik')">Didaktik-Kompass</button>`:""}`)}
+ return`${pageHead("LEHRPLAN & LERNINHALTE","Fächer 11. Klasse","Wähle ein Fach, um den Lehrplan-Zeitstrahl mit Themen, Aufträgen und Material zu öffnen.",isTeacher()?`<button class="secondary"type="button"onclick="go('didaktik')">Didaktik-Kompass</button>`:"")}
  <div class="grid grid-4">${F11SB_FAECHER.map(f=>{
  const wochen=LEHRPLAN_WOCHEN[f.key]||[];
  const c=personColor(f.key);
@@ -4175,7 +4167,6 @@ function ppStationHTML(x,i,teile,fortschrittMap,meineTeams,heute,aktIdx){
    <span class="pp-weg-typ"style="color:${c}"><span class="pp-weg-lbmobil">LB ${ph.lbNum} · </span>${teil==="projekt"?ppTeilName("projekt",ph):"Prüfungstraining"}</span>
    <span class="pp-weg-titel">${esc(teil==="projekt"?ph.titel:ppAptKurztitel(ph))}</span>
    <span class="pp-weg-zeit">${fmtKurz(wochen[0].start)}–${fmtKurz(wochen[n-1].end)} · ${n} Schulwoche${n>1?"n":""}</span>
-   ${pp11DidChip(teil)}
    ${zeigTempo?`<span class="pp-tempo"style="background:${tempo.farbe}">${esc(tempo.txt)}</span>`:""}
   </span>
  </button>`;
