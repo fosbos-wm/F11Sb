@@ -66,6 +66,22 @@ service firebase.storage {
       allow delete: if isApproved() && (isUploader(fileName) || isTeacher());
     }
 
+    // Dateien auf der Tafel/dem Whiteboard – max. 15 MB je Datei.
+    // Löschen: wer hochgeladen hat, oder eine Lehrkraft.
+    match /whiteboardDateien/{boardId}/{fileName} {
+      allow read: if isApproved();
+      allow create, update: if isApproved() && isUploader(fileName) && sizeOk();
+      allow delete: if isApproved() && (isUploader(fileName) || isTeacher());
+    }
+
+    // Unterrichtsmaterial im Modulplan (PDFs) – nur Lehrkräfte laden hoch
+    // und löschen, alle freigeschalteten Mitglieder lesen.
+    match /ppMaterial/{modulId}/{fileName} {
+      allow read: if isApproved();
+      allow create, update: if isTeacher() && isUploader(fileName) && sizeOk();
+      allow delete: if isTeacher();
+    }
+
     // Alles andere ist gesperrt.
     match /{allPaths=**} {
       allow read, write: if false;
