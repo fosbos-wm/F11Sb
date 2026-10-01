@@ -381,23 +381,52 @@ const KEY=[[96,15],[91,14],[86,13],[81,12],[76,11],[71,10],[66,9],[61,8],[56,7],
 function notenpunkte(p,max){const pct=max?p/max*100:0;for(const [t,n] of KEY) if(pct>=t-1e-9) return n;return 0;}
 
 /* ---------- Navigation ---------- */
-const SECTIONS=[
+const ALLE_SECTIONS=[
   ['start','Start'],['einstieg','Einstieg'],['experiment','Experiment durchführen'],
   ['ergebnisse','Ergebnisse vergleichen'],['merkmale','Merkmale des Experiments'],['anwendung','Anwendung'],['abschluss','Abschluss']
 ];
+// Teile wählbar: ?teile=einstieg,experiment,merkmale … (ohne Angabe: alle Teile). „Start“ ist immer dabei.
+const TEILE=(new URLSearchParams(location.search).get('teile')||'').split(',').map(x=>x.trim()).filter(Boolean);
+const SECTIONS=TEILE.length?ALLE_SECTIONS.filter(([id])=>id==='start'||TEILE.includes(id)):ALLE_SECTIONS;
+const IST_AKTIV=id=>SECTIONS.some(x=>x[0]===id);
 let visited=new Set(store.get('visited',[]));
 let current='start';
 function go(id){
+  if(!IST_AKTIV(id)){
+    const i=ALLE_SECTIONS.findIndex(x=>x[0]===id);
+    const naechster=ALLE_SECTIONS.slice(i+1).find(x=>IST_AKTIV(x[0]));
+    if(naechster) id=naechster[0]; else { einheitAbschliessen(); return; }
+  }
   current=id;
-  SECTIONS.forEach(([s])=>{$('#s-'+s).hidden=(s!==id);});
+  ALLE_SECTIONS.forEach(([s])=>{const el=$('#s-'+s); if(el) el.hidden=(s!==id);});
   visited.add(id); store.set('visited',[...visited]);
   renderTabs();
   if(id==='ergebnisse'){ renderCompare(); if(LINK.aktiv) toParent({type:'experiment:klasse-laden'}); }
   if(id==='experiment') renderXP();
   if(id!=='experiment') stopTimer();
   if(id==='merkmale') showSlide(slideIdx);
+  abschlussKnopf(id);
   window.scrollTo({top:0});
   const m=$('#main'); if(m) m.focus({preventScroll:true});
+}
+// Ohne den Abschnitt „Abschluss“ (Quiz) beendet ein Knopf am Ende des letzten Abschnitts die Einheit.
+function einheitAbschliessen(){
+  if(EMBED&&LINK.aktiv&&LINK.rolle!=='lehrkraft'&&!store.get('erledigtOk',false)) toParent({type:'experiment:erledigt'});
+  const box=$('#fertig-hinweis');
+  if(box){ box.hidden=false; box.scrollIntoView({block:'center'}); }
+}
+function abschlussKnopf(id){
+  if(IST_AKTIV('abschluss')) return;
+  const letzte=SECTIONS[SECTIONS.length-1][0];
+  const sec=$('#s-'+id); if(!sec) return;
+  let wrap=$('#fertig-wrap');
+  if(wrap&&wrap.parentElement!==sec) wrap.remove(), wrap=null;
+  if(id===letzte&&!wrap){
+    wrap=h('div',{id:'fertig-wrap',class:'row',style:'margin-top:22px;flex-direction:column;align-items:flex-start;gap:10px'},
+      h('button',{class:'btn',type:'button',onclick:einheitAbschliessen},'Einheit abschließen ✓'),
+      h('div',{id:'fertig-hinweis',class:'note',hidden:true},'Geschafft: Diese Einheit ist abgeschlossen. Du kannst das Fenster schließen.'));
+    sec.append(wrap);
+  }
 }
 function renderTabs(){
   const box=$('#tabs'); box.replaceChildren();
@@ -406,7 +435,7 @@ function renderTabs(){
       (visited.has(id)&&id!==current)?h('span',{class:'done','aria-label':'besucht'},'✓'):null);
     box.append(b);
   });
-  const n=visited.size;
+  const n=SECTIONS.filter(([id])=>visited.has(id)).length;
   $('#meter').style.width=(n/SECTIONS.length*100)+'%';
   $('#meterl').textContent=n+' von '+SECTIONS.length+' Abschnitten besucht';
 }
