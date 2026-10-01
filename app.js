@@ -4124,6 +4124,28 @@ const PPM_TYPEN={
  selbstlern:{icon:"🎒",name:"Selbstlernkurs",kurz:"Selbstlernkurs",text:"Schüler:innen bearbeiten den Kurs selbstständig von A bis Z."}
 };
 const PPM_EINHEITEN={experiment:{icon:"🧪",name:"Das Experiment – interaktive Stunde",text:"Kaugummi-Versuch in Kleingruppen, Klassenvergleich, Merkmale eines Experiments und Abschlussquiz."}};
+// Dauer eines Moduls: eine Unterrichtsstunde (45 Min.), Doppelstunde, 120 oder 180 Minuten,
+// oder eine bis drei ganze Wochen. Minutenmodule gehören zu der Woche, in der sie beginnen.
+const PPM_DAUERN=[
+ {k:"45",name:"45 Minuten",lang:"45 Minuten (eine Unterrichtsstunde)",wochen:1},
+ {k:"90",name:"90 Minuten",lang:"90 Minuten (Doppelstunde)",wochen:1},
+ {k:"120",name:"120 Minuten",lang:"120 Minuten",wochen:1},
+ {k:"180",name:"180 Minuten",lang:"180 Minuten",wochen:1},
+ {k:"w1",name:"1 Woche",lang:"1 Woche",wochen:1},
+ {k:"w2",name:"2 Wochen",lang:"2 Wochen",wochen:2},
+ {k:"w3",name:"3 Wochen",lang:"3 Wochen",wochen:3}
+];
+const PPM_DAUER_STANDARD={projekt:"w3",stunde:"90",apt:"w1",kprim:"45",selbstlern:"w1"};
+function ppmDauerKey(m){
+ if(m&&PPM_DAUERN.some(d=>d.k===m.dauer))return m.dauer;
+ const n=Math.max(1,Number(m&&m.wochen)||1);
+ return "w"+n;       // ältere Module: Wochenzahl bleibt erhalten (auch über 3 Wochen)
+}
+function ppmDauerDef(m){
+ const k=ppmDauerKey(m);
+ return PPM_DAUERN.find(d=>d.k===k)||{k,name:k.slice(1)+" Wochen",lang:k.slice(1)+" Wochen",wochen:Number(k.slice(1))||1};
+}
+function ppmDauerText(m){return ppmDauerDef(m).name;}
 const PPM={liste:[],geladen:0,fehler:"",meine:{kurs:{},stunde:{}},alt:false};
 let activePPModul=null;
 
@@ -4191,7 +4213,7 @@ async function ppmLaden(erzwingen){
  PPM.liste.sort((a,b)=>(ppmSwIndex(a.start)-ppmSwIndex(b.start))||((a.ord||0)-(b.ord||0))||(tsSek(a.createdAt)-tsSek(b.createdAt)));
 }
 function ppmSwIndex(id){return SCHULWOCHEN_PP.findIndex(w=>w.id===id);}
-function ppmWochen(m){const i=ppmSwIndex(m.start);if(i<0)return[];return SCHULWOCHEN_PP.slice(i,i+Math.max(1,Number(m.wochen)||1));}
+function ppmWochen(m){const i=ppmSwIndex(m.start);if(i<0)return[];return SCHULWOCHEN_PP.slice(i,i+ppmDauerDef(m).wochen);}
 function ppmFuerTeil(lb,teil){return PPM.liste.find(m=>m.modul===teil&&Number(m.lb)===Number(lb));}
 function ppmById(id){return PPM.liste.find(m=>m.id===id)||null;}
 function ppmFarbe(m){return PP_FARBEN[m.lb]||"#8a99a3";}
@@ -4234,7 +4256,7 @@ function ppmKarteHTML(m,fortsetzung){
  const einh=(m.einheiten||[]).map(e=>`<span class="ppm-chip">${(PPM_EINHEITEN[e.typ]||{}).icon||""} ${esc((PPM_EINHEITEN[e.typ]||{}).name||e.typ).replace("– interaktive Stunde","")}</span>`).join("");
  return`<div class="ppm-karte" style="--c:${c}" data-ppm="oeffnen" data-id="${esc(m.id)}" tabindex="0" role="button">
   <span class="ppm-ic">${T.icon}</span>
-  <span class="ppm-txt"><b>${esc(m.titel||T.name)}</b><small>LB ${m.lb} · ${esc(T.kurz)}${(m.wochen||1)>1?` · ${m.wochen} Wochen`:""}</small>${ppmStatus(m)}${einh}</span>
+  <span class="ppm-txt"><b>${esc(m.titel||T.name)}</b><small>LB ${m.lb} · ${esc(T.kurz)} · ${esc(ppmDauerText(m))}</small>${ppmStatus(m)}${einh}</span>
   ${isTeacher()?`<button type="button" class="ppm-edit" data-ppm="bearbeiten" data-id="${esc(m.id)}" title="Modul bearbeiten">✎</button>`:""}
  </div>`;
 }
@@ -4333,7 +4355,7 @@ async function ppmDialog(id,typ,woche){
    <label>Lernbereich<select id="ppmLb">${lbOpt}</select></label>
    <label>Titel<input id="ppmTitel" maxlength="120" value="${esc(bearb?bearb.titel:"")}" placeholder="${esc(t==="projekt"&&ph0?ph0.titel:T.name)}"></label>
    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><label>Beginn (Schulwoche)<select id="ppmStart">${ppmWochenOptionen(start)}</select></label>
-   <label>Dauer in Wochen<input id="ppmDauer" type="number" min="1" max="6" value="${bearb?bearb.wochen||1:(t==="projekt"?3:1)}"></label></div>
+   <label>Dauer<select id="ppmDauer">${(()=>{const aktuell=bearb?ppmDauerKey(bearb):PPM_DAUER_STANDARD[t];const liste=PPM_DAUERN.some(d=>d.k===aktuell)?PPM_DAUERN:[...PPM_DAUERN,{k:aktuell,lang:aktuell.slice(1)+" Wochen (bisher)"}];return liste.map(d=>`<option value="${d.k}"${d.k===aktuell?" selected":""}>${esc(d.lang)}</option>`).join("");})()}</select></label></div>
    ${extra}
    <label>Hinweis an die Klasse (optional)<textarea id="ppmNotiz" rows="2" maxlength="400">${esc(bearb?bearb.notiz||"":"")}</textarea></label>
    <div class="form-actions">${bearb?`<button class="secondary" type="button" id="ppmLoeschen">Modul löschen</button>`:""}<button class="secondary" type="button" onclick="closeModal()">Abbrechen</button><button class="primary" type="button" id="ppmSpeichern">Speichern</button></div>
@@ -4342,7 +4364,8 @@ async function ppmDialog(id,typ,woche){
  if(t==="projekt"&&!bearb)lbSel.addEventListener("change",()=>{const p=PROJEKT_PHASEN.find(x=>x.lbNum===Number(lbSel.value));ti.placeholder=p?p.titel:T.name;});
  $("ppmSpeichern").addEventListener("click",async()=>{
   const lb=Number(lbSel.value);
-  const daten={modul:t,lb,titel:ti.value.trim(),start:$("ppmStart").value,wochen:wbBegrenzen(Number($("ppmDauer").value)||1,1,6),notiz:$("ppmNotiz").value.trim()};
+  const daten={modul:t,lb,titel:ti.value.trim(),start:$("ppmStart").value,notiz:$("ppmNotiz").value.trim()};
+  {const dk=$("ppmDauer").value,def=PPM_DAUERN.find(d=>d.k===dk);daten.dauer=dk;daten.wochen=def?def.wochen:(Number(dk.slice(1))||1);}
   if(!daten.titel){const p=PROJEKT_PHASEN.find(x=>x.lbNum===lb);daten.titel=t==="projekt"&&p?p.titel:(t==="apt"?"Prüfungstraining LB "+lb:t==="kprim"?"K-Prim-Test LB "+lb:t==="stunde"?"Unterrichtsstunde LB "+lb:"Selbstlernkurs LB "+lb);}
   if(t==="stunde")daten.phase=Number($("ppmPhase").value);
   if(t==="kprim")daten.checkoutId=$("ppmCheckout").value||"";
@@ -4379,8 +4402,8 @@ async function ppmStandardplan(){
   const jobs=[];
   PROJEKT_PHASEN.forEach(ph=>{
    const basis={lb:ph.lbNum,createdBy:currentUser.uid,createdAt:serverTimestamp()};
-   jobs.push(addDoc(collection(db,"ppModule"),{...basis,modul:"projekt",titel:ph.einstieg?"Einstieg: Das Experiment":ph.titel,start:ph.projektSchulwochen[0],wochen:ph.projektSchulwochen.length,einheiten:ph.einstieg?[{typ:"experiment",woche:ph.projektSchulwochen[0]}]:[]}));
-   jobs.push(addDoc(collection(db,"ppModule"),{...basis,modul:"apt",titel:"Prüfungstraining "+ph.lb,start:ph.aptSchulwochen[0],wochen:ph.aptSchulwochen.length}));
+   jobs.push(addDoc(collection(db,"ppModule"),{...basis,modul:"projekt",titel:ph.einstieg?"Einstieg: Das Experiment":ph.titel,start:ph.projektSchulwochen[0],wochen:ph.projektSchulwochen.length,dauer:"w"+Math.min(3,ph.projektSchulwochen.length),einheiten:ph.einstieg?[{typ:"experiment",woche:ph.projektSchulwochen[0]}]:[]}));
+   jobs.push(addDoc(collection(db,"ppModule"),{...basis,modul:"apt",titel:"Prüfungstraining "+ph.lb,start:ph.aptSchulwochen[0],wochen:ph.aptSchulwochen.length,dauer:"w"+Math.min(3,ph.aptSchulwochen.length)}));
   });
   await Promise.all(jobs);await ppmLaden(true);await render();toast("Plan angelegt.");
  }catch(e){ppmFehler(e,"Plan konnte nicht angelegt werden");}
@@ -4400,7 +4423,7 @@ function ppmKopf(m,unter,extraBtn){
  const zeit=w.length?`${fmtKurz(w[0].start)}–${fmtKurz(w[w.length-1].end)}`:"";
  return`<button class="secondary" data-ppm="plan">← Modulplan</button>
  ${PPM_CSS}
- <div class="ppm-box ppm-kopf" style="--c:${c}"><div class="kicker" style="color:${c}">${T.icon} LB ${m.lb} · ${esc(T.kurz.toUpperCase())} · ${zeit}</div>
+ <div class="ppm-box ppm-kopf" style="--c:${c}"><div class="kicker" style="color:${c}">${T.icon} LB ${m.lb} · ${esc(T.kurz.toUpperCase())} · ${zeit} · ${esc(ppmDauerDef(m).lang.toUpperCase())}</div>
   <h1 style="margin:4px 0 6px;font-size:26px">${esc(m.titel||T.name)}</h1>${m.notiz?`<p>${esc(m.notiz)}</p>`:""}${unter||""}
   ${isTeacher()?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" class="ppm-btn klein" data-ppm="bearbeiten" data-id="${esc(m.id)}">✎ Modul bearbeiten</button>${extraBtn||""}</div>`:""}</div>`;
 }
