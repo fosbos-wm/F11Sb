@@ -1148,6 +1148,15 @@ const F11SB_FAECHER=[
  {key:"sozialwirtschaft",label:"Sozialwirtschaft und Recht"},
  {key:"chemie",label:"Chemie"}
 ];
+// Fächer-Übersicht und Lehrplan-Zeitstrahl nach der Stundentafel FOS 11: zusätzlich der Wahlpflichtbereich
+// (Förderunterricht, nicht benotet und deshalb NICHT in F11SB_FAECHER, das die Notenberechnung speist).
+const F11SB_LEHRPLAN_FAECHER=[...F11SB_FAECHER,{key:"foerder",label:"Wahlpflichtbereich (Förderunterricht)"}];
+// Gruppen wie in der Stundentafel; fpA ist eine eigene Ausbildung mit eigenem Bereich (Route „praktikum“).
+const F11SB_FACHGRUPPEN=[
+ {title:"Allgemeinbildende Fächer",keys:["deutsch","englisch","mathematik","geschichte"]},
+ {title:"Profilfächer",keys:["paedagogik","sozialwirtschaft","chemie"]},
+ {title:"Profilerweiternde Wahlpflichtfächer",keys:["foerder"]}
+];
 
 // ============================================================
 // LERNWERKSTATT · FÄCHER-ZEITSTRAHL
@@ -3666,7 +3675,7 @@ function ampelDotHTML(status){
 }
 async function openLehrplanKlassenuebersicht(fach){
  if(!isTeacher()){toast("Nur Lehrkräfte können die Klassenübersicht öffnen.");return}
- const fachLbl=F11SB_FAECHER.find(f=>f.key===fach)?.label||fach;
+ const fachLbl=F11SB_LEHRPLAN_FAECHER.find(f=>f.key===fach)?.label||fach;
  const wochenGesamt=(LEHRPLAN_WOCHEN[fach]||[]).length;
  let students=[],fortschrittDocs=[],lsTasks=[],allAttempts=[];
  try{
@@ -3821,15 +3830,21 @@ function pp12CssBausteine(){
 Object.assign(window,{pp12HinweiseSchalter,pp12KompassDrucken});
 
 async function renderFaecherUebersicht(){
- return`${pageHead("LEHRPLAN & LERNINHALTE","Fächer 11. Klasse","Wähle ein Fach, um den Lehrplan-Zeitstrahl mit Themen, Aufträgen und Material zu öffnen.",isTeacher()?`<button class="secondary"type="button"onclick="go('didaktik')">Didaktik-Kompass</button>`:"")}
- <div class="grid grid-4">${F11SB_FAECHER.map(f=>{
- const wochen=LEHRPLAN_WOCHEN[f.key]||[];
- const c=personColor(f.key);
- return`<button class="card tile"style="background:#fff;border-left:4px solid ${c.border};text-align:left"onclick="openFach('${f.key}')">
+ const kachel=f=>{
+  const wochen=LEHRPLAN_WOCHEN[f.key]||[];
+  const c=personColor(f.key);
+  return`<button class="card tile"style="background:#fff;border-left:4px solid ${c.border};text-align:left"onclick="openFach('${f.key}')">
  <strong style="font-size:15px;color:${c.text}">${f.label}</strong>
- <small style="display:block;margin-top:6px">${f.key==="paedagogik"?"4 Lernbereiche · Projekt + Abschlussprüfungs-Training":wochen.length?`${wochen.length} Lehrplan-Wochen hinterlegt`:"Lehrplan-Zeitstrahl folgt"}</small>
+ <small style="display:block;margin-top:6px">${f.key==="paedagogik"?"4 Lernbereiche · Projekt + Abschlussprüfungs-Training":wochen.length?`${wochen.length} Lehrplan-Wochen hinterlegt`:f.key==="foerder"?"Förderunterricht · Lehrplan-Zeitstrahl folgt":"Lehrplan-Zeitstrahl folgt"}</small>
  </button>`;
- }).join("")}</div>
+ };
+ const fpa=`<a class="card tile"href="#praktikum"style="background:#fff;border-left:4px solid #e8890c;text-align:left;text-decoration:none">
+ <strong style="font-size:15px;color:#b86400">fpA</strong>
+ <small style="display:block;margin-top:6px">Fachpraktische Ausbildung: Theorie-Praxis-Transfer-Aufträge, Fragen und Projekte aus der Praxis.</small>
+ </a>`;
+ return`${pageHead("LEHRPLAN & LERNINHALTE","Fächer 11. Klasse","Wähle ein Fach, um den Lehrplan-Zeitstrahl mit Themen, Aufträgen und Material zu öffnen.",isTeacher()?`<button class="secondary"type="button"onclick="go('didaktik')">Didaktik-Kompass</button>`:"")}
+ ${F11SB_FACHGRUPPEN.map(g=>`<div class="kicker"style="margin:22px 0 10px">${g.title}</div><div class="grid grid-4">${g.keys.map(k=>F11SB_LEHRPLAN_FAECHER.find(f=>f.key===k)).filter(Boolean).map(kachel).join("")}</div>`).join("")}
+ <div class="kicker"style="margin:22px 0 10px">Fachpraktische Ausbildung</div><div class="grid grid-4">${fpa}</div>
  ${footer()}`;
 }
 
@@ -7512,7 +7527,7 @@ Object.assign(window,{coBankEinsetzen,coVorlageWaehlen,coEditorPruefen,coEditorL
 
 async function renderFachDetail(){
  if(!activeFach)return await renderFaecherUebersicht();
- const fach=F11SB_FAECHER.find(f=>f.key===activeFach);
+ const fach=F11SB_LEHRPLAN_FAECHER.find(f=>f.key===activeFach);
  const timeline=combinedTimeline(activeFach);
  const wochenItems=timeline.filter(t=>t.kind==="woche");
  const fortschritte=await Promise.all(wochenItems.map(async w=>({id:w.id,f:await getLehrplanFortschritt(w.id)})));
@@ -7642,7 +7657,7 @@ async function openWocheDetail(fach,wocheId,startTabOverride){
  const ziele=(LEHRPLAN_ZIELE_VORSCHLAG[wocheId]||[]).map((text,i)=>({id:`z${i}`,text}));
  const alleErfuellt=ziele.length>0 && ziele.every(z=>fortschritt.zieleErfuellt?.[z.id]);
  const meinTeam=teams.find(t=>(t.mitgliederUids||[]).includes(currentUser.uid));
- const fachLbl=F11SB_FAECHER.find(f=>f.key===fach)?.label||fach;
+ const fachLbl=F11SB_LEHRPLAN_FAECHER.find(f=>f.key===fach)?.label||fach;
  const meinProdukt=produkte.some(p=>p.uid===currentUser.uid);
 
  // Fortschritt: jeder Arbeitsschritt bekommt einen eigenen Haken, damit
