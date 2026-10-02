@@ -4117,8 +4117,8 @@ function ppNaechsterSchrittHTML(fortschrittMap,heute){
 // (Teams, Meilensteine, 4 Schritte); die Wochen kommen jetzt aus dem Plan.
 // ============================================================
 const PPM_TYPEN={
- projekt:{icon:"🔬",name:"Ein Projekt durchführen",kurz:"Projekt",text:"Team-Projekt mit den erdachten Meilensteinen. Dazu lassen sich Einheiten wie „Das Experiment“ einfügen."},
- stunde:{icon:"🧭",name:"Unterrichtsstunde nach dem Deeper-Learning-Konzept",kurz:"Stunde",text:"Mit Digitaler Tafel, Material (PDF, Webseiten) und einem kleinen Check-out mit offenen Fragen."},
+ projekt:{icon:"🔬",name:"Ein Projekt durchführen",kurz:"Projekt",text:"Team-Projekt mit Meilensteinen anlegen."},
+ stunde:{icon:"🧭",name:"Unterrichtsstunde nach dem Deeper-Learning-Konzept",kurz:"Stunde",text:"Mit Digitaler Tafel, Material (PDF, Film, Audio, Bilder, Links) und einem Check-out mit offener Frage."},
  apt:{icon:"🎓",name:"Abschlussprüfungstraining",kurz:"Prüfungstraining",text:"Je Inhalt 4 Schritte bis zur umgesetzten Vorkorrektur."},
  kprim:{icon:"🏁",name:"K-Prim-Aufgabentest",kurz:"K-Prim-Test",text:"Check-out mit K-Prim-Aufgaben, automatisch ausgewertet."},
  selbstlern:{icon:"🎒",name:"Selbstlernkurs",kurz:"Selbstlernkurs",text:"Schüler:innen bearbeiten den Kurs selbstständig von A bis Z."},
@@ -4324,9 +4324,9 @@ function ppmName(){return profile?.displayName||currentUser.email||"Schüler:in"
 function ppmStatus(m){
  if(isTeacher())return"";
  if(m.modul==="selbstlern"&&String(m.kursId||"").startsWith("ea:")){const f=PPM.meine.ea[m.kursId.slice(3)]||{},a=f.einarbeitungAufgaben;return`<span class="ppm-status${f.einarbeitungAbgeschlossen?" ok":""}">${f.einarbeitungAbgeschlossen?"abgeschlossen ✓":(a&&a.gesamt?`${a.richtig}/${a.gesamt} Aufgaben`:"noch offen")}</span>`;}
- if(m.modul==="experiment"){const f=PPM.meine.exp||{};return`<span class="ppm-status${f.experimentErledigt?" ok":""}">${f.experimentErledigt?"gemacht ✓":"noch offen"}</span>`;}
+ if(m.modul==="experiment"||(m.modul==="projekt"&&ppmProjektDirekt(m))){const f=PPM.meine.exp||{};return`<span class="ppm-status${f.experimentErledigt?" ok":""}">${f.experimentErledigt?"gemacht ✓":"noch offen"}</span>`;}
  if(m.modul==="selbstlern"){const sch=ppmKursSchritte(m).filter(s=>s.typ!=="abschluss"),f=PPM.meine.kurs[m.id];const n=f?sch.filter(s=>f.erledigt&&f.erledigt[s.id]).length:0;return`<span class="ppm-status${n===sch.length&&sch.length?" ok":""}">${n}/${sch.length} Schritte</span>`;}
- if(m.modul==="stunde"){const fr=m.fragen||[];if(!fr.length)return"";const f=PPM.meine.stunde[m.id];const n=f?(f.gezeigt||[]).filter(Boolean).length:0;return`<span class="ppm-status${n===fr.length?" ok":""}">Check-out ${n}/${fr.length}</span>`;}
+ if(m.modul==="stunde"){const f=PPM.meine.stunde[m.id];if(f&&f.fertig)return`<span class="ppm-status ok">fertig ✓</span>`;const fr=m.fragen||[];if(!fr.length)return"";const n=f?(f.gezeigt||[]).filter(Boolean).length:0;return`<span class="ppm-status${n===fr.length?" ok":""}">Check-out ${n}/${fr.length}</span>`;}
  return"";
 }
 function ppmKarteHTML(m,fortsetzung){
@@ -4383,6 +4383,10 @@ const PPM_CSS=`<style>
 .ppm-teile label.check{align-items:flex-start;gap:8px;margin:0}.ppm-teileinfo{font-size:13px;margin-top:4px}
 .ppm-kapahint{font-size:12px;line-height:1.5;padding:8px 10px;border-radius:10px;background:#f6f9fc;border:1px solid var(--line)}
 .ppm-details summary{cursor:pointer;font-weight:700;font-size:16px;padding:2px 0}
+.ppm-tafel .wb-kopf{display:none}.ppm-tafel .wb-wrap{height:min(72vh,680px);min-height:420px}
+.ppm-fertig{display:flex;align-items:center;gap:12px;width:100%;margin-top:6px;padding:14px 16px;border-radius:12px;border:2px solid #b9c8d6;background:#fff;font-weight:700;font-size:15px;color:var(--ink);cursor:pointer;text-align:left}
+.ppm-fertig:hover{border-color:#2f7fc6}.ppm-fertig.an{border-color:#3fa66a;background:#e3f4e8;color:#1f6a3a}
+.ppm-haken{width:28px;height:28px;border-radius:8px;border:2px solid #8aa0b3;background:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:18px;flex:none}.ppm-fertig.an .ppm-haken{background:#3fa66a;border-color:#3fa66a;color:#fff}
 @media(max-width:760px){.ppm-woche{grid-template-columns:1fr}}
 </style>`;
 
@@ -4435,6 +4439,32 @@ async function renderPPModulplan(){
  ${footer()}`;
 }
 // ------------------------------------------------------------ Modul anlegen/ändern
+// „＋ Modul“ in einer Woche: erst eines der fünf Module wählen, dann öffnet sich der Dialog.
+function ppmTypWahl(woche){
+ if(!isTeacher())return;
+ const sw=woche?swById(woche):null;
+ const typen=Object.entries(PPM_TYPEN).filter(([k])=>k!=="experiment");
+ modal(`<button class="modal-close" onclick="closeModal()">×</button>
+  <div class="kicker">MODUL HINZUFÜGEN</div><h2>Welches Modul möchtest du einplanen?</h2>
+  ${sw?`<p style="color:var(--muted);margin:0 0 10px">Woche ${fmtKurz(sw.start)}–${fmtKurz(sw.end)}</p>`:""}
+  <div class="ppm-legende" style="grid-template-columns:1fr">${typen.map(([k,T])=>`<button type="button" class="ppm-typ" data-ppm="neu" data-typ="${k}"${woche?` data-woche="${esc(woche)}"`:""}><b>${T.icon} ${esc(T.name)}</b><small>${esc(T.text)}</small></button>`).join("")}</div>
+  <div class="form-actions"><button class="secondary" type="button" onclick="closeModal()">Abbrechen</button></div>`);
+}
+// Projekt: öffnet direkt „Das Experiment“ (Standard im Lernbereich mit Einstieg) oder die Projektseite mit Teams und Meilensteinen.
+function ppmProjektDirekt(m){
+ if(m&&m.direkt==="experiment")return true;
+ if(m&&m.direkt==="projekt")return false;
+ const ph=PROJEKT_PHASEN.find(p=>p.lbNum===Number(m&&m.lb));
+ return !!(ph&&ph.einstieg);
+}
+function ppmDateiTyp(f){
+ const n=(f&&f.name)||"",t=(f&&f.type)||"";
+ if(/^image\//.test(t)||dateiIstBild(n))return"bild";
+ if(/^video\//.test(t)||dateiIstVideo(n))return"video";
+ if(/^audio\//.test(t)||dateiIstAudio(n))return"audio";
+ return"pdf";
+}
+const PPM_MAT_INFO={pdf:["📄","PDF"],bild:["🖼️","Bild"],video:["🎬","Film"],audio:["🎧","Audio"],link:["🔗","Webseite"]};
 function ppmWochenOptionen(sel){
  return SCHULWOCHEN_PP.map(w=>`<option value="${w.id}"${w.id===sel?" selected":""}>${fmtKurz(w.start)}–${fmtKurz(w.end)}</option>`).join("");
 }
@@ -4462,7 +4492,11 @@ async function ppmDialog(id,typ,woche,opt){
  const wochenListe=projWochen||SCHULWOCHEN_PP;
  const wochenOpt=wochenListe.map(w=>{const frei=PPM_MIN_PRO_WOCHE-last[w.id].min;return`<option value="${w.id}"${w.id===start?" selected":""}>${fmtKurz(w.start)}–${fmtKurz(w.end)}${projekt?"":` · frei: ${ppmStd(frei)} Std.`}</option>`;}).join("");
  let extra="";
- if(t==="projekt")extra=`<p style="font-size:13px;color:var(--muted);margin:0">Das Projekt nutzt die erdachten Meilensteine und die Teams des Lernbereichs. Experiment-Einheiten fügst du danach auf der Modulseite ein.</p>`;
+ if(t==="projekt"){
+  const dir0=ppmProjektDirekt(bearb||{lb:lb0});
+  extra=`<label>Beim Aufrufen öffnet sich<select id="ppmDirekt"><option value="experiment"${dir0?" selected":""}>direkt „Das Experiment“ (interaktive Stunde)</option><option value="projekt"${dir0?"":" selected"}>die Projektseite mit Teams und Meilensteinen</option></select></label>
+   <p style="font-size:13px;color:var(--muted);margin:0">Team-Projekt mit Meilensteinen anlegen: Das Projekt nutzt die Meilensteine und die Teams des Lernbereichs.</p>`;
+ }
  if(t==="apt")extra=`<p style="font-size:13px;color:var(--muted);margin:0">Das Prüfungstraining nutzt die Inhalte des Lernbereichs mit je 4 Schritten.</p>`;
  if(t==="stunde")extra=`<label>Phase im Deeper-Learning-Konzept<select id="ppmPhase">${[1,2,3].map(n=>`<option value="${n}"${(bearb?bearb.phase:2)===n?" selected":""}>${PP12_PHASEN[n].kurz} · ${esc(PP12_PHASEN[n].name)}</option>`).join("")}</select></label>
   ${bearb?"":`<p style="font-size:13px;color:var(--muted);margin:0">Zu jeder Stunde wird automatisch eine Digitale Tafel angelegt.</p>`}`;
@@ -4509,7 +4543,7 @@ async function ppmDialog(id,typ,woche,opt){
   }
   btn.disabled=!ok;btn.title=ok?"":"In dieser Woche ist nicht genug Platz (6 Stunden pro Woche).";
  };
- if(t==="projekt"&&!bearb)lbSel.addEventListener("change",()=>{const x=PROJEKT_PHASEN.find(y=>y.lbNum===Number(lbSel.value));ti.placeholder=x?x.titel:T.name;});
+ if(t==="projekt"&&!bearb)lbSel.addEventListener("change",()=>{const x=PROJEKT_PHASEN.find(y=>y.lbNum===Number(lbSel.value));ti.placeholder=x?x.titel:T.name;const d=$("ppmDirekt");if(d)d.value=(x&&x.einstieg)?"experiment":"projekt";});
  $("ppmStart").addEventListener("change",aktualisieren);$("ppmDauer").addEventListener("change",aktualisieren);
  document.querySelectorAll(".ppmTeil").forEach(c=>c.addEventListener("change",()=>{
   const box=[...document.querySelectorAll(".ppmTeil")],get=k=>box.find(x=>x.value===k);
@@ -4525,6 +4559,7 @@ async function ppmDialog(id,typ,woche,opt){
   const daten={modul:t,lb,titel:ti.value.trim(),start:$("ppmStart").value,dauer:dk,wochen:def?def.wochen:(Number(dk.slice(1))||1),notiz:$("ppmNotiz").value.trim()};
   if(!daten.titel){const x=PROJEKT_PHASEN.find(y=>y.lbNum===lb);daten.titel=t==="projekt"&&x?x.titel:(t==="apt"?"Prüfungstraining LB "+lb:t==="kprim"?"K-Prim-Test LB "+lb:t==="stunde"?"Unterrichtsstunde LB "+lb:t==="experiment"?"Das Experiment":"Selbstlernkurs LB "+lb);}
   if(projektId)daten.projektId=projektId;
+  if(t==="projekt"&&$("ppmDirekt"))daten.direkt=$("ppmDirekt").value;
   if(t==="stunde")daten.phase=Number($("ppmPhase").value);
   if(t==="kprim")daten.checkoutId=$("ppmCheckout").value||"";
   if(t==="experiment"){
@@ -4680,33 +4715,61 @@ async function ppmKprimSeite(m){
  ${checkoutLiveBannerHTML(d)}${checkoutSektionHTML(d)}${footer()}`;
 }
 // ---- Unterrichtsstunde ----
+// Aufbau: Name der Stunde · Digitale Tafel (eingeblendet, zur Orientierung) · Material
+// (PDF, Film, Audio, Bild, Link) · Check-out mit offenen Fragen und Haken „fertig“.
+function ppmMaterialHTML(x,i,m,lehrer){
+ const typ=PPM_MAT_INFO[x.typ]?x.typ:"link",info=PPM_MAT_INFO[typ];
+ let vorschau="";
+ if(typ==="bild")vorschau=`<a href="${esc(x.url)}" target="_blank" rel="noopener noreferrer"><img src="${esc(x.url)}" alt="${esc(x.titel||x.name||"Bild")}" style="max-width:100%;max-height:320px;border-radius:10px;margin-top:8px;display:block"></a>`;
+ if(typ==="video")vorschau=`<video controls preload="metadata" src="${esc(x.url)}" style="width:100%;max-height:360px;border-radius:10px;margin-top:8px;background:#000"></video>`;
+ if(typ==="audio")vorschau=`<audio controls preload="metadata" src="${esc(x.url)}" style="width:100%;margin-top:8px"></audio>`;
+ return`<div class="ppm-mat" style="flex-wrap:wrap"><span style="font-size:22px">${info[0]}</span><div style="flex:1;min-width:160px"><b>${esc(x.titel||x.name||"Material")}</b><br><small style="color:var(--muted)">${info[1]}</small></div>
+  <a class="ppm-btn klein" href="${esc(x.url)}" target="_blank" rel="noopener noreferrer">Öffnen</a>${lehrer?`<button type="button" class="ppm-btn klein" data-ppm="mat-weg" data-id="${esc(m.id)}" data-i="${i}" title="Entfernen">✕</button>`:""}
+  ${vorschau?`<div style="flex-basis:100%">${vorschau}</div>`:""}</div>`;
+}
 async function ppmStundeSeite(m){
- const lehrer=isTeacher(),P=PP12_PHASEN[m.phase||2],c=ppmFarbe(m);
+ const lehrer=isTeacher(),P=PP12_PHASEN[m.phase||2];
  const mat=m.material||[],fr=m.fragen||[];
  const mein=PPM.meine.stunde[m.id]||{};
  const schritte=`<div class="ppm-phasen">${[1,2,3].map(n=>`<div class="ppm-ph${n===(m.phase||2)?" an":""}"><span>${n}</span>${esc(PP12_PHASEN[n].schueler)}</div>`).join("")}</div>`;
- const tafel=m.tafelId?`<button type="button" class="ppm-btn primaer" data-ppm="tafel" data-id="${esc(m.tafelId)}">🖥 Digitale Tafel öffnen</button>`:(lehrer?`<button type="button" class="ppm-btn primaer" data-ppm="tafel-neu" data-id="${esc(m.id)}">＋ Digitale Tafel anlegen</button>`:`<span class="ppm-leer">Die Tafel wird von deiner Lehrkraft vorbereitet.</span>`);
- const matListe=mat.map((x,i)=>`<div class="ppm-mat"><span style="font-size:22px">${x.typ==="pdf"?"📄":"🔗"}</span><div style="flex:1;min-width:0"><b>${esc(x.titel||x.name||"Material")}</b><br><small style="color:var(--muted)">${x.typ==="pdf"?"PDF":"Webseite"}</small></div>
-  <a class="ppm-btn klein" href="${esc(x.url)}" target="_blank" rel="noopener noreferrer">Öffnen</a>${lehrer?`<button type="button" class="ppm-btn klein" data-ppm="mat-weg" data-id="${esc(m.id)}" data-i="${i}">✕</button>`:""}</div>`).join("");
+ // Digitale Tafel direkt auf der Seite einblenden
+ let tafel="";
+ if(m.tafelId){
+  const vorher=activeWhiteboardId;
+  try{
+   activeWhiteboardId=m.tafelId;
+   const html=await renderWhiteboardBoard();
+   if(html&&html.indexOf('id="wbStage"')>-1){
+    tafel=`<div class="ppm-tafel">${html}</div>
+     <div class="ppm-zeile" style="border:0;padding-bottom:0"><button type="button" class="ppm-btn klein" data-ppm="tafel" data-id="${esc(m.tafelId)}">↗ Tafel im Vollbild öffnen</button></div>`;
+    window.__ppmNachRender=()=>{if($("wbStage"))initWhiteboardBoard(m.tafelId);};
+   }
+  }catch(e){console.error("Tafel einbetten:",e);}
+  activeWhiteboardId=vorher;
+  if(!tafel)tafel=`<p class="ppm-leer">Die Tafel konnte nicht geladen werden.</p><button type="button" class="ppm-btn primaer" data-ppm="tafel" data-id="${esc(m.tafelId)}">🖥 Digitale Tafel öffnen</button>`;
+ }else tafel=lehrer?`<button type="button" class="ppm-btn primaer" data-ppm="tafel-neu" data-id="${esc(m.id)}">＋ Digitale Tafel anlegen</button>`:`<span class="ppm-leer">Die Tafel wird von deiner Lehrkraft vorbereitet.</span>`;
+ const matListe=mat.map((x,i)=>ppmMaterialHTML(x,i,m,lehrer)).join("");
  let check="";
  if(lehrer){
-  check=`<div id="ppmFragenEdit">${fr.map((q,i)=>`<div class="ppm-frage"><b>Frage ${i+1}</b><textarea data-ppm-frage="${i}" placeholder="Offene Frage">${esc(q.frage||"")}</textarea><textarea data-ppm-loesung="${i}" placeholder="Lösungsantwort (Musterlösung)" style="margin-top:6px">${esc(q.loesung||"")}</textarea><button type="button" class="ppm-btn klein" data-ppm="frage-weg" data-i="${i}" style="margin-top:6px">Frage entfernen</button></div>`).join("")||`<p class="ppm-leer">Noch keine Fragen.</p>`}</div>
+  check=`<div id="ppmFragenEdit">${fr.map((q,i)=>`<div class="ppm-frage"><b>Frage ${i+1}</b><textarea data-ppm-frage="${i}" placeholder="Offene Frage">${esc(q.frage||"")}</textarea><textarea data-ppm-loesung="${i}" placeholder="Lösungsantwort (Musterlösung)" style="margin-top:6px">${esc(q.loesung||"")}</textarea><button type="button" class="ppm-btn klein" data-ppm="frage-weg" data-i="${i}" style="margin-top:6px">Frage entfernen</button></div>`).join("")||`<p class="ppm-leer">Noch keine Frage.</p>`}</div>
    <div class="ppm-zeile"><button type="button" class="ppm-btn" data-ppm="frage-neu" data-id="${esc(m.id)}">＋ Frage</button><button type="button" class="ppm-btn primaer" data-ppm="fragen-speichern" data-id="${esc(m.id)}">Fragen speichern</button><button type="button" class="ppm-btn" data-ppm="antworten-ansehen" data-id="${esc(m.id)}">Antworten der Klasse ansehen</button></div>`;
- }else if(fr.length){
-  check=fr.map((q,i)=>{
+ }else{
+  check=(fr.length?fr.map((q,i)=>{
    const gezeigt=(mein.gezeigt||[])[i],bew=(mein.bewertung||[])[i];
    return`<div class="ppm-frage"><b>${i+1}. ${esc(q.frage)}</b>
     <textarea data-ppm-antwort="${i}" placeholder="Deine Antwort in eigenen Worten …"${gezeigt?" readonly":""}>${esc((mein.antworten||[])[i]||"")}</textarea>
-    ${gezeigt?`<div class="ppm-loesung"><b>Lösungsantwort:</b><br>${esc(q.loesung||"")}</div>
+    ${gezeigt?`<div class="ppm-loesung"><b>Lösung:</b><br>${esc(q.loesung||"")}</div>
      <div class="ppm-bew"><span style="align-self:center;font-size:12px">Meine Antwort war:</span>${[["ja","passt"],["teils","teilweise"],["nein","noch nicht"]].map(([k,t])=>`<button type="button" class="${bew===k?"an":""}" data-ppm="bewerten" data-id="${esc(m.id)}" data-i="${i}" data-k="${k}">${t}</button>`).join("")}</div>`
-     :`<div style="margin-top:8px"><button type="button" class="ppm-btn" data-ppm="loesung" data-id="${esc(m.id)}" data-i="${i}">Lösung zeigen</button></div>`}</div>`;
-  }).join("");
- }else check=`<p class="ppm-leer">Zu dieser Stunde gibt es keinen Check-out.</p>`;
+     :`<div style="margin-top:8px"><button type="button" class="ppm-btn" data-ppm="loesung" data-id="${esc(m.id)}" data-i="${i}">Lösung anzeigen</button></div>`}</div>`;
+  }).join(""):`<p class="ppm-leer">Zu dieser Stunde gibt es keine Check-out-Frage.</p>`)
+  +`<button type="button" class="ppm-fertig${mein.fertig?" an":""}" data-ppm="fertig" data-id="${esc(m.id)}" aria-pressed="${mein.fertig?"true":"false"}"><span class="ppm-haken">${mein.fertig?"✓":""}</span>${mein.fertig?"Ich bin fertig – Check-out abgehakt":"Ich bin mit dem Check-out fertig"}</button>`;
+ }
  return`${ppmKopf(m,schritte)}
- <div class="ppm-box"><h2>Digitale Tafel</h2><p>Hier läuft die Stunde: Impulse, Aufgaben und Werkzeuge auf einer Tafel.</p>${tafel}</div>
+ ${lehrer?`<div class="ppm-box"><h2>Name der Stunde</h2><div class="ppm-zeile" style="border:0"><input id="ppmStundeTitel" maxlength="120" value="${esc(m.titel||"")}" placeholder="z. B. Gegenstand der Psychologie" style="flex:1;min-width:220px;min-height:42px;padding:0 12px;border:1px solid var(--line);border-radius:10px;font:inherit"><button type="button" class="ppm-btn primaer" data-ppm="stunde-name" data-id="${esc(m.id)}">Name speichern</button></div></div>`:""}
+ <div class="ppm-box"><h2>Digitale Tafel</h2><p style="color:var(--muted);font-size:13px">Zur Orientierung: Hier läuft die Stunde mit Impulsen, Aufgaben und Werkzeugen.</p>${tafel}</div>
  <div class="ppm-box"><h2>Material</h2>${matListe||`<p class="ppm-leer">Noch kein Material.</p>`}
-  ${lehrer?`<div class="ppm-zeile"><button type="button" class="ppm-btn" data-ppm="mat-pdf" data-id="${esc(m.id)}">＋ PDF hochladen</button><button type="button" class="ppm-btn" data-ppm="mat-link" data-id="${esc(m.id)}">＋ Webseite oder Link</button><input type="file" id="ppmPdf" accept="application/pdf,.pdf" hidden></div>`:""}</div>
- <div class="ppm-box"><h2>Check-out</h2>${lehrer?`<p style="color:var(--muted);font-size:13px">Offene Fragen mit Lösungsantwort. Die Schüler:innen schreiben ihre Antwort, sehen dann die Lösung und schätzen sich selbst ein.</p>`:`<p style="color:var(--muted);font-size:13px">Schreibe zuerst deine Antwort. Danach zeigst du dir die Lösung an und vergleichst.</p>`}${check}</div>
+  ${lehrer?`<div class="ppm-zeile"><button type="button" class="ppm-btn" data-ppm="mat-datei" data-id="${esc(m.id)}">＋ Datei hochladen (PDF, Film, Audio, Bild)</button><button type="button" class="ppm-btn" data-ppm="mat-link" data-id="${esc(m.id)}">＋ Link oder Webseite</button><input type="file" id="ppmDatei" accept="application/pdf,.pdf,video/*,audio/*,image/*" hidden></div><p style="color:var(--muted);font-size:12px;margin:0">Dateien bis 15 MB. Größere Filme am besten als Link (z. B. Mediathek) einfügen.</p>`:""}</div>
+ <div class="ppm-box"><h2>Check-out</h2>${lehrer?`<p style="color:var(--muted);font-size:13px">Offene Frage mit Lösung. Die Schüler:innen schreiben ihre Antwort, lassen sich dann die Lösung anzeigen und setzen am Ende den Haken „fertig“.</p>`:`<p style="color:var(--muted);font-size:13px">Schreibe zuerst deine Antwort. Danach lässt du dir die Lösung anzeigen, vergleichst und setzt unten den Haken.</p>`}${check}</div>
  ${lehrer?`<div class="ppm-box"><h2>Für dich als Lehrkraft</h2><p><b>Phase ${P.kurz} · ${esc(P.name)}</b></p><p>${esc(P.was)}</p><p><b>Deine Rolle:</b> ${esc(P.rolle)}</p></div>`:""}
  ${footer()}`;
 }
@@ -4794,7 +4857,7 @@ async function ppmKlick(e){
  try{
   if(aktion==="oeffnen"){ppmOeffnen(id);return;}
   if(aktion==="plan"){activePPModul=null;await refresh();return;}
-  if(aktion==="neu"){if(!isTeacher())return;await ppmDialog(null,b.dataset.typ||null,b.dataset.woche||null);return;}
+  if(aktion==="neu"){if(!isTeacher())return;if(!b.dataset.typ){ppmTypWahl(b.dataset.woche||null);return;}await ppmDialog(null,b.dataset.typ,b.dataset.woche||null);return;}
   if(aktion==="bearbeiten"){e.stopPropagation();if(!isTeacher())return;await ppmDialog(id);return;}
   if(aktion==="standard"){await ppmStandardplan();return;}
   if(aktion==="experiment"){openExperimentStunde(m&&m.modul==="experiment"?ppmExpTeile(m):null);return;}
@@ -4815,9 +4878,9 @@ async function ppmKlick(e){
    return;
   }
   // --- Stunde ---
-  if(aktion==="mat-pdf"){$("ppmPdf").click();$("ppmPdf").onchange=async ev=>{const f=ev.target.files&&ev.target.files[0];if(!f)return;
-    try{toast("PDF wird hochgeladen …");const up=await uploadCampusDatei(f,`ppMaterial/${m.id}`);
-     await updateDoc(doc(db,"ppModule",m.id),{material:[...(m.material||[]),{typ:"pdf",titel:f.name.replace(/\.pdf$/i,""),name:f.name,url:up.url}]});await ppmLaden(true);await refresh();toast("PDF hinzugefügt.");}
+  if(aktion==="mat-datei"){const inp=$("ppmDatei");inp.click();inp.onchange=async ev=>{const f=ev.target.files&&ev.target.files[0];if(!f)return;
+    try{toast("Datei wird hochgeladen …");const up=await uploadCampusDatei(f,`ppMaterial/${m.id}`),typ=ppmDateiTyp(f);
+     await updateDoc(doc(db,"ppModule",m.id),{material:[...(m.material||[]),{typ,titel:f.name.replace(/\.[a-z0-9]{2,5}$/i,""),name:f.name,url:up.url}]});await ppmLaden(true);await refresh();toast("Material hinzugefügt.");}
     catch(err){toast(err&&err.message?err.message:"Upload nicht möglich.");}
     ev.target.value="";};return;}
   if(aktion==="mat-link"){
@@ -4826,7 +4889,13 @@ async function ppmKlick(e){
     const u=wbSichereUrl($("ppmUrl").value);if(!u){toast("Das ist keine gültige Internetadresse.");return}
     await updateDoc(doc(db,"ppModule",m.id),{material:[...(m.material||[]),{typ:"link",titel:$("ppmUrlTitel").value.trim()||u.replace(/^https?:\/\//,""),url:u}]});closeModal();await ppmLaden(true);await refresh();});
    return;}
-  if(aktion==="mat-weg"&&m){const l=[...(m.material||[])];l.splice(Number(b.dataset.i),1);await updateDoc(doc(db,"ppModule",m.id),{material:l});await ppmLaden(true);await refresh();return;}
+  if(aktion==="mat-weg"&&m){const l=[...(m.material||[])];const weg=l.splice(Number(b.dataset.i),1)[0];if(weg&&weg.typ!=="link")deleteCampusDatei(weg.url);await updateDoc(doc(db,"ppModule",m.id),{material:l});await ppmLaden(true);await refresh();return;}
+  if(aktion==="stunde-name"&&m&&isTeacher()){const t=($("ppmStundeTitel").value||"").trim();if(!t){toast("Bitte einen Namen eingeben.");return;}await updateDoc(doc(db,"ppModule",m.id),{titel:t.slice(0,120)});await ppmLaden(true);await refresh();toast("Name gespeichert.");return;}
+  if(aktion==="fertig"&&m&&!isTeacher()){
+   const n=(m.fragen||[]).length,alt=PPM.meine.stunde[m.id]||{},antw=ppmArr(alt.antworten,n);
+   document.querySelectorAll("[data-ppm-antwort]").forEach(t=>{antw[Number(t.dataset.ppmAntwort)]=t.value;});
+   await ppmStundeSchreiben(m,{antworten:antw.map(x=>x||""),gezeigt:ppmArr(alt.gezeigt,n).map(x=>!!x),bewertung:ppmArr(alt.bewertung,n).map(x=>x||null),fertig:!alt.fertig});
+   await refresh();return;}
   if(aktion==="frage-neu"&&m){ppmFragenLesen(m);const l=[...(m.fragen||[]),{frage:"",loesung:""}];m.fragen=l;await refresh();return;}
   if(aktion==="frage-weg"&&m){ppmFragenLesen(m);const l=[...(m.fragen||[])];l.splice(Number(b.dataset.i),1);m.fragen=l;await refresh();return;}
   if(aktion==="fragen-speichern"&&m){ppmFragenLesen(m);const l=(m.fragen||[]).filter(q=>(q.frage||"").trim());await updateDoc(doc(db,"ppModule",m.id),{fragen:l});await ppmLaden(true);await refresh();toast("Fragen gespeichert.");return;}
@@ -4869,6 +4938,12 @@ function ppmFragenLesen(m){
 }
 function ppmOeffnen(id){
  const m=ppmById(id);if(!m)return;
+ if(m.modul==="projekt"&&ppmProjektDirekt(m)){
+  const kind=PPM.liste.find(x=>x.projektId===m.id&&x.modul==="experiment");
+  activePPModul=null;activePhaseDetail=null;activeFach="paedagogik";
+  openExperimentStunde(kind?ppmExpTeile(kind):null);
+  return;
+ }
  if(m.modul==="apt"){const ph=PROJEKT_PHASEN.find(p=>p.lbNum===Number(m.lb));if(ph){activePPModul=null;activePhaseDetail=ph.id+":apt";}}
  else activePPModul=id;
  activeFach="paedagogik";
@@ -4880,9 +4955,9 @@ async function ppmAntwortenDialog(m){
  const fr=m.fragen||[];
  const stat=fr.map((q,i)=>{const z={ja:0,teils:0,nein:0};docs.forEach(d=>{const k=(d.bewertung||[])[i];if(z[k]!==undefined)z[k]++;});return`<tr><td>${i+1}. ${esc(q.frage)}</td><td>${z.ja}</td><td>${z.teils}</td><td>${z.nein}</td></tr>`;}).join("");
  modal(`<button class="modal-close" onclick="closeModal()">×</button><div class="kicker">CHECK-OUT</div><h2>Antworten der Klasse</h2>
-  <p>${docs.length} Person${docs.length===1?"":"en"} haben geantwortet.</p>
+  <p>${docs.length} Person${docs.length===1?"":"en"} haben geantwortet, ${docs.filter(d=>d.fertig).length} davon haben den Haken „fertig“ gesetzt.</p>
   ${fr.length?`<table class="noten-table"><thead><tr><th>Frage</th><th>passt</th><th>teilweise</th><th>noch nicht</th></tr></thead><tbody>${stat}</tbody></table>`:""}
-  ${docs.map(d=>`<details style="margin:8px 0"><summary><b>${esc(d.name||"Schüler:in")}</b></summary>${fr.map((q,i)=>`<p><b>${i+1}.</b> ${esc((d.antworten||[])[i]||"–")}</p>`).join("")}</details>`).join("")}`);
+  ${docs.map(d=>`<details style="margin:8px 0"><summary><b>${esc(d.name||"Schüler:in")}</b>${d.fertig?" · fertig ✓":""}</summary>${fr.map((q,i)=>`<p><b>${i+1}.</b> ${esc((d.antworten||[])[i]||"–")}</p>`).join("")}</details>`).join("")}`);
 }
 async function ppmEaStandDialog(id){
  if(!isTeacher())return;
@@ -16898,6 +16973,7 @@ async function render(){
  if(p==="whiteboard-board"&&activeWhiteboardId){
  initWhiteboardBoard(activeWhiteboardId);
  }
+ if(typeof window.__ppmNachRender==="function"){const nr=window.__ppmNachRender;window.__ppmNachRender=null;try{nr();}catch(e){console.error("Nachrender:",e);}}
  if(p==="kanban-board"&&activeKanbanId){
  subscribeKanbanLive(activeKanbanId);
  }
