@@ -4143,6 +4143,7 @@ const PPM_EINHEITEN={experiment:{icon:"🧪",name:"Das Experiment – interaktiv
 // Dauer eines Moduls: eine Unterrichtsstunde (45 Min.), Doppelstunde, 120 oder 180 Minuten,
 // oder eine bis drei ganze Wochen. Minutenmodule gehören zu der Woche, in der sie beginnen.
 const PPM_DAUERN=[
+ {k:"15",name:"15 Minuten",lang:"15 Minuten (z. B. K-Prim-Test)",min:15,wochen:1},
  {k:"45",name:"1 Stunde",lang:"1 Unterrichtsstunde (45 Minuten)",min:45,wochen:1},
  {k:"90",name:"2 Stunden",lang:"2 Unterrichtsstunden (Doppelstunde, 90 Minuten)",min:90,wochen:1},
  {k:"135",name:"3 Stunden",lang:"3 Unterrichtsstunden (135 Minuten)",min:135,wochen:1},
