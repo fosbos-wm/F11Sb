@@ -4179,7 +4179,7 @@ const PPM_EXP_TEILE=[
 function ppmExpMinuten(teile){return PPM_EXP_TEILE.filter(t=>(teile||[]).includes(t.k)).reduce((n,t)=>n+t.min,0);}
 function ppmExpTeile(m){return Array.isArray(m&&m.teile)&&m.teile.length?m.teile:PPM_EXP_TEILE.map(t=>t.k);}
 // Fertige Einarbeitungs-Inhalte (einarbeitung/inhalte/<id>.json); wählbar im Selbstlernkurs.
-const PPM_EA_IDS=["pp01","pp02","pp03","pp1a1","pp1a2","pp1a3","pp1a4","pp06","pp07","pp2a1","pp10","pp11","pp15","pp16"];
+const PPM_EA_IDS=["fa01","pp01","pp02","pp03","pp1a1","pp1a2","pp1a3","pp1a4","pp06","pp07","pp2a1","pp10","pp11","pp15","pp16"];
 async function ppmEaListe(){
  const r=await Promise.all(PPM_EA_IDS.map(async id=>{const i=await einarbeitungInfo(id);return i?{id,titel:i.titel,entwurf:i.entwurf}:null;}));
  return r.filter(Boolean);
@@ -5637,7 +5637,7 @@ async function einarbeitungInfo(id){
   const res=await fetch(`einarbeitung/inhalte/${encodeURIComponent(id)}.json`,{cache:"no-cache"});
   if(res.ok){
    const j=await res.json();
-   const ARTEN=["mc","lueckentext","zuordnung","sortieren","kprim","frei"];
+   const ARTEN=["mc","lueckentext","zuordnung","sortieren","kprim","frei","reihenfolge","strukturstreifen"];
    const zahl=(j.abschnitte||[]).reduce((n,x)=>n+(x.aufgaben||[]).length+(x.bloecke||[]).filter(b=>ARTEN.includes(b.typ)).length,0);
    r={titel:j.titel||"",entwurf:!!j.entwurf,aufgaben:zahl};
   }
