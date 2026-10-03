@@ -264,6 +264,16 @@ select,input[type=number]{border:1px solid var(--line);border-radius:8px}
   .gap{min-width:7em}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.skizze{width:100%;table-layout:fixed;overflow-wrap:anywhere;border-collapse:collapse;margin:8px 0 4px;font-size:.95rem;background:#fff}
+.skizze th,.skizze td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.skizze th{background:var(--accent-soft);color:var(--ink)}
+.skizze th:first-child,.skizze td:first-child{width:28%}.skizze td:first-child{font-weight:700}
+.skizze ul{margin:0;padding-left:1.1em}.skizze li{margin:2px 0}
+.skizze tr.skopt td{background:#fafcfd}
+.skizze .tag{display:inline-block;font-size:.75rem;font-weight:700;color:var(--hl-ink);background:var(--hl);border-radius:999px;padding:1px 8px;margin-left:4px}
+.dl-card{display:flex;flex-wrap:wrap;align-items:center;gap:14px;background:#fff;border:1.5px solid var(--accent);border-radius:12px;padding:14px 18px;margin:18px 0}
+.dl-card p{margin:0;flex:1 1 260px}
+.dl-card a.btn{text-decoration:none;display:inline-block}
 </style>
 </head>
 <body>
@@ -406,6 +416,11 @@ function h(tag,attrs={},...kids){
   for(const kid of kids.flat()){ if(kid==null||kid===false) continue; e.append(kid.nodeType?kid:document.createTextNode(kid)); }
   return e;
 }
+function downloadKarte(){
+  return h('div',{class:'dl-card'},
+    h('p',{html:'<strong>Zusammenfassung zum Mitnehmen:</strong> Das Wichtigste zum Experiment (Definition, drei Merkmale, Beispiel, Grenzen, Aufbau des Fachaufsatzes) auf einer Seite.'}),
+    h('a',{class:'btn',href:'zusammenfassung-experiment.pdf',download:'Zusammenfassung-Experiment.pdf',target:'_blank',rel:'noopener'},'Zusammenfassung herunterladen (PDF)'));
+}
 const store={
   get(k,d){try{const v=localStorage.getItem('experiment:'+k);return v==null?d:JSON.parse(v);}catch(e){return d;}},
   set(k,v){try{localStorage.setItem('experiment:'+k,JSON.stringify(v));}catch(e){}}
@@ -459,6 +474,7 @@ function abschlussKnopf(id){
   if(wrap&&wrap.parentElement!==sec) wrap.remove(), wrap=null;
   if(id===letzte&&!wrap){
     wrap=h('div',{id:'fertig-wrap',class:'row',style:'margin-top:22px;flex-direction:column;align-items:flex-start;gap:10px'},
+      downloadKarte(),
       h('button',{class:'btn',type:'button',onclick:einheitAbschliessen},'Einheit abschließen ✓'),
       h('div',{id:'fertig-hinweis',class:'note',hidden:true},'Geschafft: Diese Einheit ist abgeschlossen. Du kannst das Fenster schließen.'));
     sec.append(wrap);
@@ -1004,27 +1020,52 @@ function buildTask1(){
   const fb=h('p',{class:'fb warn',role:'status'});
   const sol=h('div',{hidden:true});
   const btn=h('button',{class:'btn',type:'button'},'Musterlösung und Selbsteinschätzung');
+  const btnL=h('button',{class:'btn ghost',type:'button'},'Lösung anzeigen');
   btn.addEventListener('click',()=>{
-    if(ta.value.trim().length<120){fb.textContent='Schreiben Sie zuerst Ihre eigene Lösung (mindestens ein paar Sätze).';return;}
-    fb.textContent='';sol.hidden=false;btn.hidden=true;buildSolution(sol);sol.scrollIntoView({behavior:'smooth',block:'start'});
+    if(ta.value.trim().length<120){fb.textContent='Schreiben Sie zuerst Ihre eigene Lösung (mindestens ein paar Sätze). Wenn Sie nicht weiterkommen, können Sie sich auch direkt die Lösung anzeigen lassen.';return;}
+    fb.textContent='';sol.hidden=false;btn.hidden=true;btnL.hidden=true;buildSolution(sol,true);sol.scrollIntoView({behavior:'smooth',block:'start'});
   });
-  box.append(ta,h('div',{class:'row'},btn),fb,sol);
+  btnL.addEventListener('click',()=>{
+    fb.textContent='';sol.hidden=false;btn.hidden=true;btnL.hidden=true;buildSolution(sol,false);sol.scrollIntoView({behavior:'smooth',block:'start'});
+  });
+  box.append(ta,h('p',{class:'soft'},'Tipp: Schreiben Sie zuerst Ihre eigene Lösung, das bringt am meisten. Wenn Sie nicht weiterkommen, können Sie sich die Lösung auch direkt anzeigen lassen.'),h('div',{class:'row'},btn,btnL),fb,sol);
   return box;
 }
-function buildSolution(sol){
-  sol.replaceChildren(
-    h('div',{class:'solution'},
-      h('h3',{},'Musterlösung'),
-      h('p',{html:'<strong>Willkürlichkeit:</strong> Herr Freude bestimmt Bedingungen, Situation, Ort und Zeit selbst. Er wählt den Text aus, teilt die 20 Personen per Zufall in zwei Gruppen ein, legt 20 Minuten Lernzeit, die Pause und den identischen Test fest, hält Raum, Beleuchtung und Lärmpegel gleich und gibt das Farbsystem vor.'}),
-      h('p',{html:'<strong>Variierbarkeit:</strong> Er verändert gezielt genau eine Bedingung, nämlich das Notieren mit blauem/schwarzem Stift (Gruppe A) gegenüber dem festgelegten Farbsystem (Gruppe B). Alles andere bleibt gleich. Gemessen wird die Wirkung über die Punkte im Wissenstest.'}),
-      h('p',{html:'<strong>Wiederholbarkeit:</strong> Er hält Farbschema, Testaufbau und Instruktionen genau fest. So kann er selbst oder eine andere Lehrkraft das Experiment beliebig oft unter denselben Bedingungen durchführen und die Ergebnisse überprüfen.'})
-    )
-  );
+function buildSolution(sol,withCheck){
+  const rows=[
+    ['angestrebter Erkenntnisgewinn',h('p',{style:'margin:0'},'Verbesserung der Gedächtnisleistung unter den Lernenden durch das Nutzen von Farben beim Anfertigen von Notizen.')],
+    ['Willkürlichkeit',h('div',{},
+      h('p',{style:'margin:0 0 4px'},'Erläuterung, dass Herr Freude das Setting kontrolliert festlegt und damit aktiv in den Ablauf eingreift:'),
+      h('ul',{},
+        h('li',{},'Gruppengröße: 20 Lernende seiner Klasse'),
+        h('li',{},'Einteilung der Gruppen: zufällig'),
+        h('li',{},'Experimentalgruppe (Gruppe B mit Farbsystem) und Kontrollgruppe (Gruppe A mit normalem Stift) mit gleicher Größe'),
+        h('li',{},'Raum, Licht und Lärmpegel als äußere Bedingungen sind in beiden Gruppen gleich'),
+        h('li',{},'bisher unbekannter Text über den Gegenstand der Psychologie'),
+        h('li',{},'20 Minuten Bearbeitungszeit inklusive Anfertigen von Notizen, mit anschließender 5-minütiger Pause'),
+        h('li',{},'von Herrn Freude erstellter, identischer Wissenstest über den Gegenstand der Psychologie')))],
+    ['Variierbarkeit',h('ul',{},
+      h('li',{},'unabhängige Variable: Farbsystem beim Anfertigen der Notizen'),
+      h('li',{},'abhängige Variable: Ergebnis beim Wissenstest'),
+      h('li',{},'Störvariablen (Raum, Lärm, Text) werden konstant gehalten')) ],
+    ['Wiederholbarkeit',h('p',{style:'margin:0'},'Verweis darauf, dass Herr Freude alle Schritte (Farbschema, Testaufbau, Instruktionen) dokumentiert hat, um anderen Forschenden eine exakte Replikation des Experiments zu ermöglichen.')],
+    ['optional: Kritische Reflexion zur Validität des Versuchsaufbaus',h('ul',{},
+      h('li',{},'Kritische Auseinandersetzung, ob durch die bewusste Steuerung (Willkürlichkeit) tatsächlich eine wissenschaftliche Aussage über das Gedächtnis möglich ist.'),
+      h('li',{},'Kognitive Überlastung: Das Farbsystem könnte den Lerneffekt durch das System selbst überlagern. Die Lernenden in Gruppe B müssen sich nicht nur den Textinhalt merken, sondern auch die Regeln des Farbsystems (Rot = Definition, Grün = Beispiel, Blau = Schlüsselbegriff).'),
+      h('li',{},'Was genau wird getestet? Wissen (Faktenreproduktion) oder Verständnis (Transfer)?'),
+      h('li',{},'Da nur eine Klasse untersucht wird, ist die Stichprobe sehr klein. Eine einzelne Person, die an diesem Tag besonders gut oder schlecht drauf war, kann den Durchschnittswert der Gruppe stark verfälschen. Die Ergebnisse sind daher kaum verallgemeinerbar.'))]
+  ];
+  const tbl=h('table',{class:'skizze'},
+    h('thead',{},h('tr',{},h('th',{},'Theorieaspekt'),h('th',{},'Anwendung'))),
+    h('tbody',{},rows.map(([k,v],i)=>h('tr',{class:i===rows.length-1?'skopt':''},h('td',{},k),h('td',{},v)))));
+  sol.replaceChildren(h('div',{class:'solution'},h('h3',{},'Lösungsskizze'),tbl));
+  if(!withCheck) return;
   const crit=[
+    'Ich habe den angestrebten Erkenntnisgewinn benannt (Wirkung von Farbe beim Notieren auf die Gedächtnisleistung).',
     'Ich habe die Willkürlichkeit benannt und erklärt (Forschende bestimmen Bedingungen, Situation, Ort und Zeit selbst).',
     'Ich habe die Willkürlichkeit am Beispiel belegt (z. B. Zufallseinteilung, 20 Minuten, gleiche Raumbedingungen, vorgegebenes Farbsystem).',
     'Ich habe die Variierbarkeit benannt und erklärt (eine Bedingung gezielt verändern, Wirkung beobachten).',
-    'Ich habe die Variierbarkeit am Beispiel belegt (Stift vs. Farbsystem, Testpunkte als Messung).',
+    'Ich habe die Variierbarkeit am Beispiel belegt (Farbsystem als unabhängige Variable, Testergebnis als abhängige Variable, Störvariablen konstant).',
     'Ich habe die Wiederholbarkeit benannt und erklärt (Vorgang beliebig oft durchführbar, Ergebnisse überprüfbar).',
     'Ich habe die Wiederholbarkeit am Beispiel belegt (Dokumentation von Farbschema, Testaufbau und Instruktionen).'
   ];
@@ -1032,7 +1073,8 @@ function buildSolution(sol){
   const upd=()=>{const n=$$('input',list).filter(i=>i.checked).length;const np=notenpunkte(n,crit.length);
     out.replaceChildren(h('span',{class:'pts'},n+' / '+crit.length+' Punkte'),h('span',{},'entspricht laut P/P-Bewertungsschlüssel '),h('span',{class:'pts'},np+' Notenpunkte'));};
   const list=h('div',{},crit.map(c=>{const i=h('input',{type:'checkbox'});i.addEventListener('change',upd);return h('label',{class:'check'},i,h('span',{},c));}));
-  sol.append(h('div',{class:'card'},h('h3',{},'Selbsteinschätzung'),h('p',{class:'soft'},'Vergleichen Sie Ihre Lösung mit der Musterlösung und haken Sie ab, was Sie erfüllt haben. Das ist eine Orientierung, keine Note.'),list,out));
+  const opt=h('label',{class:'check'},h('input',{type:'checkbox'}),h('span',{},'Zusatz (optional, zählt nicht mit): Ich habe den Versuchsaufbau kritisch reflektiert (z. B. kognitive Überlastung, kleine Stichprobe, Wissen oder Verständnis).'));
+  sol.append(h('div',{class:'card'},h('h3',{},'Selbsteinschätzung'),h('p',{class:'soft'},'Vergleichen Sie Ihre Lösung mit der Lösungsskizze und haken Sie ab, was Sie erfüllt haben. Das ist eine Orientierung, keine Note.'),list,opt,out));
   upd();
 }
 
@@ -1096,6 +1138,7 @@ function buildTask2(){
             h('li',{},'was ein Experiment ist und wie es sich von einer Beobachtung unterscheidet,'),
             h('li',{},'welche drei Merkmale ein Experiment ausmachen (Willkürlichkeit, Variierbarkeit, Wiederholbarkeit),'),
             h('li',{},'wie Sie diese Merkmale an einem Beispiel wie dem Farb-Experiment von Herrn Freude erkennen und begründen.')),
+          downloadKarte(),
           h('div',{class:'ctl'},h('button',{class:'btn ghost',type:'button',onclick:()=>{all.forEach(t=>t.reset());}},'Quiz wiederholen')))
       );
     }
