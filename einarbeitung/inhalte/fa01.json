@@ -13,7 +13,7 @@
     },
     {
      "typ": "zitat",
-     "text": "„Ich freute mich riesig auf den Ausflug in den Kletterwald. Als wir ankamen, fragte mich ein Betreuer gleich, ob ich es kaum erwarten könne, da ich so lächeln würde. Mir war das gar nicht klar, aber ich antwortete und erzählte ihm von meinen bisherigen Erfahrungen, um ihm zu zeigen, dass mir das Klettern wirklich Spaß macht.“",
+     "text": "„Ich freute mich riesig auf den Ausflug in den Kletterwald. Als wir ankamen, fragte mich ein Betreuer gleich, ob ich es kaum erwarten könne, da ich so lächeln würde. Mir war das gar nicht klar.“",
      "quelle": "Avleen"
     },
     {
@@ -58,15 +58,12 @@
      "hinweis": "Verschiebe die Absätze mit den Pfeilen. Nach dem Überprüfen siehst du, welche Absätze schon richtig stehen.",
      "absaetze": [
       "Im Folgenden soll der Gegenstand der Psychologie am Beispiel von Avleen erläutert werden.",
-      "Die Psychologie als Wissenschaft heißt aus dem Griechischen übersetzt „die Lehre von der menschlichen Seele“. Konkret beschäftigt sich die Psychologie mit dem Erleben, Verhalten und Handeln des Menschen.",
+      "Die Psychologie als Wissenschaft heißt aus dem Griechischen übersetzt „die Lehre von der menschlichen Seele“. Konkret beschäftigt sich die Psychologie mit dem Erleben und Verhalten des Menschen.",
       "Erleben meint alle innerpsychischen Vorgänge. Dieses Erleben ist nicht von außen beobachtbar. Es lässt sich nur durch Selbstbeobachtung erschließen. Zum Erleben gehören zum Beispiel menschliche Emotionen und Denkprozesse.",
       "Im Beispiel wird das Erleben von Avleen deutlich durch die Freude, die sie formuliert. Diese Freude ist eine Emotion. Zunächst ist nur Avleen in der Lage, diese Emotion präzise zu benennen, da sie diese an sich wahrnimmt.",
       "Das menschliche Erleben äußert sich im Verhalten.",
       "Mit Verhalten werden alle Aktivitäten des Menschen beschrieben, die von außen wahrnehmbar sind. Dazu gehören zum Beispiel Körperbewegungen sowie Mimik und Gestik.",
-      "Avleens Verhalten zeigt sich in ihrem Lächeln. Der Betreuer merkt durch seine Beobachtung von Avleen sofort, welche Emotion sie in sich trägt.",
-      "Das Erleben zeigt sich aber auch im menschlichen Handeln.",
-      "Handeln ist wie das Verhalten von außen wahrnehmbar, unterscheidet sich vom Verhalten allerdings in einem wichtigen Punkt: Hier geht es um absichtsvolle, bewusste Aktivitäten eines Menschen.",
-      "In der Situation wird das Handeln von Avleen darin deutlich, dass sie den Betreuer in ein Gespräch verwickelt. Hier steckt eine Absicht dahinter: Sie möchte ihm von ihren bisherigen Erfahrungen berichten, die dazu geführt haben, dass ihr Ausflüge in den Kletterwald so viel Spaß bereiten."
+      "Avleens Verhalten zeigt sich in ihrem Lächeln. Der Betreuer merkt durch seine Beobachtung von Avleen sofort, welche Emotion sie in sich trägt."
      ]
     }
    ]
@@ -93,10 +90,6 @@
       {
        "name": "Verhalten",
        "farbe": "gelb"
-      },
-      {
-       "name": "Handeln",
-       "farbe": "rot"
       }
      ],
      "zeilen": [
@@ -108,7 +101,7 @@
       {
        "label": "Definition des Begriffs „Psychologie“",
        "farbe": "pfirsich",
-       "text": "Die Psychologie als Wissenschaft heißt aus dem Griechischen übersetzt „die Lehre von der menschlichen Seele“. Konkret beschäftigt sich die Psychologie mit dem Erleben, Verhalten und Handeln des Menschen."
+       "text": "Die Psychologie als Wissenschaft heißt aus dem Griechischen übersetzt „die Lehre von der menschlichen Seele“. Konkret beschäftigt sich die Psychologie mit dem Erleben und Verhalten des Menschen."
       },
       {
        "label": "Theorieaspekte zum Erleben",
@@ -134,21 +127,6 @@
        "label": "Anwendung und Rückbezug zum Verhalten",
        "farbe": "gelb",
        "text": "Avleens Verhalten zeigt sich in ihrem Lächeln. Der Betreuer merkt durch seine Beobachtung von Avleen sofort, welche Emotion sie in sich trägt."
-      },
-      {
-       "label": "Überleitung zum Handeln",
-       "farbe": "pfirsich",
-       "text": "Das Erleben zeigt sich aber auch im menschlichen Handeln."
-      },
-      {
-       "label": "Theorieaspekte zum Handeln",
-       "farbe": "rot",
-       "text": "Handeln ist wie das Verhalten von außen wahrnehmbar, unterscheidet sich vom Verhalten allerdings in einem wichtigen Punkt: Hier geht es um absichtsvolle, bewusste Aktivitäten eines Menschen."
-      },
-      {
-       "label": "Anwendung und Rückbezug zum Handeln",
-       "farbe": "rot",
-       "text": "In der Situation wird das Handeln von Avleen darin deutlich, dass sie den Betreuer in ein Gespräch verwickelt. Hier steckt eine Absicht dahinter: Sie möchte ihm von ihren bisherigen Erfahrungen berichten, die dazu geführt haben, dass ihr Ausflüge in den Kletterwald so viel Spaß bereiten."
       }
      ]
     },
@@ -158,7 +136,7 @@
     },
     {
      "typ": "text",
-     "text": "- Der Aufsatz **beginnt** mit der Themafrage und einer Definition. So weiß der Leser, worum es geht.\n- Zu **jedem Gegenstandsbereich** (Erleben, Verhalten, Handeln) gehört ein Paar: erst die **Theorie**, dann die **Anwendung mit Rückbezug** auf das Beispiel.\n- **Überleitungen** verbinden die Bereiche, damit ein zusammenhängender Gedankengang entsteht."
+     "text": "- Der Aufsatz **beginnt** mit der Themafrage und einer Definition. So weiß der Leser, worum es geht.\n- Zu **jedem Gegenstandsbereich** (Erleben, Verhalten) gehört ein Paar: erst die **Theorie**, dann die **Anwendung mit Rückbezug** auf das Beispiel.\n- **Überleitungen** verbinden die Bereiche, damit ein zusammenhängender Gedankengang entsteht."
     },
     {
      "typ": "merke",
@@ -196,21 +174,20 @@
        "name": "Theorie",
        "items": [
         "Erleben meint alle innerpsychischen Vorgänge.",
-        "Handeln ist wie das Verhalten von außen wahrnehmbar, unterscheidet sich vom Verhalten allerdings in einem wichtigen Punkt: Hier geht es um absichtsvolle, bewusste Aktivitäten eines Menschen."
+        "Mit Verhalten werden alle Aktivitäten des Menschen beschrieben, die von außen wahrnehmbar sind."
        ]
       },
       {
        "name": "Anwendung",
        "items": [
         "Avleens Verhalten zeigt sich in ihrem Lächeln.",
-        "Hier steckt eine Absicht dahinter: Sie möchte ihm von ihren bisherigen Erfahrungen berichten."
+        "Zunächst ist nur Avleen in der Lage, diese Emotion präzise zu benennen, da sie diese an sich wahrnimmt."
        ]
       },
       {
        "name": "Überleitung",
        "items": [
-        "Das menschliche Erleben äußert sich im Verhalten.",
-        "Das Erleben zeigt sich aber auch im menschlichen Handeln."
+        "Das menschliche Erleben äußert sich im Verhalten."
        ]
       }
      ]
@@ -296,7 +273,7 @@
      "paare": [
       [
        "Psychologie",
-       "Wissenschaft, die sich mit dem Erleben, Verhalten und Handeln des Menschen beschäftigt"
+       "Wissenschaft, die sich mit dem Erleben und Verhalten des Menschen beschäftigt"
       ],
       [
        "Erleben",
@@ -305,10 +282,6 @@
       [
        "Verhalten",
        "alle von außen wahrnehmbaren Aktivitäten, zum Beispiel Körperbewegungen, Mimik und Gestik"
-      ],
-      [
-       "Handeln",
-       "von außen wahrnehmbare, absichtsvolle und bewusste Aktivitäten"
       ]
      ]
     },
@@ -366,7 +339,7 @@
    "bloecke": [
     {
      "typ": "text",
-     "text": "Jetzt kommt alles zusammen. Du schreibst einen vollständigen Fachaufsatz. Die farbigen Streifen zeigen dir den Aufbau, genau wie auf der Auflösungsseite. Die Farben bedeuten: **Blau** = Erleben, **Gelb** = Verhalten, **Rot** = Handeln, **Pfirsich** = Einleitung und Überleitungen."
+     "text": "Jetzt kommt alles zusammen. Du schreibst einen vollständigen Fachaufsatz. Die farbigen Streifen zeigen dir den Aufbau, genau wie auf der Auflösungsseite. Die Farben bedeuten: **Blau** = Erleben, **Gelb** = Verhalten, **Pfirsich** = Einleitung und Überleitung."
     },
     {
      "typ": "strukturstreifen",
@@ -383,7 +356,7 @@
        "titel": "Definition des Begriffs „Psychologie“",
        "farbe": "pfirsich",
        "hilfe": "Gib die Herkunft des Wortes an (Griechisch) und nenne, womit sich die Psychologie konkret beschäftigt.",
-       "muster": "Die Psychologie als Wissenschaft heißt aus dem Griechischen übersetzt „die Lehre von der menschlichen Seele“. Konkret beschäftigt sich die Psychologie mit dem Erleben, Verhalten und Handeln des Menschen."
+       "muster": "Die Psychologie als Wissenschaft heißt aus dem Griechischen übersetzt „die Lehre von der menschlichen Seele“. Konkret beschäftigt sich die Psychologie mit dem Erleben und Verhalten des Menschen."
       },
       {
        "titel": "Theorieaspekte zum Erleben",
@@ -414,24 +387,6 @@
        "farbe": "gelb",
        "hilfe": "Welche von außen wahrnehmbaren Aktivitäten zeigt der Schüler? Wer könnte sie beobachten, und was erkennt er daran?",
        "muster": "Das Verhalten des Schülers zeigt sich darin, dass er unruhig mit dem Stift klopft und beim Lesen seiner Unterlagen die Stirn runzelt. Eine Person, die ihn beobachtet, bemerkt dadurch sofort, dass er angespannt ist."
-      },
-      {
-       "titel": "Überleitung zum Handeln",
-       "farbe": "pfirsich",
-       "hilfe": "Ein Satz, der zum Handeln führt: Was kommt zum Erleben und Verhalten noch hinzu?",
-       "muster": "Das Erleben zeigt sich aber auch im menschlichen Handeln."
-      },
-      {
-       "titel": "Theorieaspekte zum Handeln",
-       "farbe": "rot",
-       "hilfe": "Was ist Handeln? Was haben Verhalten und Handeln gemeinsam, und worin unterscheiden sie sich?",
-       "muster": "Handeln ist wie das Verhalten von außen wahrnehmbar, unterscheidet sich vom Verhalten allerdings in einem wichtigen Punkt: Hier geht es um absichtsvolle, bewusste Aktivitäten eines Menschen."
-      },
-      {
-       "titel": "Anwendung und Rückbezug zum Handeln",
-       "farbe": "rot",
-       "hilfe": "Welche bewussten, absichtsvollen Aktivitäten zeigt der Schüler? Welche Absicht steckt dahinter?",
-       "muster": "In der Situation wird das Handeln des Schülers darin deutlich, dass er sich bewusst an den Schreibtisch setzt, seine Mitschrift durcharbeitet und sich Karteikarten schreibt. Hier steckt eine Absicht dahinter: Er möchte gut vorbereitet sein und die Kurzarbeit bestehen."
       }
      ]
     }
