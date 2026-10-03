@@ -4791,7 +4791,7 @@ async function ppmKprimSeite(m){
     :(live&&!(mein&&mein.abgegeben)?`<button type="button" class="ppm-btn primaer" data-ppm="co" data-aktion="test" data-id="${esc(c.id)}">Test starten</button>`:(mein&&mein.ausgewertet?`<button type="button" class="ppm-btn primaer" data-ppm="co" data-aktion="ergebnis" data-id="${esc(c.id)}">Mein Ergebnis</button>`:`<span class="ppm-status">${beendet?"beendet":"noch nicht freigeschaltet"}</span>`))}</div>`;
  }
  return`${ppmKopf(m,"",lehrer?`<button type="button" class="ppm-btn klein" data-ppm="co" data-aktion="neu">＋ Neuen Check-out anlegen</button>`:"")}
- <div class="ppm-box"><h2>K-Prim-Aufgabentest</h2><p>Eine Fallvignette mit mehreren Aussagen. Du entscheidest bei jeder Aussage, ob sie richtig oder falsch ist. Die Auswertung kommt automatisch.</p>${karte}</div>
+ <div class="ppm-box"><h2>K-Prim-Aufgabentest</h2><p>Eine Fallvignette mit 2 K-Prim-Aufgaben zu je 4 Aussagen. Du entscheidest bei jeder Aussage, ob sie richtig oder falsch ist. Die Bepunktung (BE und Notenpunkte) steht oben im Test, die Auswertung kommt automatisch.</p>${karte}</div>
  ${checkoutLiveBannerHTML(d)}${checkoutSektionHTML(d)}${footer()}`;
 }
 // ---- Unterrichtsstunde ----
@@ -6151,7 +6151,7 @@ window.openAptSchuelerDetail=openAptSchuelerDetail;
 // ============================================================
 // CHECK-OUT · K-Prim-Test zum Wochenabschluss (Pädagogik/Psychologie)
 // ------------------------------------------------------------
-// Ablauf: Lehrkraft legt einen Check-out an (Fallvignette + 3–5 K-Prim-
+// Ablauf: Lehrkraft legt einen Check-out an (1 Fallvignette + 2 K-Prim-
 // Aufgaben) → schaltet ihn in der Testsituation LIVE → Schüler:innen
 // bearbeiten ihn (Antworten werden laufend gespeichert) → Lehrkraft
 // beendet LIVE → die App wertet automatisch aus (Bewertungseinheiten →
@@ -6174,7 +6174,7 @@ const CHECKOUT_BE_NACH_FEHLERN=[4,2,1,0,0];
 // 15: 100–96 · 14: 95–91 · … · 3: 40–34 · 2: 33–27 · 1: 26–20 · 0: 19–0.
 // Zwischenwerte werden nicht aufgerundet (z. B. 95,5 % → 14 Punkte).
 const FOSBOS_SCHLUESSEL=[[15,96],[14,91],[13,86],[12,81],[11,76],[10,71],[9,66],[8,61],[7,56],[6,51],[5,46],[4,41],[3,34],[2,27],[1,20]];
-const CHECKOUT_MIN_AUFGABEN=3,CHECKOUT_MAX_AUFGABEN=3; // immer genau 3 K-Prim-Aufgaben je Check-out
+const CHECKOUT_MIN_AUFGABEN=2,CHECKOUT_MAX_AUFGABEN=2; // immer 1 Fallvignette + genau 2 K-Prim-Aufgaben je Check-out (passt in 15 Minuten)
 function notenpunkteAusProzent(p){for(const [np,min] of FOSBOS_SCHLUESSEL)if(p>=min)return np;return 0;}
 function noteAusNotenpunkten(np){return np>=13?1:np>=10?2:np>=7?3:np>=4?4:np>=1?5:6;}
 function npText(np){return`${np} Punkte (${noteAusNotenpunkten(np)})`;}
@@ -6298,7 +6298,7 @@ function checkoutSektionHTML(d){
    <div class="co-aktion">${coAuswahlStatus(d.einst).offen?`<button class="primary"onclick="openCheckoutAuswahl()">${d.auswahl?"Auswahl ändern":`${d.einst.anzahlWaehlen} auswählen`}</button>`:`<small style="color:var(--muted)">${esc(coAuswahlStatus(d.einst).text)}</small>`}${d.auswahl?`<button class="secondary"onclick="coPdfErsatzSchueler()">PDF</button>`:""}</div></div>`;
  }
  return`<div class="card co-karte">
-  <div class="co-kopf"><div><h3>🏁 Check-out – K-Prim-Test zum Wochenabschluss</h3><small>Am Ende der Woche schaltet deine Lehrkraft den Check-Out-Test live frei: eine Fallvignette mit 3–5 K-Prim-Aufgaben. Ausgewertet wird automatisch in FOSBOS-Notenpunkten.</small></div>
+  <div class="co-kopf"><div><h3>🏁 Check-out – K-Prim-Test zum Wochenabschluss</h3><small>Am Ende der Woche schaltet deine Lehrkraft den Check-Out-Test live frei: eine Fallvignette mit 2 K-Prim-Aufgaben. Die Bepunktung steht vorab im Test. Ausgewertet wird automatisch in FOSBOS-Notenpunkten.</small></div>
    ${lehrer?`<button class="primary"onclick="openCheckoutEditor()">＋ Neuer Check-out</button>`:""}</div>
   <div class="co-liste">${zeilen||`<div class="empty">${lehrer?"Noch kein Check-out angelegt.":"Noch kein Check-out freigeschaltet."}</div>`}</div>
   ${ersatz}
@@ -6310,12 +6310,12 @@ function checkoutLiveBannerHTML(d){
  return live.map(c=>{
   const a=d.meineAbgaben[c.id];
   if(isTeacher())return`<div class="co-banner"><span class="co-live-punkt"></span><div><b>Check-out läuft: ${esc(c.titel||"")}</b><small>Beenden, sobald alle fertig sind – danach wird automatisch ausgewertet.</small></div><button class="primary"onclick="openCheckoutMonitor('${c.id}')">Live-Übersicht</button></div>`;
-  return`<div class="co-banner"><span class="co-live-punkt"></span><div><b>Check-out läuft: ${esc(c.titel||"")}</b><small>${a?.abgegeben?"Du hast abgegeben. Das Ergebnis siehst du, sobald deine Lehrkraft den Test beendet.":"Deine Lehrkraft hat den Test freigeschaltet."}</small></div>${a?.abgegeben?"":`<button class="primary"onclick="openCheckoutTest('${c.id}')">${a?"Weiter":"Jetzt starten"}</button>`}</div>`;
+  return`<div class="co-banner"><span class="co-live-punkt"></span><div><b>Check-out läuft: ${esc(c.titel||"")}</b><small>${a?.abgegeben?"Du hast abgegeben. Das Ergebnis siehst du, sobald deine Lehrkraft den Test beendet.":"Deine Lehrkraft hat den Test freigeschaltet: 1 Fallvignette, "+(c.aufgaben||[]).length+" Aufgaben, bis zu "+(c.aufgaben||[]).length*CHECKOUT_BE_NACH_FEHLERN[0]+" BE (die Bepunktung steht oben im Test)."}</small></div>${a?.abgegeben?"":`<button class="primary"onclick="openCheckoutTest('${c.id}')">${a?"Weiter":"Jetzt starten"}</button>`}</div>`;
  }).join("");
 }
 
 // ---- Editor (Lehrkraft): strukturiert nach der ISB-Vorgabe für K-Prim ----
-// ① Situation (Vignette) → ② 3–5 K-Prim-Aufgaben (Einleitungssatz + genau
+// ① Situation (Vignette) → ② 2 K-Prim-Aufgaben (Einleitungssatz + genau
 // 4 Aussagen) → ③ Checkliste. Automatische Hinweise prüfen, was sich prüfen
 // lässt (Längen, absolute/vage Begriffe, doppelte Verneinung, Muster).
 // ---- Aufgabenbank und Vorlagen für Check-outs -------------------------------
@@ -6673,8 +6673,89 @@ const CO_AUFGABENBANK=[
   ]
  }
 ];
-// Vorlage = Check-out mit genau 3 Aufgaben aus der Bank; wird am passenden Freitag per Klick eingesetzt.
-const CHECKOUT_VORLAGEN=[
+
+// ---- Aufgabensatz LB 1: eine Fallvignette + 2 K-Prim-Aufgaben (beide Aufgaben beziehen sich auf dieselbe Situation) ----
+CO_AUFGABENBANK.push({
+ "id": "lb1-pause-alltag",
+ "titel": "Alltagstheorie und wissenschaftliche Aussagen (Pause und Konzentration)",
+ "lbNum": 1,
+ "vignette": {
+  "titel": "Pause und Konzentration im Ganztag",
+  "zeilen": false,
+  "text": "Sie absolvieren Ihr Praktikum in der Ganztagsbetreuung einer Grundschule. Betreuerin Frau Kern sagt im Team: „Nach zwanzig Berufsjahren weiß ich: Wenn Kinder vor den Hausaufgaben toben dürfen, arbeiten sie danach ruhiger. Bei meinen eigenen Kindern war das so, also gilt das auch für andere Kinder.“\n\nDie Schulpsychologin Frau Dr. Maurer will das genauer wissen. Sie teilt 24 Kinder der dritten Klassen per Los in zwei gleich große Gruppen. An einem Dienstag um 13 Uhr bearbeiten beide Gruppen im selben Raum 15 Minuten lang dieselbe Rechenaufgabe. Gruppe 1 hatte zuvor zehn Minuten Bewegung auf dem Schulhof, Gruppe 2 zehn Minuten Ruhe mit einem Hörbuch. Frau Dr. Maurer hat vorab einen Beobachtungsbogen festgelegt: Auf einer Strichliste zählt sie je fünf Minuten, wie oft ein Kind den Blick von der Aufgabe löst, aufsteht oder ein anderes Kind anspricht. Alle Schritte hält sie schriftlich fest.\n\nEine Kollegin führt den Versuch in der folgenden Woche mit anderen Kindern nach diesem Protokoll durch. Beide Male zeigt Gruppe 1 weniger Unterbrechungen als Gruppe 2. Frau Kern meint dazu: „Das habe ich schon immer gewusst.“"
+ },
+ "kontext": "",
+ "stamm": "Die Aussagen der Betreuerin und das Vorgehen der Psychologin werden fachlich zutreffend eingeordnet, wenn …",
+ "pruefen": "Neu erstellt (Claude) nach der ISB-Checkliste der App. Bitte fachlich und passend zu deinem Unterricht prüfen.",
+ "aussagen": [
+  {
+   "text": "… die Betreuerin von ihr bekannten Einzelfällen auf fremde Personen schließt und damit unzulässig verallgemeinert.",
+   "richtig": true,
+   "erklaerung": "Der Schluss von persönlich bekannten Einzelfällen auf andere ist eine unzulässige Verallgemeinerung. Das ist typisch für die Alltagstheorie."
+  },
+  {
+   "text": "… einzelne abweichende Kinder das Ergebnis der Psychologin als wissenschaftliche Aussage ungültig machen.",
+   "richtig": false,
+   "erklaerung": "Wissenschaftliche Aussagen sind Wahrscheinlichkeitsaussagen. Einzelne Ausnahmen bleiben möglich und machen sie nicht ungültig."
+  },
+  {
+   "text": "… die Kollegin bei gleichem Vorgehen zum selben Ergebnis gelangt, was für die Objektivität der Untersuchung spricht.",
+   "richtig": true,
+   "erklaerung": "Objektiv heißt: Verschiedene Forschende kommen bei gleichem Sachverhalt und gleichen Bedingungen zum gleichen Ergebnis."
+  },
+  {
+   "text": "… die langjährige Dauer der Beobachtungen die Annahme der Betreuerin zu einer wissenschaftlichen Erkenntnis macht.",
+   "richtig": false,
+   "erklaerung": "Lange persönliche Erfahrung bleibt Alltagstheorie. Wissenschaftliche Erkenntnisse entstehen systematisch nach klaren Regeln und Methoden."
+  }
+ ]
+},{
+ "id": "lb1-pause-experiment",
+ "titel": "Das Experiment (Pause und Konzentration)",
+ "lbNum": 1,
+ "vignette": {
+  "titel": "Pause und Konzentration im Ganztag",
+  "zeilen": false,
+  "text": "Sie absolvieren Ihr Praktikum in der Ganztagsbetreuung einer Grundschule. Betreuerin Frau Kern sagt im Team: „Nach zwanzig Berufsjahren weiß ich: Wenn Kinder vor den Hausaufgaben toben dürfen, arbeiten sie danach ruhiger. Bei meinen eigenen Kindern war das so, also gilt das auch für andere Kinder.“\n\nDie Schulpsychologin Frau Dr. Maurer will das genauer wissen. Sie teilt 24 Kinder der dritten Klassen per Los in zwei gleich große Gruppen. An einem Dienstag um 13 Uhr bearbeiten beide Gruppen im selben Raum 15 Minuten lang dieselbe Rechenaufgabe. Gruppe 1 hatte zuvor zehn Minuten Bewegung auf dem Schulhof, Gruppe 2 zehn Minuten Ruhe mit einem Hörbuch. Frau Dr. Maurer hat vorab einen Beobachtungsbogen festgelegt: Auf einer Strichliste zählt sie je fünf Minuten, wie oft ein Kind den Blick von der Aufgabe löst, aufsteht oder ein anderes Kind anspricht. Alle Schritte hält sie schriftlich fest.\n\nEine Kollegin führt den Versuch in der folgenden Woche mit anderen Kindern nach diesem Protokoll durch. Beide Male zeigt Gruppe 1 weniger Unterbrechungen als Gruppe 2. Frau Kern meint dazu: „Das habe ich schon immer gewusst.“"
+ },
+ "kontext": "",
+ "stamm": "Die Untersuchung der Psychologin wird fachlich zutreffend beschrieben, wenn …",
+ "pruefen": "Neu erstellt (Claude) nach der ISB-Checkliste der App. Bitte fachlich und passend zu deinem Unterricht prüfen.",
+ "aussagen": [
+  {
+   "text": "… mit dem Beobachtungsbogen das innere Erleben der Kinder während der Aufgabe unmittelbar erfasst wird.",
+   "richtig": false,
+   "erklaerung": "Erleben ist von außen nicht beobachtbar. Der Beobachtungsbogen erfasst Verhalten, also das, was andere von außen wahrnehmen."
+  },
+  {
+   "text": "… die Psychologin Ort, Zeitpunkt und Bedingungen der Untersuchung selbst bestimmt, was der Willkürlichkeit entspricht.",
+   "richtig": true,
+   "erklaerung": "Willkürlichkeit: Die Forscherin bestimmt Bedingungen, Situation, Ort und Zeit selbst."
+  },
+  {
+   "text": "… sie gezielt die Tätigkeit vor der Arbeitsphase zwischen den Gruppen verändert, was der Variierbarkeit entspricht.",
+   "richtig": true,
+   "erklaerung": "Variierbarkeit: Gezielt wird die Bedingung verändert, deren Wirkung beobachtet werden soll. Alles andere bleibt gleich."
+  },
+  {
+   "text": "… mit vorab festgelegten Kategorien und einer Skala beobachtbare Verhaltensweisen vergleichbar gemacht werden.",
+   "richtig": true,
+   "erklaerung": "Kategoriensystem und Skala gehören zu den Voraussetzungen eines Experiments: Sie legen fest, was beobachtet wird, und machen die Werte vergleichbar."
+  }
+ ]
+});
+// Vorlage = Check-out mit 1 Fallvignette und genau 2 Aufgaben aus der Bank; wird am passenden Freitag per Klick eingesetzt.
+const CHECKOUT_VORLAGEN_ALLE=[
+ {
+  "id": "lb1-satz1",
+  "titel": "Alltagstheorie, wissenschaftliche Aussagen und Experiment",
+  "lbNum": 1,
+  "datum": "2026-10-23",
+  "aufgaben": [
+   "lb1-pause-alltag",
+   "lb1-pause-experiment"
+  ]
+ },
  {
   "id": "lb1-woche1",
   "titel": "Erleben und Verhalten, Alltagstheorie und Experiment",
@@ -6709,6 +6790,8 @@ const CHECKOUT_VORLAGEN=[
   ]
  }
 ];
+// Angeboten werden nur Vorlagen im neuen Aufbau (1 Fallvignette + genau 2 Aufgaben). Ältere Vorlagen mit 3 Aufgaben bleiben im Code, werden aber nicht mehr angeboten.
+const CHECKOUT_VORLAGEN=CHECKOUT_VORLAGEN_ALLE.filter(v=>(v.aufgaben||[]).length===CHECKOUT_MAX_AUFGABEN);
 let coEditor=null;
 const CO_CHECKLISTE=[
  ["Situation","Situationsbeschreibung adäquat (anwendungsorientierte Informationen)"],
@@ -6780,7 +6863,7 @@ async function openCheckoutEditor(id,vorgabe){
  }else{
   const heute=new Date().toISOString().slice(0,10);
   const lauf=PROJEKT_PHASEN.find(p=>heute>=p.start&&heute<=p.end)||PROJEKT_PHASEN.find(p=>heute<p.start)||PROJEKT_PHASEN[0];
-  coEditor={id:null,titel:"",lbNum:lauf.lbNum,datum:heute,zaehlt:true,vignetteTitel:"",vignetteText:"",klassisch:"",checkliste:[],aufgaben:[coLeereAufgabe(),coLeereAufgabe(),coLeereAufgabe()]};
+  coEditor={id:null,titel:"",lbNum:lauf.lbNum,datum:heute,zaehlt:true,vignetteTitel:"",vignetteText:"",klassisch:"",checkliste:[],aufgaben:[coLeereAufgabe(),coLeereAufgabe()]};
   if(vorgabe?.datum)coEditor.datum=vorgabe.datum;
   if(vorgabe?.lbNum)coEditor.lbNum=vorgabe.lbNum;
   const vl=vorgabe?.vorlage?CHECKOUT_VORLAGEN.find(v=>v.id===vorgabe.vorlage):null;
@@ -6798,6 +6881,9 @@ function coEditorLesen(){
   stamm:v(`coStamm${i}`),kontext:v(`coKo${i}`),vTitel:v(`coVT${i}`),vText:v(`coVX${i}`),vZeilen:!!$(`coVZ${i}`)?.checked,
   mTitel:v(`coMT${i}`),mText:v(`coMX${i}`),mQuelle:v(`coMQ${i}`),
   aussagen:[0,1,2,3].map(j=>({text:v(`coA${i}_${j}`),richtig:$(`coR${i}_${j}`)?.value==="r",erklaerung:v(`coE${i}_${j}`)}))}));
+ // Eine Fallvignette für den ganzen Test: Aufgabe 1 gibt sie vor, alle weiteren übernehmen sie.
+ const a0=coEditor.aufgaben[0];
+ if(a0)coEditor.aufgaben.forEach((a,i)=>{if(i>0){a.vTitel=a0.vTitel;a.vText=a0.vText;a.vZeilen=a0.vZeilen;}});
 }
 // Aktualisiert nur die Hinweise (beim Tippen), ohne das Formular neu zu zeichnen.
 function coEditorPruefen(){
@@ -6841,7 +6927,7 @@ function coEditorRender(){
    .co-sec .co-aus-f select{background:#fbe6e6;border-color:#e8b1b1;color:#9a2f2f;font-weight:600}
   </style>
   <div class="co-legende"><span class="co-l-vig">1 Fallvignette</span><span class="co-l-stamm">2 Einleitungssatz</span><span class="co-l-aus">3 Die 4 Aussagen</span></div>
-  <p class="co-ed-intro">Jeder Freitagstest hat genau <b>${CHECKOUT_MAX_AUFGABEN} K-Prim-Aufgaben</b>. Jede Aufgabe beginnt mit ihrer eigenen <b>Fallvignette</b> (optional mit Material), dann folgen Einleitungssatz und 4 Aussagen. Wertung je Aufgabe: 4 richtig = ${be[0]} BE · 3 = ${be[1]} BE · 2 = ${be[2]} BE · sonst 0.</p>
+  <p class="co-ed-intro">Jeder Freitagstest besteht aus <b>einer Fallvignette</b> und genau <b>${CHECKOUT_MAX_AUFGABEN} K-Prim-Aufgaben</b>. Jede Aufgabe hat einen Einleitungssatz und 4 Aussagen. Wertung je Aufgabe: 4 richtig = ${be[0]} BE · 3 = ${be[1]} BE · 2 = ${be[2]} BE · sonst 0. Die Schüler:innen sehen diese Bepunktung vorab im Test.</p>
   <div class="form">
    ${!e.id&&CHECKOUT_VORLAGEN.length?`<div class="co-ed-vorlage"><b>📋 Vorlage:</b> <select id="coVorlage"onchange="coVorlageWaehlen()"><option value="">Ganzen Test aus Vorlage einsetzen …</option>${CHECKOUT_VORLAGEN.map(v=>`<option value="${esc(v.id)}">${esc(v.titel)} (LB ${v.lbNum} · ${esc(coDatum(v.datum))})</option>`).join("")}</select></div>`:""}
    <div style="display:flex;gap:10px;flex-wrap:wrap">
@@ -6858,17 +6944,17 @@ function coEditorRender(){
     <div class="co-ed-kopf"><b>Aufgabe ${i+1}</b><span id="coHinw${i}"><b>${p.pro[i].richtig} richtig · ${4-p.pro[i].richtig} falsch</b> ${coPruefChips(p.pro[i])}</span></div>
     <div class="co-bankleiste"><span>Aufgabe aus der Bank laden:</span><select id="coBank${i}"class="co-ed-bank"onchange="coBankEinsetzen(${i})">${bankOpt}</select></div>
     ${a.pruefen?`<div class="co-hinweis">⚠ ${esc(a.pruefen)}</div>`:""}
-    <section class="co-sec co-sec-vig">
-     <div class="co-sec-kopf"><span class="co-sec-nr">1</span>Fallvignette <small>die Situation, auf die sich alle 4 Aussagen beziehen</small></div>
+    ${i===0?`<section class="co-sec co-sec-vig">
+     <div class="co-sec-kopf"><span class="co-sec-nr">1</span>Fallvignette <small>gilt für beide Aufgaben: die Situation, auf die sich alle Aussagen beziehen</small></div>
      <label>Überschrift<input id="coVT${i}"value="${esc(a.vTitel)}"placeholder="z. B. Kindergarten „Wirbelwind“"></label>
-     <label>Text<textarea id="coVX${i}"rows="6"placeholder="Situation ohne Hinweise auf die Lösung.">${esc(a.vText)}</textarea></label>
+     <label>Text<textarea id="coVX${i}"rows="6"placeholder="Situation ohne Hinweise auf die Lösung."oninput="coEditorPruefen()">${esc(a.vText)}</textarea></label>
      <label class="check"><input id="coVZ${i}"type="checkbox"${a.vZeilen?" checked":""}> Zeilen nummerieren (jeder Zeilenumbruch = neue Zeile, für Verweise wie „Z. 15–17“)</label>
-     <details class="co-ed-details"${a.mText?" open":""}><summary>📎 Material (optional, z. B. Studie oder Text)</summary>
-      <label>Titel<input id="coMT${i}"value="${esc(a.mTitel)}"></label>
-      <label>Text<textarea id="coMX${i}"rows="5">${esc(a.mText)}</textarea></label>
-      <label>Quelle<input id="coMQ${i}"value="${esc(a.mQuelle)}"></label>
-     </details>
-    </section>
+    </section>`:`<div class="co-hinweis ok"style="margin:8px 0">📖 Es gilt die Fallvignette von Aufgabe 1 (eine Fallvignette für den ganzen Test).</div>`}
+    <details class="co-ed-details"${a.mText?" open":""}><summary>📎 Material zu Aufgabe ${i+1} (optional, z. B. Studie oder Text)</summary>
+     <label>Titel<input id="coMT${i}"value="${esc(a.mTitel)}"></label>
+     <label>Text<textarea id="coMX${i}"rows="5">${esc(a.mText)}</textarea></label>
+     <label>Quelle<input id="coMQ${i}"value="${esc(a.mQuelle)}"></label>
+    </details>
     <section class="co-sec co-sec-stamm">
      <div class="co-sec-kopf"><span class="co-sec-nr">2</span>Einleitungssatz <small>der Satzanfang, den jede der 4 Aussagen fortführt</small></div>
      <label>Einleitungssatz<input id="coStamm${i}"value="${esc(a.stamm)}"oninput="coEditorPruefen()"placeholder="z. B. Diese Aussage ist alltagstheoretisch, wenn …"></label>
@@ -6921,7 +7007,7 @@ function coBankEinsetzen(i){
  const belegt=a.vText.trim()||a.stamm.trim()||a.aussagen.some(x=>x.text.trim());
  if(belegt&&!confirm(`Aufgabe ${i+1} wird durch die Aufgabe aus der Bank ersetzt. Fortfahren?`)){coEditorRender();return}
  coEditor.aufgaben[i]=coAufgabeAusBank(id);
- coEditorRender();toast("Aufgabe eingesetzt – bitte prüfen.");
+ coEditorRender();toast(i>0?"Aufgabe eingesetzt. Es gilt die Fallvignette von Aufgabe 1: bitte Einleitungssatz und Aussagen darauf zuschneiden.":"Aufgabe eingesetzt – bitte prüfen.");
 }
 function coEditorVorschau(){
  coEditorLesen();
@@ -7271,10 +7357,30 @@ async function openCheckoutTest(id){
   if(x&&x.status!=="live"){coUnsubAll();$("coTest").innerHTML=`<h2>Der Check-out wurde beendet.</h2><p>Deine gespeicherten Antworten werden gewertet. Das Ergebnis erscheint in deinem Lernweg.</p><div class="form-actions"><button class="primary"onclick="closeModal();render()">OK</button></div>`;}
  });
 }
+// Bepunktung zum Vorablesen (Wertung je Aufgabe, Gesamt-BE, Umrechnung in Notenpunkte nach dem P/P-Schlüssel)
+function coBepunktungHTML(n,vorschau){
+ const be=CHECKOUT_BE_NACH_FEHLERN,max=n*be[0];
+ let summen=new Set([0]);
+ for(let i=0;i<n;i++){const t=new Set();summen.forEach(x=>[be[0],be[1],be[2],0].forEach(p=>t.add(x+p)));summen=t;}
+ const np=[...summen].sort((a,b)=>b-a).map(x=>`<b>${x} BE</b> = ${notenpunkteAusProzent(Math.round(x/max*1000)/10)} NP`).join(" · ");
+ return`<div class="kp-bep"style="background:#f4f9ff;border:1.5px solid #c9def4;border-radius:12px;padding:10px 14px;margin:10px 0;font-size:14px;line-height:1.5">
+  <b>📊 Bepunktung – bitte vorab lesen</b>
+  <p style="margin:6px 0 0">Der Test besteht aus <b>einer Fallvignette</b> und <b>${n} Aufgaben</b> mit je 4 Aussagen. Du entscheidest bei <b>jeder</b> Aussage, ob sie richtig oder falsch ist. Eine leere Aussage zählt als Fehler.${vorschau?"":" Deine Antworten werden automatisch gespeichert."}</p>
+  <p class="kp-wertung"style="margin:6px 0 0"><b>Je Aufgabe:</b> 4 richtig = ${be[0]} BE · 3 richtig = ${be[1]} BE · 2 richtig = ${be[2]} BE · weniger = 0 BE</p>
+  <p style="margin:6px 0 0"><b>Insgesamt:</b> bis zu ${max} BE. Umrechnung in Notenpunkte (NP) nach dem P/P-Bewertungsschlüssel: ${np}</p></div>`;
+}
+// Haben alle Aufgaben dieselbe Fallvignette, wird sie nur einmal über den Aufgaben gezeigt.
+function coGleicheVignette(co){
+ const l=co?.aufgaben||[];
+ if(l.length<2||!l.every(a=>a.vignette?.text))return null;
+ const v0=l[0].vignette;
+ return l.every(a=>a.vignette.text===v0.text&&(a.vignette.titel||"")===(v0.titel||""))?v0:null;
+}
 // Inhalt des Tests. vorschau=true: Ansicht für Lehrkräfte im Editor (nichts wird gespeichert).
 function coTestInhaltHTML(co,id,ant,c,vorschau,opt){
  opt=opt||{};
- const glob=coGemeinsameSituation(co);
+ const gleich=coGleicheVignette(co);
+ const glob=coGemeinsameSituation(co)||gleich;
  const n=(co.aufgaben||[]).length;
  const lsg=opt.loesung||null;
  const band=vorschau?(opt.bandHTML||`<div class="kp-vorschau-band">👁 <b>Vorschau</b> · So sehen Schüler:innen den Test. Es wird nichts gespeichert. <button class="secondary"type="button"onclick="coEditorVorschauZurueck()">← Zurück zum Editor</button></div>`):"";
@@ -7284,13 +7390,11 @@ function coTestInhaltHTML(co,id,ant,c,vorschau,opt){
   <div class="kicker"style="color:${c}">🏁 CHECK-OUT · LB ${esc(co.lbNum)} · ${coDatum(co.datum)}</div>
   <h2>${esc(co.titel)}</h2>
   <div class="kp-fortschritt"><div class="kp-balken"><i id="coBalken"style="background:${c}"></i></div><span id="coStand"></span></div>
-  <details class="kp-hilfe"><summary>So funktioniert der Test</summary>
-   <p>Lies zu jeder Aufgabe zuerst die Fallvignette. Entscheide dann bei <b>jeder</b> der 4 Aussagen, ob sie richtig oder falsch ist. Eine leere Aussage zählt als Fehler.${vorschau?"":" Deine Antworten werden automatisch gespeichert."}</p>
-   <p class="kp-wertung">Wertung je Aufgabe: 4 richtig = ${CHECKOUT_BE_NACH_FEHLERN[0]} BE · 3 richtig = ${CHECKOUT_BE_NACH_FEHLERN[1]} BE · 2 richtig = ${CHECKOUT_BE_NACH_FEHLERN[2]} BE · weniger = 0 BE</p></details>
-  ${glob?`<div class="kp-vig"style="border-left-color:${c}"><div class="kp-label">📖 Situation</div>${coSituationHTML(glob,false,true,false)}</div>`:""}
+  ${coBepunktungHTML(n,vorschau)}
+  ${glob?`<div class="kp-vig"style="border-left-color:${c}"><div class="kp-label">📖 Fallvignette${glob.titel&&gleich?` · ${esc(glob.titel)}`:""}</div>${coSituationHTML(glob,false,gleich?!!gleich.zeilen:true,!!gleich)}</div>`:""}
   ${(co.aufgaben||[]).map((q,i)=>`<section class="kp-karte"style="--c:${c}">
    <header class="kp-kopf"><span class="kp-nummer">${i+1}</span><div><b>Aufgabe ${i+1} von ${n}</b><small>bis zu ${CHECKOUT_BE_NACH_FEHLERN[0]} BE</small></div><span class="kp-fort">0/4</span></header>
-   ${coFallHTML(q)}
+   ${coFallHTML(gleich?{...q,vignette:null}:q)}
    <div class="kp-liste">${(q.aussagen||[]).map((t,j)=>{const l=lsg?.[i];const r=l?.richtig?.[j];return`<div class="kp-zeile"><span class="kp-num">${j+1}</span>${l?`<div class="kp-text"><p style="margin:0">${esc(t)}</p><div class="kp-lsg ${r?"r":"f"}">🔑 <b>${r?"Richtig":"Falsch"}</b>${l.erklaerung?.[j]?` · ${esc(l.erklaerung[j])}`:""}</div></div>`:`<p class="kp-text">${esc(t)}</p>`}
     <div class="kp-wahl"role="radiogroup"aria-label="Aussage ${j+1}">${[["r","✓ Richtig"],["f","✗ Falsch"]].map(([v,lab])=>`<label class="kp-opt ${v}"><input type="radio"name="coT${i}_${j}"value="${v}"aria-label="Aussage ${j+1}: ${v==="r"?"richtig":"falsch"}"${(ant||{})[`${i}_${j}`]===v?" checked":""} onchange="${vorschau?"coStandAktualisieren()":`coAntwort('${id}','${i}_${j}','${v}')`}"><span>${lab}</span></label>`).join("")}</div></div>`;}).join("")}</div>
   </section>`).join("")}
