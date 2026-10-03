@@ -4132,12 +4132,12 @@ function ppNaechsterSchrittHTML(fortschrittMap,heute){
 // (Teams, Meilensteine, 4 Schritte); die Wochen kommen jetzt aus dem Plan.
 // ============================================================
 const PPM_TYPEN={
- projekt:{icon:"🔬",name:"Ein Projekt durchführen",kurz:"Projekt",text:"Team-Projekt mit Meilensteinen anlegen."},
- stunde:{icon:"🧭",name:"Unterrichtsstunde nach dem Deeper-Learning-Konzept",kurz:"Stunde",text:"Mit Digitaler Tafel, Material (PDF, Film, Audio, Bilder, Links) und einem Check-out mit offener Frage."},
- apt:{icon:"🎓",name:"Abschlussprüfungstraining",kurz:"Prüfungstraining",text:"Prüfungsfrage, relevanter Inhalt, Bearbeitung durch die Schüler:innen und Vergleich mit der Lösung."},
- kprim:{icon:"🏁",name:"K-Prim-Aufgabentest",kurz:"K-Prim-Test",text:"Check-out mit K-Prim-Aufgaben, automatisch ausgewertet."},
- selbstlern:{icon:"🎒",name:"Selbstlernkurs",kurz:"Selbstlernkurs",text:"Schüler:innen bearbeiten den Kurs selbstständig von A bis Z."},
- experiment:{icon:"🧪",name:"Experiment (interaktive Einheit)",kurz:"Experiment",text:"„Das Experiment“ als interaktive Einheit. Du wählst selbst, welche Teile dabei sind."}
+ projekt:{icon:"🔬",name:"Ein Projekt durchführen",kurz:"Projekt",art:"Projekt",text:"Team-Projekt mit Meilensteinen anlegen."},
+ stunde:{icon:"🧭",name:"Unterrichtsstunde nach dem Deeper-Learning-Konzept",kurz:"Stunde",art:"Deeper-Learning-Einheit",text:"Mit Digitaler Tafel, Material (PDF, Film, Audio, Bilder, Links) und einem Check-out mit offener Frage."},
+ apt:{icon:"🎓",name:"Abschlussprüfungstraining",kurz:"Prüfungstraining",art:"Abschlussprüfungstraining",text:"Prüfungsfrage, relevanter Inhalt, Bearbeitung durch die Schüler:innen und Vergleich mit der Lösung."},
+ kprim:{icon:"🏁",name:"K-Prim-Aufgabentest",kurz:"K-Prim-Test",art:"K-Prim-Aufgabensatz",text:"Check-out mit K-Prim-Aufgaben, automatisch ausgewertet."},
+ selbstlern:{icon:"🎒",name:"Selbstlernkurs",kurz:"Selbstlernkurs",art:"Selbstlernkurs",text:"Schüler:innen bearbeiten den Kurs selbstständig von A bis Z."},
+ experiment:{icon:"🧪",name:"Experiment (interaktive Einheit)",kurz:"Experiment",art:"Experiment",text:"„Das Experiment“ als interaktive Einheit. Du wählst selbst, welche Teile dabei sind."}
 };
 const PPM_EINHEITEN={experiment:{icon:"🧪",name:"Das Experiment – interaktive Stunde",text:"Kaugummi-Versuch in Kleingruppen, Klassenvergleich, Merkmale eines Experiments und Abschlussquiz."}};
 // Dauer eines Moduls: eine Unterrichtsstunde (45 Min.), Doppelstunde, 120 oder 180 Minuten,
@@ -4181,8 +4181,18 @@ function ppmExpMinuten(teile){return PPM_EXP_TEILE.filter(t=>(teile||[]).include
 function ppmExpTeile(m){return Array.isArray(m&&m.teile)&&m.teile.length?m.teile:PPM_EXP_TEILE.map(t=>t.k);}
 // Fertige Einarbeitungs-Inhalte (einarbeitung/inhalte/<id>.json); wählbar im Selbstlernkurs.
 const PPM_EA_IDS=["fa01","pp01","pp02","pp03","pp1a1","pp1a2","pp1a3","pp1a4","pp06","pp07","pp2a1","pp10","pp11","pp15","pp16"];
+// Einheitliche Bezeichnung: Inhalt · Modulart · LB1 (LB nur, wenn bekannt)
+function ppmBez(inhalt,modul,lb){const T=PPM_TYPEN[modul];return[inhalt,T?T.art:"",lb?"LB"+lb:""].filter(Boolean).join(" · ");}
+// Modulart und Lernbereich einer Einarbeitung: zuerst die Angaben in der JSON-Datei ("modulart", "lb"),
+// sonst aus der Inhaltsliste (PP_EINHEITEN): Prüfungstraining = apt, alle anderen = Selbstlernkurs.
+function ppmEaMeta(id,info){
+ const e=(typeof PP_EINHEITEN!=="undefined"?PP_EINHEITEN:[]).find(x=>x.id===id)||null;
+ const art=(info&&info.modulart&&PPM_TYPEN[info.modulart])?info.modulart:(e&&e.typ==="apt"?"apt":"selbstlern");
+ const lb=(info&&Number(info.lb))||(e&&Number(String(e.phase||"").replace(/\D/g,"")))||0;
+ return{art,lb};
+}
 async function ppmEaListe(){
- const r=await Promise.all(PPM_EA_IDS.map(async id=>{const i=await einarbeitungInfo(id);return i?{id,titel:i.titel,entwurf:i.entwurf}:null;}));
+ const r=await Promise.all(PPM_EA_IDS.map(async id=>{const i=await einarbeitungInfo(id);if(!i)return null;const m=ppmEaMeta(id,i);return{id,titel:i.titel,entwurf:i.entwurf,art:m.art,lb:m.lb};}));
  return r.filter(Boolean);
 }
 const PPM={liste:[],geladen:0,fehler:"",meine:{kurs:{},stunde:{},ea:{}}};
@@ -4352,7 +4362,7 @@ function ppmMoveHTML(m){
  const i=ppmSwIndex(m.start),n=SCHULWOCHEN_PP.length;
  const sibs=PPM.liste.filter(x=>x.start===m.start),p=sibs.findIndex(x=>x.id===m.id);
  const erste=i<=0&&p<=0,letzte=(i<0||i>=n-1)&&p>=sibs.length-1;
- return`<span class="ppm-mv"><button type="button" data-ppm="reihenfolge" data-id="${esc(m.id)}" data-d="-1" title="Ein Modul nach vorn (am Wochenanfang: in die vorherige Woche)" aria-label="Modul nach vorn"${erste?" disabled":""}>‹ davor</button><button type="button" data-ppm="reihenfolge" data-id="${esc(m.id)}" data-d="1" title="Ein Modul nach hinten (am Wochenende: in die nächste Woche)" aria-label="Modul nach hinten"${letzte?" disabled":""}>danach ›</button></span>`;
+ return`<span class="ppm-mv"><button type="button" data-ppm="reihenfolge" data-id="${esc(m.id)}" data-d="-1" title="Ein Modul nach vorn (am Wochenanfang: in die vorherige Woche)" aria-label="Modul nach vorn"${erste?" disabled":""}>&lt;</button><button type="button" data-ppm="reihenfolge" data-id="${esc(m.id)}" data-d="1" title="Ein Modul nach hinten (am Wochenende: in die nächste Woche)" aria-label="Modul nach hinten"${letzte?" disabled":""}>&gt;</button></span>`;
 }
 async function ppmReihenfolge(m,d){
  const sibs=PPM.liste.filter(x=>x.start===m.start),i=sibs.findIndex(x=>x.id===m.id),j=i+d;
@@ -4398,9 +4408,9 @@ function ppmKarteHTML(m,fortsetzung){
  const einh=(m.einheiten||[]).map(e=>`<span class="ppm-chip">${(PPM_EINHEITEN[e.typ]||{}).icon||""} ${esc((PPM_EINHEITEN[e.typ]||{}).name||e.typ).replace("– interaktive Stunde","")}</span>`).join("");
  const exp=m.modul==="experiment"?`<span class="ppm-chip">${ppmExpTeile(m).length} von ${PPM_EXP_TEILE.length} Teilen · ca. ${ppmExpMinuten(ppmExpTeile(m))} Min.</span>`:"";
  const proj=m.projektId?`<span class="ppm-chip">Einheit im Projekt</span>`:"";
- return`<div class="ppm-karte" style="--c:${c};--sp:${ppmSpalten(m)}" data-ppm="oeffnen" data-id="${esc(m.id)}" tabindex="0" role="button">
+ return`<div class="ppm-karte${isTeacher()?" mit-mv":""}" style="--c:${c};--sp:${ppmSpalten(m)}" data-ppm="oeffnen" data-id="${esc(m.id)}" tabindex="0" role="button">
   <span class="ppm-ic">${T.icon}</span>
-  <span class="ppm-txt"><b>${esc(m.titel||T.name)}</b><small>LB ${m.lb} · ${esc(T.kurz)} · ${esc(ppmDauerText(m))}</small>${ppmStatus(m)}${proj}${exp}${einh}${isTeacher()?ppmMoveHTML(m):""}</span>
+  <span class="ppm-txt"><b>${esc(m.titel||T.name)}</b><small>${esc(T.art||T.kurz)} · LB${m.lb} · ${esc(ppmDauerText(m))}</small>${ppmStatus(m)}${proj}${exp}${einh}${isTeacher()?ppmMoveHTML(m):""}</span>
   ${isTeacher()?`<button type="button" class="ppm-edit" data-ppm="bearbeiten" data-id="${esc(m.id)}" title="Modul bearbeiten">✎</button>`:""}
  </div>`;
 }
@@ -4417,7 +4427,7 @@ const PPM_CSS=`<style>
 .ppm-txt{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}.ppm-txt b{font-size:14px;line-height:1.3;padding-right:26px;overflow-wrap:anywhere}.ppm-txt small{color:var(--muted)}
 .ppm-edit{position:absolute;right:6px;top:6px;border:0;background:#fff;border-radius:8px;width:28px;height:28px;color:#3a4a5c;cursor:pointer}
 .ppm-fort{min-width:0;display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:10px;background:color-mix(in srgb,var(--c) 8%,#fff);border:1px dashed var(--c);font-size:12px;cursor:pointer}
-.ppm-mv{display:flex;gap:6px;margin-top:auto;padding-top:8px}.ppm-mv button{font:inherit;font-size:12px;font-weight:700;padding:3px 8px;white-space:nowrap;border-radius:999px;border:1.5px solid #b9c8d6;background:#fff;color:#2f5f8a;cursor:pointer}.ppm-mv button:hover:not(:disabled){border-color:#2f7fc6;background:#f3f9ff}.ppm-mv button:disabled{opacity:.35;cursor:not-allowed}
+.ppm-karte.mit-mv{padding-bottom:50px}.ppm-mv{position:absolute;left:-6px;right:0;bottom:10px;display:flex;justify-content:center;gap:10px}.ppm-mv button{font:inherit;font-size:16px;line-height:1;font-weight:800;min-width:44px;height:30px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;border-radius:999px;border:1.5px solid #b9c8d6;background:#fff;color:#2f5f8a;cursor:pointer}.ppm-mv button:hover:not(:disabled){border-color:#2f7fc6;background:#f3f9ff}.ppm-mv button:disabled{opacity:.35;cursor:not-allowed}
 .ppm-chip{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:#fff;border:1px solid #c9d4de;width:max-content;max-width:100%}
 .ppm-status{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:#fff3d6;border:1px solid #f0d28a;color:#7a4b00;width:max-content}.ppm-status.ok{background:#e3f4e8;border-color:#9fd3ae;color:#1f6a3a}
 .ppm-neu{align-self:center;border:1.5px dashed #b9c8d6;background:#fff;border-radius:12px;min-height:44px;padding:0 14px;font-weight:700;color:#3a4a5c;cursor:pointer}
@@ -4564,7 +4574,7 @@ async function ppmDialog(id,typ,woche,opt){
  if(t==="apt")extra=`<p style="font-size:13px;color:var(--muted);margin:0">Die Frage aus der Abschlussprüfung, den relevanten Inhalt und die Lösung gestaltest du danach direkt auf der Modulseite.</p>`;
  if(t==="stunde")extra=`<label>Phase im Deeper-Learning-Konzept<select id="ppmPhase">${[1,2,3].map(n=>`<option value="${n}"${(bearb?bearb.phase:2)===n?" selected":""}>${PP12_PHASEN[n].kurz} · ${esc(PP12_PHASEN[n].name)}</option>`).join("")}</select></label>
   ${bearb?"":`<p style="font-size:13px;color:var(--muted);margin:0">Zu jeder Stunde wird automatisch eine Digitale Tafel angelegt.</p>`}`;
- if(t==="kprim")extra=`<label>Check-out verknüpfen<select id="ppmCheckout"><option value="">Noch keinen (später verknüpfen)</option>${checkouts.map(c=>`<option value="${esc(c.id)}"${bearb&&bearb.checkoutId===c.id?" selected":""}>${esc(c.titel||"Check-out")} · ${esc(c.datum||"")}</option>`).join("")}</select></label>`;
+ if(t==="kprim")extra=`<label>Check-out verknüpfen<select id="ppmCheckout"><option value="">Noch keinen (später verknüpfen)</option>${checkouts.map(c=>`<option value="${esc(c.id)}"${bearb&&bearb.checkoutId===c.id?" selected":""}>${esc(c.titel||"Check-out")} · K-Prim-Aufgabensatz${c.datum?" · "+esc(c.datum):""}</option>`).join("")}</select></label>`;
  if(t==="experiment"){
   const gew=bearb?ppmExpTeile(bearb):PPM_EXP_TEILE.map(x=>x.k);
   extra=`<div class="ppm-teile"><b style="font-size:13px">Teile der Einheit wählen</b>
@@ -4574,10 +4584,14 @@ async function ppmDialog(id,typ,woche,opt){
  }
  if(t==="selbstlern"){
   const alt=bearb&&bearb.kursId==="psych-gegenstand";
-  extra=`<label>Kurs<select id="ppmKurs">
-   ${ea.length?`<optgroup label="Fertige Einarbeitung (interaktiv zum Durchklicken)">${ea.map(e=>`<option value="ea:${esc(e.id)}"${bearb&&bearb.kursId==="ea:"+e.id?" selected":""}>${esc(e.titel||e.id)}${e.entwurf?" (Entwurf)":""}</option>`).join("")}</optgroup>`:""}
+  const aktuell=bearb&&String(bearb.kursId||"").startsWith("ea:")?bearb.kursId.slice(3):"";
+  const passend=ea.filter(e=>e.art==="selbstlern"||e.id===aktuell).sort((x,y)=>(x.lb||9)-(y.lb||9)||String(x.titel).localeCompare(String(y.titel),"de"));
+  const lbGruppen=[...new Set(passend.map(e=>e.lb||0))];
+  const eaOpt=lbGruppen.map(n=>`<optgroup label="${n?"Lernbereich "+n:"Lernbereich offen"}">${passend.filter(e=>(e.lb||0)===n).map(e=>`<option value="ea:${esc(e.id)}" data-lb="${e.lb||""}"${bearb&&bearb.kursId==="ea:"+e.id?" selected":""}>${esc(ppmBez(e.titel||e.id,e.art,e.lb))}${e.entwurf?" (Entwurf)":""}</option>`).join("")}</optgroup>`).join("");
+  extra=`<label>Kurs (nur Selbstlernkurse)<select id="ppmKurs">
+   ${eaOpt}
    <optgroup label="Weitere">${alt?`<option value="psych-gegenstand" selected>${esc(PPM_KURSE["psych-gegenstand"].titel)} (Kurzfassung von Claude)</option>`:""}<option value="eigen"${bearb&&bearb.kursId==="eigen"?" selected":""}>Eigener Kurs (selbst gestalten)</option></optgroup></select></label>
-   <p style="font-size:13px;color:var(--muted);margin:0">${ea.length?"Weitere fertige Inhalte erscheinen hier automatisch, sobald ihre Datei im Ordner einarbeitung/inhalte im Repo liegt.":"Noch keine fertigen Einarbeitungen gefunden. Du kannst einen eigenen Kurs gestalten."}</p>`;
+   <p style="font-size:13px;color:var(--muted);margin:0">${passend.length?"Hier erscheinen nur Selbstlernkurse. Weitere fertige Inhalte kommen automatisch dazu, sobald ihre Datei im Ordner einarbeitung/inhalte im Repo liegt.":"Noch keine fertigen Selbstlernkurse gefunden. Du kannst einen eigenen Kurs gestalten."}</p>`;
  }
  modal(`<button class="modal-close" onclick="closeModal()">×</button>
   <div class="kicker">${T.icon} ${esc(T.kurz.toUpperCase())}</div><h2>${bearb?"Modul bearbeiten":esc(T.name)}</h2>
@@ -4607,6 +4621,7 @@ async function ppmDialog(id,typ,woche,opt){
   }
   btn.disabled=!ok;btn.title=ok?"":"In dieser Woche ist nicht genug Platz (6,3 Unterrichtsstunden pro Woche).";
  };
+ if(t==="selbstlern"){const ks=$("ppmKurs");if(ks)ks.addEventListener("change",()=>{const o=ks.options[ks.selectedIndex],n=o&&o.dataset.lb;if(n&&!lbSel.disabled)lbSel.value=n;});}
  if(t==="projekt"&&!bearb)lbSel.addEventListener("change",()=>{const x=PROJEKT_PHASEN.find(y=>y.lbNum===Number(lbSel.value));ti.placeholder=x?x.titel:T.name;const d=$("ppmDirekt");if(d)d.value=(x&&x.einstieg)?"experiment":"projekt";});
  $("ppmStart").addEventListener("change",aktualisieren);$("ppmDauer").addEventListener("change",aktualisieren);
  document.querySelectorAll(".ppmTeil").forEach(c=>c.addEventListener("change",()=>{
@@ -4621,7 +4636,7 @@ async function ppmDialog(id,typ,woche,opt){
   if(!pr.ok){toast("In dieser Woche ist nicht genug Platz (6,3 Unterrichtsstunden pro Woche).");return;}
   const dk=$("ppmDauer").value,def=PPM_DAUERN.find(d=>d.k===dk);
   const daten={modul:t,lb,titel:ti.value.trim(),start:$("ppmStart").value,dauer:dk,wochen:def?def.wochen:(Number(dk.slice(1))||1),notiz:$("ppmNotiz").value.trim()};
-  if(!daten.titel){const x=PROJEKT_PHASEN.find(y=>y.lbNum===lb);daten.titel=t==="projekt"&&x?x.titel:(t==="apt"?"Prüfungstraining LB "+lb:t==="kprim"?"K-Prim-Test LB "+lb:t==="stunde"?"Unterrichtsstunde LB "+lb:t==="experiment"?"Das Experiment":"Selbstlernkurs LB "+lb);}
+  if(!daten.titel){const x=PROJEKT_PHASEN.find(y=>y.lbNum===lb);daten.titel=t==="projekt"&&x?x.titel:(t==="apt"?"Prüfungstraining · LB"+lb:t==="kprim"?"K-Prim-Aufgabensatz · LB"+lb:t==="stunde"?"Deeper-Learning-Einheit · LB"+lb:t==="experiment"?"Das Experiment":"Selbstlernkurs · LB"+lb);}
   if(projektId)daten.projektId=projektId;
   if(t==="projekt"&&$("ppmDirekt"))daten.direkt=$("ppmDirekt").value;
   if(t==="stunde")daten.phase=Number($("ppmPhase").value);
@@ -4730,7 +4745,7 @@ function ppmKopf(m,unter,extraBtn){
  const zeit=w.length?`${fmtKurz(w[0].start)}–${fmtKurz(w[w.length-1].end)}`:"";
  return`<button class="secondary" data-ppm="plan">← Modulplan</button>
  ${PPM_CSS}
- <div class="ppm-box ppm-kopf" style="--c:${c}"><div class="kicker" style="color:${c}">${T.icon} LB ${m.lb} · ${esc(T.kurz.toUpperCase())} · ${zeit} · ${esc(ppmDauerDef(m).lang.toUpperCase())}</div>
+ <div class="ppm-box ppm-kopf" style="--c:${c}"><div class="kicker" style="color:${c}">${T.icon} ${esc((T.art||T.kurz).toUpperCase())} · LB${m.lb} · ${zeit} · ${esc(ppmDauerDef(m).lang.toUpperCase())}</div>
   <h1 style="margin:4px 0 6px;font-size:26px">${esc(m.titel||T.name)}</h1>${m.notiz?`<p>${esc(m.notiz)}</p>`:""}${unter||""}
   ${isTeacher()?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" class="ppm-btn klein" data-ppm="bearbeiten" data-id="${esc(m.id)}">✎ Modul bearbeiten</button>${extraBtn||""}</div>`:""}</div>`;
 }
@@ -5688,7 +5703,7 @@ async function einarbeitungInfo(id){
    const j=await res.json();
    const ARTEN=["mc","lueckentext","zuordnung","sortieren","kprim","frei","reihenfolge","strukturstreifen"];
    const zahl=(j.abschnitte||[]).reduce((n,x)=>n+(x.aufgaben||[]).length+(x.bloecke||[]).filter(b=>ARTEN.includes(b.typ)).length,0);
-   r={titel:j.titel||"",entwurf:!!j.entwurf,aufgaben:zahl};
+   r={titel:j.titel||"",entwurf:!!j.entwurf,aufgaben:zahl,modulart:j.modulart||"",lb:j.lb||0};
   }
  }catch(e){r=null;}
  einarbeitungCache[id]=r;return r;
