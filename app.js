@@ -4350,7 +4350,19 @@ function ppmStatus(m){
 // Lehrkraft: Modul um eine Schulwoche früher oder später legen (überspringt Praktikum und Ferien automatisch).
 function ppmMoveHTML(m){
  const i=ppmSwIndex(m.start),n=SCHULWOCHEN_PP.length;
- return`<span class="ppm-mv"><button type="button" data-ppm="verschieben" data-id="${esc(m.id)}" data-d="-1" title="Eine Schulwoche früher" aria-label="Modul eine Woche früher"${i<=0?" disabled":""}>‹ Woche</button><button type="button" data-ppm="verschieben" data-id="${esc(m.id)}" data-d="1" title="Eine Schulwoche später" aria-label="Modul eine Woche später"${i<0||i>=n-1?" disabled":""}>Woche ›</button></span>`;
+ const sibs=PPM.liste.filter(x=>x.start===m.start),p=sibs.findIndex(x=>x.id===m.id);
+ const reihe=sibs.length>1?`<span class="ppm-mv ppm-mv2"><button type="button" data-ppm="reihenfolge" data-id="${esc(m.id)}" data-d="-1" title="In dieser Woche ein Modul nach vorn" aria-label="Modul in der Woche nach vorn"${p<=0?" disabled":""}>‹ davor</button><button type="button" data-ppm="reihenfolge" data-id="${esc(m.id)}" data-d="1" title="In dieser Woche ein Modul nach hinten" aria-label="Modul in der Woche nach hinten"${p<0||p>=sibs.length-1?" disabled":""}>danach ›</button></span>`:"";
+ return reihe+`<span class="ppm-mv"><button type="button" data-ppm="verschieben" data-id="${esc(m.id)}" data-d="-1" title="Eine Schulwoche früher" aria-label="Modul eine Woche früher"${i<=0?" disabled":""}>‹ Woche</button><button type="button" data-ppm="verschieben" data-id="${esc(m.id)}" data-d="1" title="Eine Schulwoche später" aria-label="Modul eine Woche später"${i<0||i>=n-1?" disabled":""}>Woche ›</button></span>`;
+}
+async function ppmReihenfolge(m,d){
+ const sibs=PPM.liste.filter(x=>x.start===m.start),i=sibs.findIndex(x=>x.id===m.id),j=i+d;
+ if(i<0||j<0||j>=sibs.length)return;
+ const y=window.scrollY,l=sibs.slice();[l[i],l[j]]=[l[j],l[i]];
+ try{
+  for(let k=0;k<l.length;k++){const o=(k+1)*10;if((l[k].ord||0)!==o)await updateDoc(doc(db,"ppModule",l[k].id),{ord:o,updatedAt:serverTimestamp()});}
+  await ppmLaden(true);await render();
+  try{window.scrollTo(0,y);}catch(e){}
+ }catch(e){console.error(e);toast(e&&e.code==="permission-denied"?"Firebase verweigert das Speichern.":"Reihenfolge konnte nicht geändert werden.");}
 }
 async function ppmVerschieben(m,d){
  const i=ppmSwIndex(m.start),n=i+d;
@@ -4362,7 +4374,8 @@ async function ppmVerschieben(m,d){
  }
  const y=window.scrollY;
  try{
-  await updateDoc(doc(db,"ppModule",m.id),{start:neu.id,updatedAt:serverTimestamp()});
+  const ende=PPM.liste.filter(x=>x.start===neu.id&&x.id!==m.id).reduce((a,x)=>Math.max(a,x.ord||0),0);
+  await updateDoc(doc(db,"ppModule",m.id),{start:neu.id,ord:ende+10,updatedAt:serverTimestamp()});
   if(m.modul==="projekt"){ // Einheiten im Projekt wandern mit
    for(const x of PPM.liste.filter(z=>z.projektId===m.id)){
     const j=ppmSwIndex(x.start)+d;
@@ -4399,7 +4412,7 @@ const PPM_CSS=`<style>
 .ppm-txt{display:flex;flex-direction:column;gap:3px;min-width:0}.ppm-txt b{font-size:14px;line-height:1.3}.ppm-txt small{color:var(--muted)}
 .ppm-edit{position:absolute;right:6px;top:6px;border:0;background:#fff;border-radius:8px;width:28px;height:28px;color:#3a4a5c;cursor:pointer}
 .ppm-fort{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:10px;background:color-mix(in srgb,var(--c) 8%,#fff);border:1px dashed var(--c);font-size:12px;cursor:pointer}
-.ppm-mv{display:flex;gap:6px;margin-top:4px}.ppm-mv button{font:inherit;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;border:1.5px solid #b9c8d6;background:#fff;color:#2f5f8a;cursor:pointer}.ppm-mv button:hover:not(:disabled){border-color:#2f7fc6;background:#f3f9ff}.ppm-mv button:disabled{opacity:.35;cursor:not-allowed}
+.ppm-mv{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}.ppm-mv button{font:inherit;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;border:1.5px solid #b9c8d6;background:#fff;color:#2f5f8a;cursor:pointer}.ppm-mv button:hover:not(:disabled){border-color:#2f7fc6;background:#f3f9ff}.ppm-mv button:disabled{opacity:.35;cursor:not-allowed}
 .ppm-chip{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:#fff;border:1px solid #c9d4de;width:max-content}
 .ppm-status{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:#fff3d6;border:1px solid #f0d28a;color:#7a4b00;width:max-content}.ppm-status.ok{background:#e3f4e8;border-color:#9fd3ae;color:#1f6a3a}
 .ppm-neu{align-self:center;border:1.5px dashed #b9c8d6;background:#fff;border-radius:12px;min-height:44px;padding:0 14px;font-weight:700;color:#3a4a5c;cursor:pointer}
@@ -4963,6 +4976,7 @@ async function ppmKlick(e){
   if(aktion==="plan"){activePPModul=null;await refresh();return;}
   if(aktion==="neu"){if(!isTeacher())return;if(!b.dataset.typ){ppmTypWahl(b.dataset.woche||null);return;}await ppmDialog(null,b.dataset.typ,b.dataset.woche||null);return;}
   if(aktion==="bearbeiten"){e.stopPropagation();if(!isTeacher())return;await ppmDialog(id);return;}
+  if(aktion==="reihenfolge"){e.stopPropagation();if(!isTeacher()||!m)return;await ppmReihenfolge(m,Number(b.dataset.d)||0);return;}
   if(aktion==="verschieben"){e.stopPropagation();if(!isTeacher()||!m)return;await ppmVerschieben(m,Number(b.dataset.d)||0);return;}
   if(aktion==="standard"){await ppmStandardplan();return;}
   if(aktion==="experiment"){openExperimentStunde(m&&m.modul==="experiment"?ppmExpTeile(m):null);return;}
