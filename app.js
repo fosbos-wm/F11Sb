@@ -4351,12 +4351,13 @@ function ppmStatus(m){
 function ppmMoveHTML(m){
  const i=ppmSwIndex(m.start),n=SCHULWOCHEN_PP.length;
  const sibs=PPM.liste.filter(x=>x.start===m.start),p=sibs.findIndex(x=>x.id===m.id);
- const reihe=sibs.length>1?`<span class="ppm-mv ppm-mv2"><button type="button" data-ppm="reihenfolge" data-id="${esc(m.id)}" data-d="-1" title="In dieser Woche ein Modul nach vorn" aria-label="Modul in der Woche nach vorn"${p<=0?" disabled":""}>‹ davor</button><button type="button" data-ppm="reihenfolge" data-id="${esc(m.id)}" data-d="1" title="In dieser Woche ein Modul nach hinten" aria-label="Modul in der Woche nach hinten"${p<0||p>=sibs.length-1?" disabled":""}>danach ›</button></span>`:"";
- return reihe+`<span class="ppm-mv"><button type="button" data-ppm="verschieben" data-id="${esc(m.id)}" data-d="-1" title="Eine Schulwoche früher" aria-label="Modul eine Woche früher"${i<=0?" disabled":""}>‹ Woche</button><button type="button" data-ppm="verschieben" data-id="${esc(m.id)}" data-d="1" title="Eine Schulwoche später" aria-label="Modul eine Woche später"${i<0||i>=n-1?" disabled":""}>Woche ›</button></span>`;
+ const erste=i<=0&&p<=0,letzte=(i<0||i>=n-1)&&p>=sibs.length-1;
+ return`<span class="ppm-mv"><button type="button" data-ppm="reihenfolge" data-id="${esc(m.id)}" data-d="-1" title="Ein Modul nach vorn (am Wochenanfang: in die vorherige Woche)" aria-label="Modul nach vorn"${erste?" disabled":""}>‹ davor</button><button type="button" data-ppm="reihenfolge" data-id="${esc(m.id)}" data-d="1" title="Ein Modul nach hinten (am Wochenende: in die nächste Woche)" aria-label="Modul nach hinten"${letzte?" disabled":""}>danach ›</button></span>`;
 }
 async function ppmReihenfolge(m,d){
  const sibs=PPM.liste.filter(x=>x.start===m.start),i=sibs.findIndex(x=>x.id===m.id),j=i+d;
- if(i<0||j<0||j>=sibs.length)return;
+ if(i<0)return;
+ if(j<0||j>=sibs.length){await ppmVerschieben(m,d);return;}
  const y=window.scrollY,l=sibs.slice();[l[i],l[j]]=[l[j],l[i]];
  try{
   for(let k=0;k<l.length;k++){const o=(k+1)*10;if((l[k].ord||0)!==o)await updateDoc(doc(db,"ppModule",l[k].id),{ord:o,updatedAt:serverTimestamp()});}
@@ -4374,8 +4375,9 @@ async function ppmVerschieben(m,d){
  }
  const y=window.scrollY;
  try{
-  const ende=PPM.liste.filter(x=>x.start===neu.id&&x.id!==m.id).reduce((a,x)=>Math.max(a,x.ord||0),0);
-  await updateDoc(doc(db,"ppModule",m.id),{start:neu.id,ord:ende+10,updatedAt:serverTimestamp()});
+  const ziel=PPM.liste.filter(x=>x.start===neu.id&&x.id!==m.id).map(x=>x.ord||0);
+  const ord=d<0?(ziel.length?Math.max(...ziel):0)+10:(ziel.length?Math.min(...ziel):0)-10;
+  await updateDoc(doc(db,"ppModule",m.id),{start:neu.id,ord,updatedAt:serverTimestamp()});
   if(m.modul==="projekt"){ // Einheiten im Projekt wandern mit
    for(const x of PPM.liste.filter(z=>z.projektId===m.id)){
     const j=ppmSwIndex(x.start)+d;
@@ -4387,13 +4389,16 @@ async function ppmVerschieben(m,d){
   toast(`Verschoben auf ${fmtKurz(neu.start)}–${fmtKurz(neu.end)}.`);
  }catch(e){console.error(e);toast(e&&e.code==="permission-denied"?"Firebase verweigert das Speichern.":"Konnte nicht verschoben werden.");}
 }
+// Kartenbreite: 4 Spalten je Woche. Module bis 2 Stunden (inkl. 15 Min., 1 Std., 2 Std.) sind gleich breit (1 Spalte),
+// 3 bis 4 Stunden nehmen 2 Spalten, ganze Wochen oder mehr als 4 Stunden die volle Zeilenbreite.
+function ppmSpalten(m){const mi=ppmDauerDef(m).min||PPM_MIN_PRO_WOCHE;return mi<=120?1:(mi<=180?2:4);}
 function ppmKarteHTML(m,fortsetzung){
  const T=PPM_TYPEN[m.modul]||PPM_TYPEN.projekt,c=ppmFarbe(m);
  if(fortsetzung)return`<div class="ppm-fort" style="--c:${c}" data-ppm="oeffnen" data-id="${esc(m.id)}">↳ ${T.icon} ${esc(m.titel||T.name)} <small>läuft weiter</small></div>`;
  const einh=(m.einheiten||[]).map(e=>`<span class="ppm-chip">${(PPM_EINHEITEN[e.typ]||{}).icon||""} ${esc((PPM_EINHEITEN[e.typ]||{}).name||e.typ).replace("– interaktive Stunde","")}</span>`).join("");
  const exp=m.modul==="experiment"?`<span class="ppm-chip">${ppmExpTeile(m).length} von ${PPM_EXP_TEILE.length} Teilen · ca. ${ppmExpMinuten(ppmExpTeile(m))} Min.</span>`:"";
  const proj=m.projektId?`<span class="ppm-chip">Einheit im Projekt</span>`:"";
- return`<div class="ppm-karte" style="--c:${c}" data-ppm="oeffnen" data-id="${esc(m.id)}" tabindex="0" role="button">
+ return`<div class="ppm-karte" style="--c:${c};--sp:${ppmSpalten(m)}" data-ppm="oeffnen" data-id="${esc(m.id)}" tabindex="0" role="button">
   <span class="ppm-ic">${T.icon}</span>
   <span class="ppm-txt"><b>${esc(m.titel||T.name)}</b><small>LB ${m.lb} · ${esc(T.kurz)} · ${esc(ppmDauerText(m))}</small>${ppmStatus(m)}${proj}${exp}${einh}${isTeacher()?ppmMoveHTML(m):""}</span>
   ${isTeacher()?`<button type="button" class="ppm-edit" data-ppm="bearbeiten" data-id="${esc(m.id)}" title="Modul bearbeiten">✎</button>`:""}
@@ -4406,14 +4411,14 @@ const PPM_CSS=`<style>
 .ppm-woche{display:grid;grid-template-columns:128px minmax(0,1fr);gap:12px;margin:0 0 10px;padding:8px;border-radius:12px}
 .ppm-woche.jetzt{background:#eaf3fc;outline:2px solid #3d8fd0}
 .ppm-wl{display:flex;flex-direction:column;justify-content:center;font-size:13px;color:var(--muted)}.ppm-wl b{color:var(--ink);font-size:14px}
-.ppm-reihe{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch}
-.ppm-karte{position:relative;display:flex;gap:10px;min-width:230px;max-width:360px;flex:1 1 230px;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--c) 11%,#fff);border:1px solid color-mix(in srgb,var(--c) 38%,#fff);border-left:6px solid var(--c);cursor:pointer;text-align:left}
+.ppm-reihe{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;align-items:stretch}
+.ppm-karte{position:relative;display:flex;gap:8px;min-width:0;grid-column:span var(--sp,1);padding:10px 10px 10px 12px;border-radius:12px;background:color-mix(in srgb,var(--c) 11%,#fff);border:1px solid color-mix(in srgb,var(--c) 38%,#fff);border-left:6px solid var(--c);cursor:pointer;text-align:left}
 .ppm-karte:hover{box-shadow:0 6px 18px rgba(24,67,96,.14)}.ppm-ic{font-size:22px}
-.ppm-txt{display:flex;flex-direction:column;gap:3px;min-width:0}.ppm-txt b{font-size:14px;line-height:1.3}.ppm-txt small{color:var(--muted)}
+.ppm-txt{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}.ppm-txt b{font-size:14px;line-height:1.3;padding-right:26px;overflow-wrap:anywhere}.ppm-txt small{color:var(--muted)}
 .ppm-edit{position:absolute;right:6px;top:6px;border:0;background:#fff;border-radius:8px;width:28px;height:28px;color:#3a4a5c;cursor:pointer}
-.ppm-fort{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:10px;background:color-mix(in srgb,var(--c) 8%,#fff);border:1px dashed var(--c);font-size:12px;cursor:pointer}
-.ppm-mv{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}.ppm-mv button{font:inherit;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;border:1.5px solid #b9c8d6;background:#fff;color:#2f5f8a;cursor:pointer}.ppm-mv button:hover:not(:disabled){border-color:#2f7fc6;background:#f3f9ff}.ppm-mv button:disabled{opacity:.35;cursor:not-allowed}
-.ppm-chip{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:#fff;border:1px solid #c9d4de;width:max-content}
+.ppm-fort{min-width:0;display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:10px;background:color-mix(in srgb,var(--c) 8%,#fff);border:1px dashed var(--c);font-size:12px;cursor:pointer}
+.ppm-mv{display:flex;gap:6px;margin-top:auto;padding-top:8px}.ppm-mv button{font:inherit;font-size:12px;font-weight:700;padding:3px 8px;white-space:nowrap;border-radius:999px;border:1.5px solid #b9c8d6;background:#fff;color:#2f5f8a;cursor:pointer}.ppm-mv button:hover:not(:disabled){border-color:#2f7fc6;background:#f3f9ff}.ppm-mv button:disabled{opacity:.35;cursor:not-allowed}
+.ppm-chip{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:#fff;border:1px solid #c9d4de;width:max-content;max-width:100%}
 .ppm-status{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:#fff3d6;border:1px solid #f0d28a;color:#7a4b00;width:max-content}.ppm-status.ok{background:#e3f4e8;border-color:#9fd3ae;color:#1f6a3a}
 .ppm-neu{align-self:center;border:1.5px dashed #b9c8d6;background:#fff;border-radius:12px;min-height:44px;padding:0 14px;font-weight:700;color:#3a4a5c;cursor:pointer}
 .ppm-leer{color:var(--muted);font-size:13px;align-self:center}
@@ -4446,7 +4451,7 @@ const PPM_CSS=`<style>
 .ppm-fertig{display:flex;align-items:center;gap:12px;width:100%;margin-top:6px;padding:14px 16px;border-radius:12px;border:2px solid #b9c8d6;background:#fff;font-weight:700;font-size:15px;color:var(--ink);cursor:pointer;text-align:left}
 .ppm-fertig:hover{border-color:#2f7fc6}.ppm-fertig.an{border-color:#3fa66a;background:#e3f4e8;color:#1f6a3a}
 .ppm-haken{width:28px;height:28px;border-radius:8px;border:2px solid #8aa0b3;background:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:18px;flex:none}.ppm-fertig.an .ppm-haken{background:#3fa66a;border-color:#3fa66a;color:#fff}
-@media(max-width:760px){.ppm-woche{grid-template-columns:1fr}}
+@media(max-width:760px){.ppm-woche{grid-template-columns:1fr}.ppm-reihe{grid-template-columns:repeat(2,minmax(0,1fr))}.ppm-karte{grid-column:1/-1}}
 </style>`;
 
 async function renderPPModulplan(){
