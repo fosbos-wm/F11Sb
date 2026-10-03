@@ -4457,7 +4457,7 @@ async function renderPPModulplan(){
   <div class="ppm-balken"><span><b>Verplant:</b> ${ppmStd(belegt)} von ${ppmStd(gesamt)} Unterrichtsstunden (${proz} %)</span><div class="ppm-bar" role="progressbar" aria-valuenow="${proz}" aria-valuemin="0" aria-valuemax="100"><i style="width:${proz}%"></i></div></div>
   <div class="ppm-balken"><span><b>Schuljahr:</b> ${vergangen} von ${SCHULWOCHEN_PP.length} Schulwochen vorbei (${jahrProz} %)</span><div class="ppm-bar ppm-bar-jahr" role="progressbar" aria-valuenow="${jahrProz}" aria-valuemin="0" aria-valuemax="100"><i style="width:${jahrProz}%"></i></div></div>
   <div class="ppm-leg"><span><i style="background:#3d8fd0"></i>Woche teilweise belegt</span><span><i style="background:#3fa66a"></i>Woche voll (6,3 Stunden)</span><span><i style="background:#d9534f"></i>Woche überbucht</span><span>🏫 🏥 Praktikum (gesperrt)</span><span>🌴 Ferien (gesperrt)</span></div></div>`;
- const legende=lehrer?`<div class="ppm-legende">${Object.entries(PPM_TYPEN).map(([k,T])=>`<button type="button" class="ppm-typ" data-ppm="neu" data-typ="${k}"><b>${T.icon} ${esc(T.name)}</b><small>${esc(T.text)}</small></button>`).join("")}</div>`:"";
+ const legende=lehrer?`<div class="ppm-legende">${Object.entries(PPM_TYPEN).filter(([k])=>k!=="experiment").map(([k,T])=>`<button type="button" class="ppm-typ" data-ppm="neu" data-typ="${k}"><b>${T.icon} ${esc(T.name)}</b><small>${esc(T.text)}</small></button>`).join("")}</div>`:"";
  const zeilen=ppmZeitleiste().map(z=>{
   if(z.art==="block"){
    const darin=z.kind==="praktikum"?FERIEN_2026_27.filter(f=>f.start<=z.bis&&f.end>=z.von).map(f=>f.titel):[];
