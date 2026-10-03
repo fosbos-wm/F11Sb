@@ -4348,6 +4348,20 @@ function ppmDocId(m){return`${m.id}_${currentUser.uid}`;}
 function ppmName(){return profile?.displayName||currentUser.email||"Schüler:in";}
 
 // ------------------------------------------------------------ Modulplan
+// Fortschritt der angemeldeten Person je Modul: {done, frac (0..1)} oder null, wenn für das Modul kein Stand erfasst wird.
+function ppmFort(m){
+ if(isTeacher())return null;
+ try{
+  if(m.modul==="selbstlern"&&String(m.kursId||"").startsWith("ea:")){const f=PPM.meine.ea[m.kursId.slice(3)]||{},a=f.einarbeitungAufgaben,done=!!f.einarbeitungAbgeschlossen;return{done,frac:done?1:(a&&a.gesamt?a.richtig/a.gesamt:0)};}
+  if(m.modul==="experiment"||(m.modul==="projekt"&&ppmProjektDirekt(m))){const f=PPM.meine.exp||{},done=!!f.experimentErledigt;return{done,frac:done?1:0};}
+  if(m.modul==="selbstlern"){const sch=ppmKursSchritte(m).filter(x=>x.typ!=="abschluss"),f=PPM.meine.kurs[m.id],n=f?sch.filter(x=>f.erledigt&&f.erledigt[x.id]).length:0,done=!!sch.length&&n===sch.length;return{done,frac:sch.length?n/sch.length:0};}
+  if(m.modul==="apt"){const f=PPM.meine.stunde[m.id]||{},done=!!f.aptBewertung;return{done,frac:done?1:(f.aptAbgegeben?2/3:(f.aptAntwort?1/3:0))};}
+  if(m.modul==="stunde"){const f=PPM.meine.stunde[m.id],fr=m.fragen||[];if(f&&f.fertig)return{done:true,frac:1};const n=f?(f.gezeigt||[]).filter(Boolean).length:0;return{done:false,frac:fr.length?n/fr.length:0};}
+  if(m.modul==="kprim"){const d=PPM.co;if(!d||!m.checkoutId)return null;const c=(d.checkouts||[]).find(x=>x.id===m.checkoutId);if(!c)return null;const a=(d.meineAbgaben||{})[c.id],done=!!(a&&a.abgegeben);return{done,frac:done?1:(a?0.5:0)};}
+ }catch(e){console.error("Fortschritt:",e);}
+ return null;
+}
+function ppmKW(w){const d=new Date(w.start+"T12:00:00Z");d.setUTCDate(d.getUTCDate()+3-((d.getUTCDay()+6)%7));const j=new Date(Date.UTC(d.getUTCFullYear(),0,4));return 1+Math.round(((d-j)/86400000-3+((j.getUTCDay()+6)%7))/7);}
 function ppmStatus(m){
  if(isTeacher())return"";
  if(m.modul==="selbstlern"&&String(m.kursId||"").startsWith("ea:")){const f=PPM.meine.ea[m.kursId.slice(3)]||{},a=f.einarbeitungAufgaben;return`<span class="ppm-status${f.einarbeitungAbgeschlossen?" ok":""}">${f.einarbeitungAbgeschlossen?"abgeschlossen ✓":(a&&a.gesamt?`${a.richtig}/${a.gesamt} Aufgaben`:"noch offen")}</span>`;}
@@ -4355,6 +4369,7 @@ function ppmStatus(m){
  if(m.modul==="selbstlern"){const sch=ppmKursSchritte(m).filter(s=>s.typ!=="abschluss"),f=PPM.meine.kurs[m.id];const n=f?sch.filter(s=>f.erledigt&&f.erledigt[s.id]).length:0;return`<span class="ppm-status${n===sch.length&&sch.length?" ok":""}">${n}/${sch.length} Schritte</span>`;}
  if(m.modul==="apt"){const f=PPM.meine.stunde[m.id]||{};return`<span class="ppm-status${f.aptAbgegeben?" ok":""}">${f.aptBewertung?"verglichen ✓":(f.aptAbgegeben?"abgegeben":(f.aptAntwort?"in Arbeit":"noch offen"))}</span>`;}
  if(m.modul==="stunde"){const f=PPM.meine.stunde[m.id];if(f&&f.fertig)return`<span class="ppm-status ok">fertig ✓</span>`;const fr=m.fragen||[];if(!fr.length)return"";const n=f?(f.gezeigt||[]).filter(Boolean).length:0;return`<span class="ppm-status${n===fr.length?" ok":""}">Check-out ${n}/${fr.length}</span>`;}
+ if(m.modul==="kprim"){const p=ppmFort(m);if(p)return`<span class="ppm-status${p.done?" ok":""}">${p.done?"abgegeben ✓":(p.frac>0?"in Arbeit":"noch offen")}</span>`;}
  return"";
 }
 // Lehrkraft: Modul um eine Schulwoche früher oder später legen (überspringt Praktikum und Ferien automatisch).
@@ -4408,10 +4423,11 @@ function ppmKarteHTML(m,fortsetzung){
  const einh=(m.einheiten||[]).map(e=>`<span class="ppm-chip">${(PPM_EINHEITEN[e.typ]||{}).icon||""} ${esc((PPM_EINHEITEN[e.typ]||{}).name||e.typ).replace("– interaktive Stunde","")}</span>`).join("");
  const exp=m.modul==="experiment"?`<span class="ppm-chip">${ppmExpTeile(m).length} von ${PPM_EXP_TEILE.length} Teilen · ca. ${ppmExpMinuten(ppmExpTeile(m))} Min.</span>`:"";
  const proj=m.projektId?`<span class="ppm-chip">Einheit im Projekt</span>`:"";
- return`<div class="ppm-karte${isTeacher()?" mit-mv":""}" style="--c:${c};--sp:${ppmSpalten(m)}" data-ppm="oeffnen" data-id="${esc(m.id)}" tabindex="0" role="button">
+ const fo=ppmFort(m);
+ return`<div class="ppm-karte${isTeacher()?" mit-mv":""}${fo?(fo.done?" ppm-st-done":fo.frac>0?" ppm-st-teil":" ppm-st-offen"):""}" style="--c:${c};--sp:${ppmSpalten(m)}" data-ppm="oeffnen" data-id="${esc(m.id)}" tabindex="0" role="button">
   <span class="ppm-ic">${T.icon}</span>
-  <span class="ppm-txt"><b>${esc(m.titel||T.name)}</b><small>${esc(T.art||T.kurz)} · LB${m.lb} · ${esc(ppmDauerText(m))}</small>${ppmStatus(m)}${proj}${exp}${einh}${isTeacher()?ppmMoveHTML(m):""}</span>
-  ${isTeacher()?`<button type="button" class="ppm-edit" data-ppm="bearbeiten" data-id="${esc(m.id)}" title="Modul bearbeiten">✎</button>`:""}
+  <span class="ppm-txt"><b>${esc(m.titel||T.name)}</b><small>${esc(T.art||T.kurz)} · LB${m.lb} · ${esc(ppmDauerText(m))}</small>${ppmStatus(m)}${fo&&!fo.done?`<span class="ppm-mini" title="${Math.round(fo.frac*100)} % geschafft"><i style="width:${Math.round(fo.frac*100)}%"></i></span>`:""}${proj}${exp}${einh}${isTeacher()?ppmMoveHTML(m):""}</span>
+  ${fo&&fo.done?`<span class="ppm-haken-k" aria-label="geschafft">✓</span>`:""}${isTeacher()?`<button type="button" class="ppm-edit" data-ppm="bearbeiten" data-id="${esc(m.id)}" title="Modul bearbeiten">✎</button>`:""}
  </div>`;
 }
 const PPM_CSS=`<style>
@@ -4428,6 +4444,11 @@ const PPM_CSS=`<style>
 .ppm-edit{position:absolute;right:6px;top:6px;border:0;background:#fff;border-radius:8px;width:28px;height:28px;color:#3a4a5c;cursor:pointer}
 .ppm-fort{min-width:0;display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:10px;background:color-mix(in srgb,var(--c) 8%,#fff);border:1px dashed var(--c);font-size:12px;cursor:pointer}
 .ppm-karte.mit-mv{padding-bottom:50px}.ppm-mv{position:absolute;left:-6px;right:0;bottom:10px;display:flex;justify-content:center;gap:10px}.ppm-mv button{font:inherit;font-size:16px;line-height:1;font-weight:800;min-width:44px;height:30px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;border-radius:999px;border:1.5px solid #b9c8d6;background:#fff;color:#2f5f8a;cursor:pointer}.ppm-mv button:hover:not(:disabled){border-color:#2f7fc6;background:#f3f9ff}.ppm-mv button:disabled{opacity:.35;cursor:not-allowed}
+.ppm-mini{display:block;height:6px;border-radius:4px;background:#dbe4ec;overflow:hidden;margin-top:6px}.ppm-mini i{display:block;height:100%;background:#3d8fd0}
+.ppm-karte.ppm-st-done{background:color-mix(in srgb,#3fa66a 13%,#fff);border-color:#9fd3ae}
+.ppm-haken-k{position:absolute;right:8px;top:8px;width:26px;height:26px;border-radius:50%;background:#3fa66a;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px}
+.ppm-nach{font-size:11px;font-weight:700;color:#b3261e}
+.ppm-stand .ppm-next{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px}
 .ppm-chip{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:#fff;border:1px solid #c9d4de;width:max-content;max-width:100%}
 .ppm-status{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:#fff3d6;border:1px solid #f0d28a;color:#7a4b00;width:max-content}.ppm-status.ok{background:#e3f4e8;border-color:#9fd3ae;color:#1f6a3a}
 .ppm-neu{align-self:center;border:1.5px dashed #b9c8d6;background:#fff;border-radius:12px;min-height:44px;padding:0 14px;font-weight:700;color:#3a4a5c;cursor:pointer}
@@ -4467,6 +4488,7 @@ const PPM_CSS=`<style>
 async function renderPPModulplan(){
  await ppmLaden();await ppmMeineLaden();
  const co=await ladeCheckoutDaten().catch(()=>null);
+ PPM.co=co;
  const heute=new Date().toISOString().slice(0,10),lehrer=isTeacher();
  const last=ppmLast();
  const proWoche={},fort={},legacy={};
@@ -4494,19 +4516,30 @@ async function renderPPModulplan(){
   const w=z.w,mm=proWoche[w.id]||[],ff=fort[w.id]||[],ee=legacy[w.id]||[];
   if(!lehrer&&!mm.length&&!ff.length&&!ee.length)return"";
   const jetzt=heute>=w.start&&heute<=w.end,min=last[w.id].min,pct=Math.min(100,Math.round(min/PPM_MIN_PRO_WOCHE*100)),cls=min>PPM_MIN_PRO_WOCHE?"ueber":(min===PPM_MIN_PRO_WOCHE?"voll":"");
-  const kw=(()=>{const d=new Date(w.start+"T12:00:00Z");d.setUTCDate(d.getUTCDate()+3-((d.getUTCDay()+6)%7));const j=new Date(Date.UTC(d.getUTCFullYear(),0,4));return 1+Math.round(((d-j)/86400000-3+((j.getUTCDay()+6)%7))/7);})();
+  const kw=ppmKW(w);
+  const stW=lehrer?[]:mm.map(ppmFort).filter(Boolean),nOkW=stW.filter(x=>x.done).length,pzW=stW.length?Math.round(nOkW/stW.length*100):0;
+  const wochenFort=stW.length?`<div class="ppm-kap voll" title="${nOkW} von ${stW.length} Modulen geschafft"><i style="width:${pzW}%"></i></div><small class="kapa">${nOkW===stW.length?"alles geschafft ✓":nOkW+" von "+stW.length+" geschafft"}</small>${w.end<heute&&nOkW<stW.length?`<small class="ppm-nach">${stW.length-nOkW} noch offen</small>`:""}`:"";
   return`<div class="ppm-woche${jetzt?" jetzt":""}" data-w="${w.id}"><div class="ppm-wl"><b>KW ${kw}</b><span>${fmtKurz(w.start)}–${fmtKurz(w.end)}</span>${jetzt?`<em style="font-style:normal;font-weight:700;color:#075a9d">diese Woche</em>`:""}
-    <div class="ppm-kap ${cls}" title="${ppmStd(min)} von ${PPM_STD_PRO_WOCHE} Unterrichtsstunden belegt"><i style="width:${pct}%"></i></div><small class="kapa">${ppmStd(min)} von ${PPM_STD_PRO_WOCHE} Stunden${min>PPM_MIN_PRO_WOCHE?" · überbucht":(min===PPM_MIN_PRO_WOCHE?" · voll":"")}</small></div>
+    ${lehrer?`<div class="ppm-kap ${cls}" title="${ppmStd(min)} von ${PPM_STD_PRO_WOCHE} Unterrichtsstunden belegt"><i style="width:${pct}%"></i></div><small class="kapa">${ppmStd(min)} von ${PPM_STD_PRO_WOCHE} Stunden${min>PPM_MIN_PRO_WOCHE?" · überbucht":(min===PPM_MIN_PRO_WOCHE?" · voll":"")}</small>`:wochenFort}</div>
    <div class="ppm-reihe">${mm.map(m=>ppmKarteHTML(m,false)).join("")}${ff.map(m=>ppmKarteHTML(m,true)).join("")}${ee.map(x=>`<span class="ppm-fort" style="--c:${ppmFarbe(x.m)}" data-ppm="oeffnen" data-id="${esc(x.m.id)}">${(PPM_EINHEITEN[x.e.typ]||{}).icon||""} Einheit: ${esc((PPM_EINHEITEN[x.e.typ]||{}).name||x.e.typ)}</span>`).join("")}
    ${lehrer?(min<PPM_MIN_PRO_WOCHE?`<button type="button" class="ppm-neu" data-ppm="neu" data-woche="${w.id}">＋ Modul</button>`:`<span class="ppm-leer"${min>PPM_MIN_PRO_WOCHE?' style="color:#b3261e;font-weight:700"':""}>${min>PPM_MIN_PRO_WOCHE?`Woche überbucht: ${ppmStd(min)} von ${PPM_STD_PRO_WOCHE} Stunden, bitte ein Modul verschieben oder kürzen`:"Woche voll"}</span>`):(mm.length||ff.length||ee.length?"":`<span class="ppm-leer">–</span>`)}</div></div>`;
  }).join("");
+ const alleSt=lehrer?[]:PPM.liste.map(m=>({m,p:ppmFort(m)})).filter(x=>x.p);
+ const nGes=alleSt.length,nOk=alleSt.filter(x=>x.p.done).length,pzGes=nGes?Math.round(nOk/nGes*100):0;
+ const jw=SCHULWOCHEN_PP.find(w=>heute>=w.start&&heute<=w.end)||SCHULWOCHEN_PP.find(w=>w.start>heute),jIdx=jw?ppmSwIndex(jw.id):SCHULWOCHEN_PP.length;
+ const offen=alleSt.filter(x=>!x.p.done);
+ const jetztX=offen.find(x=>ppmSwIndex(x.m.start)<=jIdx),naechstX=jetztX||offen[0];
+ const nxLabel=jetztX?(ppmSwIndex(jetztX.m.start)<jIdx?"Noch offen aus einer früheren Woche":"Jetzt dran"):"Als Nächstes";
+ const standBox=nGes?`<div class="ppm-box ppm-stand"><h2>Dein Stand</h2>
+  <div class="ppm-balken"><span><b>${nOk} von ${nGes}</b> Modulen geschafft (${pzGes} %)</span><div class="ppm-bar" role="progressbar" aria-valuenow="${pzGes}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pzGes}%"></i></div></div>
+  ${naechstX?`<div class="ppm-next"><span>${nxLabel}: <b>${esc(naechstX.m.titel||(PPM_TYPEN[naechstX.m.modul]||{}).name||"")}</b> <small style="color:var(--muted)">(KW ${ppmKW(swById(naechstX.m.start)||{start:heute})})</small></span><button type="button" class="ppm-btn klein primaer" data-ppm="oeffnen" data-id="${esc(naechstX.m.id)}">Öffnen</button></div>`:`<p style="margin:6px 0 0"><b>Alles geschafft ✓</b></p>`}</div>`:"";
  const leer=!PPM.liste.length;
  const fehler=PPM.fehler?`<div class="empty"><strong>Der Modulplan konnte nicht geladen werden.</strong>${esc(PPM.fehler==="permission-denied"?"Firebase verweigert den Zugriff (permission-denied). Die Firestore-Regeln für den Modulplan sind noch nicht veröffentlicht.":"Fehler: "+PPM.fehler)}</div>`:"";
  const coBox=co?`${checkoutLiveBannerHTML(co)}<details class="ppm-box ppm-details"><summary>Check-outs (K-Prim-Tests)</summary><div style="margin-top:10px">${checkoutSektionHTML(co)}</div></details>`:"";
  return`<button class="secondary" onclick="closeFach()">← Zurück zu den Fächern</button>
  ${pageHead("PÄDAGOGIK/PSYCHOLOGIE","Modulplan",lehrer?"Plane Woche für Woche, welches Modul in welchem Lernbereich dran ist. Wähle unten ein Modul oder klicke bei einer Woche auf „＋ Modul“.":"Dein Plan durchs Schuljahr: Klicke ein Modul an, um loszulegen.",
   lehrer?`<button class="secondary" onclick="openProjektGesamtcheck()">🔬 Projekt-Gesamtcheck</button> <button class="secondary" onclick="openFachaufsatzTrainingCheck()">🎓 APT-Gesamtcheck</button>`:"")}
- ${PPM_CSS}${fehler}${coBox}${legende}
+ ${PPM_CSS}${fehler}${coBox}${standBox}${legende}
  ${leer&&lehrer&&!PPM.fehler?`<div class="ppm-box"><h2>Noch kein Plan</h2><p>Du kannst von vorn beginnen oder den bisherigen Ablauf (je Lernbereich ein Projekt und ein Prüfungstraining, dazu das Experiment als Einheit im ersten Projekt) als Startpunkt übernehmen. Danach lässt sich jedes Modul ändern, verschieben oder löschen.</p><button type="button" class="ppm-btn primaer" data-ppm="standard">Bisherigen Ablauf als Plan übernehmen</button></div>`:""}
  ${leer&&!lehrer&&!PPM.fehler?`<div class="empty"><strong>Noch kein Plan.</strong>Deine Lehrkraft hat noch keine Module geplant.</div>`:""}
  ${zeilen}
