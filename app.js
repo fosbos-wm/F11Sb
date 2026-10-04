@@ -4084,7 +4084,7 @@ function ppKprimBereichHTML(ph,teil,coDaten,heute){
   if(lehrer&&(co||CHECKOUT_VORLAGEN.some(v=>v.datum===w.end)))rechts=`<button class="secondary"onclick="openKprimVorschau(0,'${w.end}')">👁 Vorschau</button>`+rechts;
   const st=co&&lehrer&&co.status==="beendet"&&stat[co.id]?` · ${stat[co.id].n} ausgewertet · Ø ${(stat[co.id].summe/stat[co.id].n).toFixed(1).replace(".",",")} Punkte`:"";
   return`<div class="co-zeile"><span class="co-lb">Fr ${fmtKurz(w.end)}</span>
-   <div class="co-titel"><b>${co?esc(co.titel||"Check-out"):"Check-out"}</b><small>${co?`${(co.aufgaben||[]).length} K-Prim-Aufgaben${st}`:(()=>{const v0=CHECKOUT_VORLAGEN.find(v=>v.datum===w.end);return v0?`Vorlage: ${esc(v0.titel)} · ${(v0.aufgaben||[]).length} K-Prim-Aufgaben: ${esc(coVorlageInhalte(v0).join(" · "))}`:"2 K-Prim-Aufgaben zu den Themen der Woche";})()}</small></div>
+   <div class="co-titel"><b>${co?esc(co.titel||"Check-out"):"Check-out"}</b><small>${co?`${(co.aufgaben||[]).length} K-Prim-Aufgaben${st}`:(()=>{const v0=CHECKOUT_VORLAGEN.find(v=>v.datum===w.end);return v0?`Vorlage: ${esc(v0.titel)} · ${(v0.aufgaben||[]).length} K-Prim-Aufgaben: ${esc(coVorlageInhalte(v0).join(" · "))}`:(CHECKOUT_MAX_AUFGABEN+" K-Prim-Aufgaben zu den Themen der Woche");})()}</small></div>
    ${co?coStatChip(co,d):""}<div class="co-aktion">${rechts}</div></div>`;
  }).join("");
  // --- Bibliothek bzw. Ergebnisse ---
@@ -4114,7 +4114,7 @@ function ppKprimBereichHTML(ph,teil,coDaten,heute){
    <div class="co-aktion">${aktion}${d.auswahl?`<button class="secondary"onclick="coPdfRespizienz()">PDF Auswahl</button>`:""}${fertig.length?`<button class="secondary"onclick="coPdfSchuelerAlle()">PDF alle Ergebnisse</button>`:""}</div></div>`;
  }
  return`<div class="card co-karte pp-kp">
-  <div class="co-kopf"><div><h3>🏁 K-Prim-Aufgaben · Check-out am Freitag</h3><small>Jeden Freitag ein Test mit 2 K-Prim-Aufgaben (je 4 Aussagen richtig oder falsch) zu den Themen der Woche${themen?` (${esc(themen)})`:""}. Deine Lehrkraft schaltet ihn live frei, ausgewertet wird in Notenpunkten nach dem P/P-Bewertungsschlüssel.</small></div></div>
+  <div class="co-kopf"><div><h3>🏁 K-Prim-Aufgaben · Check-out am Freitag</h3><small>Ein Test besteht aus einer Fallvignette und ${CHECKOUT_MAX_AUFGABEN} K-Prim-Aufgaben (je 4 Aussagen richtig oder falsch) zu den Themen der Woche${themen?` (${esc(themen)})`:""}. Deine Lehrkraft schaltet ihn live frei, ausgewertet wird in Notenpunkten nach dem P/P-Bewertungsschlüssel.</small></div></div>
   <div class="kicker pp-kp-h">FREITAGE IN DIESER ETAPPE</div>
   <div class="co-liste">${fr}</div>
   ${mitte}
@@ -4941,7 +4941,7 @@ async function ppmKprimSeite(m){
     :(live&&!(mein&&mein.abgegeben)?`<button type="button" class="ppm-btn primaer" data-ppm="co" data-aktion="test" data-id="${esc(c.id)}">Test starten</button>`:(mein&&mein.ausgewertet?`<button type="button" class="ppm-btn primaer" data-ppm="co" data-aktion="ergebnis" data-id="${esc(c.id)}">Mein Ergebnis</button>`:`<span class="ppm-status">${beendet?"beendet":"noch nicht freigeschaltet"}</span>`))}</div>`;
  }
  return`${ppmKopf(m,"",lehrer?`${c?"":`<button type="button" class="ppm-btn klein primaer" data-ppm="bearbeiten" data-id="${esc(m.id)}">🔗 Check-out verknüpfen</button>`}<button type="button" class="ppm-btn klein" data-ppm="co" data-aktion="neu">＋ Neuen Check-out anlegen</button>`:"")}
- <div class="ppm-box"><h2>K-Prim-Aufgabentest</h2><p>Eine Fallvignette mit 2 K-Prim-Aufgaben zu je 4 Aussagen. Du entscheidest bei jeder Aussage, ob sie richtig oder falsch ist. Die Bepunktung (BE und Notenpunkte) steht oben im Test, die Auswertung kommt automatisch.</p>${karte}</div>
+ <div class="ppm-box"><h2>K-Prim-Aufgabentest</h2><p>Eine Fallvignette mit ${CHECKOUT_MAX_AUFGABEN} K-Prim-Aufgaben zu je 4 Aussagen. Du entscheidest bei jeder Aussage, ob sie richtig oder falsch ist. Die Bepunktung (BE und Notenpunkte) steht oben im Test, die Auswertung kommt automatisch.</p>${karte}</div>
  ${checkoutLiveBannerHTML(d)}${checkoutSektionHTML(d)}${footer()}`;
 }
 // ---- Unterrichtsstunde ----
@@ -6324,7 +6324,7 @@ const CHECKOUT_BE_NACH_FEHLERN=[4,2,1,0,0];
 // 15: 100–96 · 14: 95–91 · … · 3: 40–34 · 2: 33–27 · 1: 26–20 · 0: 19–0.
 // Zwischenwerte werden nicht aufgerundet (z. B. 95,5 % → 14 Punkte).
 const FOSBOS_SCHLUESSEL=[[15,96],[14,91],[13,86],[12,81],[11,76],[10,71],[9,66],[8,61],[7,56],[6,51],[5,46],[4,41],[3,34],[2,27],[1,20]];
-const CHECKOUT_MIN_AUFGABEN=2,CHECKOUT_MAX_AUFGABEN=2; // immer 1 Fallvignette + genau 2 K-Prim-Aufgaben je Check-out (passt in 15 Minuten)
+const CHECKOUT_MIN_AUFGABEN=4,CHECKOUT_MAX_AUFGABEN=4; // immer 1 Fallvignette + genau 4 K-Prim-Aufgaben je Check-out (Test = 4er-Paket)
 function notenpunkteAusProzent(p){for(const [np,min] of FOSBOS_SCHLUESSEL)if(p>=min)return np;return 0;}
 function noteAusNotenpunkten(np){return np>=13?1:np>=10?2:np>=7?3:np>=4?4:np>=1?5:6;}
 function npText(np){return`${np} Punkte (${noteAusNotenpunkten(np)})`;}
@@ -6448,7 +6448,7 @@ function checkoutSektionHTML(d){
    <div class="co-aktion">${coAuswahlStatus(d.einst).offen?`<button class="primary"onclick="openCheckoutAuswahl()">${d.auswahl?"Auswahl ändern":`${d.einst.anzahlWaehlen} auswählen`}</button>`:`<small style="color:var(--muted)">${esc(coAuswahlStatus(d.einst).text)}</small>`}${d.auswahl?`<button class="secondary"onclick="coPdfErsatzSchueler()">PDF</button>`:""}</div></div>`;
  }
  return`<div class="card co-karte">
-  <div class="co-kopf"><div><h3>🏁 Check-out – K-Prim-Test zum Wochenabschluss</h3><small>Am Ende der Woche schaltet deine Lehrkraft den Check-Out-Test live frei: eine Fallvignette mit 2 K-Prim-Aufgaben. Die Bepunktung steht vorab im Test. Ausgewertet wird automatisch in FOSBOS-Notenpunkten.</small></div>
+  <div class="co-kopf"><div><h3>🏁 Check-out – K-Prim-Test zum Wochenabschluss</h3><small>Am Ende der Woche schaltet deine Lehrkraft den Check-Out-Test live frei: eine Fallvignette mit ${CHECKOUT_MAX_AUFGABEN} K-Prim-Aufgaben. Die Bepunktung steht vorab im Test. Ausgewertet wird automatisch in FOSBOS-Notenpunkten.</small></div>
    ${lehrer?`<button class="primary"onclick="openCheckoutEditor()">＋ Neuer Check-out</button>`:""}</div>
   <div class="co-liste">${zeilen||`<div class="empty">${lehrer?"Noch kein Check-out angelegt.":"Noch kein Check-out freigeschaltet."}</div>`}</div>
   ${ersatz}
@@ -6942,7 +6942,7 @@ const CHECKOUT_VORLAGEN_ALLE=[
 ];
 // Angeboten werden nur Vorlagen im neuen Aufbau (1 Fallvignette + genau 2 Aufgaben). Ältere Vorlagen mit 3 Aufgaben bleiben im Code, werden aber nicht mehr angeboten.
 // ---- K-Prim-Tests LB 1 (Inhalte: Gegenstand der Psychologie und der Pädagogik, Alltagstheorie, Merkmale wissenschaftlicher Aussagen, Experiment) ----
-// Aufbau wie alle Check-outs: 1 Fallvignette + genau 2 K-Prim-Aufgaben mit je 4 Aussagen. Die Vorlagen stehen an den drei Freitagen der LB-1-Theoriewochen.
+// Aufbau wie alle Check-outs: 1 Fallvignette + genau 4 K-Prim-Aufgaben mit je 4 Aussagen (alle Aufgaben eines Tests teilen sich dieselbe Fallvignette).
 CO_AUFGABENBANK.push(...[
  {
   "id": "kp-lb1-psychologie",
@@ -6951,7 +6951,7 @@ CO_AUFGABENBANK.push(...[
   "vignette": {
    "titel": "Jugendtreff",
    "zeilen": false,
-   "text": "Im Praktikum in einem Jugendtreff begleiten Sie die 16-jährige Jana. Sie soll beim Sommerfest die Begrüßung übernehmen. Kurz vor dem Auftritt knetet sie ihre Finger, ihre Stimme zittert leicht und sie flüstert der Betreuerin Frau Albers zu, dass sie sich vor dem Mikrofon fürchtet. Frau Albers bleibt neben ihr stehen, bespricht mit ihr die ersten Sätze und lobt ihren Mut. Nach der Begrüßung erzählt Jana, dass sie stolz auf sich ist."
+   "text": "Im Praktikum in einem Jugendtreff begleiten Sie die 16-jährige Jana. Sie soll beim Sommerfest die Begrüßung übernehmen. Kurz vor dem Auftritt knetet sie ihre Finger, ihre Stimme zittert leicht und sie flüstert der Betreuerin Frau Albers zu, dass sie sich vor dem Mikrofon fürchtet. Frau Albers bleibt neben ihr stehen, bespricht mit ihr die ersten Sätze und lobt ihren Mut. Nach der Begrüßung erzählt Jana, dass sie stolz auf sich ist. In der Teamsitzung am nächsten Tag sagt der Betreuer Herr Weber: „Jugendliche mit älteren Geschwistern sind schüchtern, das habe ich bei Jana und zwei weiteren Jugendlichen gesehen.“ Seine Kollegin Frau Demir verweist auf eine Studie: Das Forschungsteam legte Fragestellung, Methode und Ablauf vorab fest und beschrieb das Vorgehen so genau, dass andere die Untersuchung wiederholen können."
   },
   "kontext": "",
   "stamm": "Janas Situation wird fachlich zutreffend beschrieben, wenn …",
@@ -6986,7 +6986,7 @@ CO_AUFGABENBANK.push(...[
   "vignette": {
    "titel": "Jugendtreff",
    "zeilen": false,
-   "text": "Im Praktikum in einem Jugendtreff begleiten Sie die 16-jährige Jana. Sie soll beim Sommerfest die Begrüßung übernehmen. Kurz vor dem Auftritt knetet sie ihre Finger, ihre Stimme zittert leicht und sie flüstert der Betreuerin Frau Albers zu, dass sie sich vor dem Mikrofon fürchtet. Frau Albers bleibt neben ihr stehen, bespricht mit ihr die ersten Sätze und lobt ihren Mut. Nach der Begrüßung erzählt Jana, dass sie stolz auf sich ist."
+   "text": "Im Praktikum in einem Jugendtreff begleiten Sie die 16-jährige Jana. Sie soll beim Sommerfest die Begrüßung übernehmen. Kurz vor dem Auftritt knetet sie ihre Finger, ihre Stimme zittert leicht und sie flüstert der Betreuerin Frau Albers zu, dass sie sich vor dem Mikrofon fürchtet. Frau Albers bleibt neben ihr stehen, bespricht mit ihr die ersten Sätze und lobt ihren Mut. Nach der Begrüßung erzählt Jana, dass sie stolz auf sich ist. In der Teamsitzung am nächsten Tag sagt der Betreuer Herr Weber: „Jugendliche mit älteren Geschwistern sind schüchtern, das habe ich bei Jana und zwei weiteren Jugendlichen gesehen.“ Seine Kollegin Frau Demir verweist auf eine Studie: Das Forschungsteam legte Fragestellung, Methode und Ablauf vorab fest und beschrieb das Vorgehen so genau, dass andere die Untersuchung wiederholen können."
   },
   "kontext": "",
   "stamm": "Die Situation wird fachlich zutreffend eingeordnet, wenn …",
@@ -7019,33 +7019,33 @@ CO_AUFGABENBANK.push(...[
   "titel": "Alltagstheorie",
   "lbNum": 1,
   "vignette": {
-   "titel": "Kindertagesstätte",
+   "titel": "Jugendtreff",
    "zeilen": false,
-   "text": "Im Praktikum in einer Kindertagesstätte hören Sie, wie die Erzieherin Frau Weber im Team über den vierjährigen Noah spricht. Er sei sehr schüchtern, genau wie sein älterer Bruder und ein Nachbarskind, das sie früher betreut habe. Daraus schließt sie, dass Kinder mit Geschwistern schüchtern werden. Ihre Kollegin Frau Demir verweist auf eine Studie: Das Forschungsteam legte Fragestellung, Methode und Ablauf vorab fest und beschrieb das Vorgehen so genau, dass andere die Untersuchung wiederholen können."
+   "text": "Im Praktikum in einem Jugendtreff begleiten Sie die 16-jährige Jana. Sie soll beim Sommerfest die Begrüßung übernehmen. Kurz vor dem Auftritt knetet sie ihre Finger, ihre Stimme zittert leicht und sie flüstert der Betreuerin Frau Albers zu, dass sie sich vor dem Mikrofon fürchtet. Frau Albers bleibt neben ihr stehen, bespricht mit ihr die ersten Sätze und lobt ihren Mut. Nach der Begrüßung erzählt Jana, dass sie stolz auf sich ist. In der Teamsitzung am nächsten Tag sagt der Betreuer Herr Weber: „Jugendliche mit älteren Geschwistern sind schüchtern, das habe ich bei Jana und zwei weiteren Jugendlichen gesehen.“ Seine Kollegin Frau Demir verweist auf eine Studie: Das Forschungsteam legte Fragestellung, Methode und Ablauf vorab fest und beschrieb das Vorgehen so genau, dass andere die Untersuchung wiederholen können."
   },
   "kontext": "",
-  "stamm": "Frau Webers Schlussfolgerung wird fachlich zutreffend eingeordnet, wenn …",
+  "stamm": "Herrn Webers Schlussfolgerung wird fachlich zutreffend eingeordnet, wenn …",
   "pruefen": "Neu erstellt (Claude) nach der ISB-Checkliste der App. Bitte fachlich und passend zu deinem Unterricht prüfen.",
   "aussagen": [
+   {
+    "text": "… seine Überlegung als Alltagstheorie gilt, die auch als Privattheorie bezeichnet wird.",
+    "richtig": true,
+    "erklaerung": "Begriffsklärung im Text: Alltagstheorie wird auch Privattheorie genannt."
+   },
    {
     "text": "… Sprichwörter als sichere Grundlage für Erklärungen gelten, weil sie sich über Generationen bewährt haben und deshalb zutreffen.",
     "richtig": false,
     "erklaerung": "Sprichwörter klingen überzeugend, müssen aber nicht mit der Wirklichkeit übereinstimmen und können in die Irre führen."
    },
    {
-    "text": "… ihre Überlegung als Alltagstheorie gilt, die auch als Privattheorie bezeichnet wird.",
+    "text": "… seine Schlussfolgerung aus persönlichen Erfahrungen mit Jana und weiteren Jugendlichen entstanden ist.",
     "richtig": true,
-    "erklaerung": "Begriffsklärung im Text: Alltagstheorie wird auch Privattheorie genannt."
+    "erklaerung": "Alltagstheorien entstehen aus persönlichen Erfahrungen."
    },
    {
     "text": "… Menschen eine Alltagstheorie trotz möglicher Fehlschlüsse nutzen, weil sie Orientierung gibt und Unsicherheit verringert.",
     "richtig": true,
     "erklaerung": "Jeder Mensch braucht eine Alltagstheorie, da sie wichtige Aufgaben erfüllt, auch wenn sie in die Irre führen kann."
-   },
-   {
-    "text": "… ihre Schlussfolgerung aus persönlichen Erfahrungen mit Noah und weiteren Kindern entstanden ist.",
-    "richtig": true,
-    "erklaerung": "Alltagstheorien entstehen aus persönlichen Erfahrungen."
    }
   ]
  },
@@ -7054,12 +7054,12 @@ CO_AUFGABENBANK.push(...[
   "titel": "Merkmale wissenschaftlicher Aussagen",
   "lbNum": 1,
   "vignette": {
-   "titel": "Kindertagesstätte",
+   "titel": "Jugendtreff",
    "zeilen": false,
-   "text": "Im Praktikum in einer Kindertagesstätte hören Sie, wie die Erzieherin Frau Weber im Team über den vierjährigen Noah spricht. Er sei sehr schüchtern, genau wie sein älterer Bruder und ein Nachbarskind, das sie früher betreut habe. Daraus schließt sie, dass Kinder mit Geschwistern schüchtern werden. Ihre Kollegin Frau Demir verweist auf eine Studie: Das Forschungsteam legte Fragestellung, Methode und Ablauf vorab fest und beschrieb das Vorgehen so genau, dass andere die Untersuchung wiederholen können."
+   "text": "Im Praktikum in einem Jugendtreff begleiten Sie die 16-jährige Jana. Sie soll beim Sommerfest die Begrüßung übernehmen. Kurz vor dem Auftritt knetet sie ihre Finger, ihre Stimme zittert leicht und sie flüstert der Betreuerin Frau Albers zu, dass sie sich vor dem Mikrofon fürchtet. Frau Albers bleibt neben ihr stehen, bespricht mit ihr die ersten Sätze und lobt ihren Mut. Nach der Begrüßung erzählt Jana, dass sie stolz auf sich ist. In der Teamsitzung am nächsten Tag sagt der Betreuer Herr Weber: „Jugendliche mit älteren Geschwistern sind schüchtern, das habe ich bei Jana und zwei weiteren Jugendlichen gesehen.“ Seine Kollegin Frau Demir verweist auf eine Studie: Das Forschungsteam legte Fragestellung, Methode und Ablauf vorab fest und beschrieb das Vorgehen so genau, dass andere die Untersuchung wiederholen können."
   },
   "kontext": "",
-  "stamm": "Die Aussagen von Frau Weber und Frau Demir werden fachlich zutreffend beurteilt, wenn …",
+  "stamm": "Die Aussagen von Herrn Weber und Frau Demir werden fachlich zutreffend beurteilt, wenn …",
   "pruefen": "Neu erstellt (Claude) nach der ISB-Checkliste der App. Bitte fachlich und passend zu deinem Unterricht prüfen.",
   "aussagen": [
    {
@@ -7153,37 +7153,101 @@ CO_AUFGABENBANK.push(...[
     "erklaerung": "Eine Skala (Zahlen oder Ratingskala) macht die Werte einer Untersuchung vergleichbar."
    }
   ]
+ },
+ {
+  "id": "kp-lb1-experiment-kriterien",
+  "titel": "Experiment: Kriterien am Beispiel",
+  "lbNum": 1,
+  "vignette": {
+   "titel": "Klassenzimmer",
+   "zeilen": false,
+   "text": "Die Lehrerin Frau Yilmaz möchte herausfinden, ob Bewegungspausen die Konzentration ihrer Schülerinnen und Schüler verbessern. In zwei neunten Klassen bestimmt sie selbst, wann, wo und wie lange die Pause stattfindet: In der ersten Woche dauert sie 5 Minuten, in der zweiten 15 Minuten. Danach beobachtet sie, wie konzentriert die Klassen arbeiten, und wiederholt das Vorgehen an mehreren Dienstagen."
+  },
+  "kontext": "",
+  "stamm": "Die Untersuchung von Frau Yilmaz wird anhand der Kriterien des Experiments zutreffend beschrieben, wenn …",
+  "pruefen": "Neu erstellt (Claude) nach der ISB-Checkliste der App. Bitte fachlich und passend zu deinem Unterricht prüfen.",
+  "aussagen": [
+   {
+    "text": "… die Willkürlichkeit erfüllt ist, weil sie Zeitpunkt, Ort und Dauer der Pause selbst festlegt.",
+    "richtig": true,
+    "erklaerung": "Willkürlichkeit heißt, dass die Forscherin Bedingungen, Situation, Ort und Zeit selbst bestimmen kann."
+   },
+   {
+    "text": "… die Variierbarkeit erfüllt ist, weil sie die Dauer der Pause von 5 auf 15 Minuten verändert.",
+    "richtig": true,
+    "erklaerung": "Variierbarkeit: Die Forscherin verändert die Bedingung (hier die Pausenlänge)."
+   },
+   {
+    "text": "… die Wiederholung an mehreren Dienstagen das Kriterium der Variierbarkeit belegt.",
+    "richtig": false,
+    "erklaerung": "Das Wiederholen des Vorgehens belegt die Wiederholbarkeit, nicht die Variierbarkeit."
+   },
+   {
+    "text": "… ein Vorgang als Experiment gilt, wenn Willkürlichkeit, Variierbarkeit und Wiederholbarkeit zusammen erfüllt sind.",
+    "richtig": true,
+    "erklaerung": "Dies sind die drei Kriterien des Experiments."
+   }
+  ]
+ },
+ {
+  "id": "kp-lb1-experiment-ursache",
+  "titel": "Experiment: Labor, Feld und Ursache-Wirkung",
+  "lbNum": 1,
+  "vignette": {
+   "titel": "Klassenzimmer",
+   "zeilen": false,
+   "text": "Die Lehrerin Frau Yilmaz möchte herausfinden, ob Bewegungspausen die Konzentration ihrer Schülerinnen und Schüler verbessern. In zwei neunten Klassen bestimmt sie selbst, wann, wo und wie lange die Pause stattfindet: In der ersten Woche dauert sie 5 Minuten, in der zweiten 15 Minuten. Danach beobachtet sie, wie konzentriert die Klassen arbeiten, und wiederholt das Vorgehen an mehreren Dienstagen."
+  },
+  "kontext": "",
+  "stamm": "Das Vorgehen wird im Vergleich verschiedener Methoden zutreffend eingeordnet, wenn …",
+  "pruefen": "Neu erstellt (Claude) nach der ISB-Checkliste der App. Bitte fachlich und passend zu deinem Unterricht prüfen.",
+  "aussagen": [
+   {
+    "text": "… sich durch bloßes Beobachten unterschiedlicher Pausen klären lässt, ob die Pause die Konzentration verursacht.",
+    "richtig": false,
+    "erklaerung": "Beim bloßen Beobachten legt die Forscherin die Bedingungen nicht selbst fest. Zusammenhänge werden sichtbar, die Ursache bleibt unklar."
+   },
+   {
+    "text": "… ein Feldexperiment im Vergleich zum Laborexperiment genauere Vorhersagen für das Verhalten im Alltag erlaubt.",
+    "richtig": true,
+    "erklaerung": "Der Vorteil des Feldexperiments ist die genauere Vorhersage für echtes Alltagsverhalten."
+   },
+   {
+    "text": "… das Experiment es erlaubt, Ursache-Wirkung-Zusammenhänge zu prüfen, weil die Forscherin Bedingungen gezielt verändert.",
+    "richtig": true,
+    "erklaerung": "Weil die Bedingungen gezielt verändert werden, lassen sich Ursache und Wirkung prüfen."
+   },
+   {
+    "text": "… ein Laborexperiment Störfaktoren besser kontrollieren kann als ein Feldexperiment im Alltag.",
+    "richtig": true,
+    "erklaerung": "Der Vorteil des Laborexperiments ist die bessere Kontrolle von Störfaktoren."
+   }
+  ]
  }
 ]);
 CHECKOUT_VORLAGEN_ALLE.unshift(...[
  {
   "id": "kp-lb1-test1",
-  "titel": "Gegenstand der Psychologie und der Pädagogik",
-  "lbNum": 1,
-  "datum": "2026-10-09",
-  "aufgaben": [
-   "kp-lb1-psychologie",
-   "kp-lb1-paedagogik"
-  ]
- },
- {
-  "id": "kp-lb1-test2",
-  "titel": "Alltagstheorie und Merkmale wissenschaftlicher Aussagen",
+  "titel": "Gegenstand der Psychologie und der Pädagogik, Alltagstheorie und wissenschaftliche Aussagen",
   "lbNum": 1,
   "datum": "2026-10-16",
   "aufgaben": [
+   "kp-lb1-psychologie",
+   "kp-lb1-paedagogik",
    "kp-lb1-alltagstheorie",
    "kp-lb1-merkmale"
   ]
  },
  {
-  "id": "kp-lb1-test3",
-  "titel": "Das Experiment: Merkmale, Feldexperiment, Beobachtung und Messung",
+  "id": "kp-lb1-test2",
+  "titel": "Das Experiment: Kriterien, Labor und Feld, Beobachtung und Messung",
   "lbNum": 1,
   "datum": "2026-10-23",
   "aufgaben": [
    "kp-lb1-experiment",
-   "kp-lb1-experiment-methoden"
+   "kp-lb1-experiment-methoden",
+   "kp-lb1-experiment-kriterien",
+   "kp-lb1-experiment-ursache"
   ]
  }
 ]);
@@ -7257,11 +7321,12 @@ async function openCheckoutEditor(id,vorgabe){
      vTitel:a.vignette?.titel??(glob?.titel||""),vText:a.vignette?.text??(glob?.text||""),vZeilen:a.vignette?!!a.vignette.zeilen:!!glob,
      mTitel:a.material?.titel||"",mText:a.material?.text||"",mQuelle:a.material?.quelle||"",
      aussagen:[0,1,2,3].map(j=>({text:a.aussagen?.[j]||"",richtig:!!lo.aufgaben?.[i]?.richtig?.[j],erklaerung:lo.aufgaben?.[i]?.erklaerung?.[j]||""}))}))};
+   while(coEditor.aufgaben.length<CHECKOUT_MAX_AUFGABEN)coEditor.aufgaben.push(coLeereAufgabe()); // ältere Entwürfe mit weniger Aufgaben auffüllen
   }catch(e){console.error(e);toast("Konnte nicht geladen werden.");return}
  }else{
   const heute=new Date().toISOString().slice(0,10);
   const lauf=PROJEKT_PHASEN.find(p=>heute>=p.start&&heute<=p.end)||PROJEKT_PHASEN.find(p=>heute<p.start)||PROJEKT_PHASEN[0];
-  coEditor={id:null,titel:"",lbNum:lauf.lbNum,datum:heute,zaehlt:true,vignetteTitel:"",vignetteText:"",klassisch:"",checkliste:[],aufgaben:[coLeereAufgabe(),coLeereAufgabe()]};
+  coEditor={id:null,titel:"",lbNum:lauf.lbNum,datum:heute,zaehlt:true,vignetteTitel:"",vignetteText:"",klassisch:"",checkliste:[],aufgaben:Array.from({length:CHECKOUT_MAX_AUFGABEN},()=>coLeereAufgabe())};
   if(vorgabe?.datum)coEditor.datum=vorgabe.datum;
   if(vorgabe?.lbNum)coEditor.lbNum=vorgabe.lbNum;
   const vl=vorgabe?.vorlage?CHECKOUT_VORLAGEN.find(v=>v.id===vorgabe.vorlage):null;
