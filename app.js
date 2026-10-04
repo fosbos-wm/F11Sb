@@ -15042,6 +15042,7 @@ async function renderResilienz(){
  .vstress-scale{display:flex;flex-direction:column;justify-content:space-between;height:220px;font-size:11px;color:var(--muted)}
  .stress-value{font-size:40px;font-weight:900;line-height:1;background:linear-gradient(90deg,var(--blue-dark),var(--green));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
  .stress-face{font-size:30px}
+ .stress-hint{background:#fff8e6;border:1px solid #f0d58a;border-radius:12px;padding:10px 12px;margin:8px 0;font-size:14px;line-height:1.45;color:#5c4500}
  .stress-signs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
  .stress-sign{border:1px solid var(--line,#ddd);border-radius:14px;padding:12px;background:#fff;transition:.2s;cursor:pointer;user-select:none}
  .stress-sign:hover{box-shadow:0 6px 16px rgba(23,56,79,.08);transform:translateY(-2px)}
@@ -15104,6 +15105,7 @@ async function renderResilienz(){
  <div class="skill-suggest"id="resSkillSuggest"style="flex:1">
  <strong> Deine passenden Skills</strong>
  <p style="margin-bottom:8px">Stell den Regler ein – dann schlägt dir die App passende Übungen vor.</p>
+ <div class="stress-hint"id="resStressHint"style="display:none"><strong>Stress-Level null? 😉</strong> Tiefenentspannt – wunderbar! Aber ein kleines Geheimnis: Ein bisschen Stress ist richtig nützlich. Eine mittlere Anspannung macht wach, fokussiert und bringt dich ins Tun – ganz ohne Dauerstress. Probier doch mal, den Regler Richtung 3 bis 5 zu schieben.</div>
  <div id="resSkillButtons"></div>
  </div>
  </div>
@@ -15177,7 +15179,10 @@ function updateResilienzStress(value){
  fill.style.background=stressFarbe(v);
  }
  const st=RESILIENZ_STUFEN[Math.max(0,Math.min(10,v))];
- if(box){
+ const hint=$("resStressHint");
+ if(hint)hint.style.display=v===0?"":"none";
+ if(box&&v===0)box.innerHTML="";   // bei Stress-Level null gibt es nur den Hinweis, keine Übungen
+ else if(box){
   const btn=(id,cls)=>{const x=resilienzSkillData(id);return`<button class="${cls}"style="margin:4px 6px 4px 0"onclick="startResilienzSkill('${id}')">${x[0]} ${x[1]}</button>`;};
   box.innerHTML=`<p style="margin:0 0 8px;font-size:13px;color:var(--muted)">${st.text}</p>
   <div><b style="font-size:12px">Zuerst ausprobieren</b><br>${st.ids.slice(0,3).map(id=>btn(id,"primary")).join("")}</div>
