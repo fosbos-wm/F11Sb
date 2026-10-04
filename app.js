@@ -4084,7 +4084,7 @@ function ppKprimBereichHTML(ph,teil,coDaten,heute){
   if(lehrer&&(co||CHECKOUT_VORLAGEN.some(v=>v.datum===w.end)))rechts=`<button class="secondary"onclick="openKprimVorschau(0,'${w.end}')">👁 Vorschau</button>`+rechts;
   const st=co&&lehrer&&co.status==="beendet"&&stat[co.id]?` · ${stat[co.id].n} ausgewertet · Ø ${(stat[co.id].summe/stat[co.id].n).toFixed(1).replace(".",",")} Punkte`:"";
   return`<div class="co-zeile"><span class="co-lb">Fr ${fmtKurz(w.end)}</span>
-   <div class="co-titel"><b>${co?esc(co.titel||"Check-out"):"Check-out"}</b><small>${co?`${(co.aufgaben||[]).length} K-Prim-Aufgaben${st}`:"3 K-Prim-Aufgaben zu den Themen der Woche"}</small></div>
+   <div class="co-titel"><b>${co?esc(co.titel||"Check-out"):"Check-out"}</b><small>${co?`${(co.aufgaben||[]).length} K-Prim-Aufgaben${st}`:(()=>{const v0=CHECKOUT_VORLAGEN.find(v=>v.datum===w.end);return v0?`Vorlage: ${esc(v0.titel)} · ${(v0.aufgaben||[]).length} K-Prim-Aufgaben: ${esc(coVorlageInhalte(v0).join(" · "))}`:"2 K-Prim-Aufgaben zu den Themen der Woche";})()}</small></div>
    ${co?coStatChip(co,d):""}<div class="co-aktion">${rechts}</div></div>`;
  }).join("");
  // --- Bibliothek bzw. Ergebnisse ---
@@ -6842,8 +6842,256 @@ const CHECKOUT_VORLAGEN_ALLE=[
  }
 ];
 // Angeboten werden nur Vorlagen im neuen Aufbau (1 Fallvignette + genau 2 Aufgaben). Ältere Vorlagen mit 3 Aufgaben bleiben im Code, werden aber nicht mehr angeboten.
+// ---- K-Prim-Tests LB 1 (Inhalte: Gegenstand der Psychologie und der Pädagogik, Alltagstheorie, Merkmale wissenschaftlicher Aussagen, Experiment) ----
+// Aufbau wie alle Check-outs: 1 Fallvignette + genau 2 K-Prim-Aufgaben mit je 4 Aussagen. Die Vorlagen stehen an den drei Freitagen der LB-1-Theoriewochen.
+CO_AUFGABENBANK.push(...[
+ {
+  "id": "kp-lb1-psychologie",
+  "titel": "Gegenstand der Psychologie",
+  "lbNum": 1,
+  "vignette": {
+   "titel": "Jugendtreff",
+   "zeilen": false,
+   "text": "Im Praktikum in einem Jugendtreff begleiten Sie die 16-jährige Jana. Sie soll beim Sommerfest die Begrüßung übernehmen. Kurz vor dem Auftritt knetet sie ihre Finger, ihre Stimme zittert leicht und sie flüstert der Betreuerin Frau Albers zu, dass sie sich vor dem Mikrofon fürchtet. Frau Albers bleibt neben ihr stehen, bespricht mit ihr die ersten Sätze und lobt ihren Mut. Nach der Begrüßung erzählt Jana, dass sie stolz auf sich ist."
+  },
+  "kontext": "",
+  "stamm": "Janas Situation wird fachlich zutreffend beschrieben, wenn …",
+  "pruefen": "Neu erstellt (Claude) nach der ISB-Checkliste der App. Bitte fachlich und passend zu deinem Unterricht prüfen.",
+  "aussagen": [
+   {
+    "text": "… die Psychologie untersucht, wie sich ihr Seelenleben in Verhalten und Erleben zeigt, weil sich der Begriff „Seele“ wissenschaftlich nicht genau fassen lässt.",
+    "richtig": true,
+    "erklaerung": "Genau so begründet der Text den Gegenstand der Psychologie."
+   },
+   {
+    "text": "… die Betreuerin Janas Erleben unmittelbar durch Fremdbeobachtung erforschen kann, da sich Erleben ebenso von außen beobachten lässt wie Verhalten.",
+    "richtig": false,
+    "erklaerung": "Erleben ist nur durch Selbstbeobachtung zugänglich; Fremdbeobachtung gilt für das Verhalten."
+   },
+   {
+    "text": "… der Begriff „Erleben“ in der Psychologie nur auf Menschen bezogen wird, weil das innere Erleben von Tieren nicht wissenschaftlich erforscht werden kann.",
+    "richtig": true,
+    "erklaerung": "Bei Tieren kann das innere Erleben nicht wissenschaftlich erforscht werden."
+   },
+   {
+    "text": "… Jana zuerst etwas erlebt und erst danach ein Verhalten zeigt, da beide Vorgänge zeitlich nacheinander und getrennt voneinander ablaufen.",
+    "richtig": false,
+    "erklaerung": "Verhalten und Erleben laufen gleichzeitig ab und sind zwei Seiten desselben psychischen Geschehens."
+   }
+  ]
+ },
+ {
+  "id": "kp-lb1-paedagogik",
+  "titel": "Gegenstand der Pädagogik",
+  "lbNum": 1,
+  "vignette": {
+   "titel": "Jugendtreff",
+   "zeilen": false,
+   "text": "Im Praktikum in einem Jugendtreff begleiten Sie die 16-jährige Jana. Sie soll beim Sommerfest die Begrüßung übernehmen. Kurz vor dem Auftritt knetet sie ihre Finger, ihre Stimme zittert leicht und sie flüstert der Betreuerin Frau Albers zu, dass sie sich vor dem Mikrofon fürchtet. Frau Albers bleibt neben ihr stehen, bespricht mit ihr die ersten Sätze und lobt ihren Mut. Nach der Begrüßung erzählt Jana, dass sie stolz auf sich ist."
+  },
+  "kontext": "",
+  "stamm": "Die Situation wird fachlich zutreffend eingeordnet, wenn …",
+  "pruefen": "Neu erstellt (Claude) nach der ISB-Checkliste der App. Bitte fachlich und passend zu deinem Unterricht prüfen.",
+  "aussagen": [
+   {
+    "text": "… das Gespräch der Betreuerin mit Jana als Erziehungswissenschaft eingeordnet wird, weil es das wissenschaftliche Nachdenken über Erziehung darstellt.",
+    "richtig": false,
+    "erklaerung": "Das Gespräch ist Erziehungspraxis (tatsächliches erzieherisches Handeln). Die Erziehungswissenschaft denkt wissenschaftlich über Erziehung nach."
+   },
+   {
+    "text": "… Erziehungspraxis und Erziehungswissenschaft gemeinsam als Pädagogik bezeichnet werden, weil dieser Begriff beide Bereiche umfasst.",
+    "richtig": true,
+    "erklaerung": "Pädagogik ist der Oberbegriff für Erziehungspraxis und Erziehungswissenschaft."
+   },
+   {
+    "text": "… die Betreuerin Jana beeinflusst und zugleich auf deren Äußerungen und Gefühle reagiert, weil Erziehung keine Einbahnstraße ist.",
+    "richtig": true,
+    "erklaerung": "Erziehung wirkt in beide Richtungen: Erziehende beeinflussen, reagieren aber auch auf das Verhalten der zu Erziehenden."
+   },
+   {
+    "text": "… Janas Entwicklung als Zusammenspiel von Anlagen und Umwelt verstanden wird, weil heute eine Festlegung allein durch die Gene als überholt gilt.",
+    "richtig": true,
+    "erklaerung": "Heute wird von einem Zusammenspiel von Anlagen und Umwelt ausgegangen."
+   }
+  ]
+ },
+ {
+  "id": "kp-lb1-alltagstheorie",
+  "titel": "Alltagstheorie",
+  "lbNum": 1,
+  "vignette": {
+   "titel": "Kindertagesstätte",
+   "zeilen": false,
+   "text": "Im Praktikum in einer Kindertagesstätte hören Sie, wie die Erzieherin Frau Weber im Team über den vierjährigen Noah spricht. Er sei sehr schüchtern, genau wie sein älterer Bruder und ein Nachbarskind, das sie früher betreut habe. Daraus schließt sie, dass Kinder mit Geschwistern schüchtern werden. Ihre Kollegin Frau Demir verweist auf eine Studie: Das Forschungsteam legte Fragestellung, Methode und Ablauf vorab fest und beschrieb das Vorgehen so genau, dass andere die Untersuchung wiederholen können."
+  },
+  "kontext": "",
+  "stamm": "Frau Webers Schlussfolgerung wird fachlich zutreffend eingeordnet, wenn …",
+  "pruefen": "Neu erstellt (Claude) nach der ISB-Checkliste der App. Bitte fachlich und passend zu deinem Unterricht prüfen.",
+  "aussagen": [
+   {
+    "text": "… Sprichwörter als sichere Grundlage für Erklärungen gelten, weil sie sich über Generationen bewährt haben und deshalb zutreffen.",
+    "richtig": false,
+    "erklaerung": "Sprichwörter klingen überzeugend, müssen aber nicht mit der Wirklichkeit übereinstimmen und können in die Irre führen."
+   },
+   {
+    "text": "… ihre Überlegung als Alltagstheorie gilt, die auch als Privattheorie bezeichnet wird.",
+    "richtig": true,
+    "erklaerung": "Begriffsklärung im Text: Alltagstheorie wird auch Privattheorie genannt."
+   },
+   {
+    "text": "… Menschen eine Alltagstheorie trotz möglicher Fehlschlüsse nutzen, weil sie Orientierung gibt und Unsicherheit verringert.",
+    "richtig": true,
+    "erklaerung": "Jeder Mensch braucht eine Alltagstheorie, da sie wichtige Aufgaben erfüllt, auch wenn sie in die Irre führen kann."
+   },
+   {
+    "text": "… ihre Schlussfolgerung aus persönlichen Erfahrungen mit Noah und weiteren Kindern entstanden ist.",
+    "richtig": true,
+    "erklaerung": "Alltagstheorien entstehen aus persönlichen Erfahrungen."
+   }
+  ]
+ },
+ {
+  "id": "kp-lb1-merkmale",
+  "titel": "Merkmale wissenschaftlicher Aussagen",
+  "lbNum": 1,
+  "vignette": {
+   "titel": "Kindertagesstätte",
+   "zeilen": false,
+   "text": "Im Praktikum in einer Kindertagesstätte hören Sie, wie die Erzieherin Frau Weber im Team über den vierjährigen Noah spricht. Er sei sehr schüchtern, genau wie sein älterer Bruder und ein Nachbarskind, das sie früher betreut habe. Daraus schließt sie, dass Kinder mit Geschwistern schüchtern werden. Ihre Kollegin Frau Demir verweist auf eine Studie: Das Forschungsteam legte Fragestellung, Methode und Ablauf vorab fest und beschrieb das Vorgehen so genau, dass andere die Untersuchung wiederholen können."
+  },
+  "kontext": "",
+  "stamm": "Die Aussagen von Frau Weber und Frau Demir werden fachlich zutreffend beurteilt, wenn …",
+  "pruefen": "Neu erstellt (Claude) nach der ISB-Checkliste der App. Bitte fachlich und passend zu deinem Unterricht prüfen.",
+  "aussagen": [
+   {
+    "text": "… eine Aussage als allgemeingültig gilt, weil sie auf die in ihr genannten Personen oder Gruppen zutrifft.",
+    "richtig": true,
+    "erklaerung": "Definition des Merkmals Allgemeingültigkeit im Text."
+   },
+   {
+    "text": "… Aussagen über Menschen als Wahrscheinlichkeitsaussagen verstanden werden, bei denen Einzelausnahmen möglich bleiben.",
+    "richtig": true,
+    "erklaerung": "Absolute Aussagen über Menschen sind kaum möglich; deshalb spricht man von Wahrscheinlichkeitsaussagen."
+   },
+   {
+    "text": "… eine Aussage als objektiv gilt, weil Forschende bei gleichem Sachverhalt zu unterschiedlichen Ergebnissen kommen dürfen.",
+    "richtig": false,
+    "erklaerung": "Objektivität heißt: Gleiche Bedingungen führen bei allen Forschenden zum gleichen Ergebnis."
+   },
+   {
+    "text": "… zwischen Alltagstheorie und wissenschaftlicher Theorie eine scharfe Grenze gezogen wird, die nur ein Entweder-oder zulässt.",
+    "richtig": false,
+    "erklaerung": "Die Grenze ist nicht absolut; ein reines Entweder-oder gibt es nicht."
+   }
+  ]
+ },
+ {
+  "id": "kp-lb1-experiment",
+  "titel": "Das Experiment",
+  "lbNum": 1,
+  "vignette": {
+   "titel": "Klassenzimmer",
+   "zeilen": false,
+   "text": "Die Lehrerin Frau Yilmaz möchte herausfinden, ob Bewegungspausen die Konzentration ihrer Schülerinnen und Schüler verbessern. In zwei neunten Klassen bestimmt sie selbst, wann, wo und wie lange die Pause stattfindet: In der ersten Woche dauert sie 5 Minuten, in der zweiten 15 Minuten. Danach beobachtet sie, wie konzentriert die Klassen arbeiten, und wiederholt das Vorgehen an mehreren Dienstagen."
+  },
+  "kontext": "",
+  "stamm": "Die Untersuchung von Frau Yilmaz wird fachlich zutreffend beschrieben, wenn …",
+  "pruefen": "Neu erstellt (Claude) nach der ISB-Checkliste der App. Bitte fachlich und passend zu deinem Unterricht prüfen.",
+  "aussagen": [
+   {
+    "text": "… sie als Experiment gilt, weil ein Vorgang absichtlich und planmäßig herbeigeführt wird, um ihn gezielt zu beobachten.",
+    "richtig": true,
+    "erklaerung": "Definition des Experiments im Text."
+   },
+   {
+    "text": "… Willkürlichkeit als Kriterium des Experiments bedeutet, dass die Forscherin zufällig und ohne Plan vorgeht.",
+    "richtig": false,
+    "erklaerung": "Willkürlichkeit heißt, dass die Forscherin Bedingungen, Situation, Ort und Zeit selbst bestimmen kann."
+   },
+   {
+    "text": "… es sich um ein Laborexperiment handelt, da dieses in der natürlichen Umgebung der Personen stattfindet.",
+    "richtig": false,
+    "erklaerung": "Das beschreibt das Feldexperiment. Das Laborexperiment findet unter kontrollierten Bedingungen im Labor statt."
+   },
+   {
+    "text": "… Beobachtung, Experiment, Test und Befragung zu den wichtigsten empirischen Methoden zählen.",
+    "richtig": true,
+    "erklaerung": "Aufzählung unter „Auf den Punkt gebracht“ im Text."
+   }
+  ]
+ },
+ {
+  "id": "kp-lb1-experiment-methoden",
+  "titel": "Experiment: Feldexperiment, Beobachtung und Messung",
+  "lbNum": 1,
+  "vignette": {
+   "titel": "Klassenzimmer",
+   "zeilen": false,
+   "text": "Die Lehrerin Frau Yilmaz möchte herausfinden, ob Bewegungspausen die Konzentration ihrer Schülerinnen und Schüler verbessern. In zwei neunten Klassen bestimmt sie selbst, wann, wo und wie lange die Pause stattfindet: In der ersten Woche dauert sie 5 Minuten, in der zweiten 15 Minuten. Danach beobachtet sie, wie konzentriert die Klassen arbeiten, und wiederholt das Vorgehen an mehreren Dienstagen."
+  },
+  "kontext": "",
+  "stamm": "Das Vorgehen wird fachlich zutreffend eingeordnet, wenn …",
+  "pruefen": "Neu erstellt (Claude) nach der ISB-Checkliste der App. Bitte fachlich und passend zu deinem Unterricht prüfen.",
+  "aussagen": [
+   {
+    "text": "… die Untersuchung als Feldexperiment gilt, weil sie in der natürlichen Umgebung der Klassen stattfindet.",
+    "richtig": true,
+    "erklaerung": "Ein Feldexperiment findet in der natürlichen Umgebung statt, hier im Klassenzimmer."
+   },
+   {
+    "text": "… bloßes Beobachten vorhandener Situationen als Experiment gilt, weil dabei eine Bedingung gezielt verändert wird.",
+    "richtig": false,
+    "erklaerung": "Bei der Beobachtung greift die Forscherin nicht ein; beim Experiment führt sie die Situation selbst herbei."
+   },
+   {
+    "text": "… ein Kategoriensystem festlegt, welche Merkmale des Arbeitsverhaltens beobachtet werden sollen.",
+    "richtig": true,
+    "erklaerung": "Ein Kategoriensystem fasst zusammen, welche Merkmale beobachtet werden sollen."
+   },
+   {
+    "text": "… eine Skala die erhobenen Werte vergleichbar macht, etwa als Anzahl der Ablenkungen je Zeitabschnitt.",
+    "richtig": true,
+    "erklaerung": "Eine Skala (Zahlen oder Ratingskala) macht die Werte einer Untersuchung vergleichbar."
+   }
+  ]
+ }
+]);
+CHECKOUT_VORLAGEN_ALLE.unshift(...[
+ {
+  "id": "kp-lb1-test1",
+  "titel": "Gegenstand der Psychologie und der Pädagogik",
+  "lbNum": 1,
+  "datum": "2026-10-09",
+  "aufgaben": [
+   "kp-lb1-psychologie",
+   "kp-lb1-paedagogik"
+  ]
+ },
+ {
+  "id": "kp-lb1-test2",
+  "titel": "Alltagstheorie und Merkmale wissenschaftlicher Aussagen",
+  "lbNum": 1,
+  "datum": "2026-10-16",
+  "aufgaben": [
+   "kp-lb1-alltagstheorie",
+   "kp-lb1-merkmale"
+  ]
+ },
+ {
+  "id": "kp-lb1-test3",
+  "titel": "Das Experiment: Merkmale, Feldexperiment, Beobachtung und Messung",
+  "lbNum": 1,
+  "datum": "2026-10-23",
+  "aufgaben": [
+   "kp-lb1-experiment",
+   "kp-lb1-experiment-methoden"
+  ]
+ }
+]);
 const CHECKOUT_VORLAGEN=CHECKOUT_VORLAGEN_ALLE.filter(v=>(v.aufgaben||[]).length===CHECKOUT_MAX_AUFGABEN);
 let coEditor=null;
+// Inhalte einer Vorlage (Titel ihrer K-Prim-Aufgaben), damit klar ist, was getestet wird
+function coVorlageInhalte(v){return(v.aufgaben||[]).map(id=>(CO_AUFGABENBANK.find(b=>b.id===id)||{}).titel).filter(Boolean);}
 const CO_CHECKLISTE=[
  ["Situation","Situationsbeschreibung adäquat (anwendungsorientierte Informationen)"],
  ["Situation","Alle notwendigen, aber keine irrelevanten Informationen"],
@@ -6980,7 +7228,7 @@ function coEditorRender(){
   <div class="co-legende"><span class="co-l-vig">1 Fallvignette</span><span class="co-l-stamm">2 Einleitungssatz</span><span class="co-l-aus">3 Die 4 Aussagen</span></div>
   <p class="co-ed-intro">Jeder Freitagstest besteht aus <b>einer Fallvignette</b> und genau <b>${CHECKOUT_MAX_AUFGABEN} K-Prim-Aufgaben</b>. Jede Aufgabe hat einen Einleitungssatz und 4 Aussagen. Wertung je Aufgabe: 4 richtig = ${be[0]} BE · 3 = ${be[1]} BE · 2 = ${be[2]} BE · sonst 0. Die Schüler:innen sehen diese Bepunktung vorab im Test.</p>
   <div class="form">
-   ${!e.id&&CHECKOUT_VORLAGEN.length?`<div class="co-ed-vorlage"><b>📋 Vorlage:</b> <select id="coVorlage"onchange="coVorlageWaehlen()"><option value="">Ganzen Test aus Vorlage einsetzen …</option>${CHECKOUT_VORLAGEN.map(v=>`<option value="${esc(v.id)}">${esc(v.titel)} (LB ${v.lbNum} · ${esc(coDatum(v.datum))})</option>`).join("")}</select></div>`:""}
+   ${!e.id&&CHECKOUT_VORLAGEN.length?`<div class="co-ed-vorlage"><b>📋 Vorlage:</b> <select id="coVorlage"onchange="coVorlageWaehlen()"><option value="">Ganzen Test aus Vorlage einsetzen …</option>${CHECKOUT_VORLAGEN.map(v=>`<option value="${esc(v.id)}">${esc(v.titel)} (LB ${v.lbNum} · ${esc(coDatum(v.datum))}) – ${esc(coVorlageInhalte(v).join(" + "))}</option>`).join("")}</select></div>`:""}
    <div style="display:flex;gap:10px;flex-wrap:wrap">
     <label style="flex:2;min-width:200px">Titel<input id="coTitel"value="${esc(e.titel)}"placeholder="z. B. Alltags- und Wissenschaftstheorie"></label>
     <label style="flex:1;min-width:110px">Lernbereich<select id="coLb">${[1,2,3,4].map(n=>`<option value="${n}"${e.lbNum===n?" selected":""}>LB ${n}</option>`).join("")}</select></label>
@@ -8224,6 +8472,9 @@ const WB_CSS=`<style>
 .wb-gitter{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
 .wb-karte{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer;text-align:left;padding:0;transition:transform .15s,box-shadow .15s;box-shadow:0 2px 8px rgba(24,67,96,.06)}
 .wb-karte:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(24,67,96,.14)}
+.wb-karte-wrap{position:relative;display:flex}.wb-karte-wrap>.wb-karte{flex:1;min-width:0}
+.wb-karte-del{position:absolute;right:10px;top:10px;width:34px;height:34px;border-radius:50%;border:1px solid #c9d4de;background:#fff;color:#b3261e;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;box-shadow:0 2px 8px rgba(24,67,96,.18);z-index:2}
+.wb-karte-del:hover{background:#fdecec;border-color:#b3261e}
 .wb-karte-kopf{height:96px;position:relative;background-size:cover}
 .wb-karte-kopf span{position:absolute;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,.12)}
 .wb-karte-text{padding:12px 14px 14px}.wb-karte-text strong{display:block;font-size:16px;color:var(--ink)}.wb-karte-text small{display:block;color:var(--muted);margin-top:4px}
@@ -8399,11 +8650,12 @@ async function renderWhiteboardUebersicht(modus){
     `<button class="primary"onclick="openWhiteboardForm()">＋ Neues Whiteboard</button>`);
  if(boards===null)return`${WB_CSS}${kopf}<div class="empty"><strong>${istTafel?"Tafeln":"Whiteboards"} konnten nicht geladen werden.</strong>${esc(wbFehlerText(wbLadeFehler))}<br><small>Tipp: Auf der Seite diagnose.html lässt sich das genau prüfen.</small></div>${footer()}`;
  return`${WB_CSS}${kopf}
- <div class="wb-gitter">${boards.map(b=>`<button type="button"class="wb-karte"onclick="openWhiteboard('${b.id}')">
+ <div class="wb-gitter">${boards.map(b=>`<div class="wb-karte-wrap"><button type="button"class="wb-karte"onclick="openWhiteboard('${b.id}')">
   ${wbKarteKopf(b.id)}
   <div class="wb-karte-text"><strong>${esc(b.title||"Whiteboard")}</strong>
   <small>${esc(b.description||"")||(b.art==="tafel"?"Tafel für den Unterricht.":"Gemeinsame Arbeitsfläche.")}</small>
-  <small>${b.art==="tafel"?'<b class="wb-art-chip"style="margin:0 6px 0 0">Tafel</b>':""}Angelegt von ${esc(b.createdByName||"Campus-Mitglied")} · ${esc(fmtDate(b.createdAt))}</small></div></button>`).join("")}</div>
+  <small>${b.art==="tafel"?'<b class="wb-art-chip"style="margin:0 6px 0 0">Tafel</b>':""}Angelegt von ${esc(b.createdByName||"Campus-Mitglied")} · ${esc(fmtDate(b.createdAt))}</small></div></button>
+  ${isTeacher()?`<button type="button"class="wb-karte-del"title="${b.art==="tafel"?"Tafel":"Whiteboard"} löschen"aria-label="${b.art==="tafel"?"Tafel":"Whiteboard"} löschen"onclick="wbBoardLoeschen('${b.id}','${b.art==="tafel"?"tafel":"team"}')">${wbIcon("papierkorb",18)}</button>`:""}</div>`).join("")}</div>
  ${boards.length?"":(istTafel?`<div class="empty"><strong>Noch keine Tafel.</strong>${isTeacher()?"Lege die erste Tafel für eine Unterrichtsstunde an.":"Sobald deine Lehrkraft eine Tafel anlegt, erscheint sie hier."}</div>`:`<div class="empty"><strong>Noch kein Whiteboard.</strong>Lege das erste Whiteboard für dein Team oder ein Thema an.</div>`)}
  ${footer()}`;
 }
@@ -8436,9 +8688,11 @@ async function addWhiteboard(){
   toast(e?.code==="permission-denied"?"Firebase verweigert das Anlegen (permission-denied). Bitte die Firestore-Regeln prüfen.":`Whiteboard konnte nicht angelegt werden (${(e&&(e.code||e.name))||"unbekannt"}).`);
  }
 }
-async function wbBoardLoeschen(id){
- if(!isTeacher()){toast("Nur Lehrkräfte können ein Whiteboard löschen.");return}
- if(!confirm("Dieses Whiteboard mit allen Elementen wirklich löschen?"))return;
+async function wbBoardLoeschen(id,artVorgabe){
+ if(!isTeacher()){toast("Nur Lehrkräfte können ein Whiteboard oder eine Tafel löschen.");return}
+ const art=artVorgabe||(wb&&wb.id===id&&wb.board&&wb.board.art)||"team";
+ const istTafel=art==="tafel";
+ if(!confirm(istTafel?"Diese Tafel mit allen Seiten und Elementen wirklich löschen? Das lässt sich nicht rückgängig machen.":"Dieses Whiteboard mit allen Elementen wirklich löschen? Das lässt sich nicht rückgängig machen."))return;
  try{
   const snap=await getDocs(query(collection(db,"whiteboardItems"),where("boardId","==",id)));
   await Promise.all(snap.docs.map(d=>deleteDoc(doc(db,"whiteboardItems",d.id))));
@@ -8446,8 +8700,14 @@ async function wbBoardLoeschen(id){
   await Promise.all(bs.docs.map(d=>deleteDoc(doc(db,"whiteboardImages",d.id))));
   const ps=await getDocs(query(collection(db,"whiteboardPresence"),where("boardId","==",id)));
   await Promise.all(ps.docs.map(d=>deleteDoc(doc(db,"whiteboardPresence",d.id)).catch(()=>{})));
+  // Module im Modulplan, die diese Tafel eingebunden hatten: Verknüpfung lösen (dort kann danach eine neue Tafel angelegt werden)
+  try{
+   const ms=await getDocs(query(collection(db,"ppModule"),where("tafelId","==",id)));
+   await Promise.all(ms.docs.map(d=>updateDoc(doc(db,"ppModule",d.id),{tafelId:""})));
+   if(ms.docs.length&&typeof ppmLaden==="function")await ppmLaden(true);
+  }catch(e){console.warn("Tafel-Verknüpfung lösen:",e);}
   await deleteDoc(doc(db,"whiteboards",id));
-  activeWhiteboardId=null;go("whiteboard");toast("Whiteboard gelöscht.");
+  activeWhiteboardId=null;go(istTafel?"tafel":"whiteboard");toast(istTafel?"Tafel gelöscht.":"Whiteboard gelöscht.");
  }catch(e){console.error("Whiteboard löschen:",e);toast("Konnte nicht vollständig gelöscht werden.");}
 }
 
@@ -9607,6 +9867,7 @@ let wbBoardCache=null;   // vom Seitenaufbau übergeben, damit Rechte sofort gel
 WB_ICONS.karten='<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 8v8M8 12h8"/>';
 WB_ICONS.video='<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/>';
 WB_ICONS.web='<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/>';
+WB_ICONS.papierkorb='<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>';
 WB_ICONS.link='<path d="M10 14a4 4 0 005.6 0l3-3a4 4 0 00-5.6-5.6l-1 1M14 10a4 4 0 00-5.6 0l-3 3a4 4 0 005.6 5.6l1-1"/>';
 WB_ICONS.datei='<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/>';
 WB_ICONS.qr='<rect x="4" y="4" width="6" height="6"/><rect x="14" y="4" width="6" height="6"/><rect x="4" y="14" width="6" height="6"/><path d="M14 14h2v2h-2zM18 14h2M14 18h2M18 18h2v2"/>';
@@ -10054,7 +10315,7 @@ async function wbDateiHochladen(datei){
  }catch(e){console.error("Datei:",e);toast(e&&e.message?e.message:"Die Datei konnte nicht hochgeladen werden.");}
 }
 
-Object.assign(window,{openWhiteboard,closeWhiteboard,openWhiteboardForm,addWhiteboard});
+Object.assign(window,{openWhiteboard,closeWhiteboard,openWhiteboardForm,addWhiteboard,wbBoardLoeschen});
 /* =========================================================
  TOOLS FÜR ZUSAMMENARBEIT – Übersichtsseite in der Lernwerkstatt.
  Sammelt alle kollaborativen Mini-Tools an einer Stelle. Fertige
