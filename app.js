@@ -4114,7 +4114,7 @@ function ppKprimBereichHTML(ph,teil,coDaten,heute){
    <div class="co-aktion">${aktion}${d.auswahl?`<button class="secondary"onclick="coPdfRespizienz()">PDF Auswahl</button>`:""}${fertig.length?`<button class="secondary"onclick="coPdfSchuelerAlle()">PDF alle Ergebnisse</button>`:""}</div></div>`;
  }
  return`<div class="card co-karte pp-kp">
-  <div class="co-kopf"><div><h3>🏁 K-Prim-Aufgaben · Check-out am Freitag</h3><small>Jeden Freitag ein Test mit 3 K-Prim-Aufgaben (je 4 Aussagen richtig oder falsch) zu den Themen der Woche${themen?` (${esc(themen)})`:""}. Deine Lehrkraft schaltet ihn live frei, ausgewertet wird in Notenpunkten nach dem P/P-Bewertungsschlüssel.</small></div></div>
+  <div class="co-kopf"><div><h3>🏁 K-Prim-Aufgaben · Check-out am Freitag</h3><small>Jeden Freitag ein Test mit 2 K-Prim-Aufgaben (je 4 Aussagen richtig oder falsch) zu den Themen der Woche${themen?` (${esc(themen)})`:""}. Deine Lehrkraft schaltet ihn live frei, ausgewertet wird in Notenpunkten nach dem P/P-Bewertungsschlüssel.</small></div></div>
   <div class="kicker pp-kp-h">FREITAGE IN DIESER ETAPPE</div>
   <div class="co-liste">${fr}</div>
   ${mitte}
@@ -4593,6 +4593,44 @@ const PPM_MAT_INFO={pdf:["📄","PDF"],bild:["🖼️","Bild"],video:["🎬","Fi
 function ppmWochenOptionen(sel){
  return SCHULWOCHEN_PP.map(w=>`<option value="${w.id}"${w.id===sel?" selected":""}>${fmtKurz(w.start)}–${fmtKurz(w.end)}</option>`).join("");
 }
+// Check-out für ein K-Prim-Modul: Auswahl nach Lernbereich geordnet. Angelegte Check-outs und noch nicht angelegte Vorlagen stehen gemeinsam in den Gruppen.
+function ppmCheckoutOptionen(checkouts,gewaehlt){
+ const lbs=[1,2,3,4];
+ const gruppe=(label,items)=>items.length?`<optgroup label="${esc(label)}">${items.join("")}</optgroup>`:"";
+ const stat=c=>c.status==="live"?"läuft":c.status==="beendet"?"beendet":"Entwurf";
+ let html='<option value="">Noch keinen (später verknüpfen)</option>';
+ const verteilt=new Set();
+ lbs.forEach(n=>{
+  const lbT=(PROJEKT_PHASEN.find(p=>p.lbNum===n)||{}).lbTitel||"";
+  const ex=checkouts.filter(c=>Number(c.lbNum)===n).sort((a,b)=>String(a.datum||"").localeCompare(String(b.datum||"")));
+  ex.forEach(c=>verteilt.add(c.id));
+  const exOpt=ex.map(c=>`<option value="${esc(c.id)}"${c.id===gewaehlt?" selected":""}>${esc(c.titel||"Check-out")} · angelegt (${stat(c)}${c.datum?" · "+esc(coDatum(c.datum)):""})</option>`);
+  // Vorlagen, aus denen es noch keinen Check-out gibt
+  const vl=CHECKOUT_VORLAGEN.filter(v=>Number(v.lbNum)===n&&!ex.some(c=>(c.titel||"")===v.titel)).sort((a,b)=>String(a.datum).localeCompare(String(b.datum)));
+  const vlOpt=vl.map(v=>`<option value="vorlage:${esc(v.id)}">${esc(v.titel)} · Vorlage: ${esc(coVorlageInhalte(v).join(" + "))}</option>`);
+  html+=gruppe(`Lernbereich ${n}${lbT?" · "+lbT:""}`,[...exOpt,...vlOpt]);
+ });
+ const rest=checkouts.filter(c=>!verteilt.has(c.id));
+ html+=gruppe("Ohne Lernbereich",rest.map(c=>`<option value="${esc(c.id)}"${c.id===gewaehlt?" selected":""}>${esc(c.titel||"Check-out")} · angelegt (${stat(c)})</option>`));
+ return html;
+}
+// Legt aus einer Vorlage einen Check-out-Entwurf an (wie „Speichern“ im Editor) und gibt die ID zurück.
+async function coAusVorlageAnlegen(v,datum){
+ const au=v.aufgaben.map(coAufgabeAusBank);
+ const a0=au[0];
+ au.forEach((a,i)=>{if(i>0){a.vTitel=a0.vTitel;a.vText=a0.vText;a.vZeilen=a0.vZeilen;}});
+ const daten={titel:v.titel,lbNum:v.lbNum,datum:datum||v.datum,zaehlt:true,status:"entwurf",vignette:null,
+  aufgaben:au.map(a=>{
+   const q={stamm:a.stamm.trim(),vignette:{titel:a.vTitel.trim(),text:a.vText.replace(/\s+$/,""),zeilen:!!a.vZeilen},aussagen:a.aussagen.map(x=>x.text.trim())};
+   if(a.kontext.trim())q.kontext=a.kontext.trim();
+   if(a.mText.trim())q.material={titel:a.mTitel.trim(),text:a.mText.replace(/\s+$/,""),quelle:a.mQuelle.trim()};
+   return q;}),
+  updatedAt:serverTimestamp(),updatedBy:currentUser.uid};
+ const loesung={aufgaben:au.map(a=>({richtig:a.aussagen.map(x=>!!x.richtig),erklaerung:a.aussagen.map(x=>(x.erklaerung||"").trim())})),klassisch:"",checkliste:[],updatedAt:serverTimestamp()};
+ const r=await addDoc(collection(db,"checkouts"),{...daten,createdAt:serverTimestamp(),createdBy:currentUser.uid});
+ await setDoc(doc(db,"checkoutLoesungen",r.id),loesung);
+ return r.id;
+}
 async function ppmDialog(id,typ,woche,opt){
  opt=opt||{};
  const bearb=id?ppmById(id):null;
@@ -4625,7 +4663,8 @@ async function ppmDialog(id,typ,woche,opt){
  if(t==="apt")extra=`<p style="font-size:13px;color:var(--muted);margin:0">Die Frage aus der Abschlussprüfung, den relevanten Inhalt und die Lösung gestaltest du danach direkt auf der Modulseite.</p>`;
  if(t==="stunde")extra=`<label>Phase im Deeper-Learning-Konzept<select id="ppmPhase">${[1,2,3].map(n=>`<option value="${n}"${(bearb?bearb.phase:2)===n?" selected":""}>${PP12_PHASEN[n].kurz} · ${esc(PP12_PHASEN[n].name)}</option>`).join("")}</select></label>
   ${bearb?"":`<p style="font-size:13px;color:var(--muted);margin:0">Zu jeder Stunde wird automatisch eine Digitale Tafel angelegt.</p>`}`;
- if(t==="kprim")extra=`<label>Check-out verknüpfen<select id="ppmCheckout"><option value="">Noch keinen (später verknüpfen)</option>${checkouts.map(c=>`<option value="${esc(c.id)}"${bearb&&bearb.checkoutId===c.id?" selected":""}>${esc(c.titel||"Check-out")} · K-Prim-Aufgabensatz${c.datum?" · "+esc(c.datum):""}</option>`).join("")}</select></label>`;
+ if(t==="kprim")extra=`<label>Check-out verknüpfen<select id="ppmCheckout">${ppmCheckoutOptionen(checkouts,bearb&&bearb.checkoutId)}</select></label>
+   <p style="font-size:13px;color:var(--muted);margin:0">Die K-Prim-Tests stehen nach Lernbereich geordnet zur Auswahl. Eine „Vorlage“ wird beim Speichern automatisch als Check-out-Entwurf angelegt und mit diesem Modul verknüpft; freischalten kannst du ihn danach auf der Modulseite.</p>`;
  if(t==="experiment"){
   const gew=bearb?ppmExpTeile(bearb):PPM_EXP_TEILE.map(x=>x.k);
   extra=`<div class="ppm-teile"><b style="font-size:13px">Teile der Einheit wählen</b>
@@ -4691,7 +4730,21 @@ async function ppmDialog(id,typ,woche,opt){
   if(projektId)daten.projektId=projektId;
   if(t==="projekt"&&$("ppmDirekt"))daten.direkt=$("ppmDirekt").value;
   if(t==="stunde")daten.phase=Number($("ppmPhase").value);
-  if(t==="kprim")daten.checkoutId=$("ppmCheckout").value||"";
+  if(t==="kprim"){
+    const sel=$("ppmCheckout").value||"";
+    daten.checkoutId=sel;
+    try{
+     if(sel.startsWith("vorlage:")){
+      const v=CHECKOUT_VORLAGEN.find(x=>x.id===sel.slice(8));
+      if(!v){toast("Vorlage nicht gefunden.");return;}
+      const wk=SCHULWOCHEN_PP.find(w=>w.id===daten.start);
+      daten.checkoutId=await coAusVorlageAnlegen(v,wk?wk.end:v.datum);
+      if(!ti.value.trim())daten.titel=v.titel;
+     }else if(sel&&!ti.value.trim()){
+      const c=checkouts.find(x=>x.id===sel);if(c&&c.titel)daten.titel=c.titel;
+     }
+    }catch(err){console.error("Check-out aus Vorlage:",err);toast("Der Check-out konnte nicht angelegt werden.");return;}
+   }
   if(t==="experiment"){
    daten.teile=PPM_EXP_TEILE.map(x=>x.k).filter(k=>teileGewaehlt().includes(k));
    const min=ppmExpMinuten(daten.teile);
@@ -4833,7 +4886,7 @@ async function ppmProjektSeite(m){
 async function ppmKprimSeite(m){
  const d=await ladeCheckoutDaten();const lehrer=isTeacher();
  const c=(d.checkouts||[]).find(x=>x.id===m.checkoutId);
- let karte=`<p class="ppm-leer">${lehrer?"Noch kein Check-out verknüpft. Lege einen an oder verknüpfe einen vorhandenen über „Modul bearbeiten“.":"Deine Lehrkraft hat noch keinen Test freigeschaltet."}</p>`;
+ let karte=`<p class="ppm-leer">${lehrer?"Noch kein Check-out verknüpft. Lege einen an oder verknüpfe einen über „Modul bearbeiten“ (dort stehen die K-Prim-Tests nach Lernbereich geordnet).":"Deine Lehrkraft hat noch keinen Test freigeschaltet."}</p>`;
  if(c){
   const mein=d.meineAbgaben&&d.meineAbgaben[c.id];
   const live=c.status==="live",beendet=c.status==="beendet";
@@ -4841,7 +4894,7 @@ async function ppmKprimSeite(m){
    ${lehrer?`<button type="button" class="ppm-btn klein" data-ppm="co" data-aktion="editor" data-id="${esc(c.id)}">Bearbeiten</button>${live?`<button type="button" class="ppm-btn klein" data-ppm="co" data-aktion="monitor" data-id="${esc(c.id)}">Live-Übersicht</button>`:""}`
     :(live&&!(mein&&mein.abgegeben)?`<button type="button" class="ppm-btn primaer" data-ppm="co" data-aktion="test" data-id="${esc(c.id)}">Test starten</button>`:(mein&&mein.ausgewertet?`<button type="button" class="ppm-btn primaer" data-ppm="co" data-aktion="ergebnis" data-id="${esc(c.id)}">Mein Ergebnis</button>`:`<span class="ppm-status">${beendet?"beendet":"noch nicht freigeschaltet"}</span>`))}</div>`;
  }
- return`${ppmKopf(m,"",lehrer?`<button type="button" class="ppm-btn klein" data-ppm="co" data-aktion="neu">＋ Neuen Check-out anlegen</button>`:"")}
+ return`${ppmKopf(m,"",lehrer?`${c?"":`<button type="button" class="ppm-btn klein primaer" data-ppm="bearbeiten" data-id="${esc(m.id)}">🔗 Check-out verknüpfen</button>`}<button type="button" class="ppm-btn klein" data-ppm="co" data-aktion="neu">＋ Neuen Check-out anlegen</button>`:"")}
  <div class="ppm-box"><h2>K-Prim-Aufgabentest</h2><p>Eine Fallvignette mit 2 K-Prim-Aufgaben zu je 4 Aussagen. Du entscheidest bei jeder Aussage, ob sie richtig oder falsch ist. Die Bepunktung (BE und Notenpunkte) steht oben im Test, die Auswertung kommt automatisch.</p>${karte}</div>
  ${checkoutLiveBannerHTML(d)}${checkoutSektionHTML(d)}${footer()}`;
 }
