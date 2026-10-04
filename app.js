@@ -4701,7 +4701,7 @@ async function ppmDialog(id,typ,woche,opt){
   const matBest=[...((bearb&&bearb.material)||[])];   // schon am Modul hängende Materialien
   const matNeu=[];                                     // neu hinzugefügt: {typ,titel,url} (Link) oder {typ,titel,file}
   const matWegUrls=[];                                 // entfernte Dateien, werden nach dem Speichern aus dem Speicher gelöscht
-  let matLinkOffen=false;
+  let matLinkOffen=false,matHochgeladen=[];
   const matRender=()=>{
    const box=$("ppmMatBox");if(!box)return;
    const zeile=(x,attr)=>{const inf=PPM_MAT_INFO[x.typ]||PPM_MAT_INFO.link;return`<div class="ppm-mat" style="flex-wrap:wrap"><span style="font-size:20px">${inf[0]}</span><div style="flex:1;min-width:140px"><b>${esc(x.titel||x.name||"Material")}</b><br><small style="color:var(--muted)">${inf[1]}${x.file?" · wird beim Speichern hochgeladen":""}</small></div><button type="button" class="ppm-btn klein" ${attr} title="Entfernen" aria-label="Material entfernen">✕</button></div>`;};
@@ -4789,9 +4789,10 @@ async function ppmDialog(id,typ,woche,opt){
   try{
    // Neue Dateien hochladen (bei einem Fehler wird nichts gespeichert, das Fenster bleibt offen)
    const matNeuFertig=[];
+   matHochgeladen=[];
    if(matNeu.some(x=>x.file))toast("Material wird hochgeladen …");
    for(const x of matNeu){
-    if(x.file){const up=await uploadCampusDatei(x.file,`ppMaterial/${bearb?bearb.id:"neu"}`);matNeuFertig.push({typ:x.typ,titel:x.titel,name:x.name,url:up.url});}
+    if(x.file){const up=await uploadCampusDatei(x.file,`ppMaterial/${bearb?bearb.id:"neu"}`);matHochgeladen.push(up.url);matNeuFertig.push({typ:x.typ,titel:x.titel,name:x.name,url:up.url});}
     else matNeuFertig.push({typ:x.typ,titel:x.titel,url:x.url});
    }
    const matAlle=[...matBest,...matNeuFertig];
@@ -4805,7 +4806,7 @@ async function ppmDialog(id,typ,woche,opt){
     await addDoc(collection(db,"ppModule"),basis);
    }
    closeModal();await ppmLaden(true);await render();toast("Modul gespeichert.");
-  }catch(e){ppmFehler(e,"Das Modul konnte nicht gespeichert werden");}
+  }catch(e){matHochgeladen.forEach(u=>deleteCampusDatei(u));matHochgeladen=[];ppmFehler(e,"Das Modul konnte nicht gespeichert werden");}
  });
  const lo=$("ppmLoeschen");
  if(lo)lo.addEventListener("click",async()=>{
@@ -4818,7 +4819,7 @@ async function ppmDialog(id,typ,woche,opt){
 }
 function ppmFehler(e,text){
  console.error("Modulplaner:",e);
- toast(e&&e.code==="permission-denied"?`${text}: Firebase verweigert den Zugriff (permission-denied). Bitte die Firestore-Regeln prüfen.`:`${text} (${(e&&(e.code||e.name))||"unbekannt"}).`);
+ toast(e&&e.code==="permission-denied"?`${text}: Firebase verweigert den Zugriff (permission-denied). Bitte die Firestore-Regeln prüfen.`:`${text}: ${(e&&(e.code||(e.message&&e.message.length<220?e.message:e.name)))||"unbekannt"}`);
 }
 async function ppmTafelAnlegen(titel){
  const r=await addDoc(collection(db,"whiteboards"),{title:String(titel).slice(0,120),description:"Tafel zur Unterrichtsstunde",art:"tafel",schreibschutz:true,seiten:1,bg:"blau",createdBy:currentUser.uid,createdByName:profile?.displayName||currentUser.email||"Lehrkraft",createdAt:serverTimestamp()});
