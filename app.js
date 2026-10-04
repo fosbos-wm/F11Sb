@@ -5256,6 +5256,9 @@ function ppmOeffnen(id){
  const m=ppmById(id);if(!m)return;
  if(m.modul==="projekt"&&ppmProjektDirekt(m)){
   const kind=PPM.liste.find(x=>x.projektId===m.id&&x.modul==="experiment");
+  // Hängt Material am Projekt oder an der Experiment-Einheit, öffnet sich zuerst die Modulseite mit der Material-Box (dort startet man auch die Einheit)
+  const matId=(m.material||[]).length?m.id:(kind&&(kind.material||[]).length?kind.id:null);
+  if(matId){activePPModul=matId;activeFach="paedagogik";if(location.hash!=="#fach")location.hash="#fach";else render();return;}
   activePPModul=null;activePhaseDetail=null;activeFach="paedagogik";
   openExperimentStunde(kind?ppmExpTeile(kind):null);
   return;
