@@ -3365,11 +3365,56 @@ async function miniKalenderHTML(){
  </a>
  <small style="display:block;margin-top:6px;color:var(--muted);font-size:10px">Zum vollständigen Campus-Kalender →</small>`;
 }
+// ---- Startseite: „Das steht für dich an“ (nur Schüler:innen) ----
+// Sammelt aus vorhandenen Daten, was für die angemeldete Person offen ist:
+// P/P-Module bis einschließlich dieser Woche, fehlende Blockberichte, fällige Einträge der Wochenplanung.
+async function anstehendBoxHTML(wochenplan){
+ if(!currentUser||!isApproved()||isTeacher())return"";
+ const heute=new Date().toISOString().slice(0,10);
+ const plusTage=(iso,n)=>{const d=new Date(iso+"T12:00:00Z");d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);};
+ const zeilen=[];
+ // 1) P/P-Modulplan
+ try{
+  await ppmLaden();await ppmMeineLaden();
+  if(!PPM.co)PPM.co=await ladeCheckoutDaten().catch(()=>null);
+  let jIdx=-1;SCHULWOCHEN_PP.forEach((w,i)=>{if(w.start<=heute)jIdx=i;});
+  const jw=SCHULWOCHEN_PP[jIdx],inWoche=!!(jw&&heute<=jw.end);
+  const offen=PPM.liste.map(m=>({m,p:ppmFort(m),i:ppmSwIndex(m.start)})).filter(x=>x.p&&!x.p.done&&x.i>=0&&x.i<=jIdx);
+  offen.slice(0,4).forEach(x=>{
+   const alt=!(inWoche&&x.i===jIdx),sw=swById(x.m.start),T=PPM_TYPEN[x.m.modul]||{};
+   zeilen.push({ord:alt?1:2,html:`<div class="an-zeile${alt?" spaet":""}"><span class="an-icon">${T.icon||"📘"}</span><div><b>${esc(x.m.titel||T.name||"Modul")}</b><small>Pädagogik/Psychologie · ${alt?`noch offen aus KW ${sw?ppmKW(sw):""}`:"diese Woche"}${x.p.frac>0?` · ${Math.round(x.p.frac*100)} % geschafft`:""}</small></div><button type="button"class="secondary"data-ppm="oeffnen"data-id="${esc(x.m.id)}">Öffnen</button></div>`});
+  });
+  if(offen.length>4)zeilen.push({ord:3,html:`<div class="an-zeile"><span class="an-icon">➕</span><div><b>${offen.length-4} weitere Module offen</b><small>Pädagogik/Psychologie</small></div><button type="button"class="secondary"onclick="openFach('paedagogik')">Zum Modulplan</button></div>`});
+ }catch(e){console.error("Anstehend (Module):",e);}
+ // 2) Blockberichte: laufender Block und Block, der in den letzten 14 Tagen endete
+ try{
+  const phasen=PRAKTIKUMSPHASEN.filter(p=>p.start<=heute&&plusTage(p.end,14)>=heute);
+  if(phasen.length){
+   const meine=await getMeinePraktikumsberichte();
+   phasen.forEach(p=>praktikumsberichtTypenFuerPhase(p.id).forEach(t=>{
+    if(meine[`${p.id}_${t.typ}`])return;
+    const frist=t.typ==="einschaetzung"?einschaetzungFrist(p.id):praktikumsberichtFristISO(p.id);
+    const spaet=!!frist&&frist<heute,bald=!!frist&&!spaet&&frist<=plusTage(heute,3);
+    zeilen.push({ord:spaet?0:(bald?1:2),html:`<div class="an-zeile${spaet?" spaet":""}"><span class="an-icon">${p.icon||"📄"}</span><div><b>${esc(t.label)} hochladen</b><small>${esc(p.titel)}${frist?` · ${spaet?"Frist war am":"Abgabe bis"} ${esc(fmtDateOnly(frist))}`:""}</small></div><button type="button"class="secondary"onclick="go('praktikum')">Zum Bericht</button></div>`});
+   }));
+  }
+ }catch(e){console.error("Anstehend (Berichte):",e);}
+ // 3) Wochenplanung: überfällig oder in den nächsten 7 Tagen fällig
+ try{
+  (wochenplan||[]).filter(w=>!w.done&&w.dueDate&&w.dueDate<=plusTage(heute,7)).slice(0,3).forEach(w=>{
+   const spaet=w.dueDate<heute,fach=F11SB_FAECHER.find(f=>f.key===w.subject)?.label;
+   zeilen.push({ord:spaet?1:2,html:`<div class="an-zeile${spaet?" spaet":""}"><span class="an-icon">🗓️</span><div><b>${esc(w.title)}</b><small>Wochenplanung${fach?` · ${esc(fach)}`:""} · ${spaet?"war fällig am":"fällig am"} ${esc(fmtDateOnly(w.dueDate))}</small></div><button type="button"class="secondary"onclick="toggleWochenplanDone('${esc(w.id)}',false)">Erledigt ✓</button></div>`});
+  });
+ }catch(e){console.error("Anstehend (Wochenplanung):",e);}
+ zeilen.sort((a,b)=>a.ord-b.ord);
+ return`<section class="card an-box"><div class="kicker">DEIN ÜBERBLICK</div><h2>Das steht für dich an</h2>${zeilen.length?zeilen.map(z=>z.html).join(""):`<p class="an-leer">Aktuell ist nichts offen. ✓</p>`}</section>`;
+}
 async function renderStart(){
  let tasks=[],projects=[],news=[],nextCalendar=null,birthdayInfo=null,wochenplan=[];
  try{[tasks,projects,news,nextCalendar,birthdayInfo,wochenplan]=await Promise.all([getCollection("tasks","deadline",false),getCollection("projects"),getCollection("news"),getUpcomingCampusCalendarEvent(),getUpcomingBirthdayInfo(),getMeineWochenplanung()])}catch(e){}
  const miniKalender=await miniKalenderHTML();
  const coBanner=await checkoutStartBannerHTML();
+ const anstehend=await anstehendBoxHTML(wochenplan);
  const praktikumsphase=aktuellePraktikumsphase();
  const praktikumsAuftraegeMap=await getPraktikumsAuftraege().catch(()=>({}));
  const aktuellerPraktikumsauftrag=(praktikumsphase?.status==="laufend")?praktikumsAuftraegeMap[praktikumsphase.id]:null;
@@ -3381,6 +3426,7 @@ async function renderStart(){
  return`${coBanner}<section class="hero"><div><span class="badge"> F11Sb 26/27</span><h1>Willkommen auf dem Campus.</h1><p>Hier
 verbinden wir Lernen, Projekte, Praxis und Gemeinschaft. Alle angemeldeten Mitglieder arbeiten am selben digitalen Campus.</p>
 </div><div class="actions">${isTeacher()?`<button class="primary"onclick="openNewsForm()">＋ News veröffentlichen</button>`:""}<button class="secondary"onclick="go('kompass')">Mein Kompass →</button><button class="secondary"onclick="go('forum')">Campus-Forum</button></div></section>
+ ${anstehend}
  <div class="grid grid-3"style="gap:20px;margin-bottom:20px">
  <div class="card card-compact"style="border-left:4px solid #4a90d9"><h3> Campus-News</h3><div class="list">${news.slice(0,3).map(p=>`<div
 class="list-item"><div><strong>${esc(p.title||p.text)}</strong>${p.title?`<small>${esc(p.text)} · ${fmtDate(p.createdAt)}</small>`:`<small>${fmtDate(p.createdAt)}</small>`}</div><div style="display:flex;align-items:center;gap:8px"><span class="pill">Info</span>${isAdmin()?`<button class="secondary"onclick="deleteNews('${p.id}')">Löschen</button>`:""}</div>
