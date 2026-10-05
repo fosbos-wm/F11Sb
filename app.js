@@ -3407,7 +3407,9 @@ async function anstehendBoxHTML(wochenplan){
   });
  }catch(e){console.error("Anstehend (Wochenplanung):",e);}
  zeilen.sort((a,b)=>a.ord-b.ord);
- return`<section class="card an-box"><div class="kicker">DEIN ÜBERBLICK</div><h2>Das steht für dich an</h2>${zeilen.length?zeilen.map(z=>z.html).join(""):`<p class="an-leer">Aktuell ist nichts offen. ✓</p>`}</section>`;
+ let zu=false;try{zu=localStorage.getItem("f11sb_anstehend_zu")==="1";}catch(e){}
+ const n=zeilen.length;
+ return`<details class="card an-box"${zu?"":" open"} ontoggle="try{localStorage.setItem('f11sb_anstehend_zu',this.open?'0':'1')}catch(e){}"><summary><span><span class="kicker">DEIN ÜBERBLICK</span><h2>Das steht für dich an</h2></span><span class="pill${n?"":" green"}">${n?`${n} offen`:"alles erledigt ✓"}</span><span class="an-pfeil" aria-hidden="true">▾</span></summary>${n?zeilen.map(z=>z.html).join(""):`<p class="an-leer">Aktuell ist nichts offen. ✓</p>`}</details>`;
 }
 async function renderStart(){
  let tasks=[],projects=[],news=[],nextCalendar=null,birthdayInfo=null,wochenplan=[];

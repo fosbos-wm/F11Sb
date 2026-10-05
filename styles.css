@@ -796,7 +796,14 @@ body.exp-offen{overflow:hidden}
 .co-ed-abschn{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:12px 0 4px}
 /* Startseite: „Das steht für dich an“ */
 .an-box{border-left:4px solid var(--blue);margin-bottom:20px}
-.an-box h2{margin:4px 0 10px}
+.an-box>summary{display:flex;align-items:center;gap:12px;cursor:pointer;list-style:none}
+.an-box>summary::-webkit-details-marker{display:none}
+.an-box>summary>span:first-child{flex:1;min-width:0}
+.an-box>summary .kicker{display:block}
+.an-box h2{margin:4px 0 0}
+.an-box[open]>summary{margin-bottom:10px}
+.an-pfeil{font-size:18px;color:var(--muted);transition:transform .15s}
+.an-box:not([open]) .an-pfeil{transform:rotate(-90deg)}
 .an-zeile{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
 .an-zeile>div{flex:1;min-width:0}
 .an-zeile b{display:block}
