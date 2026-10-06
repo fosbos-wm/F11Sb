@@ -4543,6 +4543,21 @@ const PPM_CSS=`<style>
 .ppm-teile{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border-radius:12px;background:#fff8e8;border:1px solid #f0d28a}
 .ppm-teile label.check{align-items:flex-start;gap:8px;margin:0}.ppm-teileinfo{font-size:13px;margin-top:4px}
 .ppm-kapahint{font-size:12px;line-height:1.5;padding:8px 10px;border-radius:10px;background:#f6f9fc;border:1px solid var(--line)}
+.ppm-form{gap:12px}
+.ppm-sek{display:flex;flex-direction:column;gap:10px;padding:12px 14px 14px;border-radius:14px;border:1px solid var(--c-rand);border-left:6px solid var(--c-strip);background:var(--c-bg)}
+.ppm-sek-kopf{font-size:11px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;color:var(--c-strip);margin:0}
+.ppm-sek select,.ppm-sek input:not([type=checkbox]):not([type=file]),.ppm-sek textarea{background:#fff}
+.ppm-sek .ppm-kapahint{background:#fff;border-color:var(--c-rand)}
+.ppm-sek .ppm-teile{background:#fff8e8}
+.ppm-sek-1{--c-strip:#1688cf;--c-bg:#eef6fd;--c-rand:#cfe3f4}
+.ppm-sek-2{--c-strip:#3f9a4a;--c-bg:#eff8ec;--c-rand:#cfe6c6}
+.ppm-sek-3{--c-strip:#7a58c4;--c-bg:#f4f0fb;--c-rand:#ddd2f2}
+.ppm-sek-4{--c-strip:#d98a1f;--c-bg:#fff6e6;--c-rand:#f3dcaa}
+.ppm-sek-5{--c-strip:#1f9a96;--c-bg:#eaf7f6;--c-rand:#c3e5e3}
+.ppm-sek .ppm-matbox{display:flex;flex-direction:column;gap:2px}
+.ppm-sek .ppm-mat{border-bottom-color:var(--c-rand)}
+.ppm-form .form-actions{position:sticky;bottom:-24px;margin:2px -24px -24px;padding:12px 24px;background:linear-gradient(#fff0,#fff 30%);border-top:1px solid var(--line);border-radius:0 0 15px 15px}
+@media(max-width:520px){.ppm-form .form-actions{bottom:-18px;margin:2px -14px -18px;padding:12px 14px}.ppm-sek{padding:10px 10px 12px}}
 .ppm-details summary{cursor:pointer;font-weight:700;font-size:16px;padding:2px 0}
 .ppm-tafel .wb-kopf{display:none}.ppm-tafel .wb-wrap{height:min(72vh,680px);min-height:420px}
 .ppm-fertig{display:flex;align-items:center;gap:12px;width:100%;margin-top:6px;padding:14px 16px;border-radius:12px;border:2px solid #b9c8d6;background:#fff;font-weight:700;font-size:15px;color:var(--ink);cursor:pointer;text-align:left}
@@ -4733,15 +4748,23 @@ async function ppmDialog(id,typ,woche,opt){
  }
  modal(`<button class="modal-close" onclick="closeModal()">×</button>
   <div class="kicker">${T.icon} ${esc(T.kurz.toUpperCase())}</div><h2>${bearb?"Modul bearbeiten":esc(T.name)}</h2>
-  <div class="form">
-   <label>Lernbereich<select id="ppmLb"${projekt?" disabled":""}>${lbOpt}</select></label>
-   <label>Titel<input id="ppmTitel" maxlength="120" value="${esc(bearb?bearb.titel:"")}" placeholder="${esc(t==="projekt"&&ph0?ph0.titel:(t==="experiment"?"Das Experiment":T.name))}"></label>
-   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><label>Beginn (Schulwoche)<select id="ppmStart">${wochenOpt}</select></label>
-   <label>Dauer<select id="ppmDauer">${dauerOpt}</select></label></div>
-   <div id="ppmKapa" class="ppm-kapahint"></div>
-   ${extra}
-   <label>Hinweis an die Klasse (optional)<textarea id="ppmNotiz" rows="2" maxlength="400">${esc(bearb?bearb.notiz||"":"")}</textarea></label>
-   <div id="ppmMatBox" class="ppm-matbox"></div>
+  <div class="form ppm-form">
+   <div class="ppm-sek ppm-sek-1"><p class="ppm-sek-kopf">① Worum geht es?</p>
+    <label>Lernbereich<select id="ppmLb"${projekt?" disabled":""}>${lbOpt}</select></label>
+    <label>Titel<input id="ppmTitel" maxlength="120" value="${esc(bearb?bearb.titel:"")}" placeholder="${esc(t==="projekt"&&ph0?ph0.titel:(t==="experiment"?"Das Experiment":T.name))}"></label>
+   </div>
+   <div class="ppm-sek ppm-sek-2"><p class="ppm-sek-kopf">② Wann und wie lange?</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><label>Beginn (Schulwoche)<select id="ppmStart">${wochenOpt}</select></label>
+    <label>Dauer<select id="ppmDauer">${dauerOpt}</select></label></div>
+    <div id="ppmKapa" class="ppm-kapahint"></div>
+   </div>
+   ${extra?`<div class="ppm-sek ppm-sek-3"><p class="ppm-sek-kopf">③ Inhalt</p>${extra}</div>`:""}
+   <div class="ppm-sek ppm-sek-4"><p class="ppm-sek-kopf">④ Für die Klasse</p>
+    <label>Hinweis an die Klasse (optional)<textarea id="ppmNotiz" rows="2" maxlength="400">${esc(bearb?bearb.notiz||"":"")}</textarea></label>
+   </div>
+   <div class="ppm-sek ppm-sek-5"><p class="ppm-sek-kopf">⑤ Material</p>
+    <div id="ppmMatBox" class="ppm-matbox"></div>
+   </div>
    <div class="form-actions">${bearb?`<button class="secondary" type="button" id="ppmLoeschen">Modul löschen</button>`:""}<button class="secondary" type="button" onclick="closeModal()">Abbrechen</button><button class="primary" type="button" id="ppmSpeichern">Speichern</button></div>
   </div>`);
  const lbSel=$("ppmLb"),ti=$("ppmTitel"),btn=$("ppmSpeichern");
