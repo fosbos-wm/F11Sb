@@ -8676,6 +8676,19 @@ const WB_STANDARD={
 };
 const WB_MAX_CURSOR=12; // ab so vielen gleichzeitig Online-Personen werden keine Mauszeiger mehr übertragen (spart Datenverkehr)
 const WB_VORLAGEN=[
+ {name:"Einstieg: Was ist Psychologie?",beschr:"4 Post-its sortieren, eigenes Post-it, später richtigstellen",mitarbeit:true,items:(x,y)=>[
+  {type:"text",x:x-480,y:y-540,w:960,h:76,fs:20,text:"Was ist eigentlich Psychologie? 1) Ordne die gelben Post-its ein: stimmt, stimmt teilweise oder stimmt nicht. 2) Schreibe dein eigenes Post-it. 3) Nach dem Lesen: Hänge um und stelle falsche Aussagen richtig."},
+  {type:"frame",x:x-480,y:y-440,w:960,h:250,c:"grau",text:"Das sagen Leute über Psychologie"},
+  {type:"frame",x:x-600,y:y-170,w:390,h:520,c:"gruen",text:"Stimmt"},
+  {type:"frame",x:x-195,y:y-170,w:390,h:520,c:"orange",text:"Stimmt teilweise"},
+  {type:"frame",x:x+210,y:y-170,w:390,h:520,c:"rosa",text:"Stimmt nicht"},
+  {type:"frame",x:x+640,y:y-440,w:380,h:380,c:"blau",text:"Mein Post-it: Psychologie ist für mich …"},
+  {type:"frame",x:x+640,y:y-30,w:380,h:380,c:"tuerkis",text:"Richtigstellung (nach dem Lesen)"},
+  {type:"shape",shape:"rect",x:x-300,y:y+390,w:600,h:100,c:"lila",fs:20,text:"Leitfrage: Kann man von außen sehen, was in einem Menschen vorgeht?"},
+  {type:"note",x:x-460,y:y-380,w:215,h:170,fs:16,c:"gelb",text:"Psychologie, das ist Couch, Beratung und Therapie. Sie hilft bei persönlichen Problemen."},
+  {type:"note",x:x-225,y:y-380,w:215,h:170,fs:16,c:"gelb",text:"Psychologie erforscht das Unbewusste: Hypnose und Traumdeutung."},
+  {type:"note",x:x+10,y:y-380,w:215,h:170,fs:16,c:"gelb",text:"Psycholog:innen durchschauen mich sofort und wissen, wie es mir geht."},
+  {type:"note",x:x+245,y:y-380,w:215,h:170,fs:16,c:"gelb",text:"Psychologie hat etwas mit Seele, Geist und Gefühlen zu tun."}]},
  {name:"Brainstorming",beschr:"Thema in der Mitte, Ideen drumherum",items:(x,y)=>[
   {type:"shape",shape:"ellipse",x:x-130,y:y-70,w:260,h:140,c:"blau",text:"Thema",fs:26},
   {type:"note",x:x-420,y:y-230,c:"gelb",text:"Idee 1"},{type:"note",x:x+220,y:y-230,c:"rosa",text:"Idee 2"},
@@ -9756,7 +9769,8 @@ function wbVorlageEinsetzen(i){
   ids.push(wbErzeugen({w:std.w,h:std.h,...t},{zOffset:n}));
  });
  wbUndoPush(async()=>{await wbLoeschenIds(ids,true);});
- $("wbTplMenu").hidden=true;wbAuswahlSetzen([]);toast(`Vorlage „${v.name}“ eingefügt.`);
+ if(v.mitarbeit&&wb.board&&wb.board.schreibschutz&&wbBoardVerwalter()){updateDoc(doc(db,"whiteboards",wb.id),{schreibschutz:false}).catch(wbFehler);}
+ $("wbTplMenu").hidden=true;wbAuswahlSetzen([]);toast(v.mitarbeit?`Vorlage „${v.name}“ eingefügt. Die Mitarbeit ist für alle geöffnet.`:`Vorlage „${v.name}“ eingefügt.`);
 }
 function wbVollbild(an){
  const w=wb.wrap;const neu=an===undefined?!w.classList.contains("wb-full"):an;
