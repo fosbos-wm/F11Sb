@@ -7097,7 +7097,7 @@ CO_AUFGABENBANK.push(...[
   "vignette": {
    "titel": "Jugendtreff",
    "zeilen": false,
-   "text": "Im Praktikum in einem Jugendtreff begleiten Sie die 16-jährige Jana. Sie soll beim Sommerfest die Begrüßung übernehmen. Kurz vor dem Auftritt knetet sie ihre Finger, ihre Stimme zittert leicht und sie flüstert der Betreuerin Frau Albers zu, dass sie sich vor dem Mikrofon fürchtet. Frau Albers bleibt neben ihr stehen, bespricht mit ihr die ersten Sätze und lobt ihren Mut. Nach der Begrüßung erzählt Jana, dass sie stolz auf sich ist. In der Teamsitzung am nächsten Tag sagt der Betreuer Herr Weber: „Jugendliche mit älteren Geschwistern sind schüchtern, das habe ich bei Jana und zwei weiteren Jugendlichen gesehen.“ Seine Kollegin Frau Demir verweist auf eine Studie: Das Forschungsteam legte Fragestellung, Methode und Ablauf vorab fest und beschrieb das Vorgehen so genau, dass andere die Untersuchung wiederholen können."
+   "text": "Im Praktikum in einem Jugendtreff begleiten Sie die 16-jährige Jana. Sie soll beim Sommerfest die Begrüßung übernehmen. Kurz vor dem Auftritt knetet sie ihre Finger, ihre Stimme zittert leicht und sie flüstert der Betreuerin Frau Albers zu, dass sie sich vor dem Mikrofon fürchtet. Frau Albers bleibt neben ihr stehen, bespricht mit ihr die ersten Sätze und lobt ihren Mut. Nach der Begrüßung erzählt Jana, dass sie stolz auf sich ist. In der Teamsitzung am nächsten Tag berichtet die Betreuerin Moni von den Brüdern Tim (16) und Max (13): Tim reagiere häufig genervt, wenn Max seine Nähe suche, verdrehe dann die Augen oder gehe weg. Moni stellt fest: „Tim mag seinen Bruder einfach nicht!“ Ihre Kollegin Sarah, die seit vielen Jahren im Jugendtreff arbeitet, hat dieselben Situationen zwischen den Brüdern beobachtet. Anschließend spricht der Betreuer Herr Kluge über den 15-jährigen Hannes, der in den letzten Wochen mehrfach Mitjugendliche geschubst hat. Herr Kluge möchte Hannes’ Fall fachlich beurteilen, bevor das Team entscheidet. Seine Kollegin Fatima unterstützt ihn dabei."
   },
   "kontext": "",
   "stamm": "Janas Situation wird fachlich zutreffend beschrieben, wenn …",
@@ -7132,7 +7132,7 @@ CO_AUFGABENBANK.push(...[
   "vignette": {
    "titel": "Jugendtreff",
    "zeilen": false,
-   "text": "Im Praktikum in einem Jugendtreff begleiten Sie die 16-jährige Jana. Sie soll beim Sommerfest die Begrüßung übernehmen. Kurz vor dem Auftritt knetet sie ihre Finger, ihre Stimme zittert leicht und sie flüstert der Betreuerin Frau Albers zu, dass sie sich vor dem Mikrofon fürchtet. Frau Albers bleibt neben ihr stehen, bespricht mit ihr die ersten Sätze und lobt ihren Mut. Nach der Begrüßung erzählt Jana, dass sie stolz auf sich ist. In der Teamsitzung am nächsten Tag sagt der Betreuer Herr Weber: „Jugendliche mit älteren Geschwistern sind schüchtern, das habe ich bei Jana und zwei weiteren Jugendlichen gesehen.“ Seine Kollegin Frau Demir verweist auf eine Studie: Das Forschungsteam legte Fragestellung, Methode und Ablauf vorab fest und beschrieb das Vorgehen so genau, dass andere die Untersuchung wiederholen können."
+   "text": "Im Praktikum in einem Jugendtreff begleiten Sie die 16-jährige Jana. Sie soll beim Sommerfest die Begrüßung übernehmen. Kurz vor dem Auftritt knetet sie ihre Finger, ihre Stimme zittert leicht und sie flüstert der Betreuerin Frau Albers zu, dass sie sich vor dem Mikrofon fürchtet. Frau Albers bleibt neben ihr stehen, bespricht mit ihr die ersten Sätze und lobt ihren Mut. Nach der Begrüßung erzählt Jana, dass sie stolz auf sich ist. In der Teamsitzung am nächsten Tag berichtet die Betreuerin Moni von den Brüdern Tim (16) und Max (13): Tim reagiere häufig genervt, wenn Max seine Nähe suche, verdrehe dann die Augen oder gehe weg. Moni stellt fest: „Tim mag seinen Bruder einfach nicht!“ Ihre Kollegin Sarah, die seit vielen Jahren im Jugendtreff arbeitet, hat dieselben Situationen zwischen den Brüdern beobachtet. Anschließend spricht der Betreuer Herr Kluge über den 15-jährigen Hannes, der in den letzten Wochen mehrfach Mitjugendliche geschubst hat. Herr Kluge möchte Hannes’ Fall fachlich beurteilen, bevor das Team entscheidet. Seine Kollegin Fatima unterstützt ihn dabei."
   },
   "kontext": "",
   "stamm": "Die Situation wird fachlich zutreffend eingeordnet, wenn …",
@@ -7227,6 +7227,76 @@ CO_AUFGABENBANK.push(...[
     "text": "… zwischen Alltagstheorie und wissenschaftlicher Theorie eine scharfe Grenze gezogen wird, die nur ein Entweder-oder zulässt.",
     "richtig": false,
     "erklaerung": "Die Grenze ist nicht absolut; ein reines Entweder-oder gibt es nicht."
+   }
+  ]
+ },
+ {
+  "id": "kp-lb1-alltagstheorie-moni",
+  "titel": "Alltagstheorie im Teamgespräch",
+  "lbNum": 1,
+  "vignette": {
+   "titel": "Jugendtreff",
+   "zeilen": false,
+   "text": "Im Praktikum in einem Jugendtreff begleiten Sie die 16-jährige Jana. Sie soll beim Sommerfest die Begrüßung übernehmen. Kurz vor dem Auftritt knetet sie ihre Finger, ihre Stimme zittert leicht und sie flüstert der Betreuerin Frau Albers zu, dass sie sich vor dem Mikrofon fürchtet. Frau Albers bleibt neben ihr stehen, bespricht mit ihr die ersten Sätze und lobt ihren Mut. Nach der Begrüßung erzählt Jana, dass sie stolz auf sich ist. In der Teamsitzung am nächsten Tag berichtet die Betreuerin Moni von den Brüdern Tim (16) und Max (13): Tim reagiere häufig genervt, wenn Max seine Nähe suche, verdrehe dann die Augen oder gehe weg. Moni stellt fest: „Tim mag seinen Bruder einfach nicht!“ Ihre Kollegin Sarah, die seit vielen Jahren im Jugendtreff arbeitet, hat dieselben Situationen zwischen den Brüdern beobachtet. Anschließend spricht der Betreuer Herr Kluge über den 15-jährigen Hannes, der in den letzten Wochen mehrfach Mitjugendliche geschubst hat. Herr Kluge möchte Hannes’ Fall fachlich beurteilen, bevor das Team entscheidet. Seine Kollegin Fatima unterstützt ihn dabei."
+  },
+  "kontext": "",
+  "stamm": "Monis Aussage „Tim mag seinen Bruder einfach nicht!“ ist alltagstheoretisch, wenn …",
+  "pruefen": "Aus deinem Word-Dokument (entscheidungsbasierte Aufgaben) übernommen und an die gemeinsame Fallvignette angepasst. Bitte fachlich prüfen.",
+  "aussagen": [
+   {
+    "text": "… Monis Schlussfolgerung auf einem Bestand an Eindrücken beruht, die sie im Laufe ihres beruflichen Alltags zufällig angesammelt hat.",
+    "richtig": true,
+    "erklaerung": "Zufällig angesammelte Eindrücke sind nicht systematisch gewonnen. Fehlende Systematik ist ein Merkmal der Alltagstheorie."
+   },
+   {
+    "text": "… Monis Aussage sich als gesichertes Ergebnis einstufen lässt, weil die Information aus mehreren Elterngesprächen zur sozial-emotionalen Entwicklung und aus wiederholten, gezielten Beobachtungen mit einem Beobachtungsbogen stammt.",
+    "richtig": false,
+    "erklaerung": "Geplante Gespräche und wiederholte gezielte Beobachtungen mit einem Beobachtungsbogen sind systematisch. Das spräche für eine wissenschaftliche Vorgehensweise, nicht für eine Alltagstheorie."
+   },
+   {
+    "text": "… Monis Kollegin Sarah aufgrund ihrer langjährigen Berufserfahrung dieselben Situationen zwischen den Brüdern beobachtet und Tims Verhalten als natürliches Wetteifern unter Brüdern deutet.",
+    "richtig": true,
+    "erklaerung": "Gleiche Beobachtung, unterschiedliche Deutung: Das zeigt Subjektivität, ein Merkmal der Alltagstheorie. Wissenschaftliche Aussagen sind objektiv, weil alle Forschenden bei gleichen Bedingungen zum gleichen Ergebnis kommen."
+   },
+   {
+    "text": "… Monis Erkenntnis aus mehreren geplanten Beobachtungen der letzten zwei Jahre stammt, in denen sie bei Tim und Max wiederholt konfliktreiche Situationen beobachten konnte.",
+    "richtig": false,
+    "erklaerung": "Mehrere geplante, wiederholte Beobachtungen sind keine zufällige Einzelerfahrung. Sie sprechen gegen eine unzulässige Verallgemeinerung und gegen eine Alltagstheorie."
+   }
+  ]
+ },
+ {
+  "id": "kp-lb1-wissenschaft-hannes",
+  "titel": "Wissenschaftliche Beurteilung im Fall Hannes",
+  "lbNum": 1,
+  "vignette": {
+   "titel": "Jugendtreff",
+   "zeilen": false,
+   "text": "Im Praktikum in einem Jugendtreff begleiten Sie die 16-jährige Jana. Sie soll beim Sommerfest die Begrüßung übernehmen. Kurz vor dem Auftritt knetet sie ihre Finger, ihre Stimme zittert leicht und sie flüstert der Betreuerin Frau Albers zu, dass sie sich vor dem Mikrofon fürchtet. Frau Albers bleibt neben ihr stehen, bespricht mit ihr die ersten Sätze und lobt ihren Mut. Nach der Begrüßung erzählt Jana, dass sie stolz auf sich ist. In der Teamsitzung am nächsten Tag berichtet die Betreuerin Moni von den Brüdern Tim (16) und Max (13): Tim reagiere häufig genervt, wenn Max seine Nähe suche, verdrehe dann die Augen oder gehe weg. Moni stellt fest: „Tim mag seinen Bruder einfach nicht!“ Ihre Kollegin Sarah, die seit vielen Jahren im Jugendtreff arbeitet, hat dieselben Situationen zwischen den Brüdern beobachtet. Anschließend spricht der Betreuer Herr Kluge über den 15-jährigen Hannes, der in den letzten Wochen mehrfach Mitjugendliche geschubst hat. Herr Kluge möchte Hannes’ Fall fachlich beurteilen, bevor das Team entscheidet. Seine Kollegin Fatima unterstützt ihn dabei."
+  },
+  "kontext": "",
+  "stamm": "Herr Kluge würde Hannes’ Fall nach wissenschaftlichen Kriterien beurteilen, wenn …",
+  "pruefen": "Aus deinem Word-Dokument (entscheidungsbasierte Aufgaben) übernommen und an die gemeinsame Fallvignette angepasst. Bitte fachlich prüfen.",
+  "aussagen": [
+   {
+    "text": "… neben ihm auch Hannes’ Vater dessen Gewalthandlungen beobachtet hätte, da dann das Merkmal der Objektivität vorläge.",
+    "richtig": false,
+    "erklaerung": "Zwei Personen mit eigenen Eindrücken ergeben noch keine Objektivität. Objektiv heißt: Bei gleichem Sachverhalt und gleichen Bedingungen kommen alle Forschenden mit demselben Vorgehen zum gleichen Ergebnis."
+   },
+   {
+    "text": "… er einzelne Vorfälle als Beweise dafür vorlegen könnte, dass Hannes gewalttätig ist, um damit eine objektive Einschätzung zu treffen.",
+    "richtig": false,
+    "erklaerung": "Einzelne Vorfälle sind zufällige Einzelbeobachtungen und ersetzen kein planmäßiges, überprüfbares Vorgehen. Von einzelnen Vorfällen auf eine allgemeine Eigenschaft zu schließen, wäre eine unzulässige Verallgemeinerung."
+   },
+   {
+    "text": "… er sich selbst einen Aggressionstest ausdenken und mit Hannes durchführen würde, denn das Vorgehen wäre systematisch und die Aussagen daraus wären allgemeingültig.",
+    "richtig": false,
+    "erklaerung": "Ein selbst erdachter, nicht überprüfter Test macht das Vorgehen nicht wissenschaftlich. Allgemeingültigkeit lässt sich nicht aus einem Einzelfall mit einem ungeprüften Verfahren ableiten."
+   },
+   {
+    "text": "… er und Fatima Hannes’ Verhalten über mehrere Wochen beobachten und systematisch dokumentieren würden, um nachvollziehbare und vergleichbare Aussagen zu Hannes treffen zu können.",
+    "richtig": true,
+    "erklaerung": "Geplantes, dokumentiertes Beobachten über einen längeren Zeitraum macht das Vorgehen systematisch, überprüfbar und nachvollziehbar."
    }
   ]
  },
@@ -7380,8 +7450,8 @@ CHECKOUT_VORLAGEN_ALLE.unshift(...[
   "aufgaben": [
    "kp-lb1-psychologie",
    "kp-lb1-paedagogik",
-   "kp-lb1-alltagstheorie",
-   "kp-lb1-merkmale"
+   "kp-lb1-alltagstheorie-moni",
+   "kp-lb1-wissenschaft-hannes"
   ]
  },
  {
