@@ -4094,9 +4094,10 @@ function coFuerWoche(coDaten,w){
 function coAktionHTML(c,d){
  const a=d.meineAbgaben?.[c.id];
  if(isTeacher()){
-  return c.status==="entwurf"?`<button class="secondary"onclick="openCheckoutEditor('${c.id}')">Bearbeiten</button><button class="primary"onclick="coLiveStarten('${c.id}')">▶ Live freischalten</button>`
+  const druck=`<button class="secondary"title="Test zum Ausdrucken (PDF)"onclick="coTestDruckId('${c.id}')">🖨 Ausdruck</button>`;
+  return druck+(c.status==="entwurf"?`<button class="secondary"onclick="openCheckoutEditor('${c.id}')">Bearbeiten</button><button class="primary"onclick="coLiveStarten('${c.id}')">▶ Live freischalten</button>`
    :c.status==="live"?`<button class="primary"onclick="openCheckoutMonitor('${c.id}')">Live-Übersicht</button>`
-   :`<button class="secondary"onclick="openCheckoutErgebnisse('${c.id}')">Ergebnisse</button>`;
+   :`<button class="secondary"onclick="openCheckoutErgebnisse('${c.id}')">Ergebnisse</button>`);
  }
  return c.status==="live"?(a?.abgegeben?`<span class="co-chip fertig">abgegeben ✓</span>`:`<button class="primary"onclick="openCheckoutTest('${c.id}')">${a?"Weiter":"Starten"}</button>`)
   :a?.ausgewertet?`<b class="co-np">${npText(a.notenpunkte)}</b><button class="secondary"onclick="openCheckoutMeinErgebnis('${c.id}')">Ansehen</button>`
@@ -5076,7 +5077,7 @@ async function ppmKprimSeite(m){
   const mein=d.meineAbgaben&&d.meineAbgaben[c.id];
   const live=c.status==="live",beendet=c.status==="beendet";
   karte=`<div class="ppm-zeile"><span style="font-size:26px">🏁</span><div style="flex:1;min-width:200px"><b>${esc(coTitelAnzeige(c)||"Check-out")}</b><br><small style="color:var(--muted)">${esc(c.datum||"")} · ${(c.aufgaben||[]).length} K-Prim-Aufgaben · Status: ${esc(c.status||"Entwurf")}</small></div>
-   ${lehrer?`<button type="button" class="ppm-btn klein" data-ppm="co" data-aktion="editor" data-id="${esc(c.id)}">Bearbeiten</button>${live?`<button type="button" class="ppm-btn klein" data-ppm="co" data-aktion="monitor" data-id="${esc(c.id)}">Live-Übersicht</button>`:""}`
+   ${lehrer?`<button type="button" class="ppm-btn klein" data-ppm="co" data-aktion="druck" data-id="${esc(c.id)}">🖨 Test ausdrucken</button><button type="button" class="ppm-btn klein" data-ppm="co" data-aktion="editor" data-id="${esc(c.id)}">Bearbeiten</button>${live?`<button type="button" class="ppm-btn klein" data-ppm="co" data-aktion="monitor" data-id="${esc(c.id)}">Live-Übersicht</button>`:""}`
     :(live&&!(mein&&mein.abgegeben)?`<button type="button" class="ppm-btn primaer" data-ppm="co" data-aktion="test" data-id="${esc(c.id)}">Test starten</button>`:(mein&&mein.ausgewertet?`<button type="button" class="ppm-btn primaer" data-ppm="co" data-aktion="ergebnis" data-id="${esc(c.id)}">Mein Ergebnis</button>`:`<span class="ppm-status">${beendet?"beendet":"noch nicht freigeschaltet"}</span>`))}</div>`;
  }
  return`${ppmKopf(m,"",lehrer?`${c?"":`<button type="button" class="ppm-btn klein primaer" data-ppm="bearbeiten" data-id="${esc(m.id)}">🔗 Check-out verknüpfen</button>`}<button type="button" class="ppm-btn klein" data-ppm="co" data-aktion="neu">＋ Neuen Check-out anlegen</button>`:"")}
@@ -5335,6 +5336,7 @@ async function ppmKlick(e){
    if(a==="neu")openCheckoutEditor();
    else if(a==="editor")openCheckoutEditor(id);
    else if(a==="monitor")openCheckoutMonitor(id);
+   else if(a==="druck")coTestDruckId(id);
    else if(a==="test")openCheckoutTest(id);
    else if(a==="ergebnis")openCheckoutMeinErgebnis(id);
    return;
@@ -8786,6 +8788,7 @@ AUFGABE: …</pre>
    <div class="form-actions co-ed-fuss">
     ${e.id?`<button class="secondary"onclick="coLoeschen('${e.id}')">Löschen</button>`:""}
     <button class="secondary"onclick="coEditorVorschau()">👁 Vorschau (Schüleransicht)</button>
+    <button class="secondary"onclick="coEditorLesen();coTestDruckEditor()">🖨 Test zum Ausdrucken (PDF)</button>
     <button class="secondary"onclick="coEditorLesen();coPoolExport('pdf')">PDF für Aufgabenpool</button>
     <button class="secondary"onclick="coEditorLesen();coPoolExport('word')">Word für Aufgabenpool</button>
     <span style="flex:1"></span>
@@ -9307,6 +9310,100 @@ async function openCheckoutSchuelerErgebnis(id,uid){
   <div class="form-actions"><button class="secondary"onclick="openCheckoutErgebnisse('${id}')">← Zurück</button><button class="secondary"onclick="coPdfSchueler('${id}','${uid}')">PDF</button></div>`);
 }
 
+// ---- K-Prim-Test zum Ausdrucken (für den Fall technischer Probleme) ----
+// Kopf: „Staatliche FOSBOS Weilheim“, Zeile mit KPrim-Test, Datum und Name; unten Gesamtpunktzahl, Umrechnung in Punkte und „Viel Erfolg!“.
+function coDruckModellAusCheckout(co){
+ const q=co.aufgaben||[];
+ const v0=q[0]?.vignette?.text?q[0].vignette:null;
+ const gemeinsam=co.vignette?.text?co.vignette:(v0&&q.every(x=>(x.vignette?.text||"")===v0.text)?v0:null);
+ return{titel:coTitelAnzeige(co),lbNum:co.lbNum,vignette:gemeinsam,
+  aufgaben:q.map(x=>({stamm:x.stamm||"",kontext:x.kontext||"",material:x.material?.text?x.material:null,vignette:gemeinsam?null:(x.vignette?.text?x.vignette:null),aussagen:(x.aussagen||[]).map(a=>typeof a==="string"?a:(a.text||""))}))};
+}
+function coDruckModellAusEditor(e){
+ const a0=e.aufgaben[0]||{};
+ return{titel:e.titel||"",lbNum:e.lbNum,vignette:a0.vText&&a0.vText.trim()?{titel:a0.vTitel||"",text:a0.vText,zeilen:!!a0.vZeilen}:null,
+  aufgaben:e.aufgaben.map(a=>({stamm:a.stamm||"",kontext:a.kontext||"",material:a.mText&&a.mText.trim()?{titel:a.mTitel||"",text:a.mText,quelle:a.mQuelle||""}:null,vignette:null,aussagen:a.aussagen.map(x=>x.text||"")}))};
+}
+function coTestDruckHTML(m){
+ const E=escPDF,beJe=CHECKOUT_BE_NACH_FEHLERN[0],max=m.aufgaben.length*beJe;
+ const leer=w=>`<span class="blank" style="min-width:${w}px"></span>`;
+ const kopfTitel=m.titel.replace(/^KPrim-Test\s*·\s*/,"");
+ const kreuz='<span class="box"></span>';
+ const vig=v=>v&&v.text?`<div class="vig"><div class="vig-t">Fallvignette${v.titel?": "+E(v.titel):""}</div>${coSituationHTML({text:v.text},true,!!v.zeilen,true)}</div>`:"";
+ const aufg=m.aufgaben.map((q,i)=>`<div class="aufg">
+  <div class="aufg-k">Aufgabe ${i+1}</div>
+  ${vig(q.vignette)}
+  ${q.material?`<div class="vig"><div class="vig-t">Material${q.material.titel?": "+E(q.material.titel):""}</div>${coAbsaetzeHTML(q.material.text,true)}${q.material.quelle?`<p class="quelle">${E(q.material.quelle)}</p>`:""}</div>`:""}
+  ${q.kontext.trim()?coAbsaetzeHTML(q.kontext,true):""}
+  <p class="stamm">${E(q.stamm)}</p>
+  <table class="aus"><tr><th class="n">Nr.</th><th>Aussage</th><th class="rf">richtig</th><th class="rf">falsch</th></tr>
+  ${q.aussagen.map((t,j)=>`<tr><td class="n">${j+1}</td><td>${E(t)}</td><td class="rf">${kreuz}</td><td class="rf">${kreuz}</td></tr>`).join("")}</table>
+  <div class="be">____ / ${beJe} BE</div></div>`).join("");
+ const umr=[];for(let be=max;be>=0;be--)umr.push([be,notenpunkteAusProzent(be/max*100)]);
+ return`<div class="schule">Staatliche FOSBOS Weilheim</div>
+ <div class="kopf"><div class="kt">KPrim-Test</div><div class="kf">Datum: ${leer(150)}</div><div class="kf">Name: ${leer(210)}</div></div>
+ ${kopfTitel?`<div class="thema">${E(kopfTitel)}</div>`:""}
+ <div class="hinweis"><b>So funktioniert der Test:</b> Lesen Sie die Fallvignette genau. Jede Aufgabe besteht aus einem Einleitungssatz und vier Aussagen, die den Satz fortführen. Kreuzen Sie bei jeder Aussage an, ob sie richtig oder falsch ist.<br>Bewertung je Aufgabe: 4 richtige Entscheidungen = ${beJe} BE · 3 = ${CHECKOUT_BE_NACH_FEHLERN[1]} BE · 2 = ${CHECKOUT_BE_NACH_FEHLERN[2]} BE · weniger = 0 BE. Gesamt: ${max} BE</div>
+ ${vig(m.vignette)}
+ ${aufg}
+ <div class="summe"><div class="sz">Gesamtpunktzahl: ${leer(60)} / ${max} Bewertungseinheiten (BE), das entspricht ${leer(60)} Punkten.</div>
+  <table class="umr"><tr><th>BE</th>${umr.map(x=>`<td>${x[0]}</td>`).join("")}</tr><tr><th>Punkte</th>${umr.map(x=>`<td>${x[1]}</td>`).join("")}</tr></table>
+  <div class="quelle">Umrechnung nach dem Bewertungsschlüssel Pädagogik/Psychologie (Prozent der erreichbaren BE).</div></div>
+ <div class="erfolg">Viel Erfolg!</div>`;
+}
+function coDruckFenster(titel,html){
+ const win=window.open("","_blank","width=900,height=800");
+ if(!win){toast("Das PDF-Fenster wurde vom Browser blockiert. Bitte Pop-ups für die Campus-App erlauben.");return;}
+ win.document.write(`<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${escPDF(titel)}</title><style>
+ @page{size:A4;margin:16mm 16mm 14mm}
+ *{box-sizing:border-box}
+ body{font-family:Arial,Helvetica,sans-serif;color:#111;line-height:1.5;font-size:11.5pt;margin:0}
+ .print-note{background:#f3f3f3;padding:8px 10px;border-radius:8px;margin-bottom:14px;font-size:12px}
+ @media print{.print-note{display:none}}
+ .schule{text-align:center;font-size:15pt;font-weight:700;letter-spacing:.03em;margin:0 0 10px}
+ .kopf{display:flex;gap:18px;align-items:flex-end;border-bottom:2px solid #111;padding-bottom:6px;margin-bottom:8px}
+ .kt{font-size:19pt;font-weight:700;flex:1}
+ .kf{white-space:nowrap;font-size:11.5pt}
+ .blank{display:inline-block;border-bottom:1px solid #111;height:1em;vertical-align:baseline}
+ .thema{font-size:11pt;color:#333;margin:0 0 10px}
+ .hinweis{border:1px solid #999;border-radius:6px;padding:7px 10px;font-size:10pt;margin:0 0 12px}
+ .vig{border:1px solid #999;border-left:5px solid #1d6fb8;border-radius:6px;padding:8px 12px;margin:0 0 12px;break-inside:avoid}
+ .vig-t{font-weight:700;margin:0 0 4px}
+ .aufg{margin:0 0 14px;break-inside:avoid}
+ .aufg-k{font-weight:700;font-size:12.5pt;background:#e8eef5;padding:3px 8px;border-radius:4px;margin:0 0 6px}
+ .stamm{font-weight:700;margin:6px 0}
+ table.aus{width:100%;border-collapse:collapse}
+ table.aus th,table.aus td{border:1px solid #666;padding:5px 7px;vertical-align:middle;text-align:left}
+ table.aus th{background:#f1f1f1;font-size:10pt}
+ .n{width:34px;text-align:center!important}
+ .rf{width:62px;text-align:center!important}
+ .box{display:inline-block;width:15px;height:15px;border:1.6px solid #111;border-radius:2px}
+ .be{text-align:right;margin-top:3px}
+ .quelle{font-size:9pt;color:#555;margin:3px 0 0}
+ .summe{border-top:2px solid #111;margin-top:14px;padding-top:10px;break-inside:avoid}
+ .sz{font-size:12pt;font-weight:700;margin-bottom:8px}
+ table.umr{border-collapse:collapse;font-size:9.5pt;margin:6px 0 4px}
+ table.umr th,table.umr td{border:1px solid #888;padding:2px 6px;text-align:center}
+ table.umr th{background:#f1f1f1;text-align:left}
+ .erfolg{text-align:center;font-size:15pt;font-weight:700;margin-top:18px}
+ .co-situation p{margin:0 0 6px}
+ </style></head><body><div class="print-note">Im Druckdialog „Als PDF sichern“ bzw. „PDF“ auswählen.</div>${html}<script>window.onload=function(){setTimeout(function(){window.print()},300)}<\/script></body></html>`);
+ win.document.close();
+}
+function coTestDruckEditor(){
+ const e=coEditor;if(!e)return;
+ if(!e.aufgaben.some(a=>a.stamm.trim()||a.aussagen.some(x=>x.text.trim()))){toast("Der Test ist noch leer.");return;}
+ coDruckFenster("KPrim-Test",coTestDruckHTML(coDruckModellAusEditor(e)));
+}
+async function coTestDruckId(id){
+ if(!isTeacher())return;
+ try{
+  const c=await getDoc(doc(db,"checkouts",id));
+  if(!c.exists()){toast("Check-out nicht gefunden.");return;}
+  coDruckFenster("KPrim-Test",coTestDruckHTML(coDruckModellAusCheckout({id,...c.data()})));
+ }catch(e){console.error("Test drucken:",e);toast("Der Test konnte nicht geöffnet werden.");}
+}
+window.coTestDruckId=coTestDruckId;window.coTestDruckEditor=coTestDruckEditor;
 // ---- PDF (Druckfenster „Als PDF sichern") ----
 function coPdfBlock(co,erg,name){
  return`<div class="item"style="background:#f5f7f8"><strong>${escPDF(name)}</strong><div>${erg?.ausgewertet?`${erg.be} von ${erg.maxBE} BE (${String(erg.prozent).replace(".",",")} %) · <b>${npText(erg.notenpunkte)}</b>`:"nicht teilgenommen"}</div></div>
