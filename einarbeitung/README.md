@@ -22,6 +22,7 @@ Als Beispiel für einen fertigen Inhalt dient `inhalte/pp01.json`.
 ## Aufbau der Datei
 
 - `titel`, `einleitung` (optional): Überschrift und kurze Einführung.
+- `modulart` (`selbstlern` oder `apt`), `lb` (Lernbereich 1–4) und `nr` (Nummer des Inhalts im Lehrplan) steuern die einheitliche Beschriftung „LB3 · Nr. 18 · Titel“ in der Kurswahl. Fehlt `nr`, wird sie aus der Inhaltsliste der App genommen.
 - `abschnitte`: Liste der Seiten. Jede Seite hat `titel`, optional `kicker` (kleine Zeile darüber) und `bloecke`.
 - `bloecke`: Inhalte und Aufgaben in der Reihenfolge, in der sie auf der Seite stehen.
 - Text: `**fett**` mit doppelten Sternen. Ein Absatz, der mit `- ` beginnt, wird zur Liste.
@@ -37,12 +38,19 @@ Als Beispiel für einen fertigen Inhalt dient `inhalte/pp01.json`.
 | `notizen` | `items` (Liste von Aussagen als Notizzettel), optional `beschriftung` |
 | `schema` | `links`, `rechts`, `mitte` (zwei Zeilen), optional `beschriftung` |
 | `fussnote` | `text` |
+| `aufbau` | `zeilen`: Liste von `{label, text, farbe}` (farbe: pfirsich, blau, gruen, gelb, rot), optional `legende`, `beschriftung` |
 
 ## Aufgabentypen
 
 | typ | Felder |
 | --- | --- |
 | `mc` | `frage`, `optionen` (Liste), `richtig` (Nummer, Zählung ab 0), `erklaerung` |
+
+Bei allen anderen Aufgabentypen kann zusätzlich `erklaerung` stehen. Der Text erscheint nach dem Überprüfen.
+
+| typ | Felder |
+| --- | --- |
+| `reihenfolge` | `titel`, `absaetze` (Liste in der richtigen Reihenfolge) |
 | `lueckentext` | `titel`, `text` mit `{{Wort}}` für Lücken, `woerter` (Auswahl inkl. Ablenker) |
 | `zuordnung` | `titel`, `paare`: Liste von `[Begriff, Erklärung]` |
 | `sortieren` | `titel`, `kategorien`: Liste von `{name, items}`, jede Aussage wird einer Spalte zugeordnet |
@@ -70,8 +78,15 @@ Als Beispiel für einen fertigen Inhalt dient `inhalte/pp01.json`.
 | LB 1 | `pp1a2` | Ziele und Handlungen der Erziehung |
 | LB 1 | `pp1a3` | Beziehung zwischen Erziehenden und Zu-Erziehenden |
 | LB 1 | `pp1a4` | Einrichtungen der Erziehung |
+| LB 3 | `pp04a` | Erziehung als soziale Beziehung (Nr. 18) |
+| LB 3 | `pp04b` | Erziehung als Austausch von Informationen (Nr. 18) |
+| LB 3 | `pp04c` | Erziehung als beabsichtigte Lernhilfe (Nr. 18) |
+| LB 3 | `pp04d` | Erziehung als soziales Handeln (Nr. 18) |
+| LB 3 | `pp05` | Erziehungsstile nach Baumrind (Nr. 20) |
 | LB 3 | `pp06` | Mündigkeit nach Roth |
 | LB 3 | `pp07` | Bildungs- und Erziehungsbereiche des BayBEP |
+| LB 3 | `pp21a` | Der Kindergarten als Erziehungs- und Bildungseinrichtung (Nr. 21) |
+| LB 3 | `pp21b` | Der Bayerische Bildungs- und Erziehungsplan: Medien, Umwelt, Gesundheit (Nr. 21) |
 | LB 2 | `pp2a1` | Speichersysteme des Langzeitgedächtnisses nach Markowitsch |
 | LB 2 | `pp10` | Emotion: Begriff, Komponenten und Emotionsregulation |
 | LB 2 | `pp11` | Motivation und Attributionstheorie nach Weiner |

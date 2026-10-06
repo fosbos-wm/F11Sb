@@ -189,6 +189,7 @@ function shell(t,key,build){
     }
     build(wrap,function(ok){
       RES[key]=!!ok;store.set('res',RES);updateProgress();
+      if(t.erklaerung&&t.typ!=='mc')wrap.append(h('div',{class:'fb info'},md(h('span'),t.erklaerung)));
       if(!ok)wrap.append(h('button',{class:'btn ghost small',type:'button',onclick:function(){delete RES[key];store.set('res',RES);draw();updateProgress();}},'Nochmal versuchen'));
     });
   }
