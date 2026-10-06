@@ -4993,7 +4993,7 @@ async function ppmProjektSeite(m){
  const ms=ph&&ph.meilensteine&&ph.meilensteine.length?`<h3>Meilensteine im Team</h3><ol style="margin:4px 0 0 18px;line-height:1.55">${ph.meilensteine.map(x=>`<li>${esc(x)}</li>`).join("")}</ol>`:"";
  return`${ppmKopf(m)}
  <div class="ppm-box"><h2>Projekt</h2>${ph&&ph.auftrag?`<p>${esc(ph.auftrag.titel)}</p>`:`<p>Projekt zu Lernbereich ${m.lb}.</p>`}${ms}
-  <div style="margin-top:12px"><button type="button" class="ppm-btn primaer" data-ppm="projekt-oeffnen" data-lb="${m.lb}">Zum Projekt: Teams und Meilensteine →</button></div></div>
+  ${ph&&!ph.einstieg?`<div style="margin-top:12px"><button type="button" class="ppm-btn primaer" data-ppm="projekt-oeffnen" data-lb="${m.lb}">Zum Projekt: Teams und Meilensteine →</button></div>`:""}</div>
  <div class="ppm-box"><h2>Einheiten im Projekt</h2>
   <p style="color:var(--muted);font-size:13px">Einheiten sind kleine Bausteine, die du immer wieder zwischendurch einfügen kannst. Sie zählen zur Projektzeit.</p>
   ${eigZeilen}${alt}${!eig.length&&!alt?`<p class="ppm-leer">Noch keine Einheit eingefügt.</p>`:""}
@@ -5120,7 +5120,7 @@ async function ppmAptSeite(m){
      <div class="ppm-frage" style="margin:0"><b>Meine Antwort</b><p style="white-space:pre-wrap;line-height:1.5">${esc(mein.aptAntwort||"–")}</p></div>${loesungBox}</div>
     <div class="ppm-bew"><span style="align-self:center;font-size:12px">Meine Antwort stimmt mit der Lösung überein:</span>${[["ja","ganz"],["teils","teilweise"],["nein","noch nicht"]].map(([k,t])=>`<button type="button" class="${bew===k?"an":""}" data-ppm="apt-bewerten" data-id="${esc(m.id)}" data-k="${k}">${t}</button>`).join("")}</div>`
    :`<p class="ppm-leer">Die Lösung erscheint, sobald du deine Bearbeitung abgegeben hast.</p>`}`;
- const alt=(()=>{const ph=PROJEKT_PHASEN.find(x=>x.lbNum===Number(m.lb));return ph?`<div class="ppm-zeile" style="border:0"><button type="button" class="ppm-btn klein" data-ppm="apt-alt" data-lb="${m.lb}">Bisherige Ansicht: Prüfungsinhalte mit je 4 Schritten →</button></div>`:"";})();
+ const alt="";
  return`${ppmKopf(m,kopfInfo)}
  <div class="ppm-box">${s1}</div><div class="ppm-box">${s2}</div><div class="ppm-box">${s3}</div><div class="ppm-box">${s4}</div>${alt}${footer()}`;
 }
@@ -5224,7 +5224,7 @@ async function ppmKlick(e){
   if(aktion==="experiment"){openExperimentStunde(m&&m.modul==="experiment"?ppmExpTeile(m):null);return;}
   if(aktion==="ea-start"){window.__eaRueck=async()=>{await render();};openEinarbeitung(b.dataset.ea);return;}
   if(aktion==="ea-stand"){await ppmEaStandDialog(b.dataset.ea);return;}
-  if(aktion==="projekt-oeffnen"){const ph=PROJEKT_PHASEN.find(p=>p.lbNum===Number(b.dataset.lb));if(ph){activePPModul=null;activePhaseDetail=ph.id+":projekt";await refresh();}return;}
+  if(aktion==="projekt-oeffnen"){const ph=PROJEKT_PHASEN.find(p=>p.lbNum===Number(b.dataset.lb));if(ph&&!ph.einstieg){activePPModul=null;activePhaseDetail=ph.id+":projekt";await refresh();}return;}
   if(aktion==="tafel"){openWhiteboard(id);return;}
   if(aktion==="tafel-neu"&&m){const t=await ppmTafelAnlegen(m.titel);await updateDoc(doc(db,"ppModule",m.id),{tafelId:t});await ppmLaden(true);openWhiteboard(t);return;}
   if(aktion==="einheit-neu"&&m){await ppmDialog(null,"experiment",null,{projektId:m.id});return;}
@@ -5269,7 +5269,6 @@ async function ppmKlick(e){
    const feld=b.dataset.feld;if(m[feld+"Datei"]&&m[feld+"Datei"].url)deleteCampusDatei(m[feld+"Datei"].url);
    await updateDoc(doc(db,"ppModule",m.id),{[feld+"Datei"]:null});await ppmLaden(true);await refresh();return;}
   if(aktion==="apt-antworten"&&m&&isTeacher()){await ppmAptAntwortenDialog(m);return;}
-  if(aktion==="apt-alt"){const ph=PROJEKT_PHASEN.find(x=>x.lbNum===Number(b.dataset.lb));if(ph){activePPModul=null;activePhaseDetail=ph.id+":apt";await refresh();}return;}
   if(aktion==="apt-zwischen"&&m&&!isTeacher()){await ppmStundeSchreiben(m,{aptAntwort:($("aptAntwort")||{}).value||""});toast("Zwischengespeichert.");await refresh();return;}
   if(aktion==="apt-abgeben"&&m&&!isTeacher()){
    const t=(($("aptAntwort")||{}).value||"").trim();
@@ -5413,10 +5412,9 @@ async function renderPaedagogikPhasenZeitstrahl(fach,fortschrittMap,heute){
  if(activePhaseDetail){
   const [phId,teil]=String(activePhaseDetail).split(":");
   const ph=projektPhaseById(phId);
-  if(ph){
+  if(ph&&!ph.einstieg&&teil!=="apt"){
    const extra={coDaten:await ladeCheckoutDaten()};
-   if(ph.einstieg&&teil!=="apt"&&isTeacher())extra.stunde=await ladeStundenStatus(ph);
-   return renderPPTeilAnsicht(ph,teil==="apt"?"apt":"projekt",fortschrittMap,meineTeams,heute,extra);
+   return renderPPTeilAnsicht(ph,"projekt",fortschrittMap,meineTeams,heute,extra);
   }
   activePhaseDetail=null;
  }
@@ -5571,14 +5569,9 @@ function renderPPTeilAnsicht(ph,teil,fortschrittMap,meineTeams,heute,extra={}){
  const t=ppSaettigung(fs.prozent);
  const anderer=teil==="projekt"?"apt":"projekt";
  const kopf=`<div class="card pp-teilkopf"style="border-left:5px solid ${c}">
-  <div class="pp-teilkopf-farbe"style="background-color:${ppMix(c,t)};color:${t>0.55?"#fff":"#17384f"}${teil==="apt"?";background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.16) 0 6px,transparent 6px 12px)":""}"><span>${ppTeilIcon(teil,ph)}</span><b>${fs.prozent}%</b></div>
   <div style="flex:1;min-width:220px">
    <div class="kicker"style="color:${c}">${esc(ph.lb)} · ${ppTeilName(teil,ph).toUpperCase()} · ${fmtKurz(wochen[0].start)}–${fmtKurz(wochen[wochen.length-1].end)}</div>
-   <h2 style="margin:4px 0">${esc(teil==="projekt"?ph.titel:"Abschlussprüfungs-Training "+ph.lb)}</h2>
-   <div class="pp-budget"style="font-size:13px">⏳ ${esc(budget.text)} ${tempo?`<span class="pp-tempo"style="background:${tempo.farbe}">${esc(tempo.txt)}</span>`:""}</div>
-   <div class="pp-balken"><div style="width:${fs.prozent}%;background:${c}"></div><i style="left:${Math.round(budget.soll*100)}%"title="Hier solltest du laut Zeitbudget ungefähr stehen"></i></div>
-   <small style="color:var(--muted)">Balken = dein Fortschritt · Strich = Soll laut Zeitbudget</small>
-   ${ppWochenZellenHTML(wochen,c,heute)}
+   <h2 style="margin:4px 0">${esc(ph.titel)}</h2>
   </div>
  </div>`;
 
@@ -5621,8 +5614,7 @@ function renderPPTeilAnsicht(ph,teil,fortschrittMap,meineTeams,heute,extra={}){
    </div>`;}).join("")}</div>
   <p style="font-size:11px;color:var(--muted);margin-top:10px">① Prüfungsfrage · ② Inhalte & Aufgabeneingrenzung · ③ Basis-Check · ④ Lernprodukt hochladen & Vorkorrektur umsetzen. Den K-Prim-Test schreibst du als 🏁 Check-out am Ende der Woche.</p>`;
  }
- return`<button class="secondary"onclick="closePhaseDetail()">← Zurück zum Zeitstrahl</button>
- ${ppMiniZeitstrahlHTML(fortschrittMap,meineTeams,heute,`${ph.id}:${teil}`,extra.coDaten)}
+ return`<button class="secondary"onclick="closePhaseDetail()">← Zurück zum Unterrichtsplan</button>
  ${kopf}
  <div class="card"style="margin-top:14px">${inhalt}</div>
  ${ppKprimBereichHTML(ph,teil,extra.coDaten,heute)}
