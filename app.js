@@ -1391,14 +1391,14 @@ const PP_EINHEITEN=[
   praxis:"Kaugummi-Versuch in Kleingruppen (Gruppe A ohne, Gruppe B mit Kaugummi); die Ergebnisse werden anonym mit der Klasse verglichen.",
   ziele:["Ich kann das Experiment als wissenschaftliche Methode beschreiben (Hypothese, unabhängige und abhängige Variable, Versuchs- und Kontrollgruppe).","Ich kann die Kennzeichen Willkürlichkeit, Variierbarkeit und Wiederholbarkeit erklären und an einem Beispiel erkennen und begründen.","Ich kann Ergebnisse eines Experiments vergleichen und kritisch beurteilen, ob sie sich verallgemeinern lassen."]},
  // ---------- LB 1 · Abschlussprüfungs-Training ----------
- {id:"pp1a1",phase:"lb1",typ:"apt",nr:"2, 6",bezug:["pp01","pp02"],thema:"Gegenstand der Pädagogik: Erziehungswissenschaft, Erziehungspraxis, Erziehung und Bildung",
-  planung:"Erziehungswissenschaft (Theorie) und Erziehungspraxis unterscheiden und aufeinander beziehen; Erziehung und Bildung definieren und abgrenzen.",
-  ziele:["Ich kann Erziehungswissenschaft und Erziehungspraxis als Gegenstand der Pädagogik unterscheiden und ihren Zusammenhang erläutern.","Ich kann die Begriffe Erziehung und Bildung definieren und voneinander abgrenzen.","Ich kann den Gegenstand der Pädagogik von dem der Psychologie abgrenzen und Wechselwirkungen aufzeigen."],
-  pruefung:"Grenzen Sie die Erziehungswissenschaft von der Erziehungspraxis ab und erläutern Sie an einem Beispiel aus Ihrem Praktikum, wie sich beide Bereiche gegenseitig beeinflussen. Unterscheiden Sie dabei die Begriffe Erziehung und Bildung.",
+ {id:"pp1a1",phase:"lb1",typ:"apt",nr:"2, 6",bezug:["pp01","pp02"],thema:"Gegenstand der Pädagogik: Erziehungspraxis, Erziehungswissenschaft und die fünf Gegenstandsbereiche",
+  planung:"Erziehungspraxis und Erziehungswissenschaft als Teile der Pädagogik unterscheiden; die fünf Gegenstandsbereiche der Pädagogik (Erziehungswirklichkeit) kennen und an Beispielen zuordnen.",
+  ziele:["Ich kann Pädagogik als Oberbegriff für Erziehungspraxis und Erziehungswissenschaft erklären und beide voneinander unterscheiden.","Ich kann die fünf Gegenstandsbereiche der Pädagogik nennen und Beispiele aus der Praxis den Bereichen zuordnen.","Ich kann den Gegenstand der Pädagogik von dem der Psychologie abgrenzen und Wechselwirkungen aufzeigen."],
+  pruefung:"Grenzen Sie die Erziehungswissenschaft von der Erziehungspraxis ab und erläutern Sie an einem Beispiel aus Ihrem Praktikum, wie sich beide Bereiche gegenseitig beeinflussen. Ordnen Sie Ihr Beispiel einem der fünf Gegenstandsbereiche der Pädagogik zu.",
   kprim:[{frage:"Welche Aussagen zum Gegenstand der Pädagogik treffen zu?",statements:[
-   {text:"Die Erziehungswissenschaft beschreibt, erklärt und reflektiert Erziehungsvorgänge systematisch.",correct:true},
-   {text:"Erziehungspraxis meint das konkrete erzieherische Handeln, z. B. in Familie oder Kita.",correct:true},
-   {text:"Bildung ist ausschließlich das, was von außen durch Erziehende bewirkt wird.",correct:false},
+   {text:"Die Erziehungswissenschaft untersucht, wie Erziehung abläuft und wirkt, und begründet Theorien.",correct:true},
+   {text:"Erziehungspraxis meint das tatsächliche erzieherische Handeln mit erzieherischer Absicht, z. B. in Familie oder Kita.",correct:true},
+   {text:"Erziehung findet ausschließlich in der Familie statt, deshalb gehören Schulen und Kitas nicht zum Gegenstand der Pädagogik.",correct:false},
    {text:"Die Pädagogik befasst sich ausschließlich mit dem Erleben und Verhalten einzelner Personen.",correct:false}]}]},
  {id:"pp1a2",phase:"lb1",typ:"apt",nr:"3",bezug:[],thema:"Ziele und Handlungen der Erziehung",
   planung:"Erziehungsziele (Herkunft, Funktion) und Erziehungshandlungen bzw. -maßnahmen aufeinander beziehen.",
@@ -5501,7 +5501,7 @@ async function renderPaedagogikPhasenZeitstrahl(fach,fortschrittMap,heute){
 }
 
 // Kurznamen der Inhalte für die kompakte Lernweg-Ansicht.
-const PP_KURZ={pp01:"Erleben und Verhalten",pp02:"Wissenschaftliche Aussagen",pp03:"Das Experiment",pp1a1:"Erziehung und Bildung",pp1a2:"Ziele der Erziehung",pp1a3:"Erziehungsbeziehung",pp1a4:"Einrichtungen",pp04:"Merkmale von Erziehung",pp05:"Baumrind",pp06:"Mündigkeit (Roth)",pp07:"BayBEP",pp09:"Wahrnehmung",pp2p2:"Mehrspeichermodell",pp12:"Lernstrategien",pp2a1:"Gedächtnis (Markowitsch)",pp10:"Emotion",pp11:"Motivation (Weiner)",pp4p1:"Begriff Lernen",pp13:"Pawlow",pp14:"Thorndike und Skinner",pp15:"Bandura",pp16:"Medien und Lernen"};
+const PP_KURZ={pp01:"Erleben und Verhalten",pp02:"Wissenschaftliche Aussagen",pp03:"Das Experiment",pp1a1:"Gegenstand der Pädagogik",pp1a2:"Ziele der Erziehung",pp1a3:"Erziehungsbeziehung",pp1a4:"Einrichtungen",pp04:"Merkmale von Erziehung",pp05:"Baumrind",pp06:"Mündigkeit (Roth)",pp07:"BayBEP",pp09:"Wahrnehmung",pp2p2:"Mehrspeichermodell",pp12:"Lernstrategien",pp2a1:"Gedächtnis (Markowitsch)",pp10:"Emotion",pp11:"Motivation (Weiner)",pp4p1:"Begriff Lernen",pp13:"Pawlow",pp14:"Thorndike und Skinner",pp15:"Bandura",pp16:"Medien und Lernen"};
 function ppKurz(e){return e?(PP_KURZ[e.id]||e.thema):"";}
 // ---- Ebene 1: Lernweg mit 8 Stationen ----
 // Alle Teile in Zeitreihenfolge (Projekt, APT je Lernbereich).
@@ -6724,37 +6724,37 @@ const CO_AUFGABENBANK=[
   ]
  },
  {
-  "id": "erz-bildung-jugendtreff",
-  "titel": "Erziehung und Bildung im Jugendtreff",
+  "id": "paed-bereiche-jugendtreff",
+  "titel": "Die Gegenstandsbereiche der Pädagogik im Jugendtreff",
   "lbNum": 1,
   "vignette": {
    "titel": "Jugendtreff",
    "zeilen": false,
-   "text": "In Ihrem Praktikum im Jugendtreff bietet Sozialpädagoge Herr Yilmaz einen Kochabend an. Als der 15-jährige Jan abfällig über eine Mitschülerin spricht, weist Herr Yilmaz ihn ruhig darauf hin, wie das bei ihr ankommt. Die 16-jährige Lara liest nach dem Abend selbst über gesunde Ernährung nach und bereitet zu Hause zwei neue Rezepte zu."
+   "text": "In Ihrem Praktikum im Jugendtreff bietet Sozialpädagoge Herr Yilmaz einen Kochabend an. Die Jugendlichen dürfen das Menü selbst mitbestimmen. Als der 15-jährige Jan abfällig über eine Mitschülerin spricht, weist Herr Yilmaz ihn ruhig darauf hin, wie das bei ihr ankommt. Jan nimmt den Hinweis an, weil er Herrn Yilmaz vertraut."
   },
   "kontext": "",
-  "stamm": "Erziehung und Bildung werden fachlich zutreffend unterschieden, wenn …",
-  "pruefen": "Neu erstellt (Claude) nach der ISB-Checkliste der App. Bitte fachlich und passend zu deinem Unterricht prüfen.",
+  "stamm": "Die Situation wird fachlich zutreffend den Gegenstandsbereichen der Pädagogik zugeordnet, wenn …",
+  "pruefen": "Neu erstellt (Claude) nach dem PDF „Gegenstand der Pädagogik“ (fünf Gegenstandsbereiche). Bitte fachlich und passend zu deinem Unterricht prüfen.",
   "aussagen": [
    {
-    "text": "… der Hinweis an Jan als Erziehungshandlung gilt, weil Herr Yilmaz dessen Verhalten absichtsvoll beeinflussen möchte.",
+    "text": "… der Hinweis an Jan und seine Reaktion dem Bereich „Beziehung zwischen Erzieher und zu Erziehendem“ zugeordnet werden, weil das Vertrauen zu Herrn Yilmaz beeinflusst, ob Jan den Hinweis annimmt.",
     "richtig": true,
-    "erklaerung": "Erziehung ist durch die Absicht der Erziehenden bestimmt, Verhalten oder Fähigkeiten zu beeinflussen."
+    "erklaerung": "Erziehung geschieht zwischen Menschen. Vertrauen erleichtert es, Kritik und Unterstützung anzunehmen."
    },
    {
-    "text": "… Laras Recherche und ihr Ausprobieren als Bildungsprozess gelten, da sie ihr Wissen und Können durch eigene Tätigkeit erweitert.",
+    "text": "… der Jugendtreff als „Einrichtung der Erziehung“ gilt, da er Jugendlichen Räume für Mitbestimmung und Freizeit bietet.",
     "richtig": true,
-    "erklaerung": "Bildung ist die aktive Auseinandersetzung des Menschen mit der Welt und seine Selbstentwicklung."
+    "erklaerung": "Jugendarbeit schafft Räume für Mitbestimmung und Freizeit. Der Jugendtreff ist eine Einrichtung der Erziehung."
    },
    {
-    "text": "… Bildung erst außerhalb pädagogischer Einrichtungen möglich wird, sodass das Angebot des Abends als Erziehung eingeordnet werden muss.",
+    "text": "… der Hinweis an Jan dem Bereich „Einrichtungen der Erziehung“ zugeordnet wird, weil er im Jugendtreff stattfindet.",
     "richtig": false,
-    "erklaerung": "Bildung kann auch in Einrichtungen stattfinden und durch Angebote angeregt werden."
+    "erklaerung": "Der Hinweis ist eine erzieherische Handlung mit einer Absicht und gehört zu „Ziele und Handlungen der Erziehung“. Die Einrichtung ist der Jugendtreff selbst."
    },
    {
-    "text": "… Erziehung und Bildung unabhängig voneinander verlaufen, weshalb die Angebote des Sozialpädagogen Laras Lernen unbeeinflusst lassen.",
+    "text": "… Erziehung im Jugendtreff nicht zur Pädagogik zählt, weil Erziehung nur in der Familie stattfindet.",
     "richtig": false,
-    "erklaerung": "Erziehung kann Bildung anregen und unterstützen; beide beeinflussen sich wechselseitig."
+    "erklaerung": "Erziehung findet auch in Einrichtungen wie Kita, Schule oder Jugendzentrum statt und ist Gegenstand der Pädagogik."
    }
   ]
  },
@@ -7070,7 +7070,7 @@ const CHECKOUT_VORLAGEN_ALLE=[
   "datum": "2026-10-16",
   "aufgaben": [
    "paed-lehner",
-   "erz-bildung-jugendtreff",
+   "paed-bereiche-jugendtreff",
    "erz-ziele-klassendienst"
   ]
  },
@@ -8759,7 +8759,7 @@ const WB_VORLAGEN=[
   {type:"text",x:x-480,y:y-500,w:960,h:60,fs:20,text:"Ordne die Post-its zu: Gehört die Frage zur Psychologie, zur Pädagogik oder zu beiden? Ergänze eigene Beispiele aus deinem Praktikum."},
   {type:"frame",x:x-600,y:y-400,w:390,h:600,c:"lila",text:"Psychologie: Erleben und Verhalten"},
   {type:"frame",x:x-195,y:y-400,w:390,h:600,c:"gruen",text:"Beide: Wechselwirkung"},
-  {type:"frame",x:x+210,y:y-400,w:390,h:600,c:"orange",text:"Pädagogik: Erziehung und Bildung"},
+  {type:"frame",x:x+210,y:y-400,w:390,h:600,c:"orange",text:"Pädagogik: Erziehung und alles, was dabei wichtig ist"},
   {type:"frame",x:x-600,y:y+230,w:1200,h:230,c:"grau",text:"Beispiele aus meinem Praktikum"},
   {type:"note",x:x-1000,y:y-400,w:215,h:150,fs:16,c:"gelb",text:"Warum zieht sich ein Kind bei Kritik zurück?"},
   {type:"note",x:x-1000,y:y-230,w:215,h:150,fs:16,c:"gelb",text:"Wie kann die Fachkraft das Kind ermutigen?"},
