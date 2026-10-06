@@ -9329,6 +9329,7 @@ function coTestDruckHTML(m){
  const leer=w=>`<span class="blank" style="min-width:${w}px"></span>`;
  const kopfTitel=m.titel.replace(/^KPrim-Test\s*·\s*/,"");
  const kreuz='<span class="box"></span>';
+ const logoUrl=typeof location!=="undefined"?new URL("logo.jpg",location.href).href:"logo.jpg"; // absolute Adresse, weil das Druckfenster leer startet
  const vig=v=>v&&v.text?`<div class="vig"><div class="vig-t">Fallvignette${v.titel?": "+E(v.titel):""}</div>${coSituationHTML({text:v.text},true,!!v.zeilen,true)}</div>`:"";
  const aufg=m.aufgaben.map((q,i)=>`<div class="aufg">
   <div class="aufg-k">Aufgabe ${i+1}</div>
@@ -9340,7 +9341,7 @@ function coTestDruckHTML(m){
   ${q.aussagen.map((t,j)=>`<tr><td class="n">${j+1}</td><td>${E(t)}</td><td class="rf">${kreuz}</td><td class="rf">${kreuz}</td></tr>`).join("")}</table>
   <div class="be">____ / ${beJe} BE</div></div>`).join("");
  const umr=[];for(let be=max;be>=0;be--)umr.push([be,notenpunkteAusProzent(be/max*100)]);
- return`<div class="schule">Staatliche FOSBOS Weilheim</div>
+ return`<div class="kopfzeile"><div class="logo"><img src="${logoUrl}" alt="Logo FOSBOS Weilheim"></div><div class="schule">Staatliche FOSBOS Weilheim</div></div>
  <div class="kopf"><div class="kt">KPrim-Test</div><div class="kf">Datum: ${leer(150)}</div><div class="kf">Name: ${leer(210)}</div></div>
  ${kopfTitel?`<div class="thema">${E(kopfTitel)}</div>`:""}
  <div class="hinweis"><b>So funktioniert der Test:</b> Lesen Sie die Fallvignette genau. Jede Aufgabe besteht aus einem Einleitungssatz und vier Aussagen, die den Satz fortführen. Kreuzen Sie bei jeder Aussage an, ob sie richtig oder falsch ist.<br>Bewertung je Aufgabe: 4 richtige Entscheidungen = ${beJe} BE · 3 = ${CHECKOUT_BE_NACH_FEHLERN[1]} BE · 2 = ${CHECKOUT_BE_NACH_FEHLERN[2]} BE · weniger = 0 BE. Gesamt: ${max} BE</div>
@@ -9360,7 +9361,10 @@ function coDruckFenster(titel,html){
  body{font-family:Arial,Helvetica,sans-serif;color:#111;line-height:1.5;font-size:11.5pt;margin:0}
  .print-note{background:#f3f3f3;padding:8px 10px;border-radius:8px;margin-bottom:14px;font-size:12px}
  @media print{.print-note{display:none}}
- .schule{text-align:center;font-size:15pt;font-weight:700;letter-spacing:.03em;margin:0 0 10px}
+ .kopfzeile{position:relative;min-height:18mm;margin:0 0 12px}
+ .logo{position:absolute;left:0;top:0;width:18mm;height:18mm;overflow:hidden}
+ .logo img{position:absolute;width:89.6mm;left:-7.5mm;top:-2.98mm}
+ .schule{text-align:center;font-size:15pt;font-weight:700;letter-spacing:.03em;padding-top:5.5mm}
  .kopf{display:flex;gap:18px;align-items:flex-end;border-bottom:2px solid #111;padding-bottom:6px;margin-bottom:8px}
  .kt{font-size:19pt;font-weight:700;flex:1}
  .kf{white-space:nowrap;font-size:11.5pt}
