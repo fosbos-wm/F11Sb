@@ -3382,7 +3382,7 @@ async function anstehendBoxHTML(wochenplan){
   const offen=PPM.liste.map(m=>({m,p:ppmFort(m),i:ppmSwIndex(m.start)})).filter(x=>x.p&&!x.p.done&&x.i>=0&&x.i<=jIdx);
   offen.slice(0,4).forEach(x=>{
    const alt=!(inWoche&&x.i===jIdx),sw=swById(x.m.start),T=PPM_TYPEN[x.m.modul]||{};
-   zeilen.push({ord:alt?1:2,html:`<div class="an-zeile${alt?" spaet":""}"><span class="an-icon">${T.icon||"📘"}</span><div><b>${esc(x.m.titel||T.name||"Modul")}</b><small>Pädagogik/Psychologie · ${alt?`noch offen aus KW ${sw?ppmKW(sw):""}`:"diese Woche"}${x.p.frac>0?` · ${Math.round(x.p.frac*100)} % geschafft`:""}</small></div><button type="button"class="secondary"data-ppm="oeffnen"data-id="${esc(x.m.id)}">Öffnen</button></div>`});
+   zeilen.push({ord:alt?1:2,html:`<div class="an-zeile${alt?" spaet":""}"><span class="an-icon">${T.icon||"📘"}</span><div><b>${esc(ppmTitel(x.m)||T.name||"Modul")}</b><small>Pädagogik/Psychologie · ${alt?`noch offen aus KW ${sw?ppmKW(sw):""}`:"diese Woche"}${x.p.frac>0?` · ${Math.round(x.p.frac*100)} % geschafft`:""}</small></div><button type="button"class="secondary"data-ppm="oeffnen"data-id="${esc(x.m.id)}">Öffnen</button></div>`});
   });
   if(offen.length>4)zeilen.push({ord:3,html:`<div class="an-zeile"><span class="an-icon">➕</span><div><b>${offen.length-4} weitere Module offen</b><small>Pädagogik/Psychologie</small></div><button type="button"class="secondary"onclick="openFach('paedagogik')">Zum Modulplan</button></div>`});
  }catch(e){console.error("Anstehend (Module):",e);}
@@ -4257,7 +4257,7 @@ const PPM_EXP_TEILE=[
 function ppmExpMinuten(teile){return PPM_EXP_TEILE.filter(t=>(teile||[]).includes(t.k)).reduce((n,t)=>n+t.min,0);}
 function ppmExpTeile(m){return Array.isArray(m&&m.teile)&&m.teile.length?m.teile:PPM_EXP_TEILE.map(t=>t.k);}
 // Fertige Einarbeitungs-Inhalte (einarbeitung/inhalte/<id>.json); wählbar im Selbstlernkurs.
-const PPM_EA_IDS=["fa01","pp01","pp02","pp03","pp1a1","pp1a2","pp1a3","pp1a4","pp06","pp07","pp2a1","pp10","pp11","pp15","pp16"];
+const PPM_EA_IDS=["fa01","pp01","pp02","pp03","pp1a1","pp1a2","pp1a3","pp1a4","pp04a","pp04b","pp04c","pp04d","pp05","pp06","pp07","pp21a","pp21b","pp2a1","pp10","pp11","pp15","pp16"];
 // Einheitliche Bezeichnung: Inhalt · Modulart · LB1 (LB nur, wenn bekannt)
 function ppmBez(inhalt,modul,lb){const T=PPM_TYPEN[modul];return[inhalt,T?T.art:"",lb?"LB"+lb:""].filter(Boolean).join(" · ");}
 // Modulart und Lernbereich einer Einarbeitung: zuerst die Angaben in der JSON-Datei ("modulart", "lb"),
@@ -4268,8 +4268,28 @@ function ppmEaMeta(id,info){
  const lb=(info&&Number(info.lb))||(e&&Number(String(e.phase||"").replace(/\D/g,"")))||0;
  return{art,lb};
 }
+// Einheitliche Beschriftung aller Selbstlernkurse: „LB1 · Nr. 1 · Titel“ (Nr. = Nummer des Inhalts im Lehrplan,
+// aus PP_EINHEITEN oder dem Feld "nr" in der JSON-Datei). Ausnahme: Basiskurs Fachaufsatz (fa01) bleibt wie bisher.
+function ppmEaNr(id,info){
+ const e=(typeof PP_EINHEITEN!=="undefined"?PP_EINHEITEN:[]).find(x=>x.id===id);
+ return String((info&&info.nr)||(e&&e.nr)||"").trim();
+}
+function ppmEaLabel(id,info){
+ const titel=(info&&info.titel)||id,meta=ppmEaMeta(id,info);
+ if(id==="fa01")return ppmBez(titel,meta.art,meta.lb);
+ const nr=ppmEaNr(id,info);
+ return[meta.lb?"LB"+meta.lb:"",nr?"Nr. "+nr:"",titel].filter(Boolean).join(" · ");
+}
+// Angezeigter Modultitel: Bei Selbstlernkursen mit unverändertem Kurstitel die einheitliche Beschriftung zeigen (auch bei älteren Modulen).
+function ppmTitel(m){
+ if(m&&m.modul==="selbstlern"&&String(m.kursId||"").startsWith("ea:")){
+  const id=m.kursId.slice(3),i=einarbeitungCache[id];
+  if(i&&id!=="fa01"&&m.titel===i.titel)return ppmEaLabel(id,i);
+ }
+ return(m&&m.titel)||"";
+}
 async function ppmEaListe(){
- const r=await Promise.all(PPM_EA_IDS.map(async id=>{const i=await einarbeitungInfo(id);if(!i)return null;const m=ppmEaMeta(id,i);return{id,titel:i.titel,entwurf:i.entwurf,art:m.art,lb:m.lb};}));
+ const r=await Promise.all(PPM_EA_IDS.map(async id=>{const i=await einarbeitungInfo(id);if(!i)return null;const m=ppmEaMeta(id,i);return{id,titel:i.titel,entwurf:i.entwurf,art:m.art,lb:m.lb,nr:i.nr||""};}));
  return r.filter(Boolean);
 }
 const PPM={liste:[],geladen:0,fehler:"",meine:{kurs:{},stunde:{},ea:{}}};
@@ -4335,6 +4355,7 @@ async function ppmLaden(erzwingen){
   const s=await getDocs(collection(db,"ppModule"));
   PPM.liste=s.docs.map(d=>({id:d.id,...d.data()}));PPM.fehler="";
  }catch(e){console.error("Module laden:",e);PPM.fehler=(e&&(e.code||e.name))||"unbekannt";PPM.liste=[];}
+ try{await Promise.all([...new Set(PPM.liste.filter(m=>m.modul==="selbstlern"&&String(m.kursId||"").startsWith("ea:")).map(m=>m.kursId.slice(3)))].map(id=>einarbeitungInfo(id)));}catch(e){console.error("Kursinfos laden:",e);}
  PPM.geladen=Date.now();
  PPM.liste.sort((a,b)=>(ppmSwIndex(a.start)-ppmSwIndex(b.start))||((a.ord||0)-(b.ord||0))||(tsSek(a.createdAt)-tsSek(b.createdAt)));
 }
@@ -4499,14 +4520,14 @@ async function ppmVerschieben(m,d){
 function ppmSpalten(m){const mi=ppmDauerDef(m).min||PPM_MIN_PRO_WOCHE;return mi<=120?1:(mi<=180?2:4);}
 function ppmKarteHTML(m,fortsetzung){
  const T=PPM_TYPEN[m.modul]||PPM_TYPEN.projekt,c=ppmFarbe(m);
- if(fortsetzung)return`<div class="ppm-fort" style="--c:${c}" data-ppm="oeffnen" data-id="${esc(m.id)}">↳ ${T.icon} ${esc(m.titel||T.name)} <small>läuft weiter</small></div>`;
+ if(fortsetzung)return`<div class="ppm-fort" style="--c:${c}" data-ppm="oeffnen" data-id="${esc(m.id)}">↳ ${T.icon} ${esc(ppmTitel(m)||T.name)} <small>läuft weiter</small></div>`;
  const einh=(m.einheiten||[]).map(e=>`<span class="ppm-chip">${(PPM_EINHEITEN[e.typ]||{}).icon||""} ${esc((PPM_EINHEITEN[e.typ]||{}).name||e.typ).replace("– interaktive Stunde","")}</span>`).join("");
  const exp=m.modul==="experiment"?`<span class="ppm-chip">${ppmExpTeile(m).length} von ${PPM_EXP_TEILE.length} Teilen · ca. ${ppmExpMinuten(ppmExpTeile(m))} Min.</span>`:"";
  const proj=m.projektId?`<span class="ppm-chip">Einheit im Projekt</span>`:"";
  const fo=ppmFort(m);
  return`<div class="ppm-karte${isTeacher()?" mit-mv":""}${fo?(fo.done?" ppm-st-done":fo.frac>0?" ppm-st-teil":" ppm-st-offen"):""}" style="--c:${c};--sp:${ppmSpalten(m)}" data-ppm="oeffnen" data-id="${esc(m.id)}" tabindex="0" role="button">
   <span class="ppm-ic">${T.icon}</span>
-  <span class="ppm-txt"><b>${esc(m.titel||T.name)}</b><small>${esc(T.art||T.kurz)} · LB${m.lb} · ${esc(ppmDauerText(m))}</small>${ppmStatus(m)}${fo&&!fo.done?`<span class="ppm-mini" title="${Math.round(fo.frac*100)} % geschafft"><i style="width:${Math.round(fo.frac*100)}%"></i></span>`:""}${proj}${exp}${einh}${isTeacher()?ppmMoveHTML(m):""}</span>
+  <span class="ppm-txt"><b>${esc(ppmTitel(m)||T.name)}</b><small>${esc(T.art||T.kurz)} · LB${m.lb} · ${esc(ppmDauerText(m))}</small>${ppmStatus(m)}${fo&&!fo.done?`<span class="ppm-mini" title="${Math.round(fo.frac*100)} % geschafft"><i style="width:${Math.round(fo.frac*100)}%"></i></span>`:""}${proj}${exp}${einh}${isTeacher()?ppmMoveHTML(m):""}</span>
   ${fo&&fo.done?`<span class="ppm-haken-k" aria-label="geschafft">✓</span>`:""}${isTeacher()?`<button type="button" class="ppm-edit" data-ppm="bearbeiten" data-id="${esc(m.id)}" title="Modul bearbeiten">✎</button>`:""}
  </div>`;
 }
@@ -4758,9 +4779,9 @@ async function ppmDialog(id,typ,woche,opt){
  if(t==="selbstlern"){
   const alt=bearb&&bearb.kursId==="psych-gegenstand";
   const aktuell=bearb&&String(bearb.kursId||"").startsWith("ea:")?bearb.kursId.slice(3):"";
-  const passend=ea.filter(e=>e.art==="selbstlern"||e.id===aktuell).sort((x,y)=>(x.lb||9)-(y.lb||9)||String(x.titel).localeCompare(String(y.titel),"de"));
+  const passend=ea.filter(e=>e.art==="selbstlern"||e.id===aktuell).sort((x,y)=>(x.lb||9)-(y.lb||9)||(parseInt(ppmEaNr(x.id,x))||99)-(parseInt(ppmEaNr(y.id,y))||99)||String(x.id).localeCompare(String(y.id)));
   const lbGruppen=[...new Set(passend.map(e=>e.lb||0))];
-  const eaOpt=lbGruppen.map(n=>`<optgroup label="${n?"Lernbereich "+n:"Lernbereich offen"}">${passend.filter(e=>(e.lb||0)===n).map(e=>`<option value="ea:${esc(e.id)}" data-lb="${e.lb||""}"${bearb&&bearb.kursId==="ea:"+e.id?" selected":""}>${esc(ppmBez(e.titel||e.id,e.art,e.lb))}${e.entwurf?" (Entwurf)":""}</option>`).join("")}</optgroup>`).join("");
+  const eaOpt=lbGruppen.map(n=>`<optgroup label="${n?"Lernbereich "+n:"Lernbereich offen"}">${passend.filter(e=>(e.lb||0)===n).map(e=>`<option value="ea:${esc(e.id)}" data-lb="${e.lb||""}"${bearb&&bearb.kursId==="ea:"+e.id?" selected":""}>${esc(ppmEaLabel(e.id,{titel:e.titel,nr:e.nr,lb:e.lb,modulart:e.art}))}${e.entwurf?" (Entwurf)":""}</option>`).join("")}</optgroup>`).join("");
   extra=`<label>Kurs (nur Selbstlernkurse)<select id="ppmKurs">
    ${eaOpt}
    <optgroup label="Weitere">${alt?`<option value="psych-gegenstand" selected>${esc(PPM_KURSE["psych-gegenstand"].titel)} (Kurzfassung von Claude)</option>`:""}<option value="eigen"${bearb&&bearb.kursId==="eigen"?" selected":""}>Eigener Kurs (selbst gestalten)</option></optgroup></select></label>
@@ -4879,7 +4900,7 @@ async function ppmDialog(id,typ,woche,opt){
   if(t==="selbstlern"){
    daten.kursId=$("ppmKurs").value;
    if(!ti.value.trim()){
-    if(daten.kursId.startsWith("ea:")){const e=ea.find(x=>"ea:"+x.id===daten.kursId);daten.titel=(e&&e.titel)||daten.titel;}
+    if(daten.kursId.startsWith("ea:")){const e=ea.find(x=>"ea:"+x.id===daten.kursId);if(e)daten.titel=e.id==="fa01"?(e.titel||daten.titel):ppmEaLabel(e.id,{titel:e.titel,nr:e.nr,lb:e.lb,modulart:e.art});}
     else if(PPM_KURSE[daten.kursId])daten.titel=PPM_KURSE[daten.kursId].titel;
    }
   }
@@ -5013,7 +5034,7 @@ function ppmKopf(m,unter,extraBtn){
  return`<button class="secondary" data-ppm="plan">← Modulplan</button>
  ${PPM_CSS}
  <div class="ppm-box ppm-kopf" style="--c:${c}"><div class="kicker" style="color:${c}">${T.icon} ${esc((T.art||T.kurz).toUpperCase())} · LB${m.lb} · ${zeit} · ${esc(ppmDauerDef(m).lang.toUpperCase())}</div>
-  <h1 style="margin:4px 0 6px;font-size:26px">${esc(m.titel||T.name)}</h1>${m.notiz?`<p>${esc(m.notiz)}</p>`:""}${unter||""}
+  <h1 style="margin:4px 0 6px;font-size:26px">${esc(ppmTitel(m)||T.name)}</h1>${m.notiz?`<p>${esc(m.notiz)}</p>`:""}${unter||""}
   ${isTeacher()?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" class="ppm-btn klein" data-ppm="bearbeiten" data-id="${esc(m.id)}">✎ Modul bearbeiten</button>${extraBtn||""}</div>`:""}</div>${ppmMaterialBox(m)}`;
 }
 // ---- Projekt ----
@@ -5143,7 +5164,7 @@ async function ppmEinfuehrungSeite(m){
  const kursHtml=kurse.length?kurse.map(({id,info,f},i)=>{
   const ok=!!f.einarbeitungAbgeschlossen,aufg=f.einarbeitungAufgaben;
   const stand=lehrer?"":` · ${ok?"abgeschlossen ✓":(aufg&&aufg.gesamt?aufg.richtig+" von "+aufg.gesamt+" richtig":"noch offen")}`;
-  return`<div class="ppm-zeile"><span class="ppm-snr">${i+1}</span><div style="flex:1;min-width:200px"><b>${esc((info&&info.titel)||id)}</b><br><small style="color:var(--muted)">${info?info.aufgaben+" Aufgabe"+(info.aufgaben===1?"":"n")+stand:"Inhaltsdatei einarbeitung/inhalte/"+esc(id)+".json nicht gefunden"}</small></div>
+  return`<div class="ppm-zeile"><span class="ppm-snr">${i+1}</span><div style="flex:1;min-width:200px"><b>${esc(info?ppmEaLabel(id,info):id)}</b><br><small style="color:var(--muted)">${info?info.aufgaben+" Aufgabe"+(info.aufgaben===1?"":"n")+stand:"Inhaltsdatei einarbeitung/inhalte/"+esc(id)+".json nicht gefunden"}</small></div>
    ${info?`<button type="button" class="ppm-btn primaer" data-ppm="ea-start" data-ea="${esc(id)}">${lehrer?"Kurs öffnen (Vorschau)":ok?"Kurs wiederholen":(aufg?"Kurs fortsetzen":"Kurs starten")}</button>`:""}
    ${lehrer&&info?`<button type="button" class="ppm-btn" data-ppm="ea-stand" data-ea="${esc(id)}">Stand der Klasse</button>`:""}</div>`;
  }).join(""):`<p class="ppm-leer">Zu diesem Thema gibt es keine Selbstlernkurse.</p>`;
@@ -5999,7 +6020,7 @@ async function einarbeitungInfo(id){
    const j=await res.json();
    const ARTEN=["mc","lueckentext","zuordnung","sortieren","kprim","frei","reihenfolge","strukturstreifen"];
    const zahl=(j.abschnitte||[]).reduce((n,x)=>n+(x.aufgaben||[]).length+(x.bloecke||[]).filter(b=>ARTEN.includes(b.typ)).length,0);
-   r={titel:j.titel||"",entwurf:!!j.entwurf,aufgaben:zahl,modulart:j.modulart||"",lb:j.lb||0};
+   r={titel:j.titel||"",entwurf:!!j.entwurf,aufgaben:zahl,modulart:j.modulart||"",lb:j.lb||0,nr:j.nr?String(j.nr):""};
   }
  }catch(e){r=null;}
  einarbeitungCache[id]=r;return r;
