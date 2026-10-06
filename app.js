@@ -4132,7 +4132,7 @@ function ppKprimBereichHTML(ph,teil,coDaten,heute){
   if(lehrer&&(co||CHECKOUT_VORLAGEN.some(v=>v.datum===w.end)))rechts=`<button class="secondary"onclick="openKprimVorschau(0,'${w.end}')">👁 Vorschau</button>`+rechts;
   const st=co&&lehrer&&co.status==="beendet"&&stat[co.id]?` · ${stat[co.id].n} ausgewertet · Ø ${(stat[co.id].summe/stat[co.id].n).toFixed(1).replace(".",",")} Punkte`:"";
   return`<div class="co-zeile"><span class="co-lb">Fr ${fmtKurz(w.end)}</span>
-   <div class="co-titel"><b>${co?esc(co.titel||"Check-out"):"Check-out"}</b><small>${co?`${(co.aufgaben||[]).length} K-Prim-Aufgaben${st}`:(()=>{const v0=CHECKOUT_VORLAGEN.find(v=>v.datum===w.end);return v0?`Vorlage: ${esc(v0.titel)} · ${(v0.aufgaben||[]).length} K-Prim-Aufgaben: ${esc(coVorlageInhalte(v0).join(" · "))}`:(CHECKOUT_MAX_AUFGABEN+" K-Prim-Aufgaben zu den Themen der Woche");})()}</small></div>
+   <div class="co-titel"><b>${co?esc(coTitelAnzeige(co)||"Check-out"):"Check-out"}</b><small>${co?`${(co.aufgaben||[]).length} K-Prim-Aufgaben${st}`:(()=>{const v0=CHECKOUT_VORLAGEN.find(v=>v.datum===w.end);return v0?`Vorlage: ${esc(coLabel(v0))} · ${(v0.aufgaben||[]).length} K-Prim-Aufgaben: ${esc(coVorlageInhalte(v0).join(" · "))}`:(CHECKOUT_MAX_AUFGABEN+" K-Prim-Aufgaben zu den Themen der Woche");})()}</small></div>
    ${co?coStatChip(co,d):""}<div class="co-aktion">${rechts}</div></div>`;
  }).join("");
  // --- Bibliothek bzw. Ergebnisse ---
@@ -4141,7 +4141,7 @@ function ppKprimBereichHTML(ph,teil,coDaten,heute){
   const beendet=(d.checkouts||[]).filter(c=>c.status==="beendet");
   mitte=`<div class="kicker pp-kp-h">ERGEBNISSE · ALLE BEENDETEN CHECK-OUTS (${beendet.length})</div>
    <div class="co-liste">${beendet.map(c=>{const t=stat[c.id];return`<div class="co-zeile"><span class="co-lb">LB ${esc(c.lbNum||"")}</span>
-    <div class="co-titel"><b>${esc(c.titel||"Check-out")}</b><small>${coDatum(c.datum)} · ${t?`${t.n} ausgewertet · Ø ${(t.summe/t.n).toFixed(1).replace(".",",")} Punkte`:"noch keine Auswertung"}</small></div>
+    <div class="co-titel"><b>${esc(coTitelAnzeige(c)||"Check-out")}</b><small>${coDatum(c.datum)} · ${t?`${t.n} ausgewertet · Ø ${(t.summe/t.n).toFixed(1).replace(".",",")} Punkte`:"noch keine Auswertung"}</small></div>
     <div class="co-aktion"><button class="secondary"onclick="openCheckoutErgebnisse('${c.id}')">Ergebnisse</button><button class="secondary"onclick="coPdfKlasse('${c.id}')">PDF Klasse</button></div></div>`;}).join("")||`<div class="empty">Noch kein Check-out beendet. Die Ergebnisse erscheinen hier, sobald du einen Test beendet hast.</div>`}</div>`;
   ersatz=`<div class="co-ersatz"><div><b>Kurzarbeit-Ersatz</b><small>Schüler:innen wählen ${d.einst.anzahlWaehlen} Tests aus ihrer Bibliothek · ${esc(coAuswahlStatus(d.einst).text)}</small></div>
    <div class="co-aktion"><button class="primary"onclick="openKprimUebersicht()">🗂 Alle Freitage &amp; Vorschau</button><button class="secondary"onclick="openCheckoutEinstellungen()">Einstellungen</button><button class="secondary"onclick="openCheckoutKlassenuebersicht()">Ergebnisse je Schüler:in</button><button class="secondary"onclick="coPdfRespizienzKlasse()">PDF Respizienz Klasse</button></div></div>`;
@@ -4150,7 +4150,7 @@ function ppKprimBereichHTML(ph,teil,coDaten,heute){
   mitte=`<div class="kicker pp-kp-h">MEINE ABGESCHLOSSENEN CHECK-OUTS (${fertig.length})</div>
    <div class="co-liste">${fertig.map(c=>{const a=d.meineAbgaben[c.id];
     return`<div class="co-zeile"><span class="co-lb">LB ${esc(c.lbNum||"")}</span>
-     <div class="co-titel"><b>${esc(c.titel||"Check-out")}</b><small>${esc(coTestDatum(c,a))}${a.ausgewertet?` · ${a.be} von ${a.maxBE} BE`:""}</small></div>
+     <div class="co-titel"><b>${esc(coTitelAnzeige(c)||"Check-out")}</b><small>${esc(coTestDatum(c,a))}${a.ausgewertet?` · ${a.be} von ${a.maxBE} BE`:""}</small></div>
      <div class="co-aktion">${a.ausgewertet?`<b class="co-np">${esc(npText(a.notenpunkte))}</b><button class="secondary"onclick="openCheckoutMeinErgebnis('${c.id}')">Ansehen</button><button class="secondary"onclick="coPdfSchueler('${c.id}')">PDF</button>`:`<small style="color:var(--muted)">wird ausgewertet …</small>`}</div></div>`;}).join("")||`<div class="empty">Noch kein Check-out abgeschlossen. Deine erledigten Tests erscheinen hier und bilden deine Bibliothek.</div>`}</div>`;
   const pool=coPool(d.checkouts,d.einst).filter(c=>d.meineAbgaben?.[c.id]?.ausgewertet);
   const status=coAuswahlStatus(d.einst);
@@ -4286,6 +4286,7 @@ function ppmTitel(m){
   const id=m.kursId.slice(3),i=einarbeitungCache[id];
   if(i&&id!=="fa01"&&m.titel===i.titel)return ppmEaLabel(id,i);
  }
+ if(m&&m.modul==="kprim"){const v=CHECKOUT_VORLAGEN_ALLE.find(x=>x.titel===m.titel||coLabel(x)===m.titel);if(v)return coLabel(v);}
  return(m&&m.titel)||"";
 }
 async function ppmEaListe(){
@@ -4702,14 +4703,14 @@ function ppmCheckoutOptionen(checkouts,gewaehlt){
   const lbT=(PROJEKT_PHASEN.find(p=>p.lbNum===n)||{}).lbTitel||"";
   const ex=checkouts.filter(c=>Number(c.lbNum)===n).sort((a,b)=>String(a.datum||"").localeCompare(String(b.datum||"")));
   ex.forEach(c=>verteilt.add(c.id));
-  const exOpt=ex.map(c=>`<option value="${esc(c.id)}"${c.id===gewaehlt?" selected":""}>${esc(c.titel||"Check-out")} · angelegt (${stat(c)}${c.datum?" · "+esc(coDatum(c.datum)):""})</option>`);
+  const exOpt=ex.map(c=>`<option value="${esc(c.id)}"${c.id===gewaehlt?" selected":""}>${esc(coTitelAnzeige(c)||"Check-out")} · angelegt (${stat(c)}${c.datum?" · "+esc(coDatum(c.datum)):""})</option>`);
   // Vorlagen, aus denen es noch keinen Check-out gibt
-  const vl=CHECKOUT_VORLAGEN.filter(v=>Number(v.lbNum)===n&&!ex.some(c=>(c.titel||"")===v.titel)).sort((a,b)=>String(a.datum).localeCompare(String(b.datum)));
-  const vlOpt=vl.map(v=>`<option value="vorlage:${esc(v.id)}">${esc(v.titel)} · Vorlage: ${esc(coVorlageInhalte(v).join(" + "))}</option>`);
+  const vl=CHECKOUT_VORLAGEN.filter(v=>Number(v.lbNum)===n&&!ex.some(c=>coTitelAnzeige(c)===coLabel(v))).sort((a,b)=>String(a.datum||"").localeCompare(String(b.datum||""))||(a.nr||0)-(b.nr||0));
+  const vlOpt=vl.map(v=>`<option value="vorlage:${esc(v.id)}">${esc(coLabel(v))} · Vorlage: ${esc(coVorlageInhalte(v).join(" + "))}</option>`);
   html+=gruppe(`Lernbereich ${n}${lbT?" · "+lbT:""}`,[...exOpt,...vlOpt]);
  });
  const rest=checkouts.filter(c=>!verteilt.has(c.id));
- html+=gruppe("Ohne Lernbereich",rest.map(c=>`<option value="${esc(c.id)}"${c.id===gewaehlt?" selected":""}>${esc(c.titel||"Check-out")} · angelegt (${stat(c)})</option>`));
+ html+=gruppe("Ohne Lernbereich",rest.map(c=>`<option value="${esc(c.id)}"${c.id===gewaehlt?" selected":""}>${esc(coTitelAnzeige(c)||"Check-out")} · angelegt (${stat(c)})</option>`));
  return html;
 }
 // Legt aus einer Vorlage einen Check-out-Entwurf an (wie „Speichern“ im Editor) und gibt die ID zurück.
@@ -4717,14 +4718,14 @@ async function coAusVorlageAnlegen(v,datum){
  const au=v.aufgaben.map(coAufgabeAusBank);
  const a0=au[0];
  au.forEach((a,i)=>{if(i>0){a.vTitel=a0.vTitel;a.vText=a0.vText;a.vZeilen=a0.vZeilen;}});
- const daten={titel:v.titel,lbNum:v.lbNum,datum:datum||v.datum,zaehlt:true,status:"entwurf",vignette:null,
+ const daten={titel:coLabel(v),lbNum:v.lbNum,datum:datum||v.datum,zaehlt:true,status:"entwurf",vignette:null,
   aufgaben:au.map(a=>{
    const q={stamm:a.stamm.trim(),vignette:{titel:a.vTitel.trim(),text:a.vText.replace(/\s+$/,""),zeilen:!!a.vZeilen},aussagen:a.aussagen.map(x=>x.text.trim())};
    if(a.kontext.trim())q.kontext=a.kontext.trim();
    if(a.mText.trim())q.material={titel:a.mTitel.trim(),text:a.mText.replace(/\s+$/,""),quelle:a.mQuelle.trim()};
    return q;}),
   updatedAt:serverTimestamp(),updatedBy:currentUser.uid};
- const loesung={aufgaben:au.map(a=>({richtig:a.aussagen.map(x=>!!x.richtig),erklaerung:a.aussagen.map(x=>(x.erklaerung||"").trim())})),klassisch:"",checkliste:[],updatedAt:serverTimestamp()};
+ const loesung={aufgaben:au.map(a=>({richtig:a.aussagen.map(x=>!!x.richtig),erklaerung:a.aussagen.map(x=>(x.erklaerung||"").trim())})),klassisch:v.klassisch||"",checkliste:[],updatedAt:serverTimestamp()};
  const r=await addDoc(collection(db,"checkouts"),{...daten,createdAt:serverTimestamp(),createdBy:currentUser.uid});
  await setDoc(doc(db,"checkoutLoesungen",r.id),loesung);
  return r.id;
@@ -4886,7 +4887,7 @@ async function ppmDialog(id,typ,woche,opt){
       if(!v){toast("Vorlage nicht gefunden.");return;}
       const wk=SCHULWOCHEN_PP.find(w=>w.id===daten.start);
       daten.checkoutId=await coAusVorlageAnlegen(v,wk?wk.end:v.datum);
-      if(!ti.value.trim())daten.titel=v.titel;
+      if(!ti.value.trim())daten.titel=coLabel(v);
      }else if(sel&&!ti.value.trim()){
       const c=checkouts.find(x=>x.id===sel);if(c&&c.titel)daten.titel=c.titel;
      }
@@ -5074,7 +5075,7 @@ async function ppmKprimSeite(m){
  if(c){
   const mein=d.meineAbgaben&&d.meineAbgaben[c.id];
   const live=c.status==="live",beendet=c.status==="beendet";
-  karte=`<div class="ppm-zeile"><span style="font-size:26px">🏁</span><div style="flex:1;min-width:200px"><b>${esc(c.titel||"Check-out")}</b><br><small style="color:var(--muted)">${esc(c.datum||"")} · ${(c.aufgaben||[]).length} K-Prim-Aufgaben · Status: ${esc(c.status||"Entwurf")}</small></div>
+  karte=`<div class="ppm-zeile"><span style="font-size:26px">🏁</span><div style="flex:1;min-width:200px"><b>${esc(coTitelAnzeige(c)||"Check-out")}</b><br><small style="color:var(--muted)">${esc(c.datum||"")} · ${(c.aufgaben||[]).length} K-Prim-Aufgaben · Status: ${esc(c.status||"Entwurf")}</small></div>
    ${lehrer?`<button type="button" class="ppm-btn klein" data-ppm="co" data-aktion="editor" data-id="${esc(c.id)}">Bearbeiten</button>${live?`<button type="button" class="ppm-btn klein" data-ppm="co" data-aktion="monitor" data-id="${esc(c.id)}">Live-Übersicht</button>`:""}`
     :(live&&!(mein&&mein.abgegeben)?`<button type="button" class="ppm-btn primaer" data-ppm="co" data-aktion="test" data-id="${esc(c.id)}">Test starten</button>`:(mein&&mein.ausgewertet?`<button type="button" class="ppm-btn primaer" data-ppm="co" data-aktion="ergebnis" data-id="${esc(c.id)}">Mein Ergebnis</button>`:`<span class="ppm-status">${beendet?"beendet":"noch nicht freigeschaltet"}</span>`))}</div>`;
  }
@@ -6571,8 +6572,8 @@ async function checkoutStartBannerHTML(){
   const s=await getDocs(query(collection(db,"checkouts"),where("status","==","live")));
   if(s.empty)return"";
   const co={id:s.docs[0].id,...s.docs[0].data()};
-  if(isTeacher())return`<div class="co-banner"><span class="co-live-punkt"></span><div><b>Check-out läuft: ${esc(co.titel||"")}</b><small>Live-Übersicht öffnen, um den Stand zu sehen und den Test zu beenden.</small></div><button class="primary"onclick="openCheckoutMonitor('${co.id}')">Live-Übersicht</button></div>`;
-  return`<div class="co-banner"><span class="co-live-punkt"></span><div><b>Check-out läuft: ${esc(co.titel||"")}</b><small>Deine Lehrkraft hat den Test freigeschaltet.</small></div><button class="primary"onclick="openCheckoutTest('${co.id}')">Jetzt starten</button></div>`;
+  if(isTeacher())return`<div class="co-banner"><span class="co-live-punkt"></span><div><b>Check-out läuft: ${esc(coTitelAnzeige(co)||"")}</b><small>Live-Übersicht öffnen, um den Stand zu sehen und den Test zu beenden.</small></div><button class="primary"onclick="openCheckoutMonitor('${co.id}')">Live-Übersicht</button></div>`;
+  return`<div class="co-banner"><span class="co-live-punkt"></span><div><b>Check-out läuft: ${esc(coTitelAnzeige(co)||"")}</b><small>Deine Lehrkraft hat den Test freigeschaltet.</small></div><button class="primary"onclick="openCheckoutTest('${co.id}')">Jetzt starten</button></div>`;
  }catch(e){return"";}
 }
 
@@ -6597,7 +6598,7 @@ function checkoutSektionHTML(d){
   }
   return`<div class="co-zeile"style="--c:${lbFarbe(c.lbNum)}">
    <span class="co-lb">LB ${esc(c.lbNum||"")}</span>
-   <div class="co-titel"><b>${esc(c.titel||"Check-out")}</b><small>${coDatum(c.datum)} · ${(c.aufgaben||[]).length} K-Prim-Aufgaben${c.zaehlt===false?" · zählt nicht für den Kurzarbeit-Ersatz":""}</small></div>
+   <div class="co-titel"><b>${esc(coTitelAnzeige(c)||"Check-out")}</b><small>${coDatum(c.datum)} · ${(c.aufgaben||[]).length} K-Prim-Aufgaben${c.zaehlt===false?" · zählt nicht für den Kurzarbeit-Ersatz":""}</small></div>
    ${statusChip(c)}
    <div class="co-aktion">${rechts}</div>
   </div>`;
@@ -6626,8 +6627,8 @@ function checkoutLiveBannerHTML(d){
  if(!live.length)return"";
  return live.map(c=>{
   const a=d.meineAbgaben[c.id];
-  if(isTeacher())return`<div class="co-banner"><span class="co-live-punkt"></span><div><b>Check-out läuft: ${esc(c.titel||"")}</b><small>Beenden, sobald alle fertig sind – danach wird automatisch ausgewertet.</small></div><button class="primary"onclick="openCheckoutMonitor('${c.id}')">Live-Übersicht</button></div>`;
-  return`<div class="co-banner"><span class="co-live-punkt"></span><div><b>Check-out läuft: ${esc(c.titel||"")}</b><small>${a?.abgegeben?"Du hast abgegeben. Das Ergebnis siehst du, sobald deine Lehrkraft den Test beendet.":"Deine Lehrkraft hat den Test freigeschaltet: 1 Fallvignette, "+(c.aufgaben||[]).length+" Aufgaben, bis zu "+(c.aufgaben||[]).length*CHECKOUT_BE_NACH_FEHLERN[0]+" BE (die Bepunktung steht oben im Test)."}</small></div>${a?.abgegeben?"":`<button class="primary"onclick="openCheckoutTest('${c.id}')">${a?"Weiter":"Jetzt starten"}</button>`}</div>`;
+  if(isTeacher())return`<div class="co-banner"><span class="co-live-punkt"></span><div><b>Check-out läuft: ${esc(coTitelAnzeige(c)||"")}</b><small>Beenden, sobald alle fertig sind – danach wird automatisch ausgewertet.</small></div><button class="primary"onclick="openCheckoutMonitor('${c.id}')">Live-Übersicht</button></div>`;
+  return`<div class="co-banner"><span class="co-live-punkt"></span><div><b>Check-out läuft: ${esc(coTitelAnzeige(c)||"")}</b><small>${a?.abgegeben?"Du hast abgegeben. Das Ergebnis siehst du, sobald deine Lehrkraft den Test beendet.":"Deine Lehrkraft hat den Test freigeschaltet: 1 Fallvignette, "+(c.aufgaben||[]).length+" Aufgaben, bis zu "+(c.aufgaben||[]).length*CHECKOUT_BE_NACH_FEHLERN[0]+" BE (die Bepunktung steht oben im Test)."}</small></div>${a?.abgegeben?"":`<button class="primary"onclick="openCheckoutTest('${c.id}')">${a?"Weiter":"Jetzt starten"}</button>`}</div>`;
  }).join("");
 }
 
@@ -7467,6 +7468,7 @@ CHECKOUT_VORLAGEN_ALLE.unshift(...[
   "id": "kp-lb1-test1",
   "titel": "Gegenstand der Psychologie und der Pädagogik, Alltagstheorie und wissenschaftliche Aussagen",
   "lbNum": 1,
+  "nr": 1,
   "datum": "2026-10-16",
   "aufgaben": [
    "kp-lb1-psychologie",
@@ -7479,6 +7481,7 @@ CHECKOUT_VORLAGEN_ALLE.unshift(...[
   "id": "kp-lb1-test2",
   "titel": "Das Experiment: Kriterien, Labor und Feld, Beobachtung und Messung",
   "lbNum": 1,
+  "nr": 2,
   "datum": "2026-10-23",
   "aufgaben": [
    "kp-lb1-experiment",
@@ -7488,9 +7491,1100 @@ CHECKOUT_VORLAGEN_ALLE.unshift(...[
   ]
  }
 ]);
+// Lernbereich 3: Freitagstests 1–7 (je 1 Fallvignette + 4 K-Prim-Aufgaben, aus den Word-Dokumenten „Freitagstest_0X“).
+CO_AUFGABENBANK.push(...[
+ {
+  "id": "lb3-ft1-a1",
+  "titel": "Soziale Interaktion",
+  "lbNum": 3,
+  "vignette": {
+   "titel": "Finns erste Wochen in der Krippe",
+   "zeilen": false,
+   "text": "Finn (2;6) ist neu in der Krippengruppe „Kleine Füchse“. Am ersten Tag klammert er sich beim Abschied an seine Mutter und weint laut. Als sie gegangen ist, wirft er Bauklötze nach den anderen Kindern. Der Erzieher Herr Yıldız sagt zunächst streng: „Finn, das tut weh!“ Finn schreit noch lauter.\n\nHerr Yıldız ändert daraufhin sein Vorgehen. Er hockt sich auf Finns Augenhöhe, spricht leise und summt ein Lied, das Finns Mutter ihm verraten hat. Finn wird ruhiger und lehnt sich nach einer Weile an ihn. In den folgenden Wochen holt Finn Herrn Yıldız jeden Morgen zum Spielen ab und lässt sich von ihm trösten, wenn er hinfällt.\n\nIm Teamgespräch erzählt Herr Yıldız: „Finn hat mir beigebracht, geduldiger zu sein. Ich habe gemerkt, dass Schimpfen bei ihm gar nichts bringt.“ Seine Kollegin Frau Berger widerspricht: „Erziehung heißt, dass ich dem Kind sage, was es tun soll. Wie das Kind darauf reagiert, ist seine Sache – deshalb muss ich mein Verhalten doch nicht ändern.“"
+  },
+  "kontext": "",
+  "stamm": "Das Geschehen zwischen Herrn Yıldız und Finn wird fachlich zutreffend als soziale Interaktion beschrieben, wenn …",
+  "pruefen": "Aus deinem Word-Dokument „Freitagstest 1“ übernommen. Bitte vor dem Freischalten kurz durchsehen.",
+  "aussagen": [
+   {
+    "text": "… die Interaktion erst in dem Moment beginnt, in dem Herr Yıldız ein ausdrückliches Erziehungsziel formuliert.",
+    "richtig": false,
+    "erklaerung": "Interaktion beginnt mit dem wechselseitigen Verhalten, unabhängig davon, ob ein Ziel ausgesprochen wird. Schon die strenge Ermahnung und Finns Schreien sind Interaktion."
+   },
+   {
+    "text": "… Finns Schreien und das veränderte Vorgehen von Herrn Yıldız als wechselseitig aufeinander bezogenes Verhalten gedeutet werden.",
+    "richtig": true,
+    "erklaerung": "Soziale Interaktion ist wechselseitig aufeinander bezogenes Verhalten: Finns Schreien löst eine Veränderung bei Herrn Yıldız aus, diese wiederum beruhigt Finn."
+   },
+   {
+    "text": "… davon ausgegangen wird, dass nur Herr Yıldız Einfluss nimmt, während Finn lediglich auf die Maßnahmen des Erziehers reagiert.",
+    "richtig": false,
+    "erklaerung": "Beide beeinflussen und steuern sich gegenseitig. Finn bringt Herrn Yıldız dazu, sein Verhalten zu ändern – er ist also nicht nur Reagierender."
+   },
+   {
+    "text": "… das Hinhocken auf Augenhöhe als Reaktion von Herrn Yıldız auf Finns Verhalten verstanden wird.",
+    "richtig": true,
+    "erklaerung": "Herr Yıldız stimmt seine Handlung auf Finns Reaktion ab. Aktion und Reaktion greifen ineinander."
+   }
+  ]
+ },
+ {
+  "id": "lb3-ft1-a2",
+  "titel": "Aussage von Frau Berger",
+  "lbNum": 3,
+  "vignette": {
+   "titel": "Finns erste Wochen in der Krippe",
+   "zeilen": false,
+   "text": "Finn (2;6) ist neu in der Krippengruppe „Kleine Füchse“. Am ersten Tag klammert er sich beim Abschied an seine Mutter und weint laut. Als sie gegangen ist, wirft er Bauklötze nach den anderen Kindern. Der Erzieher Herr Yıldız sagt zunächst streng: „Finn, das tut weh!“ Finn schreit noch lauter.\n\nHerr Yıldız ändert daraufhin sein Vorgehen. Er hockt sich auf Finns Augenhöhe, spricht leise und summt ein Lied, das Finns Mutter ihm verraten hat. Finn wird ruhiger und lehnt sich nach einer Weile an ihn. In den folgenden Wochen holt Finn Herrn Yıldız jeden Morgen zum Spielen ab und lässt sich von ihm trösten, wenn er hinfällt.\n\nIm Teamgespräch erzählt Herr Yıldız: „Finn hat mir beigebracht, geduldiger zu sein. Ich habe gemerkt, dass Schimpfen bei ihm gar nichts bringt.“ Seine Kollegin Frau Berger widerspricht: „Erziehung heißt, dass ich dem Kind sage, was es tun soll. Wie das Kind darauf reagiert, ist seine Sache – deshalb muss ich mein Verhalten doch nicht ändern.“"
+  },
+  "kontext": "",
+  "stamm": "Die Aussage von Frau Berger wird aus pädagogischer Sicht zutreffend beurteilt, wenn …",
+  "pruefen": "Aus deinem Word-Dokument „Freitagstest 1“ übernommen. Bitte vor dem Freischalten kurz durchsehen.",
+  "aussagen": [
+   {
+    "text": "… ihr zugestimmt wird, weil der zu Erziehende seine Lernprozesse selbst bewältigen muss und der Erzieher sich daher nicht nach ihm richten muss.",
+    "richtig": false,
+    "erklaerung": "Der zu Erziehende muss die Lernprozesse zwar selbst bewältigen, der Erzieher orientiert sich aber gerade deshalb an dessen Alter, Interessen und Fähigkeiten."
+   },
+   {
+    "text": "… darauf hingewiesen wird, dass sich ein Erzieher an Alter, Interessen und Fähigkeiten des Kindes orientieren muss.",
+    "richtig": true,
+    "erklaerung": "Erziehung gelingt nur, wenn der Erzieher seine Handlungen auf den zu Erziehenden abstimmt – genau das tut Herr Yıldız."
+   },
+   {
+    "text": "… ergänzt wird, dass der Erziehungsprozess auch den Erzieher verändert, wie Herrn Yıldız’ gewachsene Geduld zeigt.",
+    "richtig": true,
+    "erklaerung": "Merksatz: Der Prozess der Erziehung verändert sowohl den zu Erziehenden als auch den Erzieher selbst."
+   },
+   {
+    "text": "… festgestellt wird, dass sie Erziehung als einseitigen Vorgang versteht und die Wechselseitigkeit außer Acht lässt.",
+    "richtig": true,
+    "erklaerung": "Frau Berger sieht nur die Einwirkung des Erziehers. Erziehung ist aber ein Wechselspiel von Aktion und Reaktion."
+   }
+  ]
+ },
+ {
+  "id": "lb3-ft1-a3",
+  "titel": "Bedeutung der Beziehung",
+  "lbNum": 3,
+  "vignette": {
+   "titel": "Finns erste Wochen in der Krippe",
+   "zeilen": false,
+   "text": "Finn (2;6) ist neu in der Krippengruppe „Kleine Füchse“. Am ersten Tag klammert er sich beim Abschied an seine Mutter und weint laut. Als sie gegangen ist, wirft er Bauklötze nach den anderen Kindern. Der Erzieher Herr Yıldız sagt zunächst streng: „Finn, das tut weh!“ Finn schreit noch lauter.\n\nHerr Yıldız ändert daraufhin sein Vorgehen. Er hockt sich auf Finns Augenhöhe, spricht leise und summt ein Lied, das Finns Mutter ihm verraten hat. Finn wird ruhiger und lehnt sich nach einer Weile an ihn. In den folgenden Wochen holt Finn Herrn Yıldız jeden Morgen zum Spielen ab und lässt sich von ihm trösten, wenn er hinfällt.\n\nIm Teamgespräch erzählt Herr Yıldız: „Finn hat mir beigebracht, geduldiger zu sein. Ich habe gemerkt, dass Schimpfen bei ihm gar nichts bringt.“ Seine Kollegin Frau Berger widerspricht: „Erziehung heißt, dass ich dem Kind sage, was es tun soll. Wie das Kind darauf reagiert, ist seine Sache – deshalb muss ich mein Verhalten doch nicht ändern.“"
+  },
+  "kontext": "",
+  "stamm": "Die Bedeutung der Beziehung zwischen Herrn Yıldız und Finn wird fachlich zutreffend beschrieben, wenn …",
+  "pruefen": "Aus deinem Word-Dokument „Freitagstest 1“ übernommen. Bitte vor dem Freischalten kurz durchsehen.",
+  "aussagen": [
+   {
+    "text": "… angenommen wird, dass eine tragfähige Bindung nur zu den Eltern möglich ist und Fachkräfte deshalb Distanz wahren sollten.",
+    "richtig": false,
+    "erklaerung": "Finn baut erkennbar eine Bindung zu Herrn Yıldız auf (abholen, trösten lassen). Auch Fachkräfte können wichtige Bezugspersonen sein."
+   },
+   {
+    "text": "… die emotionale Beziehung als angenehme Begleiterscheinung gilt, die für den Erfolg der Erziehung jedoch nebensächlich ist.",
+    "richtig": false,
+    "erklaerung": "Die Beziehung ist keine Nebensache, sondern zentrale Bedingung für den Erziehungserfolg."
+   },
+   {
+    "text": "… die gelungene Eingewöhnung als Voraussetzung dafür gesehen wird, dass spätere Erziehungsmaßnahmen bei Finn Wirkung zeigen können.",
+    "richtig": true,
+    "erklaerung": "Der Erfolg der Erziehung hängt in hohem Maße von einer positiven emotionalen Beziehung ab. Wo die Beziehung nicht stimmt, hat Erziehung wenig Chancen."
+   },
+   {
+    "text": "… mit Brisch argumentiert wird, dass Bindung für kleine Kinder eine Art emotionale Nahrung darstellt.",
+    "richtig": true,
+    "erklaerung": "Brisch: „Bindung ist emotionale Nahrung, die uns am Leben hält. […] Wenn kleine Kinder keine Bindung haben, gedeihen sie nicht.“"
+   }
+  ]
+ },
+ {
+  "id": "lb3-ft1-a4",
+  "titel": "Rollen zuordnen",
+  "lbNum": 3,
+  "vignette": {
+   "titel": "Finns erste Wochen in der Krippe",
+   "zeilen": false,
+   "text": "Finn (2;6) ist neu in der Krippengruppe „Kleine Füchse“. Am ersten Tag klammert er sich beim Abschied an seine Mutter und weint laut. Als sie gegangen ist, wirft er Bauklötze nach den anderen Kindern. Der Erzieher Herr Yıldız sagt zunächst streng: „Finn, das tut weh!“ Finn schreit noch lauter.\n\nHerr Yıldız ändert daraufhin sein Vorgehen. Er hockt sich auf Finns Augenhöhe, spricht leise und summt ein Lied, das Finns Mutter ihm verraten hat. Finn wird ruhiger und lehnt sich nach einer Weile an ihn. In den folgenden Wochen holt Finn Herrn Yıldız jeden Morgen zum Spielen ab und lässt sich von ihm trösten, wenn er hinfällt.\n\nIm Teamgespräch erzählt Herr Yıldız: „Finn hat mir beigebracht, geduldiger zu sein. Ich habe gemerkt, dass Schimpfen bei ihm gar nichts bringt.“ Seine Kollegin Frau Berger widerspricht: „Erziehung heißt, dass ich dem Kind sage, was es tun soll. Wie das Kind darauf reagiert, ist seine Sache – deshalb muss ich mein Verhalten doch nicht ändern.“"
+  },
+  "kontext": "",
+  "stamm": "Die Rollen in der Fallvignette werden fachlich zutreffend zugeordnet, wenn …",
+  "pruefen": "Aus deinem Word-Dokument „Freitagstest 1“ übernommen. Bitte vor dem Freischalten kurz durchsehen.",
+  "aussagen": [
+   {
+    "text": "… Frau Berger allein deshalb als Erzieherin gilt, weil sie eine pädagogische Ausbildung abgeschlossen hat.",
+    "richtig": false,
+    "erklaerung": "Die Rolle „Erzieher“ ergibt sich aus der Absicht, Lernprozesse zu unterstützen, nicht aus dem Berufsabschluss."
+   },
+   {
+    "text": "… Finns Mutter nicht als Erzieherin gelten kann, da Eltern keine pädagogischen Fachkräfte sind.",
+    "richtig": false,
+    "erklaerung": "Auch Eltern sind Erzieher, wenn sie Lernprozesse ihres Kindes herbeiführen oder unterstützen."
+   },
+   {
+    "text": "… Herr Yıldız als Erzieher bezeichnet wird, weil er bei Finn Lernprozesse auslösen und unterstützen will.",
+    "richtig": true,
+    "erklaerung": "Der Erzieher ist die Person, die Lernprozesse herbeiführen und unterstützen will."
+   },
+   {
+    "text": "… Finn als passiver Empfänger gilt, an dem die Erziehung lediglich vollzogen wird.",
+    "richtig": false,
+    "erklaerung": "Der zu Erziehende muss die Lernprozesse selbst vollbringen und beeinflusst den Erzieher aktiv mit."
+   }
+  ]
+ },
+ {
+  "id": "lb3-ft2-a1",
+  "titel": "Soziale Kommunikation",
+  "lbNum": 3,
+  "vignette": {
+   "titel": "Ein Morgen im Stuhlkreis",
+   "zeilen": false,
+   "text": "Im Kindergarten „Löwenzahn“ beginnt der Morgenkreis. Die Kinder reden durcheinander. Die Erzieherin Frau Lang legt den Zeigefinger an die Lippen und hebt die andere Hand. Fast alle Kinder werden still und heben ebenfalls die Hand. Als es ruhig ist, zeigt Frau Lang lächelnd den Daumen nach oben.\n\nNur Emil, der erst seit einer Woche in der Gruppe ist, lacht, legt ebenfalls den Finger an die Lippen und macht dabei Pupsgeräusche. Frau Lang setzt sich neben ihn und erklärt: „Wenn ich das mache, heißt das: Jetzt sind alle leise und hören zu.“ Am nächsten Tag reagiert Emil sofort auf das Zeichen.\n\nSpäter erzählt die vierjährige Lea, dass ihr Hase gestorben ist. Frau Lang sagt „Oh, das ist schön, dass du das erzählst“, schaut dabei aber auf ihr Diensthandy, weil eine Nachricht der Leitung eingeht. Lea bricht mitten im Satz ab und spricht für den Rest des Morgens kaum noch.\n\nDie Praktikantin Jana notiert in ihrem Beobachtungsbogen: „Frau Lang hat zu Lea nichts Unfreundliches gesagt. Also hat sie Lea auch nichts Negatives mitgeteilt.“"
+  },
+  "kontext": "",
+  "stamm": "Die Szene wird mit dem Begriff „soziale Kommunikation“ fachlich zutreffend erfasst, wenn …",
+  "pruefen": "Aus deinem Word-Dokument „Freitagstest 2“ übernommen. Bitte vor dem Freischalten kurz durchsehen.",
+  "aussagen": [
+   {
+    "text": "… soziale Kommunikation als der Teil der Interaktion gilt, in dem Informationen vermittelt, aufgenommen und ausgetauscht werden.",
+    "richtig": true,
+    "erklaerung": "Das entspricht der Definition: Soziale Kommunikation ist derjenige Teil einer sozialen Interaktion, in dem Informationen ausgetauscht werden."
+   },
+   {
+    "text": "… Frau Langs Blick auf das Handy als Information gewertet wird, die Lea etwas über die Aufmerksamkeit der Erzieherin mitteilt.",
+    "richtig": true,
+    "erklaerung": "In einer Beziehung sagt jedes Verhalten etwas aus. Der Blick aufs Handy signalisiert: Ich bin gerade nicht bei dir."
+   },
+   {
+    "text": "… nur die gesprochenen Worte von Frau Lang als Kommunikation gelten, ihr übriges Verhalten dagegen nicht.",
+    "richtig": false,
+    "erklaerung": "Auch Mimik, Gestik, Blickrichtung und Schweigen teilen etwas mit und gehören zur Kommunikation."
+   },
+   {
+    "text": "… soziale Interaktion und soziale Kommunikation als gleichbedeutende Begriffe ohne inhaltlichen Unterschied verwendet werden.",
+    "richtig": false,
+    "erklaerung": "Kommunikation ist ein Teil der Interaktion (Informationsaustausch), nicht dasselbe. Interaktion ist der Oberbegriff."
+   }
+  ]
+ },
+ {
+  "id": "lb3-ft2-a2",
+  "titel": "Janas Beobachtungsbogen",
+  "lbNum": 3,
+  "vignette": {
+   "titel": "Ein Morgen im Stuhlkreis",
+   "zeilen": false,
+   "text": "Im Kindergarten „Löwenzahn“ beginnt der Morgenkreis. Die Kinder reden durcheinander. Die Erzieherin Frau Lang legt den Zeigefinger an die Lippen und hebt die andere Hand. Fast alle Kinder werden still und heben ebenfalls die Hand. Als es ruhig ist, zeigt Frau Lang lächelnd den Daumen nach oben.\n\nNur Emil, der erst seit einer Woche in der Gruppe ist, lacht, legt ebenfalls den Finger an die Lippen und macht dabei Pupsgeräusche. Frau Lang setzt sich neben ihn und erklärt: „Wenn ich das mache, heißt das: Jetzt sind alle leise und hören zu.“ Am nächsten Tag reagiert Emil sofort auf das Zeichen.\n\nSpäter erzählt die vierjährige Lea, dass ihr Hase gestorben ist. Frau Lang sagt „Oh, das ist schön, dass du das erzählst“, schaut dabei aber auf ihr Diensthandy, weil eine Nachricht der Leitung eingeht. Lea bricht mitten im Satz ab und spricht für den Rest des Morgens kaum noch.\n\nDie Praktikantin Jana notiert in ihrem Beobachtungsbogen: „Frau Lang hat zu Lea nichts Unfreundliches gesagt. Also hat sie Lea auch nichts Negatives mitgeteilt.“"
+  },
+  "kontext": "",
+  "stamm": "Janas Notiz im Beobachtungsbogen wird fachlich zutreffend kritisiert, wenn …",
+  "pruefen": "Aus deinem Word-Dokument „Freitagstest 2“ übernommen. Bitte vor dem Freischalten kurz durchsehen.",
+  "aussagen": [
+   {
+    "text": "… betont wird, dass das Wort „schön“ die Botschaft des Wegschauens vollständig aufhebt.",
+    "richtig": false,
+    "erklaerung": "Die freundlichen Worte heben die nonverbale Botschaft nicht auf. Zudem passt „schön“ inhaltlich nicht zu Leas trauriger Nachricht."
+   },
+   {
+    "text": "… ergänzt wird, dass widersprüchliche verbale und nonverbale Signale die Deutung für ein Kind erschweren.",
+    "richtig": true,
+    "erklaerung": "Worte und Verhalten senden unterschiedliche Botschaften. Das Kind muss deuten, welche gilt – meist wirkt die nonverbale stärker."
+   },
+   {
+    "text": "… darauf verwiesen wird, dass in einer Beziehung jedes Verhalten etwas aussagt – auch Wegschauen.",
+    "richtig": true,
+    "erklaerung": "Selbst Schweigen oder Wegschauen teilt dem anderen etwas mit. Jana betrachtet nur die Worte."
+   },
+   {
+    "text": "… erklärt wird, dass Leas Verstummen eine Reaktion auf eine nonverbale Botschaft von Frau Lang ist.",
+    "richtig": true,
+    "erklaerung": "Lea hat das Wegschauen als Desinteresse gedeutet und reagiert darauf mit Rückzug."
+   }
+  ]
+ },
+ {
+  "id": "lb3-ft2-a3",
+  "titel": "Symbolischer Interaktionismus",
+  "lbNum": 3,
+  "vignette": {
+   "titel": "Ein Morgen im Stuhlkreis",
+   "zeilen": false,
+   "text": "Im Kindergarten „Löwenzahn“ beginnt der Morgenkreis. Die Kinder reden durcheinander. Die Erzieherin Frau Lang legt den Zeigefinger an die Lippen und hebt die andere Hand. Fast alle Kinder werden still und heben ebenfalls die Hand. Als es ruhig ist, zeigt Frau Lang lächelnd den Daumen nach oben.\n\nNur Emil, der erst seit einer Woche in der Gruppe ist, lacht, legt ebenfalls den Finger an die Lippen und macht dabei Pupsgeräusche. Frau Lang setzt sich neben ihn und erklärt: „Wenn ich das mache, heißt das: Jetzt sind alle leise und hören zu.“ Am nächsten Tag reagiert Emil sofort auf das Zeichen.\n\nSpäter erzählt die vierjährige Lea, dass ihr Hase gestorben ist. Frau Lang sagt „Oh, das ist schön, dass du das erzählst“, schaut dabei aber auf ihr Diensthandy, weil eine Nachricht der Leitung eingeht. Lea bricht mitten im Satz ab und spricht für den Rest des Morgens kaum noch.\n\nDie Praktikantin Jana notiert in ihrem Beobachtungsbogen: „Frau Lang hat zu Lea nichts Unfreundliches gesagt. Also hat sie Lea auch nichts Negatives mitgeteilt.“"
+  },
+  "kontext": "",
+  "stamm": "Die Szene mit Emil wird im Sinne des symbolischen Interaktionismus zutreffend gedeutet, wenn …",
+  "pruefen": "Aus deinem Word-Dokument „Freitagstest 2“ übernommen. Bitte vor dem Freischalten kurz durchsehen.",
+  "aussagen": [
+   {
+    "text": "… angenommen wird, dass Gesten im Gegensatz zu Wörtern keine Symbole im Sinne des symbolischen Interaktionismus sind.",
+    "richtig": false,
+    "erklaerung": "Zu den Symbolen zählen Sprache, Mimik, Gestik, Körperkontakt und Musik. Gesten sind also Symbole."
+   },
+   {
+    "text": "… erkannt wird, dass der Finger an den Lippen nur wirkt, wenn alle Beteiligten ihm dieselbe Bedeutung zuschreiben.",
+    "richtig": true,
+    "erklaerung": "Symbole funktionieren nur, wenn sie für alle Beteiligten die gleiche Bedeutung haben. Emil kannte die Bedeutung noch nicht."
+   },
+   {
+    "text": "… Frau Langs Erklärung als Schritt verstanden wird, mit Emil eine gemeinsame Bedeutung des Zeichens herzustellen.",
+    "richtig": true,
+    "erklaerung": "Durch die Erklärung lernt Emil die Bedeutung des Symbols. Am nächsten Tag funktioniert die Verständigung."
+   },
+   {
+    "text": "… Emils Lachen als bewusste Missachtung der Gruppenregel und damit als absichtliches Störverhalten eingeordnet wird.",
+    "richtig": false,
+    "erklaerung": "Emil hat das Zeichen anders gedeutet (als Spiel), weil ihm die gemeinsame Bedeutung fehlte. Von bewusster Missachtung kann man nicht ausgehen."
+   }
+  ]
+ },
+ {
+  "id": "lb3-ft2-a4",
+  "titel": "Erziehung nach Mollenhauer",
+  "lbNum": 3,
+  "vignette": {
+   "titel": "Ein Morgen im Stuhlkreis",
+   "zeilen": false,
+   "text": "Im Kindergarten „Löwenzahn“ beginnt der Morgenkreis. Die Kinder reden durcheinander. Die Erzieherin Frau Lang legt den Zeigefinger an die Lippen und hebt die andere Hand. Fast alle Kinder werden still und heben ebenfalls die Hand. Als es ruhig ist, zeigt Frau Lang lächelnd den Daumen nach oben.\n\nNur Emil, der erst seit einer Woche in der Gruppe ist, lacht, legt ebenfalls den Finger an die Lippen und macht dabei Pupsgeräusche. Frau Lang setzt sich neben ihn und erklärt: „Wenn ich das mache, heißt das: Jetzt sind alle leise und hören zu.“ Am nächsten Tag reagiert Emil sofort auf das Zeichen.\n\nSpäter erzählt die vierjährige Lea, dass ihr Hase gestorben ist. Frau Lang sagt „Oh, das ist schön, dass du das erzählst“, schaut dabei aber auf ihr Diensthandy, weil eine Nachricht der Leitung eingeht. Lea bricht mitten im Satz ab und spricht für den Rest des Morgens kaum noch.\n\nDie Praktikantin Jana notiert in ihrem Beobachtungsbogen: „Frau Lang hat zu Lea nichts Unfreundliches gesagt. Also hat sie Lea auch nichts Negatives mitgeteilt.“"
+  },
+  "kontext": "",
+  "stamm": "Frau Langs Handeln entspricht der Auffassung von Erziehung nach Mollenhauer, wenn …",
+  "pruefen": "Aus deinem Word-Dokument „Freitagstest 2“ übernommen. Bitte vor dem Freischalten kurz durchsehen.",
+  "aussagen": [
+   {
+    "text": "… sie Erziehung vor allem als einseitige Weitergabe von Anweisungen an die Gruppe versteht.",
+    "richtig": false,
+    "erklaerung": "Mollenhauer betont den wechselseitigen, symbolisch vermittelten Austausch, nicht einseitige Anweisungen."
+   },
+   {
+    "text": "… sie den Interpretationsprozess abschließt, indem sie jedem Verhalten der Kinder eine feste Bedeutung zuweist.",
+    "richtig": false,
+    "erklaerung": "Zwischen Erzieher und zu Erziehendem besteht ein ständiger wechselseitiger Interpretationsprozess, der nicht einseitig abgeschlossen werden kann."
+   },
+   {
+    "text": "… sie davon ausgeht, dass ihre Zeichen von den Kindern nicht gedeutet werden müssen, weil sie eindeutig sind.",
+    "richtig": false,
+    "erklaerung": "Jede Handlung muss vom anderen gedeutet werden – das zeigt gerade Emils Missverständnis."
+   },
+   {
+    "text": "… sie eine Kommunikationsstruktur schafft, in der die Kinder Fähigkeiten wie Zuhören und Abwarten erwerben können.",
+    "richtig": true,
+    "erklaerung": "Mollenhauer: Erziehung ist kommunikatives Handeln, dessen Ziel eine Kommunikationsstruktur ist, die den Erwerb von Fähigkeiten ermöglicht."
+   }
+  ]
+ },
+ {
+  "id": "lb3-ft3-a1",
+  "titel": "Lernsituationen einordnen",
+  "lbNum": 3,
+  "vignette": {
+   "titel": "Ein Abend bei Familie Öztürk",
+   "zeilen": false,
+   "text": "Herr Öztürk übt seit zwei Wochen jeden Abend mit seinem Sohn Mats (5) das Zähneputzen. Er zeigt ihm die Bewegungen, lässt ihn dann allein putzen und schaut nur noch zu. Er sagt: „Mats soll bis zur Einschulung selbstständig sein. Das ist mir wichtig.“\n\nMats lernt aber auch noch anderes: Er singt die Melodie einer Joghurt-Werbung mit, die er im Fernsehen aufgeschnappt hat. Und als ihm im Kindergarten ein Turm umfällt, ruft er laut ein Schimpfwort, das sein Vater neulich beim Autofahren benutzt hat. Herr Öztürk ist entsetzt: „Das hat er sicher nicht von mir!“\n\nMats’ Mutter sieht das gelassen: „Ich erziehe eigentlich gar nicht. Ich lasse ihn einfach groß werden – Kinder lernen sowieso alles von allein.“\n\nDie Großmutter, die am Wochenende auf Mats aufpasst, meint: „Hauptsache, er putzt heute Abend die Zähne. Notfalls putze ich sie ihm eben selbst, damit es schnell geht.“"
+  },
+  "kontext": "",
+  "stamm": "Die Lernsituationen in der Fallvignette werden fachlich zutreffend eingeordnet, wenn …",
+  "pruefen": "Aus deinem Word-Dokument „Freitagstest 3“ übernommen. Bitte vor dem Freischalten kurz durchsehen.",
+  "aussagen": [
+   {
+    "text": "… festgehalten wird, dass Mats den Lernprozess beim Zähneputzen trotz der Unterstützung selbst bewältigen muss.",
+    "richtig": true,
+    "erklaerung": "Der Erzieher unterstützt, der zu Erziehende muss die Lernprozesse aber selbst vollbringen – der Vater schaut daher nur noch zu."
+   },
+   {
+    "text": "… das abendliche Üben des Zähneputzens als Erziehung gilt, weil der Vater den Lernprozess absichtlich herbeiführt.",
+    "richtig": true,
+    "erklaerung": "Erziehung ist beabsichtigte Lernhilfe: Der Vater führt den Lernprozess bewusst und absichtlich herbei."
+   },
+   {
+    "text": "… das Mitsingen der Werbemelodie als Erziehung gewertet wird, da Mats dabei etwas Neues lernt.",
+    "richtig": false,
+    "erklaerung": "Nicht jedes Lernen ist Erziehung. Es fehlt ein Erzieher, der den Lernprozess mit einem Erziehungsziel herbeiführt."
+   },
+   {
+    "text": "… auch die Übernahme des Schimpfworts als Ergebnis von Erziehung gilt, weil Mats es vom Vater gelernt hat.",
+    "richtig": false,
+    "erklaerung": "Mats hat zwar gelernt, der Vater hatte aber keine Absicht und kein Ziel. Unbeabsichtigtes Lernen ist keine Erziehung im engeren Sinn."
+   }
+  ]
+ },
+ {
+  "id": "lb3-ft3-a2",
+  "titel": "Erziehungsziel von Herrn Öztürk",
+  "lbNum": 3,
+  "vignette": {
+   "titel": "Ein Abend bei Familie Öztürk",
+   "zeilen": false,
+   "text": "Herr Öztürk übt seit zwei Wochen jeden Abend mit seinem Sohn Mats (5) das Zähneputzen. Er zeigt ihm die Bewegungen, lässt ihn dann allein putzen und schaut nur noch zu. Er sagt: „Mats soll bis zur Einschulung selbstständig sein. Das ist mir wichtig.“\n\nMats lernt aber auch noch anderes: Er singt die Melodie einer Joghurt-Werbung mit, die er im Fernsehen aufgeschnappt hat. Und als ihm im Kindergarten ein Turm umfällt, ruft er laut ein Schimpfwort, das sein Vater neulich beim Autofahren benutzt hat. Herr Öztürk ist entsetzt: „Das hat er sicher nicht von mir!“\n\nMats’ Mutter sieht das gelassen: „Ich erziehe eigentlich gar nicht. Ich lasse ihn einfach groß werden – Kinder lernen sowieso alles von allein.“\n\nDie Großmutter, die am Wochenende auf Mats aufpasst, meint: „Hauptsache, er putzt heute Abend die Zähne. Notfalls putze ich sie ihm eben selbst, damit es schnell geht.“"
+  },
+  "kontext": "",
+  "stamm": "Das Erziehungsziel von Herrn Öztürk wird fachlich zutreffend beschrieben, wenn …",
+  "pruefen": "Aus deinem Word-Dokument „Freitagstest 3“ übernommen. Bitte vor dem Freischalten kurz durchsehen.",
+  "aussagen": [
+   {
+    "text": "… das Ziel als relativ dauerhafte Änderung von Mats’ Verhalten verstanden wird.",
+    "richtig": true,
+    "erklaerung": "Mats soll dauerhaft – bis zur Einschulung und darüber hinaus – selbstständig Zähne putzen."
+   },
+   {
+    "text": "… Erziehungsziele als neutrale Vorgaben gelten, die unabhängig von Werten und Normen formuliert werden.",
+    "richtig": false,
+    "erklaerung": "Erzieherische Handlungen und Ziele sind immer bestimmten Werten und Normen verpflichtet."
+   },
+   {
+    "text": "… Selbstständigkeit als Wert erkannt wird, an dem sich das Handeln des Vaters orientiert.",
+    "richtig": true,
+    "erklaerung": "Erziehung ist wertorientiertes Handeln. Selbstständigkeit ist ein Wert, der dem Vater „wichtig“ ist."
+   },
+   {
+    "text": "… betont wird, dass der Vater ohne dieses Ziel keinen Grund hätte, überhaupt auf Mats einzuwirken.",
+    "richtig": true,
+    "erklaerung": "Erziehung ist ohne Ziel undenkbar: Ohne Ziel würde der Erzieher nicht mehr auf den zu Erziehenden einwirken."
+   }
+  ]
+ },
+ {
+  "id": "lb3-ft3-a3",
+  "titel": "Äußerung der Mutter",
+  "lbNum": 3,
+  "vignette": {
+   "titel": "Ein Abend bei Familie Öztürk",
+   "zeilen": false,
+   "text": "Herr Öztürk übt seit zwei Wochen jeden Abend mit seinem Sohn Mats (5) das Zähneputzen. Er zeigt ihm die Bewegungen, lässt ihn dann allein putzen und schaut nur noch zu. Er sagt: „Mats soll bis zur Einschulung selbstständig sein. Das ist mir wichtig.“\n\nMats lernt aber auch noch anderes: Er singt die Melodie einer Joghurt-Werbung mit, die er im Fernsehen aufgeschnappt hat. Und als ihm im Kindergarten ein Turm umfällt, ruft er laut ein Schimpfwort, das sein Vater neulich beim Autofahren benutzt hat. Herr Öztürk ist entsetzt: „Das hat er sicher nicht von mir!“\n\nMats’ Mutter sieht das gelassen: „Ich erziehe eigentlich gar nicht. Ich lasse ihn einfach groß werden – Kinder lernen sowieso alles von allein.“\n\nDie Großmutter, die am Wochenende auf Mats aufpasst, meint: „Hauptsache, er putzt heute Abend die Zähne. Notfalls putze ich sie ihm eben selbst, damit es schnell geht.“"
+  },
+  "kontext": "",
+  "stamm": "Die Äußerung der Mutter wird fachlich zutreffend beurteilt, wenn …",
+  "pruefen": "Aus deinem Word-Dokument „Freitagstest 3“ übernommen. Bitte vor dem Freischalten kurz durchsehen.",
+  "aussagen": [
+   {
+    "text": "… gefolgert wird, dass Erziehung überflüssig wird, sobald Kinder viel durch Nachahmung lernen.",
+    "richtig": false,
+    "erklaerung": "Nachahmung ersetzt keine gezielte Lernhilfe. Zudem lernen Kinder durch Nachahmung auch Unerwünschtes (Schimpfwort)."
+   },
+   {
+    "text": "… angemerkt wird, dass die Mutter durch ihr Vorbild unbeabsichtigt dennoch Lernprozesse bei Mats anstößt.",
+    "richtig": true,
+    "erklaerung": "Auch ohne Erziehungsabsicht wirken Eltern als Vorbilder – das zeigt das Beispiel mit dem Schimpfwort des Vaters."
+   },
+   {
+    "text": "… festgestellt wird, dass Kinder ohne Absicht eines Erziehers zwar lernen, dies aber keine Erziehung im engeren Sinn ist.",
+    "richtig": true,
+    "erklaerung": "Die Mutter hat recht, dass Kinder viel von allein lernen. Erziehung liegt aber nur bei beabsichtigter, zielgerichteter Lernhilfe vor."
+   },
+   {
+    "text": "… ihr widersprochen wird, weil jede Form des kindlichen Lernens automatisch Erziehung darstellt.",
+    "richtig": false,
+    "erklaerung": "Nicht jedes Lernen ist Erziehung – entscheidend sind Absicht und Ziel des Erziehers."
+   }
+  ]
+ },
+ {
+  "id": "lb3-ft3-a4",
+  "titel": "Äußerung der Großmutter",
+  "lbNum": 3,
+  "vignette": {
+   "titel": "Ein Abend bei Familie Öztürk",
+   "zeilen": false,
+   "text": "Herr Öztürk übt seit zwei Wochen jeden Abend mit seinem Sohn Mats (5) das Zähneputzen. Er zeigt ihm die Bewegungen, lässt ihn dann allein putzen und schaut nur noch zu. Er sagt: „Mats soll bis zur Einschulung selbstständig sein. Das ist mir wichtig.“\n\nMats lernt aber auch noch anderes: Er singt die Melodie einer Joghurt-Werbung mit, die er im Fernsehen aufgeschnappt hat. Und als ihm im Kindergarten ein Turm umfällt, ruft er laut ein Schimpfwort, das sein Vater neulich beim Autofahren benutzt hat. Herr Öztürk ist entsetzt: „Das hat er sicher nicht von mir!“\n\nMats’ Mutter sieht das gelassen: „Ich erziehe eigentlich gar nicht. Ich lasse ihn einfach groß werden – Kinder lernen sowieso alles von allein.“\n\nDie Großmutter, die am Wochenende auf Mats aufpasst, meint: „Hauptsache, er putzt heute Abend die Zähne. Notfalls putze ich sie ihm eben selbst, damit es schnell geht.“"
+  },
+  "kontext": "",
+  "stamm": "Die Äußerung der Großmutter wird fachlich zutreffend eingeordnet, wenn …",
+  "pruefen": "Aus deinem Word-Dokument „Freitagstest 3“ übernommen. Bitte vor dem Freischalten kurz durchsehen.",
+  "aussagen": [
+   {
+    "text": "… erkannt wird, dass sie eine kurzfristige Wirkung anstrebt statt einer relativ dauerhaften Änderung des Verhaltens.",
+    "richtig": true,
+    "erklaerung": "Ihr Ziel sind saubere Zähne „heute Abend“. Erziehung strebt dagegen eine relativ dauerhafte Verhaltensänderung an."
+   },
+   {
+    "text": "… ihr Vorgehen als gleichwertig zum Üben des Vaters bewertet wird, da beide saubere Zähne erreichen wollen.",
+    "richtig": false,
+    "erklaerung": "Das Ziel ist verschieden: Der Vater will Selbstständigkeit (Lernen), die Großmutter nur ein schnelles Ergebnis."
+   },
+   {
+    "text": "… betont wird, dass für Erziehung allein das Ergebnis zählt und der Weg dorthin unerheblich ist.",
+    "richtig": false,
+    "erklaerung": "Bei Erziehung geht es um Lernprozesse des Kindes. Wenn die Großmutter selbst putzt, lernt Mats nichts."
+   },
+   {
+    "text": "… ihre Haltung als Beispiel für wertorientiertes Erziehungshandeln mit klarem Langzeitziel gilt.",
+    "richtig": false,
+    "erklaerung": "Ein Langzeitziel wie Selbstständigkeit verfolgt sie nicht; im Gegenteil nimmt sie Mats die Aufgabe ab."
+   }
+  ]
+ },
+ {
+  "id": "lb3-ft4-a1",
+  "titel": "Soziales Handeln",
+  "lbNum": 3,
+  "vignette": {
+   "titel": "Noah und die Stopp-Regel",
+   "zeilen": false,
+   "text": "Die FOS-Praktikantin Selin beobachtet im Kindergarten „Sonnenschein“, dass Noah (5) andere Kinder haut, wenn sie ihm Spielsachen wegnehmen. Die Erzieherin Frau Weber überlegt sich ein Vorgehen: Sie spricht am nächsten Morgen ruhig mit Noah über den Vorfall vom Vortag, übt mit ihm und zwei anderen Kindern ein „Stopp!“ mit ausgestreckter Hand und lobt ihn, wenn er es anwendet. Ihr Ziel: Noah soll lernen, seinen Ärger dauerhaft ohne Gewalt auszudrücken.\n\nWährend des Gesprächs muss Selin laut niesen. Noah lacht und vergisst kurz seinen Ärger.\n\nNach zwei Wochen haut Noah im Kindergarten deutlich seltener. Seine Mutter berichtet allerdings, dass er zu Hause seinen kleinen Bruder weiterhin schlägt. Die Kita-Leiterin sagt dazu: „Wir können nie ganz sicher wissen, wie ein Kind auf unsere Maßnahmen reagiert.“\n\nHerr Schmid, ein Kollege, meint dagegen: „Ich mache mir über die Folgen meines Handelns keine großen Gedanken. Ich halte mich an die Hausregeln, dann kann nichts schiefgehen.“"
+  },
+  "kontext": "",
+  "stamm": "Frau Webers Vorgehen wird fachlich zutreffend als soziales Handeln bezeichnet, wenn …",
+  "pruefen": "Aus deinem Word-Dokument „Freitagstest 4“ übernommen. Bitte vor dem Freischalten kurz durchsehen.",
+  "aussagen": [
+   {
+    "text": "… soziales Handeln dadurch gekennzeichnet ist, dass es zuverlässig zum gewünschten Ergebnis führt.",
+    "richtig": false,
+    "erklaerung": "Soziales Handeln ist durch Absicht und Bezug auf andere bestimmt, nicht durch den Erfolg. Pädagogisches Handeln hat einen offenen Ausgang."
+   },
+   {
+    "text": "… auch Selins Niesen als soziales Handeln gilt, weil Noah darauf mit Lachen reagiert.",
+    "richtig": false,
+    "erklaerung": "Niesen ist ein Reflex ohne Absicht. Handeln setzt eine bewusste, überlegte Absicht voraus – eine Reaktion des anderen reicht nicht."
+   },
+   {
+    "text": "… ihr Gespräch mit Noah als Aktivität gilt, die bewusst und willentlich auf eine andere Person bezogen ist.",
+    "richtig": true,
+    "erklaerung": "Soziales Handeln ist nach Brezinka bewusst und willentlich auf andere Menschen bezogen."
+   },
+   {
+    "text": "… sie sich dabei am vergangenen Hauen und am künftig erwarteten Verhalten Noahs orientiert.",
+    "richtig": true,
+    "erklaerung": "Soziales Handeln ist sinnhaft orientiert am vergangenen, gegenwärtigen oder künftig erwarteten Verhalten anderer (Brezinka)."
+   }
+  ]
+ },
+ {
+  "id": "lb3-ft4-a2",
+  "titel": "Aussage der Kita-Leiterin",
+  "lbNum": 3,
+  "vignette": {
+   "titel": "Noah und die Stopp-Regel",
+   "zeilen": false,
+   "text": "Die FOS-Praktikantin Selin beobachtet im Kindergarten „Sonnenschein“, dass Noah (5) andere Kinder haut, wenn sie ihm Spielsachen wegnehmen. Die Erzieherin Frau Weber überlegt sich ein Vorgehen: Sie spricht am nächsten Morgen ruhig mit Noah über den Vorfall vom Vortag, übt mit ihm und zwei anderen Kindern ein „Stopp!“ mit ausgestreckter Hand und lobt ihn, wenn er es anwendet. Ihr Ziel: Noah soll lernen, seinen Ärger dauerhaft ohne Gewalt auszudrücken.\n\nWährend des Gesprächs muss Selin laut niesen. Noah lacht und vergisst kurz seinen Ärger.\n\nNach zwei Wochen haut Noah im Kindergarten deutlich seltener. Seine Mutter berichtet allerdings, dass er zu Hause seinen kleinen Bruder weiterhin schlägt. Die Kita-Leiterin sagt dazu: „Wir können nie ganz sicher wissen, wie ein Kind auf unsere Maßnahmen reagiert.“\n\nHerr Schmid, ein Kollege, meint dagegen: „Ich mache mir über die Folgen meines Handelns keine großen Gedanken. Ich halte mich an die Hausregeln, dann kann nichts schiefgehen.“"
+  },
+  "kontext": "",
+  "stamm": "Die Aussage der Kita-Leiterin wird fachlich zutreffend begründet, wenn …",
+  "pruefen": "Aus deinem Word-Dokument „Freitagstest 4“ übernommen. Bitte vor dem Freischalten kurz durchsehen.",
+  "aussagen": [
+   {
+    "text": "… daraus abgeleitet wird, dass Planung beim pädagogischen Handeln überflüssig ist.",
+    "richtig": false,
+    "erklaerung": "Pädagogisches Handeln bleibt beabsichtigt und geplant. Der offene Ausgang erfordert eher sorgfältige Beobachtung und Anpassung."
+   },
+   {
+    "text": "… das Hauen zu Hause als Beleg dafür gilt, dass Frau Webers Vorgehen keine Erziehung war.",
+    "richtig": false,
+    "erklaerung": "Ob Erziehung vorliegt, hängt von Absicht und Ziel ab, nicht vom vollständigen Erfolg. Der offene Ausgang ist gerade typisch."
+   },
+   {
+    "text": "… erklärt wird, dass Noah als eigenständige Person individuell auf Maßnahmen reagiert.",
+    "richtig": true,
+    "erklaerung": "Weil Menschen unterschiedlich reagieren, kann der Erzieher den Ausgang nie sicher vorhersagen."
+   },
+   {
+    "text": "… pädagogisches Handeln als „Versuchshandeln“ bezeichnet wird, dessen Ausgang offen ist.",
+    "richtig": true,
+    "erklaerung": "Pädagogisches Handeln ist Versuchshandeln: Sein Ergebnis ist offen und lässt sich nicht vorhersehen."
+   }
+  ]
+ },
+ {
+  "id": "lb3-ft4-a3",
+  "titel": "Haltung von Herrn Schmid",
+  "lbNum": 3,
+  "vignette": {
+   "titel": "Noah und die Stopp-Regel",
+   "zeilen": false,
+   "text": "Die FOS-Praktikantin Selin beobachtet im Kindergarten „Sonnenschein“, dass Noah (5) andere Kinder haut, wenn sie ihm Spielsachen wegnehmen. Die Erzieherin Frau Weber überlegt sich ein Vorgehen: Sie spricht am nächsten Morgen ruhig mit Noah über den Vorfall vom Vortag, übt mit ihm und zwei anderen Kindern ein „Stopp!“ mit ausgestreckter Hand und lobt ihn, wenn er es anwendet. Ihr Ziel: Noah soll lernen, seinen Ärger dauerhaft ohne Gewalt auszudrücken.\n\nWährend des Gesprächs muss Selin laut niesen. Noah lacht und vergisst kurz seinen Ärger.\n\nNach zwei Wochen haut Noah im Kindergarten deutlich seltener. Seine Mutter berichtet allerdings, dass er zu Hause seinen kleinen Bruder weiterhin schlägt. Die Kita-Leiterin sagt dazu: „Wir können nie ganz sicher wissen, wie ein Kind auf unsere Maßnahmen reagiert.“\n\nHerr Schmid, ein Kollege, meint dagegen: „Ich mache mir über die Folgen meines Handelns keine großen Gedanken. Ich halte mich an die Hausregeln, dann kann nichts schiefgehen.“"
+  },
+  "kontext": "",
+  "stamm": "Herrn Schmids Haltung wird fachlich zutreffend kritisiert, wenn …",
+  "pruefen": "Aus deinem Word-Dokument „Freitagstest 4“ übernommen. Bitte vor dem Freischalten kurz durchsehen.",
+  "aussagen": [
+   {
+    "text": "… darauf hingewiesen wird, dass Erzieher wegen des meist ungleichen Verhältnisses pädagogische Verantwortung tragen.",
+    "richtig": true,
+    "erklaerung": "Weil das Verhältnis zwischen Erzieher und zu Erziehendem meist ungleich ist, trägt der Erzieher die pädagogische Verantwortung."
+   },
+   {
+    "text": "… eingewendet wird, dass das Befolgen von Hausregeln die Frage nach den Folgen für das einzelne Kind nicht ersetzt.",
+    "richtig": true,
+    "erklaerung": "Regeln geben Orientierung, entbinden aber nicht von der Verantwortung, die Wirkung auf das konkrete Kind zu bedenken."
+   },
+   {
+    "text": "… betont wird, dass Erzieher sich ständig fragen müssen, welche Folgen ihr Handeln hat.",
+    "richtig": true,
+    "erklaerung": "Genau das verlangt pädagogische Verantwortung – Herr Schmid lehnt es ab."
+   },
+   {
+    "text": "… ihm entgegengehalten wird, dass Kinder und Erzieher in Wissen und Macht grundsätzlich gleichgestellt sind.",
+    "richtig": false,
+    "erklaerung": "Das Gegenteil trifft zu: Das Verhältnis ist meist ungleich. Gerade daraus ergibt sich die Verantwortung des Erziehers."
+   }
+  ]
+ },
+ {
+  "id": "lb3-ft4-a4",
+  "titel": "Definition von Erziehung",
+  "lbNum": 3,
+  "vignette": {
+   "titel": "Noah und die Stopp-Regel",
+   "zeilen": false,
+   "text": "Die FOS-Praktikantin Selin beobachtet im Kindergarten „Sonnenschein“, dass Noah (5) andere Kinder haut, wenn sie ihm Spielsachen wegnehmen. Die Erzieherin Frau Weber überlegt sich ein Vorgehen: Sie spricht am nächsten Morgen ruhig mit Noah über den Vorfall vom Vortag, übt mit ihm und zwei anderen Kindern ein „Stopp!“ mit ausgestreckter Hand und lobt ihn, wenn er es anwendet. Ihr Ziel: Noah soll lernen, seinen Ärger dauerhaft ohne Gewalt auszudrücken.\n\nWährend des Gesprächs muss Selin laut niesen. Noah lacht und vergisst kurz seinen Ärger.\n\nNach zwei Wochen haut Noah im Kindergarten deutlich seltener. Seine Mutter berichtet allerdings, dass er zu Hause seinen kleinen Bruder weiterhin schlägt. Die Kita-Leiterin sagt dazu: „Wir können nie ganz sicher wissen, wie ein Kind auf unsere Maßnahmen reagiert.“\n\nHerr Schmid, ein Kollege, meint dagegen: „Ich mache mir über die Folgen meines Handelns keine großen Gedanken. Ich halte mich an die Hausregeln, dann kann nichts schiefgehen.“"
+  },
+  "kontext": "",
+  "stamm": "Frau Webers Vorgehen erfüllt die Definition von Erziehung, weil …",
+  "pruefen": "Aus deinem Word-Dokument „Freitagstest 4“ übernommen. Bitte vor dem Freischalten kurz durchsehen.",
+  "aussagen": [
+   {
+    "text": "… Noah nach den zwei Wochen nachweislich weder im Kindergarten noch zu Hause mehr haut.",
+    "richtig": false,
+    "erklaerung": "Das trifft nicht zu (er haut seltener, zu Hause weiterhin) und ist auch kein Merkmal der Definition – der Erfolg ist offen."
+   },
+   {
+    "text": "… sie mit Noah in einer sozialen Interaktion steht, in der beide wechselseitig aufeinander reagieren.",
+    "richtig": true,
+    "erklaerung": "Soziale Interaktion ist eines der Merkmale von Erziehung: Erzieher und zu Erziehender beeinflussen sich gegenseitig."
+   },
+   {
+    "text": "… sie bestimmte Lernprozesse bei Noah bewusst und absichtlich herbeiführen und unterstützen will.",
+    "richtig": true,
+    "erklaerung": "Teil der Definition: Erziehung will bestimmte Lernprozesse bewusst und absichtlich herbeiführen und unterstützen."
+   },
+   {
+    "text": "… sie eine relativ dauerhafte Veränderung von Noahs Verhalten anstrebt, die einem Erziehungsziel entspricht.",
+    "richtig": true,
+    "erklaerung": "Teil der Definition: relativ dauerhafte Veränderungen des Verhaltens und Erlebens, die bestimmten Erziehungszielen entsprechen."
+   }
+  ]
+ },
+ {
+  "id": "lb3-ft5-a1",
+  "titel": "Dimensionen nach Baumrind",
+  "lbNum": 3,
+  "vignette": {
+   "titel": "Elterngespräche im Hort",
+   "zeilen": false,
+   "text": "Die Horterzieherin Frau Klein führt Elterngespräche über Hausaufgaben und Mediennutzung der Viertklässler.\n\nFrau Albers: „Bei uns gilt eine Stunde Tablet, aber erst nach den Hausaufgaben. Die Regel haben wir mit Lukas besprochen. Wenn er gute Gründe hat, verhandeln wir. Abends erzählt er mir meistens, was ihn beschäftigt.“ Im Hort wirkt Lukas offen und hilft oft Jüngeren.\n\nHerr Brandt: „Mein Sohn hat zu gehorchen. Erklären muss ich nichts. Wer die Hausaufgaben nicht macht, hat eine Woche Hausarrest.“ Sein Sohn Jan ist im Hort meist still und traut sich wenig zu. Gegenüber Jüngeren wird er manchmal grob.\n\nFrau Çelik: „Ich will keinen Streit mit Mia. Wenn sie weint, darf sie eben länger spielen. Hauptsache, sie ist glücklich – ich hab sie so lieb.“\n\nHerr Dorn: „Keine Ahnung, was Tim nachmittags macht. Der ist alt genug. Ich habe genug eigene Probleme.“"
+  },
+  "kontext": "",
+  "stamm": "Das Verhalten der Eltern wird den beiden Dimensionen nach Baumrind fachlich zutreffend zugeordnet, wenn …",
+  "pruefen": "Aus deinem Word-Dokument „Freitagstest 5“ übernommen. Bitte vor dem Freischalten kurz durchsehen.",
+  "aussagen": [
+   {
+    "text": "… Frau Çeliks Zuneigung als Hinweis auf hohe Anforderung gewertet wird, weil sie sich intensiv um Mia kümmert.",
+    "richtig": false,
+    "erklaerung": "Zuneigung gehört zur Dimension Wärme. Anforderungen stellt Frau Çelik gerade kaum."
+   },
+   {
+    "text": "… Herrn Dorns Haltung in beiden Dimensionen als niedrig eingestuft wird.",
+    "richtig": true,
+    "erklaerung": "Er zeigt weder Zuwendung noch stellt er Regeln oder Erwartungen."
+   },
+   {
+    "text": "… Herrn Brandts Hausarrest als Ausdruck hoher Anforderung und Kontrolle gilt.",
+    "richtig": true,
+    "erklaerung": "Strenge Regeln und konsequente Strafen gehören zur Dimension Anforderung/Kontrolle."
+   },
+   {
+    "text": "… Frau Albers’ abendliches Zuhören der Dimension Wärme und Responsivität zugeordnet wird.",
+    "richtig": true,
+    "erklaerung": "Zuhören und Eingehen auf das Kind sind Ausdruck von Wärme und Responsivität."
+   }
+  ]
+ },
+ {
+  "id": "lb3-ft5-a2",
+  "titel": "Erziehungsstile bestimmen",
+  "lbNum": 3,
+  "vignette": {
+   "titel": "Elterngespräche im Hort",
+   "zeilen": false,
+   "text": "Die Horterzieherin Frau Klein führt Elterngespräche über Hausaufgaben und Mediennutzung der Viertklässler.\n\nFrau Albers: „Bei uns gilt eine Stunde Tablet, aber erst nach den Hausaufgaben. Die Regel haben wir mit Lukas besprochen. Wenn er gute Gründe hat, verhandeln wir. Abends erzählt er mir meistens, was ihn beschäftigt.“ Im Hort wirkt Lukas offen und hilft oft Jüngeren.\n\nHerr Brandt: „Mein Sohn hat zu gehorchen. Erklären muss ich nichts. Wer die Hausaufgaben nicht macht, hat eine Woche Hausarrest.“ Sein Sohn Jan ist im Hort meist still und traut sich wenig zu. Gegenüber Jüngeren wird er manchmal grob.\n\nFrau Çelik: „Ich will keinen Streit mit Mia. Wenn sie weint, darf sie eben länger spielen. Hauptsache, sie ist glücklich – ich hab sie so lieb.“\n\nHerr Dorn: „Keine Ahnung, was Tim nachmittags macht. Der ist alt genug. Ich habe genug eigene Probleme.“"
+  },
+  "kontext": "",
+  "stamm": "Die Erziehungsstile der Eltern werden fachlich zutreffend bestimmt, wenn …",
+  "pruefen": "Aus deinem Word-Dokument „Freitagstest 5“ übernommen. Bitte vor dem Freischalten kurz durchsehen.",
+  "aussagen": [
+   {
+    "text": "… Frau Albers als autoritär eingeordnet wird, da sie feste Regeln aufstellt und durchsetzt.",
+    "richtig": false,
+    "erklaerung": "Feste Regeln allein machen keinen autoritären Stil. Frau Albers verbindet Regeln mit Wärme, Begründung und Mitsprache – das ist autoritativ."
+   },
+   {
+    "text": "… Herr Dorn als permissiv gilt, weil er seinem Sohn viele Freiheiten lässt.",
+    "richtig": false,
+    "erklaerung": "Ihm fehlt auch die Wärme – er nimmt kaum Anteil. Das ist der vernachlässigende Stil, nicht der permissive."
+   },
+   {
+    "text": "… Frau Çelik als permissiv eingestuft wird, da sie Konflikte meidet und kaum Grenzen setzt.",
+    "richtig": true,
+    "erklaerung": "Hohe Wärme, wenige Regeln, Konfliktvermeidung: permissiver Stil."
+   },
+   {
+    "text": "… Herr Brandt als autoritär gilt, weil er Gehorsam ohne Begründung einfordert.",
+    "richtig": true,
+    "erklaerung": "Hohe Anforderung bei geringer Wärme, Gehorsam ohne Erklärung: autoritärer Stil."
+   }
+  ]
+ },
+ {
+  "id": "lb3-ft5-a3",
+  "titel": "Folgen für die Kinder",
+  "lbNum": 3,
+  "vignette": {
+   "titel": "Elterngespräche im Hort",
+   "zeilen": false,
+   "text": "Die Horterzieherin Frau Klein führt Elterngespräche über Hausaufgaben und Mediennutzung der Viertklässler.\n\nFrau Albers: „Bei uns gilt eine Stunde Tablet, aber erst nach den Hausaufgaben. Die Regel haben wir mit Lukas besprochen. Wenn er gute Gründe hat, verhandeln wir. Abends erzählt er mir meistens, was ihn beschäftigt.“ Im Hort wirkt Lukas offen und hilft oft Jüngeren.\n\nHerr Brandt: „Mein Sohn hat zu gehorchen. Erklären muss ich nichts. Wer die Hausaufgaben nicht macht, hat eine Woche Hausarrest.“ Sein Sohn Jan ist im Hort meist still und traut sich wenig zu. Gegenüber Jüngeren wird er manchmal grob.\n\nFrau Çelik: „Ich will keinen Streit mit Mia. Wenn sie weint, darf sie eben länger spielen. Hauptsache, sie ist glücklich – ich hab sie so lieb.“\n\nHerr Dorn: „Keine Ahnung, was Tim nachmittags macht. Der ist alt genug. Ich habe genug eigene Probleme.“"
+  },
+  "kontext": "",
+  "stamm": "Mögliche Folgen für die Kinder werden im Sinne der Forschung zu den Erziehungsstilen zutreffend eingeschätzt, wenn …",
+  "pruefen": "Aus deinem Word-Dokument „Freitagstest 5“ übernommen. Bitte vor dem Freischalten kurz durchsehen.",
+  "aussagen": [
+   {
+    "text": "… für Tim das geringste Risiko ungünstiger Entwicklungsfolgen angenommen wird, da er früh selbstständig wird.",
+    "richtig": false,
+    "erklaerung": "Der vernachlässigende Stil gilt als am stärksten mit negativen Entwicklungsfolgen verbunden."
+   },
+   {
+    "text": "… für Mia erwartet wird, dass ihr das Aushalten von Frustration besonders leichtfällt.",
+    "richtig": false,
+    "erklaerung": "Permissiv erzogenen Kindern fällt es häufig schwerer, Frustration auszuhalten und Impulse zu steuern."
+   },
+   {
+    "text": "… für Lukas eher Selbstbewusstsein, soziale Kompetenz und Leistungsbereitschaft erwartet werden.",
+    "richtig": true,
+    "erklaerung": "Autoritativ erzogene Kinder gelten in Baumrinds Forschung häufig als selbstbewusst, sozial kompetent und leistungsbereit."
+   },
+   {
+    "text": "… Jans Unsicherheit und sein gelegentlich grobes Verhalten als typischer Zusammenhang mit autoritärer Erziehung gelten.",
+    "richtig": true,
+    "erklaerung": "Kinder aus autoritär geprägten Familien zeigen häufiger Unsicherheit und geringes Selbstwertgefühl oder – je nach Temperament – trotzig-aggressives Verhalten."
+   }
+  ]
+ },
+ {
+  "id": "lb3-ft5-a4",
+  "titel": "Baumrind im Elterngespräch",
+  "lbNum": 3,
+  "vignette": {
+   "titel": "Elterngespräche im Hort",
+   "zeilen": false,
+   "text": "Die Horterzieherin Frau Klein führt Elterngespräche über Hausaufgaben und Mediennutzung der Viertklässler.\n\nFrau Albers: „Bei uns gilt eine Stunde Tablet, aber erst nach den Hausaufgaben. Die Regel haben wir mit Lukas besprochen. Wenn er gute Gründe hat, verhandeln wir. Abends erzählt er mir meistens, was ihn beschäftigt.“ Im Hort wirkt Lukas offen und hilft oft Jüngeren.\n\nHerr Brandt: „Mein Sohn hat zu gehorchen. Erklären muss ich nichts. Wer die Hausaufgaben nicht macht, hat eine Woche Hausarrest.“ Sein Sohn Jan ist im Hort meist still und traut sich wenig zu. Gegenüber Jüngeren wird er manchmal grob.\n\nFrau Çelik: „Ich will keinen Streit mit Mia. Wenn sie weint, darf sie eben länger spielen. Hauptsache, sie ist glücklich – ich hab sie so lieb.“\n\nHerr Dorn: „Keine Ahnung, was Tim nachmittags macht. Der ist alt genug. Ich habe genug eigene Probleme.“"
+  },
+  "kontext": "",
+  "stamm": "Frau Klein nutzt das Modell von Baumrind in den Gesprächen fachlich angemessen, wenn …",
+  "pruefen": "Aus deinem Word-Dokument „Freitagstest 5“ übernommen. Bitte vor dem Freischalten kurz durchsehen.",
+  "aussagen": [
+   {
+    "text": "… sie Frau Çelik rät, weniger Wärme zu zeigen, damit ihr Stil autoritativer wird.",
+    "richtig": false,
+    "erklaerung": "Autoritativ heißt hohe Wärme plus hohe Anforderung. Frau Çelik müsste ihre Anforderungen erhöhen, nicht die Wärme verringern."
+   },
+   {
+    "text": "… sie die Studienergebnisse als sichere Vorhersage für die Entwicklung jedes einzelnen Kindes verwendet.",
+    "richtig": false,
+    "erklaerung": "Die Forschung zeigt Zusammenhänge und Wahrscheinlichkeiten, keine sicheren Vorhersagen für den Einzelfall."
+   },
+   {
+    "text": "… sie den vernachlässigenden Stil als Teil von Baumrinds ursprünglichem Modell mit drei Stilen vorstellt.",
+    "richtig": false,
+    "erklaerung": "Baumrind beschrieb zunächst drei Stile; den vernachlässigenden Stil ergänzten später Maccoby und Martin."
+   },
+   {
+    "text": "… sie berücksichtigt, dass die Stile Idealtypen sind und Eltern im Alltag häufig Mischformen zeigen.",
+    "richtig": true,
+    "erklaerung": "Die Stile beschreiben Idealtypen; reale Eltern verhalten sich je nach Situation unterschiedlich."
+   }
+  ]
+ },
+ {
+  "id": "lb3-ft6-a1",
+  "titel": "Das Kinderhaus beschreiben",
+  "lbNum": 3,
+  "vignette": {
+   "titel": "Anmeldung im Kinderhaus „Regenbogen“",
+   "zeilen": false,
+   "text": "Das Kinderhaus „Regenbogen“ in Neustadt wird von der Caritas betrieben. Unter einem Dach gibt es eine Krippengruppe, zwei Kindergartengruppen und einen Hort für Grundschulkinder. Betreut werden die Kinder von Erzieherinnen und Erziehern, Kinderpflegerinnen und einer Sozialpädagogin.\n\nFrau Hahn ist alleinerziehend und beginnt im Januar eine Vollzeitstelle. Beim Anmeldegespräch fragt sie besorgt: „Meine Tochter Ella ist gerade drei geworden. Muss sie jetzt in den Kindergarten? Und muss sie dann jeden Tag kommen, so wie später in der Schule?“\n\nIhr Nachbar Herr Vogt hatte ihr am Morgen gesagt: „Kindergarten ist doch nur Aufbewahrung, damit die Eltern arbeiten können. Und wenn das Kind den ganzen Tag dort ist, übernimmt eben der Kindergarten die Erziehung statt der Familie.“\n\nDie Stadt Neustadt plant wegen der hohen Nachfrage eine weitere Einrichtung. Bevor sie selbst aktiv wird, fragt sie bei der Diakonie und beim Roten Kreuz an, ob diese den neuen Kindergarten übernehmen möchten."
+  },
+  "kontext": "",
+  "stamm": "Das Kinderhaus „Regenbogen“ wird fachlich zutreffend beschrieben, wenn …",
+  "pruefen": "Aus deinem Word-Dokument „Freitagstest 6“ übernommen. Bitte vor dem Freischalten kurz durchsehen.",
+  "aussagen": [
+   {
+    "text": "… angenommen wird, dass die Kinder dort wie in einem Heim dauerhaft wohnen und übernachten.",
+    "richtig": false,
+    "erklaerung": "Anders als im Heim bleiben die Kinder in Kindertagesstätten nicht dauerhaft über Nacht."
+   },
+   {
+    "text": "… die Caritas als öffentlicher Träger bezeichnet wird, weil sie Aufgaben für das Gemeinwohl übernimmt.",
+    "richtig": false,
+    "erklaerung": "Die Caritas ist ein kirchlicher Wohlfahrtsverband und damit ein freier Träger. Öffentliche Träger sind z. B. Städte und Gemeinden."
+   },
+   {
+    "text": "… es als Kindertagesstätte bezeichnet wird, da es Krippe, Kindergarten und Hort unter einem Dach vereint.",
+    "richtig": true,
+    "erklaerung": "„Kita“ ist meist der Oberbegriff für verschiedene Einrichtungen für Kinder unter einem Dach: Krippe, Kindergarten und Hort."
+   },
+   {
+    "text": "… es als außerschulische Einrichtung eingeordnet wird, obwohl dort auch Schulkinder betreut werden.",
+    "richtig": true,
+    "erklaerung": "Kitas sind außerschulische Einrichtungen – auch der Hort betreut Schulkinder außerhalb des Unterrichts."
+   }
+  ]
+ },
+ {
+  "id": "lb3-ft6-a2",
+  "titel": "Fragen von Frau Hahn",
+  "lbNum": 3,
+  "vignette": {
+   "titel": "Anmeldung im Kinderhaus „Regenbogen“",
+   "zeilen": false,
+   "text": "Das Kinderhaus „Regenbogen“ in Neustadt wird von der Caritas betrieben. Unter einem Dach gibt es eine Krippengruppe, zwei Kindergartengruppen und einen Hort für Grundschulkinder. Betreut werden die Kinder von Erzieherinnen und Erziehern, Kinderpflegerinnen und einer Sozialpädagogin.\n\nFrau Hahn ist alleinerziehend und beginnt im Januar eine Vollzeitstelle. Beim Anmeldegespräch fragt sie besorgt: „Meine Tochter Ella ist gerade drei geworden. Muss sie jetzt in den Kindergarten? Und muss sie dann jeden Tag kommen, so wie später in der Schule?“\n\nIhr Nachbar Herr Vogt hatte ihr am Morgen gesagt: „Kindergarten ist doch nur Aufbewahrung, damit die Eltern arbeiten können. Und wenn das Kind den ganzen Tag dort ist, übernimmt eben der Kindergarten die Erziehung statt der Familie.“\n\nDie Stadt Neustadt plant wegen der hohen Nachfrage eine weitere Einrichtung. Bevor sie selbst aktiv wird, fragt sie bei der Diakonie und beim Roten Kreuz an, ob diese den neuen Kindergarten übernehmen möchten."
+  },
+  "kontext": "",
+  "stamm": "Frau Hahns Fragen werden fachlich zutreffend beantwortet, wenn …",
+  "pruefen": "Aus deinem Word-Dokument „Freitagstest 6“ übernommen. Bitte vor dem Freischalten kurz durchsehen.",
+  "aussagen": [
+   {
+    "text": "… ihr erklärt wird, dass für Ella keine gesetzliche Pflicht zum Besuch des Kindergartens besteht.",
+    "richtig": true,
+    "erklaerung": "Im Gegensatz zur Schulpflicht besteht keine gesetzliche Pflicht, einen Kindergarten zu besuchen."
+   },
+   {
+    "text": "… ihr mitgeteilt wird, dass Ella mit drei Jahren im vierten Lebensjahr ist und damit im typischen Kindergartenalter.",
+    "richtig": true,
+    "erklaerung": "Das vierte Lebensjahr beginnt mit dem dritten Geburtstag. Der Kindergarten ist für Kinder zwischen dem vierten und sechsten Lebensjahr."
+   },
+   {
+    "text": "… sie erfährt, dass sie den Beginn des Kindergartenbesuchs am Entwicklungsstand ihrer Tochter ausrichten kann.",
+    "richtig": true,
+    "erklaerung": "Die Eltern schicken ihre Kinder freiwillig und können den Eintritt nach dem Entwicklungsstand richten."
+   },
+   {
+    "text": "… ihr gesagt wird, dass Ella den Kindergarten wie die Schule an jedem Wochentag besuchen muss.",
+    "richtig": false,
+    "erklaerung": "Der Kindergarten muss nicht täglich besucht werden; der Aufenthalt kann flexibel gehandhabt werden."
+   }
+  ]
+ },
+ {
+  "id": "lb3-ft6-a3",
+  "titel": "Aussage von Herrn Vogt widerlegen",
+  "lbNum": 3,
+  "vignette": {
+   "titel": "Anmeldung im Kinderhaus „Regenbogen“",
+   "zeilen": false,
+   "text": "Das Kinderhaus „Regenbogen“ in Neustadt wird von der Caritas betrieben. Unter einem Dach gibt es eine Krippengruppe, zwei Kindergartengruppen und einen Hort für Grundschulkinder. Betreut werden die Kinder von Erzieherinnen und Erziehern, Kinderpflegerinnen und einer Sozialpädagogin.\n\nFrau Hahn ist alleinerziehend und beginnt im Januar eine Vollzeitstelle. Beim Anmeldegespräch fragt sie besorgt: „Meine Tochter Ella ist gerade drei geworden. Muss sie jetzt in den Kindergarten? Und muss sie dann jeden Tag kommen, so wie später in der Schule?“\n\nIhr Nachbar Herr Vogt hatte ihr am Morgen gesagt: „Kindergarten ist doch nur Aufbewahrung, damit die Eltern arbeiten können. Und wenn das Kind den ganzen Tag dort ist, übernimmt eben der Kindergarten die Erziehung statt der Familie.“\n\nDie Stadt Neustadt plant wegen der hohen Nachfrage eine weitere Einrichtung. Bevor sie selbst aktiv wird, fragt sie bei der Diakonie und beim Roten Kreuz an, ob diese den neuen Kindergarten übernehmen möchten."
+  },
+  "kontext": "",
+  "stamm": "Herrn Vogts Aussage wird fachlich zutreffend widerlegt, wenn …",
+  "pruefen": "Aus deinem Word-Dokument „Freitagstest 6“ übernommen. Bitte vor dem Freischalten kurz durchsehen.",
+  "aussagen": [
+   {
+    "text": "… betont wird, dass der Kindergarten eine familienergänzende Einrichtung ist, die die Familie nicht ersetzt.",
+    "richtig": true,
+    "erklaerung": "Der Kindergarten will die Erziehung der Familie unterstützen und ergänzen – nicht ersetzen."
+   },
+   {
+    "text": "… ihm darin zugestimmt wird, dass der Kindergarten bei ganztägiger Betreuung die Erziehungsaufgabe der Familie übernimmt.",
+    "richtig": false,
+    "erklaerung": "Auch bei Ganztagsbetreuung bleibt der Kindergarten familienergänzend; die Familie behält ihre Erziehungsaufgabe."
+   },
+   {
+    "text": "… eingeräumt wird, dass Pflege und Erziehung im Kindergarten meist von ungelernten Hilfskräften geleistet werden.",
+    "richtig": false,
+    "erklaerung": "Pflege und Erziehung werden in der Regel von ausgebildeten Erziehern und Kinderpflegern geleistet."
+   },
+   {
+    "text": "… mit Mollenhauer ergänzt wird, dass Kinder dort Gleichaltrige und Spielräume finden, die Familien oft fehlen.",
+    "richtig": true,
+    "erklaerung": "Mollenhauer: Die Familie kann heute oft keinen freien, gesicherten Spielraum, keine Altersgruppe und keine vielfältigen Sozialerfahrungen mehr bieten."
+   }
+  ]
+ },
+ {
+  "id": "lb3-ft6-a4",
+  "titel": "Vorgehen der Stadt Neustadt",
+  "lbNum": 3,
+  "vignette": {
+   "titel": "Anmeldung im Kinderhaus „Regenbogen“",
+   "zeilen": false,
+   "text": "Das Kinderhaus „Regenbogen“ in Neustadt wird von der Caritas betrieben. Unter einem Dach gibt es eine Krippengruppe, zwei Kindergartengruppen und einen Hort für Grundschulkinder. Betreut werden die Kinder von Erzieherinnen und Erziehern, Kinderpflegerinnen und einer Sozialpädagogin.\n\nFrau Hahn ist alleinerziehend und beginnt im Januar eine Vollzeitstelle. Beim Anmeldegespräch fragt sie besorgt: „Meine Tochter Ella ist gerade drei geworden. Muss sie jetzt in den Kindergarten? Und muss sie dann jeden Tag kommen, so wie später in der Schule?“\n\nIhr Nachbar Herr Vogt hatte ihr am Morgen gesagt: „Kindergarten ist doch nur Aufbewahrung, damit die Eltern arbeiten können. Und wenn das Kind den ganzen Tag dort ist, übernimmt eben der Kindergarten die Erziehung statt der Familie.“\n\nDie Stadt Neustadt plant wegen der hohen Nachfrage eine weitere Einrichtung. Bevor sie selbst aktiv wird, fragt sie bei der Diakonie und beim Roten Kreuz an, ob diese den neuen Kindergarten übernehmen möchten."
+  },
+  "kontext": "",
+  "stamm": "Das Vorgehen der Stadt Neustadt wird fachlich zutreffend erklärt, wenn …",
+  "pruefen": "Aus deinem Word-Dokument „Freitagstest 6“ übernommen. Bitte vor dem Freischalten kurz durchsehen.",
+  "aussagen": [
+   {
+    "text": "… angenommen wird, dass öffentliche Träger grundsätzlich die Mehrheit der Kindergärten betreiben.",
+    "richtig": false,
+    "erklaerung": "Die meisten Kindergärten sind in freier Trägerschaft; nur etwa 30 % liegen in öffentlicher Trägerschaft."
+   },
+   {
+    "text": "… die Regelung dem Jugendwohlfahrtsgesetz zugeschrieben wird, das bis heute unverändert gilt.",
+    "richtig": false,
+    "erklaerung": "Das JWG wurde 1990/91 durch das Kinder- und Jugendhilfegesetz (KJHG, SGB VIII) abgelöst."
+   },
+   {
+    "text": "… es auf das Subsidiaritätsprinzip zurückgeführt wird, nach dem freie Träger Vorrang vor öffentlichen Trägern haben.",
+    "richtig": true,
+    "erklaerung": "Öffentliche Träger werden erst aktiv, wenn kein freier Träger zur Verfügung steht (Subsidiaritätsprinzip)."
+   },
+   {
+    "text": "… betont wird, dass ein Kindergarten keiner staatlichen Aufsicht untersteht, sobald ein freier Träger ihn betreibt.",
+    "richtig": false,
+    "erklaerung": "Kindergärten unterstehen unabhängig vom Träger der Aufsicht von Jugendämtern und Regierungen."
+   }
+  ]
+ },
+ {
+  "id": "lb3-ft7-a1",
+  "titel": "Digitale Medien im BayBEP",
+  "lbNum": 3,
+  "vignette": {
+   "titel": "Teamsitzung in der Kita „Sonnenblume“",
+   "zeilen": false,
+   "text": "Die Kita „Sonnenblume“ hat ein Hochbeet bekommen. In der Teamsitzung sammelt das Team Ideen für ein Projekt „Unser Gemüsegarten“.\n\nFrau Yilmaz schlägt vor, dass die Kinder das Wachstum der Pflanzen mit dem Tablet fotografieren und daraus ein eigenes Gartentagebuch gestalten. Mit einer Pflanzen-App wollen sie Unkraut bestimmen und anschließend besprechen, ob die App immer recht hat. Der Praktikant Paul ergänzt: „Und wer brav mitarbeitet, darf zur Belohnung im Ruheraum ein Video schauen.“\n\nFrau Huber ist skeptisch: „Tablets? Die Kinder sitzen zu Hause schon genug vor Bildschirmen. Digitales gehört einfach nicht zum Bildungsauftrag einer Kita.“\n\nHerr Krause möchte das Thema Umwelt einbringen: „Wir zeigen ihnen Filme über Dürren und Überschwemmungen. Wenn sie richtig Angst bekommen, trennen sie den Müll freiwillig.“\n\nDie Leiterin plant für den Herbst die Suchtprävention: Ein Polizist soll den Vorschulkindern erklären, wie gefährlich Drogen sind. Eine Elternvertreterin meint dazu: „Gesund ist ein Kind doch, solange es nicht krank ist.“ Frau Yilmaz will das Gemüse am Ende gemeinsam mit den Kindern zu einer Suppe verarbeiten."
+  },
+  "kontext": "",
+  "stamm": "Die Vorschläge zum Einsatz digitaler Medien entsprechen dem BayBEP, wenn …",
+  "pruefen": "Aus deinem Word-Dokument „Freitagstest 7“ übernommen. Bitte vor dem Freischalten kurz durchsehen.",
+  "aussagen": [
+   {
+    "text": "… Videos im Ruheraum als Belohnung eingesetzt werden, weil die Kinder sie zu Hause ohnehin nutzen.",
+    "richtig": false,
+    "erklaerung": "Der BayBEP betont: kein Medienkonsum. Passives Videoschauen als Belohnung widerspricht dem Grundsatz."
+   },
+   {
+    "text": "… Frau Hubers Bedenken aufgegriffen werden, indem digitale Medien aus dem Kita-Alltag vollständig ausgeschlossen werden.",
+    "richtig": false,
+    "erklaerung": "Der BayBEP setzt auf intelligentes Risikomanagement statt Ausschluss; Kinder haben ein Recht auf Zugang und Teilhabe."
+   },
+   {
+    "text": "… mit den Kindern besprochen wird, ob die Ergebnisse einer Pflanzen-App immer zuverlässig sind.",
+    "richtig": true,
+    "erklaerung": "Bildung über Medien: Relevanz, Qualität und Zuverlässigkeit von Informationen ansatzweise einschätzen (Analysieren und Reflektieren)."
+   },
+   {
+    "text": "… die Kinder das Pflanzenwachstum mit dem Tablet fotografieren und daraus ein eigenes Gartentagebuch gestalten.",
+    "richtig": true,
+    "erklaerung": "Bildung mit Medien: Kinder produzieren und präsentieren eigene Medienprodukte – Gestalten statt Konsumieren."
+   }
+  ]
+ },
+ {
+  "id": "lb3-ft7-a2",
+  "titel": "Einwand von Frau Huber",
+  "lbNum": 3,
+  "vignette": {
+   "titel": "Teamsitzung in der Kita „Sonnenblume“",
+   "zeilen": false,
+   "text": "Die Kita „Sonnenblume“ hat ein Hochbeet bekommen. In der Teamsitzung sammelt das Team Ideen für ein Projekt „Unser Gemüsegarten“.\n\nFrau Yilmaz schlägt vor, dass die Kinder das Wachstum der Pflanzen mit dem Tablet fotografieren und daraus ein eigenes Gartentagebuch gestalten. Mit einer Pflanzen-App wollen sie Unkraut bestimmen und anschließend besprechen, ob die App immer recht hat. Der Praktikant Paul ergänzt: „Und wer brav mitarbeitet, darf zur Belohnung im Ruheraum ein Video schauen.“\n\nFrau Huber ist skeptisch: „Tablets? Die Kinder sitzen zu Hause schon genug vor Bildschirmen. Digitales gehört einfach nicht zum Bildungsauftrag einer Kita.“\n\nHerr Krause möchte das Thema Umwelt einbringen: „Wir zeigen ihnen Filme über Dürren und Überschwemmungen. Wenn sie richtig Angst bekommen, trennen sie den Müll freiwillig.“\n\nDie Leiterin plant für den Herbst die Suchtprävention: Ein Polizist soll den Vorschulkindern erklären, wie gefährlich Drogen sind. Eine Elternvertreterin meint dazu: „Gesund ist ein Kind doch, solange es nicht krank ist.“ Frau Yilmaz will das Gemüse am Ende gemeinsam mit den Kindern zu einer Suppe verarbeiten."
+  },
+  "kontext": "",
+  "stamm": "Frau Hubers Einwand wird aus Sicht des BayBEP fachlich zutreffend beantwortet, wenn …",
+  "pruefen": "Aus deinem Word-Dokument „Freitagstest 7“ übernommen. Bitte vor dem Freischalten kurz durchsehen.",
+  "aussagen": [
+   {
+    "text": "… erklärt wird, dass Kinder auch in der digitalen Welt ein Recht auf Zugang, Teilhabe sowie Bildung und Befähigung haben.",
+    "richtig": true,
+    "erklaerung": "Der BayBEP stützt sich auf die Kinderrechte: Zugang und Teilhabe, Schutz und Sicherheit, Bildung und Befähigung."
+   },
+   {
+    "text": "… darauf verwiesen wird, dass der BayBEP digitale Kompetenz als „vierte Kulturtechnik“ neben Lesen, Schreiben und Rechnen bezeichnet.",
+    "richtig": true,
+    "erklaerung": "So steht es im Kapitel 7.4; digitale Kompetenz ist Voraussetzung für gleichberechtigte Teilhabe."
+   },
+   {
+    "text": "… klargestellt wird, dass es in der Kita um Gestalten und Reflektieren geht und nicht um zusätzlichen Medienkonsum.",
+    "richtig": true,
+    "erklaerung": "„Kein Medienkonsum“: Nicht Konsumieren, sondern Gestalten und Lernen ist das Anliegen früher digitaler Bildung."
+   },
+   {
+    "text": "… betont wird, dass das Digitale das Analoge im Kita-Alltag nach und nach ersetzen soll.",
+    "richtig": false,
+    "erklaerung": "Grundsatz des BayBEP: Das Digitale ersetzt das Analoge nicht, sondern ergänzt, unterstützt und bereichert es."
+   }
+  ]
+ },
+ {
+  "id": "lb3-ft7-a3",
+  "titel": "Vorschlag von Herrn Krause",
+  "lbNum": 3,
+  "vignette": {
+   "titel": "Teamsitzung in der Kita „Sonnenblume“",
+   "zeilen": false,
+   "text": "Die Kita „Sonnenblume“ hat ein Hochbeet bekommen. In der Teamsitzung sammelt das Team Ideen für ein Projekt „Unser Gemüsegarten“.\n\nFrau Yilmaz schlägt vor, dass die Kinder das Wachstum der Pflanzen mit dem Tablet fotografieren und daraus ein eigenes Gartentagebuch gestalten. Mit einer Pflanzen-App wollen sie Unkraut bestimmen und anschließend besprechen, ob die App immer recht hat. Der Praktikant Paul ergänzt: „Und wer brav mitarbeitet, darf zur Belohnung im Ruheraum ein Video schauen.“\n\nFrau Huber ist skeptisch: „Tablets? Die Kinder sitzen zu Hause schon genug vor Bildschirmen. Digitales gehört einfach nicht zum Bildungsauftrag einer Kita.“\n\nHerr Krause möchte das Thema Umwelt einbringen: „Wir zeigen ihnen Filme über Dürren und Überschwemmungen. Wenn sie richtig Angst bekommen, trennen sie den Müll freiwillig.“\n\nDie Leiterin plant für den Herbst die Suchtprävention: Ein Polizist soll den Vorschulkindern erklären, wie gefährlich Drogen sind. Eine Elternvertreterin meint dazu: „Gesund ist ein Kind doch, solange es nicht krank ist.“ Frau Yilmaz will das Gemüse am Ende gemeinsam mit den Kindern zu einer Suppe verarbeiten."
+  },
+  "kontext": "",
+  "stamm": "Herrn Krauses Vorschlag wird aus Sicht des BayBEP fachlich zutreffend beurteilt, wenn …",
+  "pruefen": "Aus deinem Word-Dokument „Freitagstest 7“ übernommen. Bitte vor dem Freischalten kurz durchsehen.",
+  "aussagen": [
+   {
+    "text": "… ihm zugestimmt wird, weil Kinder für die Umweltprobleme hauptverantwortlich sind und deshalb ihr Verhalten ändern müssen.",
+    "richtig": false,
+    "erklaerung": "Kinder tragen für Umweltgefährdungen – wenn überhaupt – nur begrenzt Verantwortung, beschränkt auf ihren unmittelbaren Handlungsbereich."
+   },
+   {
+    "text": "… ergänzt wird, dass Kinder die Umwelt zunächst mit allen Sinnen erfahren und als verletzbar erleben sollen.",
+    "richtig": true,
+    "erklaerung": "Bildungsziel: die Umwelt mit allen Sinnen erfahren und als unersetzlich und verletzbar wahrnehmen – z. B. im Gemüsegarten."
+   },
+   {
+    "text": "… kritisiert wird, dass Angst Kinder überfordern kann, während der BayBEP Zuversicht und Hoffnung stärken will.",
+    "richtig": true,
+    "erklaerung": "Ziel ist, trotz Umweltproblemen Lösungsmöglichkeiten zu erkennen und dabei Zuversicht, Hoffnung und Durchhaltevermögen zu entwickeln."
+   },
+   {
+    "text": "… der Vorschlag als gelungenes Beispiel für Bildung für nachhaltige Entwicklung im Sinne der Agenda 21 gilt.",
+    "richtig": false,
+    "erklaerung": "BNE zeigt nach vorne weisende Szenarien und verbindet Ökologie, Ökonomie und Soziales. Angstmachende Bilder gehören nicht dazu."
+   }
+  ]
+ },
+ {
+  "id": "lb3-ft7-a4",
+  "titel": "Gesundheitsbildung",
+  "lbNum": 3,
+  "vignette": {
+   "titel": "Teamsitzung in der Kita „Sonnenblume“",
+   "zeilen": false,
+   "text": "Die Kita „Sonnenblume“ hat ein Hochbeet bekommen. In der Teamsitzung sammelt das Team Ideen für ein Projekt „Unser Gemüsegarten“.\n\nFrau Yilmaz schlägt vor, dass die Kinder das Wachstum der Pflanzen mit dem Tablet fotografieren und daraus ein eigenes Gartentagebuch gestalten. Mit einer Pflanzen-App wollen sie Unkraut bestimmen und anschließend besprechen, ob die App immer recht hat. Der Praktikant Paul ergänzt: „Und wer brav mitarbeitet, darf zur Belohnung im Ruheraum ein Video schauen.“\n\nFrau Huber ist skeptisch: „Tablets? Die Kinder sitzen zu Hause schon genug vor Bildschirmen. Digitales gehört einfach nicht zum Bildungsauftrag einer Kita.“\n\nHerr Krause möchte das Thema Umwelt einbringen: „Wir zeigen ihnen Filme über Dürren und Überschwemmungen. Wenn sie richtig Angst bekommen, trennen sie den Müll freiwillig.“\n\nDie Leiterin plant für den Herbst die Suchtprävention: Ein Polizist soll den Vorschulkindern erklären, wie gefährlich Drogen sind. Eine Elternvertreterin meint dazu: „Gesund ist ein Kind doch, solange es nicht krank ist.“ Frau Yilmaz will das Gemüse am Ende gemeinsam mit den Kindern zu einer Suppe verarbeiten."
+  },
+  "kontext": "",
+  "stamm": "Die Pläne zur Gesundheitsbildung entsprechen dem BayBEP, wenn …",
+  "pruefen": "Aus deinem Word-Dokument „Freitagstest 7“ übernommen. Bitte vor dem Freischalten kurz durchsehen.",
+  "aussagen": [
+   {
+    "text": "… die Kinder das geerntete Gemüse zubereiten und Essen als Genuss mit allen Sinnen erleben.",
+    "richtig": true,
+    "erklaerung": "Ziele im Bereich Ernährung: Essen als Genuss mit allen Sinnen erleben, Erfahrungen mit der Zubereitung von Speisen sammeln."
+   },
+   {
+    "text": "… Gesundheit wie von der Elternvertreterin als bloßes Fehlen von Krankheit verstanden wird.",
+    "richtig": false,
+    "erklaerung": "Nach der WHO ist Gesundheit ein Zustand von körperlichem, seelischem, geistigem und sozialem Wohlbefinden."
+   },
+   {
+    "text": "… die Suchtprävention vor allem auf einem Vortrag über Drogen und deren Gefahren beruht.",
+    "richtig": false,
+    "erklaerung": "Suchtprävention im Kindesalter ist sucht(mittel)unspezifisch: Sie stärkt Lebenskompetenzen und Schutzfaktoren statt über Drogen aufzuklären."
+   },
+   {
+    "text": "… Gesundheitsbildung erst in der Grundschule ansetzt, wenn Kinder die Zusammenhänge besser verstehen.",
+    "richtig": false,
+    "erklaerung": "Gesundheitsbildung beginnt ab der Geburt; grundlegende Gewohnheiten entwickeln sich bereits in den ersten Lebensjahren."
+   }
+  ]
+ }
+]);
+CHECKOUT_VORLAGEN_ALLE.push(...[
+ {
+  "id": "kp-lb3-test1",
+  "titel": "Freitagstest 1: Erziehung als soziale Beziehung",
+  "name": "Erziehung als soziale Beziehung",
+  "lbNum": 3,
+  "nr": 1,
+  "aufgaben": [
+   "lb3-ft1-a1",
+   "lb3-ft1-a2",
+   "lb3-ft1-a3",
+   "lb3-ft1-a4"
+  ],
+  "klassisch": "Erläutern Sie anhand der Fallvignette, inwiefern Erziehung soziale Interaktion und soziale Beziehung ist. Nehmen Sie dabei Stellung zur Aussage von Frau Berger."
+ },
+ {
+  "id": "kp-lb3-test2",
+  "titel": "Freitagstest 2: Erziehung als Austausch von Informationen",
+  "name": "Erziehung als Austausch von Informationen",
+  "lbNum": 3,
+  "nr": 2,
+  "aufgaben": [
+   "lb3-ft2-a1",
+   "lb3-ft2-a2",
+   "lb3-ft2-a3",
+   "lb3-ft2-a4"
+  ],
+  "klassisch": "Analysieren Sie die Fallvignette mithilfe der Begriffe soziale Kommunikation und symbolischer Interaktionismus. Beurteilen Sie die Einschätzung der Praktikantin Jana."
+ },
+ {
+  "id": "kp-lb3-test3",
+  "titel": "Freitagstest 3: Erziehung als beabsichtigte Lernhilfe",
+  "name": "Erziehung als beabsichtigte Lernhilfe",
+  "lbNum": 3,
+  "nr": 3,
+  "aufgaben": [
+   "lb3-ft3-a1",
+   "lb3-ft3-a2",
+   "lb3-ft3-a3",
+   "lb3-ft3-a4"
+  ],
+  "klassisch": "Grenzen Sie anhand der Fallvignette Erziehung als beabsichtigte Lernhilfe von unbeabsichtigtem Lernen ab. Beurteilen Sie die Äußerungen der Mutter und der Großmutter."
+ },
+ {
+  "id": "kp-lb3-test4",
+  "titel": "Freitagstest 4: Erziehung als soziales Handeln",
+  "name": "Erziehung als soziales Handeln",
+  "lbNum": 3,
+  "nr": 4,
+  "aufgaben": [
+   "lb3-ft4-a1",
+   "lb3-ft4-a2",
+   "lb3-ft4-a3",
+   "lb3-ft4-a4"
+  ],
+  "klassisch": "Prüfen Sie anhand der Definition von Erziehung, ob Frau Webers Vorgehen Erziehung ist. Erläutern Sie, warum pädagogisches Handeln als „Versuchshandeln“ bezeichnet wird."
+ },
+ {
+  "id": "kp-lb3-test5",
+  "titel": "Freitagstest 5: Erziehungsstile nach Baumrind",
+  "name": "Erziehungsstile nach Baumrind",
+  "lbNum": 3,
+  "nr": 5,
+  "aufgaben": [
+   "lb3-ft5-a1",
+   "lb3-ft5-a2",
+   "lb3-ft5-a3",
+   "lb3-ft5-a4"
+  ],
+  "klassisch": "Ordnen Sie die vier Elternteile begründet den Erziehungsstilen nach Baumrind zu und erläutern Sie mögliche Folgen für die kindliche Entwicklung."
+ },
+ {
+  "id": "kp-lb3-test6",
+  "titel": "Freitagstest 6: Der Kindergarten als Erziehungs- und Bildungseinrichtung",
+  "name": "Der Kindergarten als Erziehungs- und Bildungseinrichtung",
+  "lbNum": 3,
+  "nr": 6,
+  "aufgaben": [
+   "lb3-ft6-a1",
+   "lb3-ft6-a2",
+   "lb3-ft6-a3",
+   "lb3-ft6-a4"
+  ],
+  "klassisch": "Beschreiben Sie anhand der Fallvignette die Merkmale einer Kindertagesstätte und eines Kindergartens. Nehmen Sie Stellung zur Aussage von Herrn Vogt."
+ },
+ {
+  "id": "kp-lb3-test7",
+  "titel": "Freitagstest 7: Der Bayerische Bildungs- und Erziehungsplan: Digitale Medien, Umwelt, Gesundheit",
+  "name": "Der Bayerische Bildungs- und Erziehungsplan: Digitale Medien, Umwelt, Gesundheit",
+  "lbNum": 3,
+  "nr": 7,
+  "aufgaben": [
+   "lb3-ft7-a1",
+   "lb3-ft7-a2",
+   "lb3-ft7-a3",
+   "lb3-ft7-a4"
+  ],
+  "klassisch": "Beurteilen Sie die Vorschläge aus der Teamsitzung auf Grundlage der Kapitel „Digitale Medien und Technologien“, „Umwelt“ und „Gesundheit“ des BayBEP."
+ }
+]);
 const CHECKOUT_VORLAGEN=CHECKOUT_VORLAGEN_ALLE.filter(v=>(v.aufgaben||[]).length===CHECKOUT_MAX_AUFGABEN);
 let coEditor=null;
 // Inhalte einer Vorlage (Titel ihrer K-Prim-Aufgaben), damit klar ist, was getestet wird
+// Einheitliche Benennung aller K-Prim-Tests: „KPrim-Test · LB1 · Nr. 1 · Titel“.
+function coLabel(v){return["KPrim-Test","LB"+v.lbNum,v.nr?"Nr. "+v.nr:"",v.name||v.titel].filter(Boolean).join(" · ");}
+// Angezeigter Titel eines angelegten Check-outs: stammt er unverändert aus einer Vorlage, wird die einheitliche Benennung gezeigt.
+function coTitelAnzeige(c){
+ const t=(c&&c.titel)||"";
+ const v=CHECKOUT_VORLAGEN_ALLE.find(x=>x.titel===t||coLabel(x)===t);
+ return v?coLabel(v):t;
+}
 function coVorlageInhalte(v){return(v.aufgaben||[]).map(id=>(CO_AUFGABENBANK.find(b=>b.id===id)||{}).titel).filter(Boolean);}
 const CO_CHECKLISTE=[
  ["Situation","Situationsbeschreibung adäquat (anwendungsorientierte Informationen)"],
@@ -7603,7 +8697,7 @@ function coEditorRender(){
  }
  const e=coEditor,p=coPruefung(e),be=CHECKOUT_BE_NACH_FEHLERN;
  const cl=CO_CHECKLISTE.map(([g,t],k)=>`${k===0||CO_CHECKLISTE[k-1][0]!==g?`<div class="co-cl-gruppe">${g}</div>`:""}<label class="co-cl"><input id="coCl${k}"type="checkbox"${e.checkliste[k]?" checked":""} onchange="coEditorPruefen()"> ${esc(t)}</label>`).join("");
- const bankOpt=`<option value="">Aus der Aufgabenbank einsetzen …</option>${CO_AUFGABENBANK.map(b=>`<option value="${esc(b.id)}">${esc(b.titel)}</option>`).join("")}`;
+ const bankOpt=coBankOptionen();
  modal(`<button class="modal-close"onclick="closeModal()">×</button>
   <div class="kicker">🏁 CHECK-OUT-TEST · ${e.id?"ENTWURF BEARBEITEN":"NEU ANLEGEN"} · NUR LEHRKRÄFTE</div>
   <h2>K-Prim-Test anlegen</h2>
@@ -7629,7 +8723,7 @@ function coEditorRender(){
   <div class="co-legende"><span class="co-l-vig">1 Fallvignette</span><span class="co-l-stamm">2 Einleitungssatz</span><span class="co-l-aus">3 Die 4 Aussagen</span></div>
   <p class="co-ed-intro">Jeder Freitagstest besteht aus <b>einer Fallvignette</b> und genau <b>${CHECKOUT_MAX_AUFGABEN} K-Prim-Aufgaben</b>. Jede Aufgabe hat einen Einleitungssatz und 4 Aussagen. Wertung je Aufgabe: 4 richtig = ${be[0]} BE · 3 = ${be[1]} BE · 2 = ${be[2]} BE · sonst 0. Die Schüler:innen sehen diese Bepunktung vorab im Test.</p>
   <div class="form">
-   ${!e.id&&CHECKOUT_VORLAGEN.length?`<div class="co-ed-vorlage"><b>📋 Vorlage:</b> <select id="coVorlage"onchange="coVorlageWaehlen()"><option value="">Ganzen Test aus Vorlage einsetzen …</option>${CHECKOUT_VORLAGEN.map(v=>`<option value="${esc(v.id)}">${esc(v.titel)} (LB ${v.lbNum} · ${esc(coDatum(v.datum))}) – ${esc(coVorlageInhalte(v).join(" + "))}</option>`).join("")}</select></div>`:""}
+   ${!e.id&&CHECKOUT_VORLAGEN.length?`<div class="co-ed-vorlage"><b>📋 Vorlage:</b> <select id="coVorlage"onchange="coVorlageWaehlen()"><option value="">Ganzen Test aus Vorlage einsetzen …</option>${CHECKOUT_VORLAGEN.map(v=>`<option value="${esc(v.id)}">${esc(coLabel(v))}${v.datum?" ("+esc(coDatum(v.datum))+")":""} – ${esc(coVorlageInhalte(v).join(" + "))}</option>`).join("")}</select></div>`:""}
    <div style="display:flex;gap:10px;flex-wrap:wrap">
     <label style="flex:2;min-width:200px">Titel<input id="coTitel"value="${esc(e.titel)}"placeholder="z. B. Alltags- und Wissenschaftstheorie"></label>
     <label style="flex:1;min-width:110px">Lernbereich<select id="coLb">${[1,2,3,4].map(n=>`<option value="${n}"${e.lbNum===n?" selected":""}>LB ${n}</option>`).join("")}</select></label>
@@ -7700,6 +8794,21 @@ AUFGABE: …</pre>
    </div>
   </div>`);
 }
+// Aufgabenbank-Auswahl, geordnet nach Lernbereich und Test; ältere Aufgaben, die in keinem Test mehr vorkommen, stehen zuletzt.
+function coBankOptionen(){
+ const tests=CHECKOUT_VORLAGEN.slice().sort((a,b)=>(a.lbNum||9)-(b.lbNum||9)||String(a.datum||"").localeCompare(String(b.datum||""))||(a.nr||0)-(b.nr||0));
+ const benutzt=new Set();
+ let h='<option value="">Aus der Aufgabenbank einsetzen …</option>';
+ tests.forEach(v=>{
+  const items=(v.aufgaben||[]).map(id=>CO_AUFGABENBANK.find(b=>b.id===id)).filter(Boolean);
+  if(!items.length)return;
+  items.forEach(b=>benutzt.add(b.id));
+  h+=`<optgroup label="${esc(coLabel(v))}">${items.map((b,i)=>`<option value="${esc(b.id)}">Aufgabe ${i+1}: ${esc(b.titel)}</option>`).join("")}</optgroup>`;
+ });
+ const rest=CO_AUFGABENBANK.filter(b=>!benutzt.has(b.id));
+ if(rest.length)h+=`<optgroup label="Ältere Aufgaben (in keinem Test mehr)">${rest.map(b=>`<option value="${esc(b.id)}">${esc(b.titel)}</option>`).join("")}</optgroup>`;
+ return h;
+}
 function coBankEinsetzen(i){
  coEditorLesen();
  const id=$(`coBank${i}`)?.value;if(!id)return;
@@ -7756,7 +8865,7 @@ async function openKprimUebersicht(){
   }else if(x.vl)akt+=`<button class="primary"onclick="openCheckoutEditor(null,{datum:'${x.w.end}',lbNum:${x.ph.lbNum},vorlage:'${x.vl.id}'})">📋 Vorlage einsetzen</button>`;
   else akt+=`<button class="secondary"onclick="openCheckoutEditor(null,{datum:'${x.w.end}',lbNum:${x.ph.lbNum}})">＋ Check-out anlegen</button>`;
   return`<div class="co-zeile"style="--c:${c}"><span class="co-lb">Fr ${fmtKurz(x.w.end)}</span>
-   <div class="co-titel"><b>${esc(x.co?.titel||x.vl?.titel||"Noch nichts angelegt")}</b><small>${esc(kpvOrt(x))}${x.co&&x.vl&&x.co.titel!==x.vl.titel?` · Vorlage: ${esc(x.vl.titel)}`:""}</small></div>
+   <div class="co-titel"><b>${esc(x.co?coTitelAnzeige(x.co):(x.vl?coLabel(x.vl):"Noch nichts angelegt"))}</b><small>${esc(kpvOrt(x))}${x.co&&x.vl&&coTitelAnzeige(x.co)!==coLabel(x.vl)?` · Vorlage: ${esc(coLabel(x.vl))}`:""}</small></div>
    ${chip(x)}<div class="co-aktion">${akt}</div></div>`;
  }).join("");
  const mit=e.filter(x=>x.hat).length;
@@ -7829,7 +8938,7 @@ function coVorlageWaehlen(){
  const v=CHECKOUT_VORLAGEN.find(x=>x.id===id);if(!v)return;
  const belegt=coEditor.aufgaben.some(a=>a.vText.trim()||a.stamm.trim()||a.aussagen.some(x=>x.text.trim()));
  if(belegt&&!confirm("Der Inhalt dieses Entwurfs wird durch die Vorlage ersetzt. Fortfahren?")){coEditorRender();return}
- coEditor.titel=v.titel;coEditor.lbNum=v.lbNum;coEditor.datum=v.datum;coEditor.aufgaben=v.aufgaben.map(coAufgabeAusBank);
+ coEditor.titel=coLabel(v);coEditor.lbNum=v.lbNum;coEditor.datum=v.datum;coEditor.aufgaben=v.aufgaben.map(coAufgabeAusBank);
  coEditorRender();toast("Vorlage eingesetzt – bitte prüfen und speichern.");
 }
 function coEditorAufgabe(d){coEditorLesen();if(d>0&&coEditor.aufgaben.length<CHECKOUT_MAX_AUFGABEN)coEditor.aufgaben.push(coLeereAufgabe());if(d<0&&coEditor.aufgaben.length>CHECKOUT_MIN_AUFGABEN)coEditor.aufgaben.pop();coEditorRender();}
@@ -7994,7 +9103,7 @@ async function openCheckoutMonitor(id){
  const n=(co.aufgaben||[]).length*4;
  modal(`<button class="modal-close"onclick="closeModal()">×</button>
   <div class="kicker">🏁 CHECK-OUT · LIVE-ÜBERSICHT</div>
-  <h2>${esc(co.titel)}</h2>
+  <h2>${esc(coTitelAnzeige(co))}</h2>
   <div id="coMonitor"><p style="color:var(--muted)">Lädt …</p></div>
   <div class="form-actions"style="margin-top:14px">
    <button class="secondary"onclick="closeModal()">Schließen</button>
@@ -8088,7 +9197,7 @@ function coTestInhaltHTML(co,id,ant,c,vorschau,opt){
  return`<div id="coTest"class="kp-test${opt.loesungAn?" kp-lsg-an":""}">
   ${band}
   <div class="kicker"style="color:${c}">🏁 CHECK-OUT · LB ${esc(co.lbNum)} · ${coDatum(co.datum)}</div>
-  <h2>${esc(co.titel)}</h2>
+  <h2>${esc(coTitelAnzeige(co))}</h2>
   <div class="kp-fortschritt"><div class="kp-balken"><i id="coBalken"style="background:${c}"></i></div><span id="coStand"></span></div>
   ${coBepunktungHTML(n,vorschau)}
   ${glob?`<div class="kp-vig"style="border-left-color:${c}"><div class="kp-label">📖 Fallvignette${glob.titel&&gleich?` · ${esc(glob.titel)}`:""}</div>${coSituationHTML(glob,false,gleich?!!gleich.zeilen:true,!!gleich)}</div>`:""}
@@ -8156,7 +9265,7 @@ async function openCheckoutMeinErgebnis(id){
   const [c,a]=await Promise.all([getDoc(doc(db,"checkouts",id)),getDoc(doc(db,"checkoutAbgaben",`${id}_${currentUser.uid}`))]);
   const co=c.data(),erg=a.exists()?a.data():null;
   modal(`<button class="modal-close"onclick="closeModal()">×</button>
-   <div class="kicker">🏁 CHECK-OUT · DEIN ERGEBNIS</div><h2>${esc(co.titel)}</h2>
+   <div class="kicker">🏁 CHECK-OUT · DEIN ERGEBNIS</div><h2>${esc(coTitelAnzeige(co))}</h2>
    <div class="co-summe">${coSummeHTML(erg)}</div>
    ${coGemeinsameSituation(co)?`<div class="co-vignette"style="border-left-color:${PP_FARBEN[co.lbNum]||"#4a90d9"}">${coSituationHTML(co.vignette)}</div>`:""}
    ${(co.aufgaben||[]).map((q,i)=>coAufgabeErgebnisHTML(q,i,erg)).join("")}
@@ -8175,7 +9284,7 @@ async function openCheckoutErgebnisse(id){
  const erg=Object.values(abgaben).filter(a=>a.ausgewertet);
  const schnitt=erg.length?(erg.reduce((s,a)=>s+a.notenpunkte,0)/erg.length).toFixed(1).replace(".",","):"–";
  modal(`<button class="modal-close"onclick="closeModal()">×</button>
-  <div class="kicker">🏁 CHECK-OUT · ERGEBNISSE · NUR LEHRKRÄFTE</div><h2>${esc(co.titel)}</h2>
+  <div class="kicker">🏁 CHECK-OUT · ERGEBNISSE · NUR LEHRKRÄFTE</div><h2>${esc(coTitelAnzeige(co))}</h2>
   <p style="font-size:13px;color:var(--muted)">${coDatum(co.datum)} · ${erg.length} ausgewertet · Klassenschnitt ${schnitt} Punkte</p>
   <div style="overflow-x:auto"><table class="ls-matrix co-erg-matrix"><thead><tr><th>Schüler:in</th>${(co.aufgaben||[]).map((q,i)=>`<th>A${i+1}</th>`).join("")}<th>BE</th><th>Ergebnis</th></tr></thead>
   <tbody>${students.map(s=>{const a=abgaben[s.uid];
@@ -8192,7 +9301,7 @@ async function openCheckoutSchuelerErgebnis(id,uid){
  let d;try{d=await coLadeErgebnisse(id);}catch(e){return}
  const a=d.abgaben[uid],s=d.students.find(x=>x.uid===uid);
  modal(`<button class="modal-close"onclick="closeModal()">×</button>
-  <div class="kicker">🏁 CHECK-OUT · ${esc(s?.displayName||s?.email||"")}</div><h2>${esc(d.co.titel)}</h2>
+  <div class="kicker">🏁 CHECK-OUT · ${esc(s?.displayName||s?.email||"")}</div><h2>${esc(coTitelAnzeige(d.co))}</h2>
   <div class="co-summe">${coSummeHTML(a)}</div>
   ${(d.co.aufgaben||[]).map((q,i)=>coAufgabeErgebnisHTML(q,i,a)).join("")}
   <div class="form-actions"><button class="secondary"onclick="openCheckoutErgebnisse('${id}')">← Zurück</button><button class="secondary"onclick="coPdfSchueler('${id}','${uid}')">PDF</button></div>`);
@@ -8213,7 +9322,7 @@ async function coPdfSchueler(id,uid){
  try{
   const [c,a]=await Promise.all([getDoc(doc(db,"checkouts",id)),getDoc(doc(db,"checkoutAbgaben",`${id}_${uid}`))]);
   const co=c.data(),erg=a.exists()?a.data():null;
-  openToolPrintWindow(`${co.titel} – Ergebnis`,coVignettePdf(co)+coPdfBlock(co,erg,erg?.name||profile?.displayName||""),`F11Sb · Pädagogik/Psychologie · LB ${co.lbNum} · ${coDatum(co.datum)}`);
+  openToolPrintWindow(`${coTitelAnzeige(co)} – Ergebnis`,coVignettePdf(co)+coPdfBlock(co,erg,erg?.name||profile?.displayName||""),`F11Sb · Pädagogik/Psychologie · LB ${co.lbNum} · ${coDatum(co.datum)}`);
  }catch(e){console.error(e);toast("PDF konnte nicht erstellt werden.");}
 }
 async function coPdfKlasse(id){
@@ -8223,7 +9332,7 @@ async function coPdfKlasse(id){
   const tabelle=`<table><thead><tr><th>Schüler:in</th>${(co.aufgaben||[]).map((q,i)=>`<th>A${i+1}</th>`).join("")}<th>BE</th><th>%</th><th>Notenpunkte (Note)</th></tr></thead><tbody>
    ${students.map(s=>{const a=abgaben[s.uid];return`<tr><td>${escPDF(s.displayName||s.email||"")}</td>${a?.ausgewertet?(a.auswertung||[]).map(r=>`<td>${r.be}</td>`).join("")+`<td>${a.be}/${a.maxBE}</td><td>${String(a.prozent).replace(".",",")}</td><td><b>${npText(a.notenpunkte)}</b></td>`:`<td colspan="${(co.aufgaben||[]).length+3}">nicht teilgenommen</td>`}</tr>`;}).join("")}</tbody></table>`;
   const einzel=students.filter(s=>abgaben[s.uid]?.ausgewertet).map(s=>`<div style="break-before:page">${coPdfBlock(co,abgaben[s.uid],s.displayName||s.email||"")}</div>`).join("");
-  openToolPrintWindow(`${co.titel} – Ergebnisse der Klasse`,`<h2>Übersicht</h2>${tabelle}<div style="break-before:page"></div>${coVignettePdf(co)}${einzel}`,`F11Sb · Pädagogik/Psychologie · LB ${co.lbNum} · ${coDatum(co.datum)} · Wertung je Aufgabe ${CHECKOUT_BE_NACH_FEHLERN.slice(0,3).join("/")} BE bei 0/1/2 Fehlern`);
+  openToolPrintWindow(`${coTitelAnzeige(co)} – Ergebnisse der Klasse`,`<h2>Übersicht</h2>${tabelle}<div style="break-before:page"></div>${coVignettePdf(co)}${einzel}`,`F11Sb · Pädagogik/Psychologie · LB ${co.lbNum} · ${coDatum(co.datum)} · Wertung je Aufgabe ${CHECKOUT_BE_NACH_FEHLERN.slice(0,3).join("/")} BE bei 0/1/2 Fehlern`);
  }catch(e){console.error(e);toast("PDF konnte nicht erstellt werden.");}
 }
 
@@ -8237,7 +9346,7 @@ async function openCheckoutAuswahl(){
   <div class="kicker">🏁 KURZARBEIT-ERSATZ</div><h2>Wähle ${d.einst.anzahlWaehlen} Tests aus deiner Bibliothek</h2>
   <p style="font-size:13px;color:var(--muted);margin-top:0">Der Durchschnitt der Notenpunkte deiner Auswahl ersetzt eine Kurzarbeit. Ab ,5 wird aufgerundet.</p>
   ${pool.length<d.einst.anzahlWaehlen?`<div class="empty">Du hast erst ${pool.length} gewertete Check-outs – du brauchst mindestens ${d.einst.anzahlWaehlen}.</div>`:""}
-  <div class="list"id="coAuswahlListe">${pool.map(c=>{const a=d.meineAbgaben[c.id];return`<label class="list-item co-wahl"><input type="checkbox"value="${c.id}"data-np="${a.notenpunkte}"${gewaehlt.has(c.id)?" checked":""} onchange="coAuswahlStand(${d.einst.anzahlWaehlen})"><div style="flex:1"><strong>${esc(c.titel)}</strong><small>LB ${esc(c.lbNum)} · ${coDatum(c.datum)}</small></div><b>${npText(a.notenpunkte)}</b></label>`;}).join("")}</div>
+  <div class="list"id="coAuswahlListe">${pool.map(c=>{const a=d.meineAbgaben[c.id];return`<label class="list-item co-wahl"><input type="checkbox"value="${c.id}"data-np="${a.notenpunkte}"${gewaehlt.has(c.id)?" checked":""} onchange="coAuswahlStand(${d.einst.anzahlWaehlen})"><div style="flex:1"><strong>${esc(coTitelAnzeige(c))}</strong><small>LB ${esc(c.lbNum)} · ${coDatum(c.datum)}</small></div><b>${npText(a.notenpunkte)}</b></label>`;}).join("")}</div>
   <div class="co-test-fuss"><span id="coAuswahlStand"></span><button class="primary"onclick="coAuswahlSpeichern(${d.einst.anzahlWaehlen})">Auswahl speichern</button></div>`);
  coAuswahlStand(d.einst.anzahlWaehlen);
 }
@@ -8283,7 +9392,7 @@ function coRespizienzHTML(name,tests,abgaben,einst){
  const gesamtProz=e.maxBE?e.be/e.maxBE*100:0;
  const kopfA=Array.from({length:nA},(_,k)=>`<th>A${k+1}</th>`).join("");
  const zl=zeilen.map((x,i)=>{const a=x.a,p=Number(a.prozent)||0;
-  return`<tr><td>${i+1}</td><td>${escPDF(coTestDatum(x.c,a))}</td><td>${escPDF(x.c.titel||"Check-out")}</td><td>LB ${escPDF(x.c.lbNum||"")}</td>${Array.from({length:nA},(_,k)=>`<td style="text-align:center">${a.auswertung?.[k]?a.auswertung[k].be:"–"}</td>`).join("")}<td style="text-align:center"><b>${a.be}</b></td><td style="text-align:center">${a.maxBE}</td><td style="text-align:center">${coProz(p)}</td><td style="text-align:center"><b>${a.notenpunkte}</b></td><td style="width:70px"><div style="background:#e6ebef;height:9px;border-radius:5px"><div style="width:${Math.max(0,Math.min(100,p))}%;height:9px;border-radius:5px;background:#5a7f99"></div></div></td></tr>`;}).join("");
+  return`<tr><td>${i+1}</td><td>${escPDF(coTestDatum(x.c,a))}</td><td>${escPDF(coTitelAnzeige(x.c)||"Check-out")}</td><td>LB ${escPDF(x.c.lbNum||"")}</td>${Array.from({length:nA},(_,k)=>`<td style="text-align:center">${a.auswertung?.[k]?a.auswertung[k].be:"–"}</td>`).join("")}<td style="text-align:center"><b>${a.be}</b></td><td style="text-align:center">${a.maxBE}</td><td style="text-align:center">${coProz(p)}</td><td style="text-align:center"><b>${a.notenpunkte}</b></td><td style="width:70px"><div style="background:#e6ebef;height:9px;border-radius:5px"><div style="width:${Math.max(0,Math.min(100,p))}%;height:9px;border-radius:5px;background:#5a7f99"></div></div></td></tr>`;}).join("");
  const summe=`<tr style="border-top:2px solid #999"><td colspan="${4+nA}"><b>Gesamt (${zeilen.length} Tests)</b></td><td style="text-align:center"><b>${e.be}</b></td><td style="text-align:center"><b>${e.maxBE}</b></td><td style="text-align:center"><b>${coProz(gesamtProz)}</b></td><td style="text-align:center"><b>Ø ${e.schnitt.toFixed(2).replace(".",",")}</b></td><td></td></tr>`;
  const schl=FOSBOS_SCHLUESSEL.map(([np,min])=>`${np}: ab ${min} %`).join(" · ");
  return`<div class="item"style="background:#f5f7f8"><strong style="font-size:15px">${escPDF(name)}</strong>
@@ -8310,8 +9419,8 @@ async function coPdfSchuelerAlle(uid){
   const s=await coLadeSchueler(uid);
   const mit=s.checkouts.filter(c=>s.abgaben[c.id]);
   if(!mit.length){toast("Es liegen noch keine Ergebnisse vor.");return}
-  const tab=`<table style="font-size:12px"><thead><tr><th>Datum</th><th>Check-out</th><th>LB</th><th>BE</th><th>%</th><th>Notenpunkte (Note)</th></tr></thead><tbody>${mit.map(c=>{const a=s.abgaben[c.id];return`<tr><td>${escPDF(coTestDatum(c,a))}</td><td>${escPDF(c.titel||"")}</td><td>LB ${escPDF(c.lbNum||"")}</td>${a.ausgewertet?`<td>${a.be}/${a.maxBE}</td><td>${coProz(Number(a.prozent)||0)}</td><td><b>${escPDF(npText(a.notenpunkte))}</b></td>`:`<td colspan="3">noch nicht ausgewertet</td>`}</tr>`;}).join("")}</tbody></table>`;
-  const einzel=mit.filter(c=>s.abgaben[c.id].ausgewertet).map(c=>`<div style="break-before:page"><h2>${escPDF(c.titel||"")} · ${escPDF(coTestDatum(c,s.abgaben[c.id]))}</h2>${coVignettePdf(c)}${coPdfBlock(c,s.abgaben[c.id],s.name)}</div>`).join("");
+  const tab=`<table style="font-size:12px"><thead><tr><th>Datum</th><th>Check-out</th><th>LB</th><th>BE</th><th>%</th><th>Notenpunkte (Note)</th></tr></thead><tbody>${mit.map(c=>{const a=s.abgaben[c.id];return`<tr><td>${escPDF(coTestDatum(c,a))}</td><td>${escPDF(coTitelAnzeige(c)||"")}</td><td>LB ${escPDF(c.lbNum||"")}</td>${a.ausgewertet?`<td>${a.be}/${a.maxBE}</td><td>${coProz(Number(a.prozent)||0)}</td><td><b>${escPDF(npText(a.notenpunkte))}</b></td>`:`<td colspan="3">noch nicht ausgewertet</td>`}</tr>`;}).join("")}</tbody></table>`;
+  const einzel=mit.filter(c=>s.abgaben[c.id].ausgewertet).map(c=>`<div style="break-before:page"><h2>${escPDF(coTitelAnzeige(c)||"")} · ${escPDF(coTestDatum(c,s.abgaben[c.id]))}</h2>${coVignettePdf(c)}${coPdfBlock(c,s.abgaben[c.id],s.name)}</div>`).join("");
   openToolPrintWindow(`Check-out-Ergebnisse – ${s.name||"Schüler:in"}`,`<div class="item"style="background:#f5f7f8"><strong>${escPDF(s.name||"Schüler:in")}</strong><div>${mit.length} Check-outs</div></div>${tab}${einzel}`,`F11Sb · Pädagogik/Psychologie · erstellt am ${new Date().toLocaleDateString("de-DE")}`);
  }catch(e){console.error(e);toast("PDF konnte nicht erstellt werden.");}
 }
@@ -8374,7 +9483,7 @@ async function openCheckoutKlassenuebersicht(){
  modal(`<button class="modal-close"onclick="closeModal()">×</button>
   <div class="kicker">🏁 CHECK-OUTS · ERGEBNISSE JE SCHÜLER:IN</div><h2>Ergebnisse und Kurzarbeit-Ersatz</h2>
   <p style="font-size:12px;color:var(--muted);margin-top:0">Zahlen = Notenpunkte je Check-out (Spalten nach Datum). Grün markiert = von der Schülerin / dem Schüler für den Ersatz gewählt (${d.einst.anzahlWaehlen} Tests). PDF Ergebnisse = alle Tests der Person, PDF Respizienz = die gewählten Tests mit allen Angaben zur Ablage.</p>
-  <div style="overflow-x:auto"><table class="ls-matrix co-erg-matrix"><thead><tr><th>Schüler:in</th>${pool.map((c,i)=>`<th title="${esc(c.titel)}">${i+1}</th>`).join("")}<th>Ersatz</th><th>PDF</th></tr></thead>
+  <div style="overflow-x:auto"><table class="ls-matrix co-erg-matrix"><thead><tr><th>Schüler:in</th>${pool.map((c,i)=>`<th title="${esc(coTitelAnzeige(c))}">${i+1}</th>`).join("")}<th>Ersatz</th><th>PDF</th></tr></thead>
   <tbody>${students.map(s=>{const a=abgaben[s.uid]||{},w=new Set(auswahl[s.uid]?.ids||[]);const e=auswahl[s.uid]?coErsatz([...w],a):null;
    return`<tr><td>${esc(s.displayName||s.email||"")}</td>${pool.map(c=>`<td class="${w.has(c.id)?"co-gewaehlt":""}"style="text-align:center">${a[c.id]?.ausgewertet?a[c.id].notenpunkte:"–"}</td>`).join("")}<td><b>${e?npText(e.np):"–"}</b></td><td style="white-space:nowrap"><button class="secondary"style="font-size:11px"onclick="coPdfSchuelerAlle('${s.uid}')">Ergebnisse</button> <button class="secondary"style="font-size:11px"onclick="coPdfRespizienz('${s.uid}')"${e?"":" disabled"}>Respizienz</button></td></tr>`;}).join("")}</tbody></table></div>
   <div class="form-actions"style="margin-top:14px"><button class="primary"onclick="coPdfRespizienzKlasse()">PDF Respizienz Klasse</button><button class="secondary"onclick="coPdfErsatzKlasse()">PDF Übersicht Klasse</button><button class="secondary"onclick="closeModal()">Schließen</button></div>`);
@@ -8383,7 +9492,7 @@ async function coPdfErsatzKlasse(){
  if(!isTeacher())return;
  try{
   const {pool,students,abgaben,auswahl,d}=await coLadeKlasse();
-  const legende=`<div class="item">${pool.map((c,i)=>`${i+1}: ${escPDF(c.titel)} (${coDatum(c.datum)})`).join(" · ")}</div>`;
+  const legende=`<div class="item">${pool.map((c,i)=>`${i+1}: ${escPDF(coTitelAnzeige(c))} (${coDatum(c.datum)})`).join(" · ")}</div>`;
   const tab=`<table><thead><tr><th>Schüler:in</th>${pool.map((c,i)=>`<th>${i+1}</th>`).join("")}<th>Ø Auswahl</th><th>Ersatznote</th></tr></thead><tbody>${students.map(s=>{const a=abgaben[s.uid]||{},w=new Set(auswahl[s.uid]?.ids||[]);const e=auswahl[s.uid]?coErsatz([...w],a):null;
    return`<tr><td>${escPDF(s.displayName||s.email||"")}</td>${pool.map(c=>`<td>${a[c.id]?.ausgewertet?(w.has(c.id)?`<b>[${a[c.id].notenpunkte}]</b>`:a[c.id].notenpunkte):"–"}</td>`).join("")}<td>${e?e.schnitt.toFixed(2).replace(".",","):"–"}</td><td><b>${e?npText(e.np):"–"}</b></td></tr>`;}).join("")}</tbody></table>`;
   openToolPrintWindow("Kurzarbeit-Ersatz – Check-outs (Klasse)",legende+tab,`F11Sb · Pädagogik/Psychologie · [x] = gewählt · ${d.einst.anzahlWaehlen} Tests je Schüler:in`);
