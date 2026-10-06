@@ -4203,7 +4203,18 @@ const PPM_TYPEN={
  apt:{icon:"🎓",name:"Abschlussprüfungstraining",kurz:"Prüfungstraining",art:"Abschlussprüfungstraining",text:"Prüfungsfrage, relevanter Inhalt, Bearbeitung durch die Schüler:innen und Vergleich mit der Lösung."},
  kprim:{icon:"🏁",name:"K-Prim-Aufgabentest",kurz:"K-Prim-Test",art:"K-Prim-Aufgabensatz",text:"Check-out mit K-Prim-Aufgaben, automatisch ausgewertet."},
  selbstlern:{icon:"🎒",name:"Selbstlernkurs",kurz:"Selbstlernkurs",art:"Selbstlernkurs",text:"Schüler:innen bearbeiten den Kurs selbstständig von A bis Z."},
- experiment:{icon:"🧪",name:"Experiment (interaktive Einheit)",kurz:"Experiment",art:"Experiment",text:"„Das Experiment“ als interaktive Einheit. Du wählst selbst, welche Teile dabei sind."}
+ experiment:{icon:"🧪",name:"Experiment (interaktive Einheit)",kurz:"Experiment",art:"Experiment",text:"„Das Experiment“ als interaktive Einheit. Du wählst selbst, welche Teile dabei sind."},
+ einfuehrung:{icon:"🚪",name:"Einführung in den Lernbereich",kurz:"Einführung",art:"Einführung in den Lernbereich",text:"Thema wählen: Die Digitale Tafel mit Vorlagen und die passenden Selbstlernkurse sind sofort vorbereitet."}
+};
+// Themen für „Einführung in den Lernbereich“: Tafel-Vorlagen (Seiten in der Reihenfolge) und verknüpfte Selbstlernkurse (Einheiten-IDs aus einarbeitung/inhalte).
+// Weitere Themen lassen sich hier einfach ergänzen.
+const PPM_EINF_THEMEN={
+ gegenstand:{titel:"Gegenstand der Psychologie und Pädagogik",
+  text:"Tafel mit 2 Seiten (Einstieg „Was ist Psychologie?“, „Psychologie oder Pädagogik?“) und die Selbstlernkurse zu Psychologie und Pädagogik.",
+  tafel:["Einstieg: Was ist Psychologie?","Psychologie oder Pädagogik?"],
+  kurse:["pp01","pp1a1"],
+  ablauf:["Tafel, Seite 1: Post-its einordnen, eigenes Post-it schreiben, gemeinsam besprechen (ca. 30 Min.)","Selbstlernkurs „Gegenstand der Psychologie“ (Erleben und Verhalten)","Selbstlernkurs „Gegenstand der Pädagogik“ (Erziehungspraxis, Erziehungswissenschaft, fünf Gegenstandsbereiche)","Tafel, Seite 2: „Psychologie oder Pädagogik?“ zuordnen und Beispiele aus dem Praktikum ergänzen (ca. 20 Min.)"]},
+ eigen:{titel:"Eigenes Thema (leere Tafel)",text:"Leere Digitale Tafel, die du selbst gestaltest. Kurse gibt es keine.",tafel:[],kurse:[],ablauf:[]}
 };
 const PPM_EINHEITEN={experiment:{icon:"🧪",name:"Das Experiment – interaktive Stunde",text:"Kaugummi-Versuch in Kleingruppen, Klassenvergleich, Merkmale eines Experiments und Abschlussquiz."}};
 // Dauer eines Moduls: eine Unterrichtsstunde (45 Min.), Doppelstunde, 120 oder 180 Minuten,
@@ -4222,7 +4233,7 @@ const PPM_DAUERN=[
 // Pro Schulwoche stehen 6,3 Unterrichtsstunden zu je 45 Minuten (285 Minuten) zur Verfügung. Wochen mit Praktikum (fpA-Blöcke)
 // und Ferien sind gesperrt. Eine ganze Woche (1 bis 3 Wochen) belegt die Woche vollständig.
 const PPM_STD_PRO_WOCHE="6,3",PPM_MIN_PRO_STUNDE=45,PPM_MIN_PRO_WOCHE=285; // 6 Stunden + 15 Minuten (z. B. K-Prim-Test) = 285 Minuten = 6,3 Stunden
-const PPM_DAUER_STANDARD={projekt:"w3",stunde:"90",experiment:"90",apt:"w1",kprim:"45",selbstlern:"w1"};
+const PPM_DAUER_STANDARD={projekt:"w3",stunde:"90",experiment:"90",apt:"w1",kprim:"45",selbstlern:"w1",einfuehrung:"135"};
 function ppmDauerKey(m){
  if(m&&PPM_DAUERN.some(d=>d.k===m.dauer))return m.dauer;
  const n=Math.max(1,Number(m&&m.wochen)||1);
@@ -4408,6 +4419,7 @@ async function ppmMeineLaden(){
   PPM.meine.stunde=Object.fromEntries(b.docs.map(d=>[d.data().modulId,d.data()]));
   PPM.meine.ea={};PPM.meine.exp=await getLehrplanFortschritt(experimentWocheId());
   for(const m of PPM.liste.filter(x=>String(x.kursId||"").startsWith("ea:"))){const id=m.kursId.slice(3);PPM.meine.ea[id]=await getLehrplanFortschritt(id);}
+  for(const m of PPM.liste.filter(x=>x.modul==="einfuehrung"))for(const id of (m.kurse||[]))if(!PPM.meine.ea[id])PPM.meine.ea[id]=await getLehrplanFortschritt(id);
  }catch(e){console.error("Eigener Fortschritt:",e);}
 }
 function ppmDocId(m){return`${m.id}_${currentUser.uid}`;}
@@ -4419,6 +4431,7 @@ function ppmFort(m){
  if(isTeacher())return null;
  try{
   if(m.modul==="selbstlern"&&String(m.kursId||"").startsWith("ea:")){const f=PPM.meine.ea[m.kursId.slice(3)]||{},a=f.einarbeitungAufgaben,done=!!f.einarbeitungAbgeschlossen;return{done,frac:done?1:(a&&a.gesamt?a.richtig/a.gesamt:0)};}
+  if(m.modul==="einfuehrung"){const ids=m.kurse||[];if(!ids.length)return null;const n=ids.filter(id=>(PPM.meine.ea[id]||{}).einarbeitungAbgeschlossen).length;return{done:n===ids.length,frac:n/ids.length};}
   if(m.modul==="experiment"||(m.modul==="projekt"&&ppmProjektDirekt(m))){const f=PPM.meine.exp||{},done=!!f.experimentErledigt;return{done,frac:done?1:0};}
   if(m.modul==="selbstlern"){const sch=ppmKursSchritte(m).filter(x=>x.typ!=="abschluss"),f=PPM.meine.kurs[m.id],n=f?sch.filter(x=>f.erledigt&&f.erledigt[x.id]).length:0,done=!!sch.length&&n===sch.length;return{done,frac:sch.length?n/sch.length:0};}
   if(m.modul==="apt"){const f=PPM.meine.stunde[m.id]||{},done=!!f.aptBewertung;return{done,frac:done?1:(f.aptAbgegeben?2/3:(f.aptAntwort?1/3:0))};}
@@ -4435,6 +4448,7 @@ function ppmStatus(m){
  if(m.modul==="selbstlern"){const sch=ppmKursSchritte(m).filter(s=>s.typ!=="abschluss"),f=PPM.meine.kurs[m.id];const n=f?sch.filter(s=>f.erledigt&&f.erledigt[s.id]).length:0;return`<span class="ppm-status${n===sch.length&&sch.length?" ok":""}">${n}/${sch.length} Schritte</span>`;}
  if(m.modul==="apt"){const f=PPM.meine.stunde[m.id]||{};return`<span class="ppm-status${f.aptAbgegeben?" ok":""}">${f.aptBewertung?"verglichen ✓":(f.aptAbgegeben?"abgegeben":(f.aptAntwort?"in Arbeit":"noch offen"))}</span>`;}
  if(m.modul==="stunde"){const f=PPM.meine.stunde[m.id];if(f&&f.fertig)return`<span class="ppm-status ok">fertig ✓</span>`;const fr=m.fragen||[];if(!fr.length)return"";const n=f?(f.gezeigt||[]).filter(Boolean).length:0;return`<span class="ppm-status${n===fr.length?" ok":""}">Check-out ${n}/${fr.length}</span>`;}
+ if(m.modul==="einfuehrung"){const ids=m.kurse||[];if(!ids.length)return"";const n=ids.filter(id=>(PPM.meine.ea[id]||{}).einarbeitungAbgeschlossen).length;return`<span class="ppm-status${n===ids.length?" ok":""}">${n===ids.length?"Kurse fertig ✓":n+"/"+ids.length+" Kurse"}</span>`;}
  if(m.modul==="kprim"){const p=ppmFort(m);if(p)return`<span class="ppm-status${p.done?" ok":""}">${p.done?"abgegeben ✓":(p.frac>0?"in Arbeit":"noch offen")}</span>`;}
  return"";
 }
@@ -4726,6 +4740,12 @@ async function ppmDialog(id,typ,woche,opt){
  if(t==="apt")extra=`<p style="font-size:13px;color:var(--muted);margin:0">Die Frage aus der Abschlussprüfung, den relevanten Inhalt und die Lösung gestaltest du danach direkt auf der Modulseite.</p>`;
  if(t==="stunde")extra=`<label>Phase im Deeper-Learning-Konzept<select id="ppmPhase">${[1,2,3].map(n=>`<option value="${n}"${(bearb?bearb.phase:2)===n?" selected":""}>${PP12_PHASEN[n].kurz} · ${esc(PP12_PHASEN[n].name)}</option>`).join("")}</select></label>
   ${bearb?"":`<p style="font-size:13px;color:var(--muted);margin:0">Zu jeder Stunde wird automatisch eine Digitale Tafel angelegt.</p>`}`;
+ if(t==="einfuehrung"){
+  const th0=(bearb&&bearb.thema)||"gegenstand";
+  extra=`<label>Thema<select id="ppmThema"${bearb?" disabled":""}>${Object.entries(PPM_EINF_THEMEN).map(([k,v])=>`<option value="${k}"${k===th0?" selected":""}>${esc(v.titel)}</option>`).join("")}</select></label>
+   <p style="font-size:13px;color:var(--muted);margin:0">${bearb?"Das Thema lässt sich nach dem Anlegen nicht mehr ändern. Tafel und Kurse bleiben, wie sie angelegt wurden.":"Beim Speichern entsteht die Digitale Tafel mit den Vorlagen automatisch, die passenden Selbstlernkurse werden verknüpft."}</p>
+   ${Object.values(PPM_EINF_THEMEN).map(v=>`<p style="font-size:12px;color:var(--muted);margin:0"><b>${esc(v.titel)}:</b> ${esc(v.text)}</p>`).join("")}`;
+ }
  if(t==="kprim")extra=`<label>Check-out verknüpfen<select id="ppmCheckout">${ppmCheckoutOptionen(checkouts,bearb&&bearb.checkoutId)}</select></label>
    <p style="font-size:13px;color:var(--muted);margin:0">Die K-Prim-Tests stehen nach Lernbereich geordnet zur Auswahl. Eine „Vorlage“ wird beim Speichern automatisch als Check-out-Entwurf angelegt und mit diesem Modul verknüpft; freischalten kannst du ihn danach auf der Modulseite.</p>`;
  if(t==="experiment"){
@@ -4827,6 +4847,12 @@ async function ppmDialog(id,typ,woche,opt){
   const dk=$("ppmDauer").value,def=PPM_DAUERN.find(d=>d.k===dk);
   const daten={modul:t,lb,titel:ti.value.trim(),start:$("ppmStart").value,dauer:dk,wochen:def?def.wochen:(Number(dk.slice(1))||1),notiz:$("ppmNotiz").value.trim()};
   if(!daten.titel){const x=PROJEKT_PHASEN.find(y=>y.lbNum===lb);daten.titel=t==="projekt"&&x?x.titel:(t==="apt"?"Prüfungstraining · LB"+lb:t==="kprim"?"K-Prim-Aufgabensatz · LB"+lb:t==="stunde"?"Deeper-Learning-Einheit · LB"+lb:t==="experiment"?"Das Experiment":"Selbstlernkurs · LB"+lb);}
+  if(t==="einfuehrung"){
+   daten.thema=$("ppmThema").value;
+   const th=PPM_EINF_THEMEN[daten.thema]||PPM_EINF_THEMEN.eigen;
+   if(!ti.value.trim())daten.titel="Einführung: "+th.titel;
+   if(!bearb)daten.kurse=[...th.kurse];
+  }
   if(projektId)daten.projektId=projektId;
   if(t==="projekt"&&$("ppmDirekt"))daten.direkt=$("ppmDirekt").value;
   if(t==="stunde")daten.phase=Number($("ppmPhase").value);
@@ -4873,6 +4899,7 @@ async function ppmDialog(id,typ,woche,opt){
     const basis={...daten,createdBy:currentUser.uid,createdAt:serverTimestamp()};
     if(t==="projekt")basis.einheiten=[];
     if(t==="stunde"){basis.material=daten.material||[];basis.fragen=[];basis.tafelId=await ppmTafelAnlegen(daten.titel);}
+    if(t==="einfuehrung"){basis.material=daten.material||[];basis.tafelId=await ppmTafelMitVorlagen(daten.titel,(PPM_EINF_THEMEN[daten.thema]||PPM_EINF_THEMEN.eigen).tafel);}
     if(t==="selbstlern"&&daten.kursId==="eigen")basis.schritte=[{id:"s1",typ:"text",titel:"Erster Schritt",text:"## Willkommen\nHier beginnt dein Kurs."},{id:"s2",typ:"abschluss",titel:"Geschafft",text:"Du hast den Kurs abgeschlossen."}];
     await addDoc(collection(db,"ppModule"),basis);
    }
@@ -4896,6 +4923,23 @@ async function ppmTafelAnlegen(titel){
  const r=await addDoc(collection(db,"whiteboards"),{title:String(titel).slice(0,120),description:"Tafel zur Unterrichtsstunde",art:"tafel",schreibschutz:true,seiten:1,bg:"blau",createdBy:currentUser.uid,createdByName:profile?.displayName||currentUser.email||"Lehrkraft",createdAt:serverTimestamp()});
  return r.id;
 }
+// Tafel für „Einführung in den Lernbereich“: je Vorlage eine Seite, Mitarbeit für alle geöffnet.
+async function ppmTafelMitVorlagen(titel,namen){
+ const von=profile?.displayName||currentUser.email||"Lehrkraft";
+ const r=await addDoc(collection(db,"whiteboards"),{title:String(titel).slice(0,120),description:"Tafel zur Einführung in den Lernbereich",art:"tafel",schreibschutz:false,seiten:Math.max(1,namen.length),bg:"blau",createdBy:currentUser.uid,createdByName:von,createdAt:serverTimestamp()});
+ const t0=Date.now(),jobs=[];
+ namen.forEach((name,i)=>{
+  const v=WB_VORLAGEN.find(x=>x.name===name);if(!v)return;
+  v.items(0,0).forEach((t,n)=>{
+   const std=WB_STANDARD[t.type]||{};
+   const d={boardId:r.id,seite:i+1,c:std.c||"grau",fs:std.fs||18,z:t0+i*100+n,authorUid:currentUser.uid,authorName:von,...std,...t,createdAt:serverTimestamp(),updatedAt:serverTimestamp()};
+   Object.keys(d).forEach(k=>{if(d[k]===undefined)delete d[k];});
+   jobs.push(setDoc(doc(collection(db,"whiteboardItems")),d));
+  });
+ });
+ await Promise.all(jobs);
+ return r.id;
+}
 async function ppmStandardplan(){
  if(PPM.liste.length&&!confirm("Es gibt schon Module. Den bisherigen Ablauf trotzdem zusätzlich anlegen?"))return;
  try{
@@ -4913,6 +4957,7 @@ async function ppmModulSeite(m){
  await ppmMeineLaden();
  if(m.modul==="projekt")return await ppmProjektSeite(m);
  if(m.modul==="stunde")return await ppmStundeSeite(m);
+ if(m.modul==="einfuehrung")return await ppmEinfuehrungSeite(m);
  if(m.modul==="kprim")return await ppmKprimSeite(m);
  if(m.modul==="apt")return await ppmAptSeite(m);
  if(m.modul==="experiment")return await ppmExperimentSeite(m);
@@ -5073,6 +5118,40 @@ async function ppmStundeSeite(m){
   ${lehrer?`<div class="ppm-zeile"><button type="button" class="ppm-btn" data-ppm="mat-datei" data-id="${esc(m.id)}">＋ Datei hochladen (PDF, Film, Audio, Bild)</button><button type="button" class="ppm-btn" data-ppm="mat-link" data-id="${esc(m.id)}">＋ Link oder Webseite</button><input type="file" id="ppmDatei" accept="application/pdf,.pdf,video/*,audio/*,image/*" hidden></div><p style="color:var(--muted);font-size:12px;margin:0">Dateien bis 15 MB. Größere Filme am besten als Link (z. B. Mediathek) einfügen.</p>`:""}</div>
  <div class="ppm-box"><h2>Check-out</h2>${lehrer?`<p style="color:var(--muted);font-size:13px">Offene Frage mit Lösung. Die Schüler:innen schreiben ihre Antwort, lassen sich dann die Lösung anzeigen und setzen am Ende den Haken „fertig“.</p>`:`<p style="color:var(--muted);font-size:13px">Schreibe zuerst deine Antwort. Danach lässt du dir die Lösung anzeigen, vergleichst und setzt unten den Haken.</p>`}${check}</div>
  ${lehrer?`<div class="ppm-box"><h2>Für dich als Lehrkraft</h2><p><b>Phase ${P.kurz} · ${esc(P.name)}</b></p><p>${esc(P.was)}</p><p><b>Deine Rolle:</b> ${esc(P.rolle)}</p></div>`:""}
+ ${footer()}`;
+}
+// ---- Einführung in den Lernbereich: Tafel (mehrere Seiten) + Selbstlernkurse zum gewählten Thema ----
+async function ppmEinfuehrungSeite(m){
+ const lehrer=isTeacher(),th=PPM_EINF_THEMEN[m.thema]||PPM_EINF_THEMEN.eigen;
+ const kursIds=Array.isArray(m.kurse)?m.kurse:th.kurse;
+ let tafel="";
+ if(m.tafelId){
+  const vorher=activeWhiteboardId;
+  try{
+   activeWhiteboardId=m.tafelId;
+   const html=await renderWhiteboardBoard();
+   if(html&&html.indexOf('id="wbStage"')>-1){
+    tafel=`<div class="ppm-tafel">${html}</div>
+     <div class="ppm-zeile" style="border:0;padding-bottom:0"><button type="button" class="ppm-btn klein" data-ppm="tafel" data-id="${esc(m.tafelId)}">↗ Tafel im Vollbild öffnen</button></div>`;
+    window.__ppmNachRender=()=>{if($("wbStage"))initWhiteboardBoard(m.tafelId);};
+   }
+  }catch(e){console.error("Tafel einbetten:",e);}
+  activeWhiteboardId=vorher;
+  if(!tafel)tafel=`<p class="ppm-leer">Die Tafel konnte nicht geladen werden.</p><button type="button" class="ppm-btn primaer" data-ppm="tafel" data-id="${esc(m.tafelId)}">🖥 Digitale Tafel öffnen</button>`;
+ }else tafel=lehrer?`<button type="button" class="ppm-btn primaer" data-ppm="tafel-neu" data-id="${esc(m.id)}">＋ Digitale Tafel anlegen</button>`:`<span class="ppm-leer">Die Tafel wird von deiner Lehrkraft vorbereitet.</span>`;
+ const kurse=await Promise.all(kursIds.map(async id=>{const info=await einarbeitungInfo(id);const f=lehrer?{}:await getLehrplanFortschritt(id).catch(()=>({}));return{id,info,f};}));
+ const kursHtml=kurse.length?kurse.map(({id,info,f},i)=>{
+  const ok=!!f.einarbeitungAbgeschlossen,aufg=f.einarbeitungAufgaben;
+  const stand=lehrer?"":` · ${ok?"abgeschlossen ✓":(aufg&&aufg.gesamt?aufg.richtig+" von "+aufg.gesamt+" richtig":"noch offen")}`;
+  return`<div class="ppm-zeile"><span class="ppm-snr">${i+1}</span><div style="flex:1;min-width:200px"><b>${esc((info&&info.titel)||id)}</b><br><small style="color:var(--muted)">${info?info.aufgaben+" Aufgabe"+(info.aufgaben===1?"":"n")+stand:"Inhaltsdatei einarbeitung/inhalte/"+esc(id)+".json nicht gefunden"}</small></div>
+   ${info?`<button type="button" class="ppm-btn primaer" data-ppm="ea-start" data-ea="${esc(id)}">${lehrer?"Kurs öffnen (Vorschau)":ok?"Kurs wiederholen":(aufg?"Kurs fortsetzen":"Kurs starten")}</button>`:""}
+   ${lehrer&&info?`<button type="button" class="ppm-btn" data-ppm="ea-stand" data-ea="${esc(id)}">Stand der Klasse</button>`:""}</div>`;
+ }).join(""):`<p class="ppm-leer">Zu diesem Thema gibt es keine Selbstlernkurse.</p>`;
+ const schritte=`<div class="ppm-phasen"><div class="ppm-ph an"><span>1</span>Tafel: Was denke ich?</div><div class="ppm-ph an"><span>2</span>Selbstlernkurse</div><div class="ppm-ph an"><span>3</span>Tafel: Zusammenhang</div></div>`;
+ return`${ppmKopf(m,`<p style="color:var(--muted);margin:4px 0 8px">${esc(th.titel)}</p>${schritte}`)}
+ <div class="ppm-box"><h2>Digitale Tafel</h2><p style="color:var(--muted);font-size:13px">Arbeite auf den Seiten der Tafel: erst deine erste Einschätzung, am Ende die Zusammenhänge. Mit den Zahlenknöpfen (1, 2) wechselst du die Seite.</p>${tafel}</div>
+ <div class="ppm-box"><h2>Selbstlernkurse</h2><p style="color:var(--muted);font-size:13px">Du klickst dich Seite für Seite durch. Dein Stand wird gespeichert.</p>${kursHtml}</div>
+ ${lehrer&&(th.ablauf||[]).length?`<div class="ppm-box"><h2>Für dich als Lehrkraft</h2><p><b>Ablauf-Vorschlag</b></p><ol style="margin:4px 0 0 18px;line-height:1.55">${th.ablauf.map(x=>`<li>${esc(x)}</li>`).join("")}</ol></div>`:""}
  ${footer()}`;
 }
 // ---- Abschlussprüfungstraining ----
@@ -8676,6 +8755,17 @@ const WB_STANDARD={
 };
 const WB_MAX_CURSOR=12; // ab so vielen gleichzeitig Online-Personen werden keine Mauszeiger mehr übertragen (spart Datenverkehr)
 const WB_VORLAGEN=[
+ {name:"Psychologie oder Pädagogik?",beschr:"Fragen und Beispiele zuordnen, Zusammenhang festhalten",mitarbeit:true,items:(x,y)=>[
+  {type:"text",x:x-480,y:y-500,w:960,h:60,fs:20,text:"Ordne die Post-its zu: Gehört die Frage zur Psychologie, zur Pädagogik oder zu beiden? Ergänze eigene Beispiele aus deinem Praktikum."},
+  {type:"frame",x:x-600,y:y-400,w:390,h:600,c:"lila",text:"Psychologie: Erleben und Verhalten"},
+  {type:"frame",x:x-195,y:y-400,w:390,h:600,c:"gruen",text:"Beide: Wechselwirkung"},
+  {type:"frame",x:x+210,y:y-400,w:390,h:600,c:"orange",text:"Pädagogik: Erziehung und Bildung"},
+  {type:"frame",x:x-600,y:y+230,w:1200,h:230,c:"grau",text:"Beispiele aus meinem Praktikum"},
+  {type:"note",x:x-1000,y:y-400,w:215,h:150,fs:16,c:"gelb",text:"Warum zieht sich ein Kind bei Kritik zurück?"},
+  {type:"note",x:x-1000,y:y-230,w:215,h:150,fs:16,c:"gelb",text:"Wie kann die Fachkraft das Kind ermutigen?"},
+  {type:"note",x:x-1000,y:y-60,w:215,h:150,fs:16,c:"gelb",text:"Welche Ziele sollen in der Kita verfolgt werden?"},
+  {type:"note",x:x-1000,y:y+110,w:215,h:150,fs:16,c:"gelb",text:"Wie erlebt ein Kind Angst vor einer neuen Situation?"},
+  {type:"note",x:x-1000,y:y+280,w:215,h:150,fs:16,c:"gelb",text:"Eine Studie untersucht, wie Lob die Motivation beeinflusst."}]},
  {name:"Einstieg: Was ist Psychologie?",beschr:"4 Post-its sortieren, eigenes Post-it, später richtigstellen",mitarbeit:true,items:(x,y)=>[
   {type:"text",x:x-480,y:y-540,w:960,h:76,fs:20,text:"Was ist eigentlich Psychologie? 1) Ordne die gelben Post-its ein: stimmt, stimmt teilweise oder stimmt nicht. 2) Schreibe dein eigenes Post-it. 3) Nach dem Lesen: Hänge um und stelle falsche Aussagen richtig."},
   {type:"frame",x:x-480,y:y-440,w:960,h:250,c:"grau",text:"Das sagen Leute über Psychologie"},
@@ -16068,11 +16158,31 @@ const CAL_TYPEN={
  geburtstag:{label:"Geburtstag",className:"cal-birthday"},
  ferien:{label:"Schulferien Bayern",className:"cal-holiday"}
 };
+// Schulaufgaben (SA) und Kurzarbeiten (KU) der F11Sb, Schuljahr 26/27 (laut Leistungsnachweis-Plan, Stand 05.10.2026).
+// Format: [Datum, Typ, Fach-Kürzel für die Monatsansicht, Fach (voll), Kürzel Lehrkraft]
+function calLeistungsnachweise(){
+ const L=[
+  ["2026-10-22","kurzarbeit","D","Deutsch","Hm"],
+  ["2026-10-23","kurzarbeit","P/P","Pädagogik/Psychologie","Rz"],
+  ["2026-12-07","schulaufgabe","D","Deutsch","Hm"],
+  ["2026-12-09","schulaufgabe","E","Englisch","Gf"],
+  ["2027-01-19","kurzarbeit","Ch","Chemie","Me"],
+  ["2027-01-21","schulaufgabe","P/P","Pädagogik/Psychologie","Rz"],
+  ["2027-04-15","schulaufgabe","E","Englisch","Gf"],
+  ["2027-06-09","schulaufgabe","D","Deutsch","Hm"]
+ ];
+ return L.map(([start,type,kurz,fach,lk])=>({
+  start,type,kurz,fach,
+  title:(type==="schulaufgabe"?"Schulaufgabe (SA) in ":"Kurzarbeit (KU) in ")+fach,
+  description:(type==="schulaufgabe"?"Schulaufgabe (SA)":"Kurzarbeit (KU), Gewicht 2")+" in "+fach+" · Lehrkraft: "+lk
+ }));
+}
 // Feste Termine (nicht bearbeitbar): Termine der FOSBOS Weilheim
 function calFesteTermine(){
  return[
   {start:"2026-10-08",type:"elternabend",title:"Klassenelternversammlung (Elternabend)",time:"17:30",description:"Um 17:00 Uhr Wahl des Elternbeirats, im Anschluss an die Versammlung die 1. Elternbeiratssitzung."},
-  {start:"2026-10-29",type:"digitaltag",title:"1. Digitaltag",description:"Digitaltag der FOSBOS Weilheim."}
+  {start:"2026-10-29",type:"digitaltag",title:"1. Digitaltag",description:"Digitaltag der FOSBOS Weilheim."},
+  ...calLeistungsnachweise()
  ];
 }
 // Kurzform für die Monatsübersicht: Vorname und Initial des Nachnamens
@@ -16154,6 +16264,11 @@ async function renderKalender(){
  const gebDs=firstType==="geburtstag"?ds.filter(x=>normalizeType(x)==="geburtstag"):[];
  let zellText=meta?meta.label:"",zeigt=1;
  if(gebDs.length){zellText=gebDs.map(x=>calKurzName(x.person)).filter(Boolean).join(", ")||meta.label;zeigt=gebDs.length;}
+ else if(firstType==="schulaufgabe"||firstType==="kurzarbeit"){
+  const gleich=ds.filter(x=>normalizeType(x)===firstType);
+  const faecher=gleich.map(x=>x.kurz||x.fach||"").filter(Boolean);
+  if(faecher.length){zellText=(firstType==="schulaufgabe"?"SA ":"KU ")+faecher.join(", ");zeigt=gleich.length;}
+ }
  const tip=ds.map(x=>x.person||x.title||x.name||"").filter(Boolean).join(" · ");
  cells.push(`<button type="button"class="cal-day ${meta?`has-event ${meta.className}`:""}"title="${esc(tip)}"onclick="openCalendarDay(${y},${m},${d})">
  <span class="cal-num">${d}</span>
@@ -16203,7 +16318,7 @@ async function renderKalender(){
  </style>
  <div class="card"style="margin-bottom:16px">
  <strong>Campus-Kalender</strong>
- <p>Termine werden im gemeinsamen Kalender gespeichert. Klicke auf einen Tag, um die Details zu sehen.</p>
+ <p>Termine werden im gemeinsamen Kalender gespeichert. Klicke auf einen Tag, um die Details zu sehen. <b>SA</b> = Schulaufgabe (blau), <b>KU</b> = Kurzarbeit (rot) – dahinter steht das Fach (D, E, Ch, P/P).</p>
  <div class="cal-legend">${legend}</div>
  </div>
  <div class="cal-months">${months.map(x=>monthHTML(x.y,x.m,x.name)).join("")}</div>${footer()}`;
