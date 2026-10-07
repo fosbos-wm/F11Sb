@@ -4534,9 +4534,9 @@ function ppmKarteHTML(m,fortsetzung){
  const exp=m.modul==="experiment"?`<span class="ppm-chip">${ppmExpTeile(m).length} von ${PPM_EXP_TEILE.length} Teilen · ca. ${ppmExpMinuten(ppmExpTeile(m))} Min.</span>`:"";
  const proj=m.projektId?`<span class="ppm-chip">Einheit im Projekt</span>`:"";
  const fo=ppmFort(m);
- return`<div class="ppm-karte${isTeacher()?" mit-mv":""}${fo?(fo.done?" ppm-st-done":fo.frac>0?" ppm-st-teil":" ppm-st-offen"):""}" style="--c:${c};--sp:${ppmSpalten(m)}" data-ppm="oeffnen" data-id="${esc(m.id)}" tabindex="0" role="button">
+ return`<div class="ppm-karte${isTeacher()?" ppm-ziehbar":""}${fo?(fo.done?" ppm-st-done":fo.frac>0?" ppm-st-teil":" ppm-st-offen"):""}" style="--c:${c};--sp:${ppmSpalten(m)}" data-ppm="oeffnen" data-id="${esc(m.id)}" tabindex="0" role="button">
   <span class="ppm-ic">${T.icon}</span>
-  <span class="ppm-txt"><b>${esc(ppmTitel(m)||T.name)}</b><small>${esc(T.art||T.kurz)} · LB${m.lb} · ${esc(ppmDauerText(m))}</small>${ppmStatus(m)}${fo&&!fo.done?`<span class="ppm-mini" title="${Math.round(fo.frac*100)} % geschafft"><i style="width:${Math.round(fo.frac*100)}%"></i></span>`:""}${proj}${exp}${einh}${lbModulPills(m)}${isTeacher()?ppmMoveHTML(m):""}</span>
+  <span class="ppm-txt"><b>${esc(ppmTitel(m)||T.name)}</b><small>${esc(T.art||T.kurz)} · LB${m.lb} · ${esc(ppmDauerText(m))}</small>${ppmStatus(m)}${fo&&!fo.done?`<span class="ppm-mini" title="${Math.round(fo.frac*100)} % geschafft"><i style="width:${Math.round(fo.frac*100)}%"></i></span>`:""}${proj}${exp}${einh}${lbModulPills(m)}</span>
   ${fo&&fo.done?`<span class="ppm-haken-k" aria-label="geschafft">✓</span>`:""}${isTeacher()?`<button type="button" class="ppm-edit" data-ppm="bearbeiten" data-id="${esc(m.id)}" title="Modul bearbeiten">✎</button>`:""}
  </div>`;
 }
@@ -4544,6 +4544,11 @@ const PPM_CSS=`<style>
 .lb-pills{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 2px}.lb-leiste{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .lb-pill{display:inline-flex;align-items:center;gap:4px;min-height:26px;padding:0 9px;border-radius:13px;border:1.5px dashed #6b7c93;background:#fff;color:#3a4a5c;font:inherit;font-size:11px;font-weight:700;cursor:pointer}
 .lb-pill.da{border:1.5px solid #075a9d;background:#075a9d;color:#fff}
+.ppm-karte.ppm-ziehbar{cursor:grab;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.ppm-karte.ppm-zieh{opacity:.3}.ppm-geist{position:fixed!important;z-index:9999;pointer-events:none;opacity:.92;box-shadow:0 14px 34px rgba(24,67,96,.35);transform:rotate(1.5deg);margin:0}
+body.ppm-dnd-an{cursor:grabbing;-webkit-user-select:none;user-select:none}
+.ppm-woche.ppm-ziel{background:#eef7ee;outline:2px dashed #3fa66a}
+.ppm-karte.ppm-vor{box-shadow:-7px 0 0 -1px #3fa66a}.ppm-karte.ppm-ende{box-shadow:7px 0 0 -1px #3fa66a}
 .ppm-legende{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:0 0 18px}
 .ppm-typ{display:flex;flex-direction:column;gap:4px;text-align:left;padding:12px 14px;border-radius:14px;border:1.5px dashed #b9c8d6;background:#fff;cursor:pointer;font:inherit;color:inherit}
 .ppm-typ:hover{border-color:#2f7fc6;background:#f3f9ff}.ppm-typ b{font-size:14px}.ppm-typ small{color:var(--muted);line-height:1.35}
@@ -5527,6 +5532,126 @@ async function ppmKursEditor(m){
   try{await updateDoc(doc(db,"ppModule",m.id),{schritte:sch.filter(s=>s.typ!=="selbsttest"||(s.fragen||[]).length),kursId:"eigen"});closeModal();await ppmLaden(true);await render();toast("Kurs gespeichert.");}catch(e){ppmFehler(e,"Kurs konnte nicht gespeichert werden");}});
 }
 if(!window.__ppmKlickGebunden){window.__ppmKlickGebunden=true;document.addEventListener("click",ppmKlick);}
+// ---- Module per Drag-and-drop verschieben (nur Lehrkraft): Maus = ziehen, Touch = lange drücken und ziehen ----
+const ppmDnd={k:null,id:null,x:0,y:0,px:0,py:0,aktiv:false,geist:null,timer:0,touch:false,ziel:null,vor:null,raf:0,ptr:null};
+function ppmDndAufraeumen(){
+ clearTimeout(ppmDnd.timer);cancelAnimationFrame(ppmDnd.raf);
+ if(ppmDnd.geist)ppmDnd.geist.remove();
+ document.querySelectorAll(".ppm-zieh,.ppm-ziel,.ppm-vor,.ppm-ende").forEach(el=>el.classList.remove("ppm-zieh","ppm-ziel","ppm-vor","ppm-ende"));
+ document.body.classList.remove("ppm-dnd-an");
+ Object.assign(ppmDnd,{k:null,id:null,aktiv:false,geist:null,timer:0,ziel:null,vor:null,raf:0,ptr:null});
+}
+function ppmDndStart(){
+ const k=ppmDnd.k;if(!k||ppmDnd.aktiv)return;
+ ppmDnd.aktiv=true;
+ const r=k.getBoundingClientRect(),g=k.cloneNode(true);
+ g.classList.add("ppm-geist");g.removeAttribute("data-ppm");
+ g.style.width=r.width+"px";g.style.left=r.left+"px";g.style.top=r.top+"px";
+ ppmDnd.ox=ppmDnd.px-r.left;ppmDnd.oy=ppmDnd.py-r.top;
+ document.body.appendChild(g);ppmDnd.geist=g;
+ k.classList.add("ppm-zieh");document.body.classList.add("ppm-dnd-an");
+ try{if(navigator.vibrate&&ppmDnd.touch)navigator.vibrate(15);}catch(e){}
+ const lauf=()=>{
+  if(!ppmDnd.aktiv)return;
+  const y=ppmDnd.py,h=window.innerHeight;
+  if(y<80)window.scrollBy(0,-14);else if(y>h-80)window.scrollBy(0,14);
+  ppmDndZiel();ppmDnd.raf=requestAnimationFrame(lauf);
+ };
+ ppmDnd.raf=requestAnimationFrame(lauf);
+}
+function ppmDndZiel(){
+ const g=ppmDnd.geist;if(!g)return;
+ g.style.left=(ppmDnd.px-ppmDnd.ox)+"px";g.style.top=(ppmDnd.py-ppmDnd.oy)+"px";
+ const el=document.elementFromPoint(ppmDnd.px,ppmDnd.py),w=el&&el.closest?el.closest(".ppm-woche[data-w]"):null;
+ document.querySelectorAll(".ppm-ziel,.ppm-vor,.ppm-ende").forEach(x=>x.classList.remove("ppm-ziel","ppm-vor","ppm-ende"));
+ ppmDnd.ziel=null;ppmDnd.vor=null;
+ if(!w)return;
+ const reihe=w.querySelector(".ppm-reihe");if(!reihe)return;
+ w.classList.add("ppm-ziel");ppmDnd.ziel=w.dataset.w;
+ const karten=[...reihe.querySelectorAll(".ppm-karte[data-id]")].filter(c=>c!==ppmDnd.k);
+ let vor=null;
+ for(const c of karten){
+  const r=c.getBoundingClientRect();
+  if(ppmDnd.py<r.top||(ppmDnd.py<=r.bottom&&ppmDnd.px<r.left+r.width/2)){vor=c;break;}
+ }
+ if(vor){vor.classList.add("ppm-vor");ppmDnd.vor=vor.dataset.id;}
+ else if(karten.length)karten[karten.length-1].classList.add("ppm-ende");
+}
+async function ppmDndAblegen(id,zielW,vorId){
+ const m=ppmById(id);if(!m||!zielW||!isTeacher())return;
+ const iAlt=ppmSwIndex(m.start),iNeu=ppmSwIndex(zielW);
+ if(iNeu<0){toast("Hier lässt sich nichts planen.");return;}
+ const d=iNeu-iAlt,neu=SCHULWOCHEN_PP[iNeu];
+ if(d!==0&&!m.projektId){
+  const pr=ppmPruefen(neu.id,ppmDauerKey(m),m.id);
+  if(!pr.ok){toast(pr.fehler||`In der Woche ${fmtKurz(neu.start)}–${fmtKurz(neu.end)} ist nicht genug Platz.`);return;}
+ }
+ // Reihenfolge der Zielwoche so, wie sie gerade angezeigt wird, mit dem gezogenen Modul an der Ablagestelle
+ const zeile=document.querySelector(`.ppm-woche[data-w="${zielW}"] .ppm-reihe`);
+ let ids=zeile?[...zeile.querySelectorAll(".ppm-karte[data-id]")].map(c=>c.dataset.id).filter(x=>x!==id):PPM.liste.filter(x=>x.start===zielW&&x.id!==id).map(x=>x.id);
+ const pos=vorId?ids.indexOf(vorId):-1;
+ if(pos>=0)ids.splice(pos,0,id);else ids.push(id);
+ if(d===0){const alt=zeile?[...zeile.querySelectorAll(".ppm-karte[data-id]")].map(c=>c.dataset.id):[];if(alt.join("|")===ids.join("|"))return;}
+ const y=window.scrollY;
+ try{
+  for(let k=0;k<ids.length;k++){
+   const x=ppmById(ids[k]);if(!x)continue;
+   const o=(k+1)*10,upd={};
+   if((x.ord||0)!==o)upd.ord=o;
+   if(x.id===id&&d!==0)upd.start=neu.id;
+   if(Object.keys(upd).length)await updateDoc(doc(db,"ppModule",x.id),{...upd,updatedAt:serverTimestamp()});
+  }
+  if(d!==0&&m.modul==="projekt"){ // Einheiten im Projekt wandern mit
+   for(const x of PPM.liste.filter(z=>z.projektId===m.id)){
+    const j=ppmSwIndex(x.start)+d;
+    if(j>=0&&j<SCHULWOCHEN_PP.length)await updateDoc(doc(db,"ppModule",x.id),{start:SCHULWOCHEN_PP[j].id,updatedAt:serverTimestamp()});
+   }
+  }
+  await ppmLaden(true);await render();
+  try{window.scrollTo(0,y);}catch(e){}
+  if(d!==0)toast(`Verschoben auf ${fmtKurz(neu.start)}–${fmtKurz(neu.end)}.`);
+ }catch(e){console.error(e);toast(e&&e.code==="permission-denied"?"Firebase verweigert das Speichern.":"Konnte nicht verschoben werden.");}
+}
+if(!window.__ppmDndGebunden){
+ window.__ppmDndGebunden=true;
+ document.addEventListener("pointerdown",e=>{
+  if(ppmDnd.k||!isTeacher()||(e.pointerType==="mouse"&&e.button!==0))return;
+  const k=e.target.closest&&e.target.closest(".ppm-reihe > .ppm-karte[data-id]");
+  if(!k||e.target.closest("button,a,input,select,textarea,.lb-pill"))return;
+  Object.assign(ppmDnd,{k,id:k.dataset.id,x:e.clientX,y:e.clientY,px:e.clientX,py:e.clientY,touch:e.pointerType!=="mouse",ptr:e.pointerId,aktiv:false});
+  if(ppmDnd.touch)ppmDnd.timer=setTimeout(ppmDndStart,380);
+ });
+ document.addEventListener("pointermove",e=>{
+  if(!ppmDnd.k||e.pointerId!==ppmDnd.ptr)return;
+  ppmDnd.px=e.clientX;ppmDnd.py=e.clientY;
+  const weg=Math.hypot(e.clientX-ppmDnd.x,e.clientY-ppmDnd.y);
+  if(!ppmDnd.aktiv){
+   if(ppmDnd.touch){if(weg>10)ppmDndAufraeumen();} // Finger bewegt sich vor Ablauf der Wartezeit: normales Scrollen
+   else if(weg>8)ppmDndStart();
+   return;
+  }
+  e.preventDefault();
+ });
+ document.addEventListener("touchmove",e=>{if(ppmDnd.aktiv)e.preventDefault();},{passive:false});
+ document.addEventListener("contextmenu",e=>{if(ppmDnd.k&&ppmDnd.touch)e.preventDefault();});
+ const ende=async(e,abbruch)=>{
+  if(!ppmDnd.k||(e.pointerId!==undefined&&e.pointerId!==ppmDnd.ptr))return;
+  const war=ppmDnd.aktiv,id=ppmDnd.id;
+  if(war&&!abbruch)ppmDndZiel();
+  const ziel=ppmDnd.ziel,vor=ppmDnd.vor;
+  ppmDndAufraeumen();
+  if(!war)return;
+  // den Klick, der auf das Loslassen folgt, nicht als „Modul öffnen“ werten
+  const stopp=ev=>{ev.stopPropagation();ev.preventDefault();};
+  document.addEventListener("click",stopp,{capture:true,once:true});
+  setTimeout(()=>document.removeEventListener("click",stopp,{capture:true}),350);
+  if(!abbruch&&ziel)await ppmDndAblegen(id,ziel,vor);
+ };
+ document.addEventListener("pointerup",e=>ende(e,false));
+ document.addEventListener("pointercancel",e=>ende(e,true));
+ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&ppmDnd.k)ende({},true);});
+}
+
 
 // ============================================================
 // LERNRALLYE (Modul „Lernrallye“)
