@@ -21282,12 +21282,12 @@ function lbZRender(){
  const z=window.__lbZ,el=$("lbZInner");if(!z||!el)return;
  const tabs=LB_Z_TABS.filter(t=>t[0]!=="wb");const tab=z.tab,liste=z.daten[tab]||[],aktuell=lbZAktuell(tab),name=(LB_Z_TABS.find(t=>t[0]===tab)||[])[1];
  el.innerHTML=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px">${tabs.map(t=>{const n=lbZAktuell(t[0])?" ✓":"";return`<button type="button" class="${t[0]===tab?"primary":"secondary"}" onclick="lbZTab('${t[0]}')">${t[1]}${n} <small>(${z.daten[t[0]].length})</small></button>`}).join("")}</div>
-  ${tab==="tafel"&&z.q==="m"?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px"><button type="button" class="secondary" onclick="lbZRf('pdf')">📄 PDF anhängen</button><button type="button" class="secondary" onclick="lbZRf('web')">🌐 Webseite einbetten</button></div>`:""}
+  ${tab==="tafel"?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px"><button type="button" class="secondary" onclick="lbZRf('pdf')">📄 PDF anhängen</button><button type="button" class="secondary" onclick="lbZRf('web')">🌐 Webseite einbetten</button></div>`:""}
   <input type="search" placeholder="Suchen …" oninput="lbZFilter(this.value)" style="width:100%;box-sizing:border-box;min-height:40px;padding:0 12px;border:1px solid var(--line);border-radius:10px;font:inherit;margin:0 0 10px">
   <div id="lbZListe" style="display:grid;gap:8px;max-height:44vh;overflow:auto">${liste.map(b=>`<button type="button" class="secondary" data-t="${esc(b.titel.toLowerCase())}" style="text-align:left${b.id===aktuell?";border:2px solid #075a9d":""}" onclick="lbZuordnenSetzen('${esc(b.id)}')">${b.id===aktuell?"✓ ":""}${esc(b.titel)}</button>`).join("")||`<p class="ppm-leer">Noch kein vorbereitetes Board dieser Art vorhanden.</p>`}</div>
   <div class="form-actions" style="margin-top:12px">${aktuell?`<button class="secondary" type="button" onclick="lbZuordnenSetzen('')">${name} lösen</button>`:""}<button class="secondary" type="button" onclick="closeModal()">Schließen</button></div>`;
 }
-function lbZRf(art){const z=window.__lbZ;if(!z||z.q!=="m")return;window.__lbRf={id:z.ref};if(art==="pdf")closeModal();lbRfWahl(art);}
+function lbZRf(art){const z=window.__lbZ;if(!z)return;window.__lbRf={q:z.q,ref:z.ref};if(art==="pdf")closeModal();lbRfWahl(art);}
 function lbZTab(tab){if(window.__lbZ){window.__lbZ.tab=tab;lbZRender();}}
 function lbZFilter(v){
  const t=String(v||"").trim().toLowerCase();
@@ -21313,7 +21313,7 @@ async function pp12LernZuordnen(d){await lbZuordnenDialog("z",d);}
 // ---- Entfernen: Roter Faden, Lernübersicht oder Whiteboard von einer Stunde bzw. einem Modul lösen ----
 // Das Whiteboard selbst bleibt erhalten (Löschen: im Menü „Tafeln“ bzw. „Whiteboards“ über den Papierkorb).
 function lbLoesenFelder(q,ref){
- if(q==="z"){const t=(PP12_CACHE.tafeln[ref]||{});return[["Roter Faden","boardId",t.boardId],["Lernübersicht","lernBoardId",t.lernBoardId]];}
+ if(q==="z"){const t=(PP12_CACHE.tafeln[ref]||{});return[["Roter Faden","boardId",t.boardId||t.rfUrl],["Lernübersicht","lernBoardId",t.lernBoardId]];}
  const m=ppmById(ref)||{};return[["Roter Faden","tafelId",m.tafelId||m.rfUrl],["Lernübersicht","lernBoardId",m.lernBoardId]];
 }
 function lbLoesenDialog(q,ref){
@@ -21330,8 +21330,10 @@ async function lbLoesen(feld){
  const z=window.__lbL;if(!z||!isTeacher())return;
  try{
   if(z.q==="z"){
-   await setDoc(doc(db,"lehrplanTafeln",z.ref),{[feld]:""},{merge:true});
-   PP12_CACHE.tafeln[z.ref]={...(PP12_CACHE.tafeln[z.ref]||{}),[feld]:""};
+   const upd0={[feld]:""};
+   if(feld==="boardId"){const tt=PP12_CACHE.tafeln[z.ref]||{};if(tt.rfUrl){await lbRfAlteWeg(tt);Object.assign(upd0,{rfTyp:"",rfUrl:"",rfTitel:""});}}
+   await setDoc(doc(db,"lehrplanTafeln",z.ref),upd0,{merge:true});
+   PP12_CACHE.tafeln[z.ref]={...(PP12_CACHE.tafeln[z.ref]||{}),...upd0};
   }else{
    const upd={[feld]:""};
    if(feld==="tafelId"){const mm=ppmById(z.ref)||{};if(mm.rfUrl){await lbRfAlteWeg(mm);Object.assign(upd,{rfTyp:"",rfUrl:"",rfTitel:""});}}
@@ -21407,7 +21409,7 @@ async function lbOrdnerNeu(beispiel){
 function pp12BausteineHtml(e){
  if(typeof PP12_CACHE==="undefined"||!(e.typ==="stoff"||e.typ==="wdh"))return"";
  const t=PP12_CACHE.tafeln[e.d]||{},lehrer=isTeacher(),hatL=!!t.lernBoardId,hatW=!!t.whiteboardId;
- return`${hatL||lehrer?lbPill("Lernübersicht"+(hatL?"":" anlegen"),LB_ICON.lern,hatL,`onclick="pp12Lern('${e.d}')"`,hatL?(lehrer?"Lernübersicht (Vorlage) öffnen":"Meine Lernübersicht öffnen"):"Lernübersicht für diese Stunde als Whiteboard anlegen"):""}${lehrer?lbPill("⇄ zuordnen","",false,`onclick="pp12LernZuordnen('${e.d}')"`,"Roten Faden oder Lernübersicht dieser Stunde zuordnen"):""}${lehrer&&(t.boardId||hatL)?lbPill("✕ entfernen","",false,`onclick="pp12Loesen('${e.d}')"`,"Roter Faden oder Lernübersicht von dieser Stunde lösen"):""}`;
+ return`${hatL||lehrer?lbPill("Lernübersicht"+(hatL?"":" anlegen"),LB_ICON.lern,hatL,`onclick="pp12Lern('${e.d}')"`,hatL?(lehrer?"Lernübersicht (Vorlage) öffnen":"Meine Lernübersicht öffnen"):"Lernübersicht für diese Stunde als Whiteboard anlegen"):""}${lehrer?lbPill("⇄ zuordnen","",false,`onclick="pp12LernZuordnen('${e.d}')"`,"Roten Faden oder Lernübersicht dieser Stunde zuordnen"):""}${lehrer&&(t.boardId||t.rfUrl||hatL)?lbPill("✕ entfernen","",false,`onclick="pp12Loesen('${e.d}')"`,"Roter Faden oder Lernübersicht von dieser Stunde lösen"):""}`;
 }
 function lbStundeTitel(d){
  const e=(typeof PP12_PLAN!=="undefined"?PP12_PLAN:[]).find(x=>x.d===d);
@@ -21462,16 +21464,27 @@ function lbModulBar(m){
  const p=lbModulPills(m);
  return p?`<div class="ppm-box lb-leiste"><b>Roter Faden und Lernübersicht</b>${p}</div>`:"";
 }
-// ---- Roter Faden am Modul: digitale Tafel, PDF oder eingebettete Webseite ----
+// ---- Roter Faden (Modul oder Zeitstrahl-Stunde): digitale Tafel, PDF oder eingebettete Webseite ----
+// q "m" = Modul (ppModule), q "z" = Stunde im Zeitstrahl (lehrplanTafeln, Schlüssel = Datum)
+function lbRfObj(q,ref){return q==="z"?((typeof PP12_CACHE!=="undefined"&&PP12_CACHE.tafeln[ref])||{}):(ppmById(ref)||{});}
+function lbRfTitelFuer(q,ref){return q==="z"?lbStundeTitel(ref):lbModulTitel(ppmById(ref)||{});}
+async function lbRfSpeichern(q,ref,upd){
+ if(q==="z"){
+  await setDoc(doc(db,"lehrplanTafeln",ref),upd,{merge:true});
+  PP12_CACHE.tafeln[ref]={...(PP12_CACHE.tafeln[ref]||{}),...upd};
+ }else{
+  await updateDoc(doc(db,"ppModule",ref),upd);await ppmLaden(true);
+ }
+}
 async function lbModulTafel(m){
  if(m.rfUrl){lbRfOeffnen(m);return;}
  if(m.tafelId){openWhiteboard(m.tafelId);return;}
  if(!isTeacher())return;
- lbRfDialog(m);
+ lbRfDialog("m",m.id);
 }
-function lbRfDialog(m){
+function lbRfDialog(q,ref){
  if(!isTeacher())return;
- window.__lbRf={id:m.id};
+ window.__lbRf={q,ref};
  modal(`<button class="modal-close" onclick="closeModal()">×</button><div class="kicker">ROTER FADEN</div><h2>Was soll der Rote Faden sein?</h2>
   <p style="color:var(--muted);font-size:13px">Schüler:innen können ihn nur ansehen, nicht verändern.</p>
   <div style="display:grid;gap:8px">
@@ -21482,12 +21495,16 @@ function lbRfDialog(m){
   <div class="form-actions" style="margin-top:12px"><button class="secondary" type="button" onclick="closeModal()">Abbrechen</button></div>`);
 }
 async function lbRfWahl(art){
- const m=window.__lbRf&&ppmById(window.__lbRf.id);if(!m||!isTeacher())return;
+ const r0=window.__lbRf;if(!r0||!isTeacher())return;
+ const q=r0.q,ref=r0.ref;
  try{
   if(art==="tafel"){
    closeModal();
+   if(q==="z"){window.__lbRfDirekt=true;await pp12Tafel(ref);await render();return;}
+   const m=ppmById(ref);
    const t=await ppmTafelAnlegen(lbModulTitel(m));
-   await updateDoc(doc(db,"ppModule",m.id),{tafelId:t,rfTyp:"",rfUrl:"",rfTitel:""});await ppmLaden(true);await render();openWhiteboard(t);return;
+   await lbRfAlteWeg(m);
+   await lbRfSpeichern("m",ref,{tafelId:t,rfTyp:"",rfUrl:"",rfTitel:""});await render();openWhiteboard(t);return;
   }
   if(art==="pdf"){
    const inp=document.createElement("input");inp.type="file";inp.accept="application/pdf,.pdf";
@@ -21496,10 +21513,10 @@ async function lbRfWahl(art){
     if(!/pdf/i.test(f.type)&&!/\.pdf$/i.test(f.name)){toast("Bitte eine PDF-Datei wählen.");return;}
     try{
      closeModal();toast("PDF wird hochgeladen …");
-     const r=await uploadCampusDatei(f,"whiteboardDateien/modul_"+m.id);
-     await lbRfAlteWeg(m);
-     await updateDoc(doc(db,"ppModule",m.id),{rfTyp:"pdf",rfUrl:r.url,rfTitel:f.name.replace(/\.pdf$/i,"").slice(0,120),tafelId:""});
-     await ppmLaden(true);await render();toast("PDF als Roter Faden angehängt.");
+     const r=await uploadCampusDatei(f,"whiteboardDateien/"+(q==="z"?"tag_":"modul_")+ref);
+     await lbRfAlteWeg(lbRfObj(q,ref));
+     await lbRfSpeichern(q,ref,q==="z"?{rfTyp:"pdf",rfUrl:r.url,rfTitel:f.name.replace(/\.pdf$/i,"").slice(0,120),boardId:""}:{rfTyp:"pdf",rfUrl:r.url,rfTitel:f.name.replace(/\.pdf$/i,"").slice(0,120),tafelId:""});
+     await render();toast("PDF als Roter Faden angehängt.");
     }catch(err){console.error("Roter Faden PDF:",err);toast(err&&err.message?err.message:"Das PDF konnte nicht angehängt werden.");}
    };
    inp.click();return;
@@ -21514,16 +21531,17 @@ async function lbRfWahl(art){
  }catch(err){console.error("Roter Faden:",err);toast(err&&err.message?err.message:"Das hat nicht geklappt.");}
 }
 async function lbRfWebSpeichern(){
- const m=window.__lbRf&&ppmById(window.__lbRf.id);if(!m||!isTeacher())return;
+ const r0=window.__lbRf;if(!r0||!isTeacher())return;
+ const q=r0.q,ref=r0.ref;
  let roh=String(($("lbRfUrl")||{}).value||"").trim();
  const fm=roh.match(/<iframe[^>]*?\ssrc\s*=\s*["']([^"']+)["']/i);if(fm)roh=fm[1].replace(/&amp;/g,"&").trim();
  const url=wbEmbedUrl(roh);
  if(!url){toast("Bitte eine gültige Adresse (https://…) eingeben.");return;}
  const titel=String(($("lbRfTitel")||{}).value||"").trim().slice(0,120)||"Webseite";
  try{
-  await lbRfAlteWeg(m);
-  await updateDoc(doc(db,"ppModule",m.id),{rfTyp:"web",rfUrl:url,rfTitel:titel,tafelId:""});
-  closeModal();await ppmLaden(true);await render();toast("Webseite als Roter Faden eingebettet.");
+  await lbRfAlteWeg(lbRfObj(q,ref));
+  await lbRfSpeichern(q,ref,q==="z"?{rfTyp:"web",rfUrl:url,rfTitel:titel,boardId:""}:{rfTyp:"web",rfUrl:url,rfTitel:titel,tafelId:""});
+  closeModal();await render();toast("Webseite als Roter Faden eingebettet.");
  }catch(err){
   console.error("Roter Faden Webseite:",err);
   toast(err?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Das hat nicht geklappt.");
