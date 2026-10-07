@@ -21443,11 +21443,18 @@ function lbZRender(){
  const tabs=LB_Z_TABS.filter(t=>t[0]!=="wb");const tab=z.tab,liste=z.daten[tab]||[],aktuell=lbZAktuell(tab),name=(LB_Z_TABS.find(t=>t[0]===tab)||[])[1];
  el.innerHTML=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px">${tabs.map(t=>{const n=lbZAktuell(t[0])?" ✓":"";return`<button type="button" class="${t[0]===tab?"primary":"secondary"}" onclick="lbZTab('${t[0]}')">${t[1]}${n} <small>(${z.daten[t[0]].length})</small></button>`}).join("")}</div>
   ${tab==="tafel"?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px"><button type="button" class="secondary" onclick="lbZRf('pdf')">📄 PDF anhängen</button><button type="button" class="secondary" onclick="lbZRf('web')">🌐 Webseite einbetten</button></div>`:""}
+  ${tab==="lern"&&!aktuell?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px"><button type="button" class="secondary" onclick="lbZLernNeu()">＋ Neue leere Lernübersicht anlegen</button></div>`:""}
   <input type="search" placeholder="Suchen …" oninput="lbZFilter(this.value)" style="width:100%;box-sizing:border-box;min-height:40px;padding:0 12px;border:1px solid var(--line);border-radius:10px;font:inherit;margin:0 0 10px">
   <div id="lbZListe" style="display:grid;gap:8px;max-height:44vh;overflow:auto">${liste.map(b=>`<button type="button" class="secondary" data-t="${esc(b.titel.toLowerCase())}" style="text-align:left${b.id===aktuell?";border:2px solid #075a9d":""}" onclick="lbZuordnenSetzen('${esc(b.id)}')">${b.id===aktuell?"✓ ":""}${esc(b.titel)}</button>`).join("")||`<p class="ppm-leer">Noch kein vorbereitetes Board dieser Art vorhanden.</p>`}</div>
   <div class="form-actions" style="margin-top:12px">${aktuell?`<button class="secondary" type="button" onclick="lbZuordnenSetzen('')">${name} lösen</button>`:""}<button class="secondary" type="button" onclick="closeModal()">Schließen</button></div>`;
 }
 function lbZRf(art){const z=window.__lbZ;if(!z)return;window.__lbRf={q:z.q,ref:z.ref};if(art==="pdf")closeModal();lbRfWahl(art);}
+async function lbZLernNeu(){
+ const z=window.__lbZ;if(!z||!isTeacher())return;
+ closeModal();window.__lbLernNeu=true;
+ try{if(z.q==="z")await pp12Lern(z.ref);else{const m=ppmById(z.ref);if(m)await lbModulLern(m);}}
+ finally{window.__lbLernNeu=false;}
+}
 function lbZTab(tab){if(window.__lbZ){window.__lbZ.tab=tab;lbZRender();}}
 function lbZFilter(v){
  const t=String(v||"").trim().toLowerCase();
@@ -21569,7 +21576,7 @@ async function lbOrdnerNeu(beispiel){
 function pp12BausteineHtml(e){
  if(typeof PP12_CACHE==="undefined"||!(e.typ==="stoff"||e.typ==="wdh"))return"";
  const t=PP12_CACHE.tafeln[e.d]||{},lehrer=isTeacher(),hatL=!!t.lernBoardId,hatW=!!t.whiteboardId;
- return`${hatL||lehrer?lbPill("Lernübersicht"+(hatL?"":" anlegen"),LB_ICON.lern,hatL,`onclick="pp12Lern('${e.d}')"`,hatL?(lehrer?"Lernübersicht (Vorlage) öffnen":"Meine Lernübersicht öffnen"):"Lernübersicht für diese Stunde als Whiteboard anlegen"):""}${lehrer?lbPill("⇄ zuordnen","",false,`onclick="pp12LernZuordnen('${e.d}')"`,"Roten Faden oder Lernübersicht dieser Stunde zuordnen"):""}${lehrer&&(t.boardId||t.rfUrl||hatL)?lbPill("✕ entfernen","",false,`onclick="pp12Loesen('${e.d}')"`,"Roter Faden oder Lernübersicht von dieser Stunde lösen"):""}`;
+ return`${hatL||lehrer?lbPill("Lernübersicht"+(hatL?"":" zuordnen"),LB_ICON.lern,hatL,`onclick="pp12Lern('${e.d}')"`,hatL?(lehrer?"Lernübersicht (Vorlage) öffnen":"Meine Lernübersicht öffnen"):"Lernübersicht für diese Stunde als Whiteboard anlegen"):""}${lehrer?lbPill("⇄ zuordnen","",false,`onclick="pp12LernZuordnen('${e.d}')"`,"Roten Faden oder Lernübersicht dieser Stunde zuordnen"):""}${lehrer&&(t.boardId||t.rfUrl||hatL)?lbPill("✕ entfernen","",false,`onclick="pp12Loesen('${e.d}')"`,"Roter Faden oder Lernübersicht von dieser Stunde lösen"):""}`;
 }
 function lbStundeTitel(d){
  const e=(typeof PP12_PLAN!=="undefined"?PP12_PLAN:[]).find(x=>x.d===d);
@@ -21582,6 +21589,7 @@ async function pp12Lern(d){
   await lbMeineKopie(t.lernBoardId,lbStundeTitel(d));return;
  }
  if(!isTeacher()||pp12Beschaeftigt)return;
+ if(!window.__lbLernNeu){await lbZuordnenDialog("z",d,"lern");return;}
  pp12Beschaeftigt=true;
  try{
   const id=await lbVorlageAnlegen(lbStundeTitel(d),"Lernübersicht zur Unterrichtsstunde: Zusammenfassung der Lehrkraft, Schüler:innen bekommen eine eigene Kopie zum Ergänzen");
@@ -21615,7 +21623,7 @@ function lbModulPills(m){
  const lehrer=isTeacher(),hatT=!!(m.tafelId||m.rfUrl),hatL=!!m.lernBoardId,hatW=!!m.whiteboardId,id=esc(m.id);
  const p=[];
  if(hatT)p.push(lbPill("Roter Faden"+(hatT?"":" anlegen"),LB_ICON.tafel,hatT,`data-ppm="lb-tafel" data-id="${id}"`,hatT?(m.rfTyp==="pdf"?"Roter Faden (PDF) öffnen":m.rfTyp==="web"?"Roter Faden (Webseite) öffnen":"Roter Faden (digitale Tafel) öffnen, nur Lehrkräfte ändern ihn"):"Roter Faden anlegen: digitale Tafel, PDF oder Webseite"));
- if(hatL||lehrer)p.push(lbPill("Lernübersicht"+(hatL?"":" anlegen"),LB_ICON.lern,hatL,`data-ppm="lb-lern" data-id="${id}"`,hatL?(lehrer?"Lernübersicht (Vorlage) öffnen":"Meine Lernübersicht öffnen"):"Lernübersicht als Whiteboard anlegen"));
+ if(hatL||lehrer)p.push(lbPill("Lernübersicht"+(hatL?"":" zuordnen"),LB_ICON.lern,hatL,`data-ppm="lb-lern" data-id="${id}"`,hatL?(lehrer?"Lernübersicht (Vorlage) öffnen":"Meine Lernübersicht öffnen"):"Lernübersicht aus dem Pool zuordnen oder neu anlegen"));
  if(lehrer)p.push(lbPill("⇄ zuordnen","",false,`data-ppm="lb-zuordnen" data-id="${id}"`,"Roten Faden oder Lernübersicht diesem Modul zuordnen"));
  if(lehrer&&(hatT||hatL))p.push(lbPill("✕ entfernen","",false,`data-ppm="lb-loesen" data-id="${id}"`,"Roter Faden oder Lernübersicht von diesem Modul lösen"));
  return p.length?`<span class="lb-pills">${p.join("")}</span>`:"";
@@ -21732,6 +21740,7 @@ async function lbModulLern(m){
   await lbMeineKopie(m.lernBoardId,lbModulTitel(m));return;
  }
  if(!isTeacher())return;
+ if(!window.__lbLernNeu){await lbZuordnenDialog("m",m.id,"lern");return;}
  const id=await lbVorlageAnlegen(lbModulTitel(m),"Lernübersicht zum Modul: Zusammenfassung der Lehrkraft, Schüler:innen bekommen eine eigene Kopie zum Ergänzen");
  await updateDoc(doc(db,"ppModule",m.id),{lernBoardId:id});await ppmLaden(true);openWhiteboard(id);
 }
@@ -21748,4 +21757,4 @@ async function wbExportPdf(){
  wb.pdfModus=true;
  try{await wbExport();}finally{wb.pdfModus=false;}
 }
-Object.assign(window,{pp12Lern:typeof pp12Lern==="function"?pp12Lern:undefined,pp12Wb:typeof pp12Wb==="function"?pp12Wb:undefined,lbOrdnerOeffnen,lbOrdnerNeu,lbBereitstellen,lbOrdnerLoeschen,lbZuordnenDialog,lbZuordnenSetzen,lbZFilter,lbZTab,lbZRf,lbRfDialog,lbRfWahl,lbRfWebSpeichern,lbRfOeffnen,lbRfSchliessen,lbRfNeuerTab,pp12LernZuordnen,lbLoesenDialog,lbLoesen,pp12Loesen});
+Object.assign(window,{pp12Lern:typeof pp12Lern==="function"?pp12Lern:undefined,pp12Wb:typeof pp12Wb==="function"?pp12Wb:undefined,lbOrdnerOeffnen,lbOrdnerNeu,lbBereitstellen,lbOrdnerLoeschen,lbZuordnenDialog,lbZuordnenSetzen,lbZFilter,lbZTab,lbZLernNeu,lbZRf,lbRfDialog,lbRfWahl,lbRfWebSpeichern,lbRfOeffnen,lbRfSchliessen,lbRfNeuerTab,pp12LernZuordnen,lbLoesenDialog,lbLoesen,pp12Loesen});
