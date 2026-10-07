@@ -4728,7 +4728,7 @@ function ppmCheckoutOptionen(checkouts,gewaehlt){
 async function coAusVorlageAnlegen(v,datum){
  const au=v.aufgaben.map(coAufgabeAusBank);
  const a0=au[0];
- au.forEach((a,i)=>{if(i>0){a.vTitel=a0.vTitel;a.vText=a0.vText;a.vZeilen=a0.vZeilen;}});
+ if(!v.eigeneVignetten)au.forEach((a,i)=>{if(i>0){a.vTitel=a0.vTitel;a.vText=a0.vText;a.vZeilen=a0.vZeilen;}});
  const daten={titel:coLabel(v),lbNum:v.lbNum,datum:datum||v.datum,zaehlt:true,status:"entwurf",vignette:null,
   aufgaben:au.map(a=>{
    const q={stamm:a.stamm.trim(),vignette:{titel:a.vTitel.trim(),text:a.vText.replace(/\s+$/,""),zeilen:!!a.vZeilen},aussagen:a.aussagen.map(x=>x.text.trim())};
@@ -9131,6 +9131,165 @@ CHECKOUT_VORLAGEN_ALLE.push(...[
   "klassisch": "Beurteilen Sie die Vorschläge aus der Teamsitzung auf Grundlage der Kapitel „Digitale Medien und Technologien“, „Umwelt“ und „Gesundheit“ des BayBEP."
  }
 ]);
+
+// ---- K-Prim-Test LB 1 · Nr. 1: Gegenstand der Psychologie und Gegenstand der Pädagogik (jede Aufgabe mit eigener Fallvignette) ----
+CO_AUFGABENBANK.push(...[
+ {
+  "id": "kp-lb1-g-lina",
+  "titel": "Gegenstand der Psychologie: Erleben und Verhalten (Lina)",
+  "lbNum": 1,
+  "vignette": {
+   "titel": "Lina vor der Schulaufgabe",
+   "zeilen": false,
+   "text": "Du bist an der FOS und heute wird die Schulaufgabe im Fach Pädagogik und Psychologie geschrieben. Deine Mitschülerin Lina teilt dir weinend vor der Schulaufgabe mit, dass sie große Angst vor der Schulaufgabe hat. Dabei sagt sie: „Ich schaffe das nicht!“. Auch äußert sie, dass ihr Denkvermögen während der Schulaufgabe nachlässt. Sie kann kaum die Buchstaben sehen, alles verschwimmt vor ihren Augen. Weiterhin erzählt sie, dass, wenn diese Situation eintritt, sie an den Nägeln knibbelt und sich unruhig auf dem Stuhl hin und her bewegt. „Ich bin so durcheinander und aufgeregt, was soll ich bloß tun?“, fragt dich Lina. Plötzlich betritt der Pädagogik und Psychologie-Lehrer die Klasse und verteilt die Schulaufgabe. Bei dem Anblick der Schulaufgabe beginnt Lina zu zittern und rennt weinend aus der Klasse. Später erzählt sie, dass sie die Schulaufgabe nicht mitschreiben konnte, weil sie Angst vor der Schulaufgabe hatte und deswegen den Klassenraum verließ."
+  },
+  "kontext": "",
+  "stamm": "Gegenstandsbereich der Psychologie und ihre Wechselwirkung: Die Schulaufgabe wirkt sich auf Linas Erleben und Verhalten aus.",
+  "pruefen": "Aussagen aus deiner Vorlage übernommen; Erklärungen von Claude ergänzt. Bitte prüfen.",
+  "aussagen": [
+   {
+    "text": "Mit der Frage von Lina an dich „Ich bin so durcheinander und aufgeregt, was soll ich bloß tun?“ wird das Erleben von Lina deutlich.",
+    "richtig": true,
+    "erklaerung": "Durcheinander und aufgeregt zu sein sind innere Vorgänge, die von außen nicht beobachtbar sind – also Erleben."
+   },
+   {
+    "text": "Mit „… weil sie Angst vor der Schulaufgabe hatte und deswegen den Klassenraum verließ“ wird deutlich, dass Linas Verhalten das Erleben beeinflusst.",
+    "richtig": false,
+    "erklaerung": "Hier ist es umgekehrt: Das Erleben (Angst) beeinflusst das Verhalten (Verlassen des Klassenraums)."
+   },
+   {
+    "text": "Mit „Deine Mitschülerin Lina teilt dir weinend vor der Schulaufgabe mit, dass sie große Angst vor der Schulaufgabe hat“ wird erkennbar, dass das Erleben von Lina ihr Verhalten beeinflusst.",
+    "richtig": true,
+    "erklaerung": "Die Angst (Erleben) zeigt sich im Weinen und Mitteilen (Verhalten)."
+   },
+   {
+    "text": "„Wenn diese Situation eintritt, fängt sie an, an ihren Nägeln zu knibbeln und sich unruhig auf dem Stuhl hin und her zu bewegen“ zeigt das Verhalten von Lina.",
+    "richtig": true,
+    "erklaerung": "An den Nägeln knibbeln und sich unruhig bewegen sind von außen beobachtbare Äußerungen – also Verhalten."
+   }
+  ]
+ },
+ {
+  "id": "kp-lb1-g-leon",
+  "titel": "Gegenstand der Psychologie: Erleben und Verhalten (Leon)",
+  "lbNum": 1,
+  "vignette": {
+   "titel": "Leon und der Klassenchat",
+   "zeilen": false,
+   "text": "Der 17-jährige Leon fährt nach der Schule mit dem Bus nach Hause. Während der Fahrt bemerkt er, dass mehrere Mitschülerinnen und Mitschüler in einer Klassenchat-Gruppe Fotos von einer gemeinsamen Veranstaltung posten. Leon schaut immer wieder auf sein Handy. Nach einigen Minuten legt er das Handy weg und blickt aus dem Fenster. Zu Hause angekommen, zieht er sich in sein Zimmer zurück und nimmt nicht wie sonst am Familiengespräch beim Abendessen teil.\nSeine Mutter fragt ihn später, ob alles in Ordnung sei. Leon antwortet nur kurz: „Schon okay.“ Tatsächlich denkt er darüber nach, warum er auf keinem der geposteten Fotos zu sehen ist, und fühlt sich ausgeschlossen."
+  },
+  "kontext": "",
+  "stamm": "Pädagogische/Psychologische Kompetenz bedeutet auch, fachlich fundierte Einschätzungen vorzunehmen und begründetes Handeln abzuleiten.",
+  "pruefen": "Aussagen aus deiner Vorlage übernommen; Erklärungen von Claude ergänzt. Bitte prüfen.",
+  "aussagen": [
+   {
+    "text": "Leons Rückzug in sein Zimmer gehört zum Verhalten, da diese Handlung von anderen Personen beobachtet werden kann.",
+    "richtig": true,
+    "erklaerung": "Verhalten kann von anderen Personen wahrgenommen und beschrieben werden."
+   },
+   {
+    "text": "Leons Gefühle erlauben die sichere Schlussfolgerung, dass er grundsätzlich über ein geringes Selbstwertgefühl verfügt.",
+    "richtig": false,
+    "erklaerung": "Aus dem Gefühl in einer einzelnen Situation lässt sich keine sichere, grundsätzliche Aussage über sein Selbstwertgefühl ableiten."
+   },
+   {
+    "text": "Bei Leon sollte für eine psychologische Analyse zwischen direkt beobachtbarem Verhalten und vermutetem Erleben unterschieden werden.",
+    "richtig": true,
+    "erklaerung": "Verhalten ist beobachtbar; Erleben ist nicht direkt beobachtbar und muss erschlossen werden."
+   },
+   {
+    "text": "Aus Leons kurzer Antwort gegenüber seiner Mutter lassen sich seine Gedanken und Gefühle eindeutig ableiten.",
+    "richtig": false,
+    "erklaerung": "Die Antwort „Schon okay.“ ist Verhalten. Gedanken und Gefühle sind nicht direkt beobachtbar und lassen sich daraus nicht eindeutig ableiten."
+   }
+  ]
+ },
+ {
+  "id": "kp-lb1-g-lena",
+  "titel": "Gegenstand der Psychologie: Wechselwirkung von Erleben und Verhalten (Lena)",
+  "lbNum": 1,
+  "vignette": {
+   "titel": "Lena – zwischen Leistungsdruck und Rückzug",
+   "zeilen": false,
+   "text": "Lena ist 17 Jahre alt und geht in die 11. Klasse der Fachoberschule. Seit Beginn des Schuljahres fühlt sie sich stark unter Druck: mehrere Prüfungen, eine Projektarbeit und die Bewerbung für ein Auslandspraktikum fallen in denselben Zeitraum. Sie arbeitet länger als sonst, setzt sich sehr hohe Ziele und wirkt zunehmend unruhig.\nIn letzter Zeit schläft Lena schlechter: Sie braucht oft mehr als eine Stunde zum Einschlafen, wacht nachts auf und fühlt sich morgens müde. Beim Frühstück ist sie oft nicht hungrig. In der Schule überspringt sie regelmäßig Pausen, isst seltener in der Kantine und zieht sich in die Bibliothek zurück, um weiterzuarbeiten. Ihre Freundinnen berichten, dass sie Nachrichten seltener beantwortet und gemeinsame Treffen absagt.\nBei einer Klassenarbeit zeigte Lena starke körperliche Reaktionen: zitternde Hände, Herzrasen und ein Engegefühl in der Brust; sie verließ nach 20 Minuten weinend den Raum, weil sie Angst hatte zu versagen. Lena beschreibt, sie fühle sich überfordert und habe große Angst, andere zu enttäuschen. Gleichzeitig ist sie sehr selbstkritisch: Wenn etwas nicht perfekt gelinge, mache sie sich lange Vorwürfe. Früher spielte sie Volleyball und joggte mit einer Freundin; inzwischen hat sie kaum noch Hobbys. Ihre Mutter bemerkt, dass Lena öfter gereizt ist und schnell weint. Auf ein Gespräch mit einer Beratungsstelle reagiert Lena zögerlich: Sie wünscht sich Unterstützung, fürchtet aber, als „schwach“ wahrgenommen zu werden."
+  },
+  "kontext": "",
+  "stamm": "Die Leistungssituation zeigt die wechselseitige Beeinflussung von Lenas Erleben und Verhalten.",
+  "pruefen": "Aussagen aus deiner Vorlage übernommen; Erklärungen von Claude ergänzt. Bitte prüfen.",
+  "aussagen": [
+   {
+    "text": "Weil Verhalten direkt beobachtbar ist, liefern Verhaltensänderungen wie Lenas Rückzug in die Bibliothek eindeutige Hinweise auf die zugrundeliegenden inneren Zustände; man kann aus dem Rückzug ohne Weiteres schließen, dass sie vor allem anhaltende depressive Stimmung hat.",
+    "richtig": false,
+    "erklaerung": "Verhalten ist beobachtbar, das Erleben dahinter muss aber erschlossen werden. Ein eindeutiger Schluss auf eine depressive Stimmung ist nicht möglich."
+   },
+   {
+    "text": "Da Erleben subjektiv ist, kann es nicht systematisch durch Veränderungen im Verhalten beeinflusst werden; wenn Lena also wieder regelmäßig Volleyball spielt, wird dies ihr inneres Erleben kaum verändern, weil Gefühle und Gedanken unabhängig von äußerem Verhalten entstehen.",
+    "richtig": false,
+    "erklaerung": "Erleben und Verhalten stehen in Wechselwirkung: Auch Verhalten (z. B. wieder Sport treiben) kann das Erleben verändern."
+   },
+   {
+    "text": "Die Wechselwirkung zwischen Erleben und Verhalten bedeutet, dass alle beobachtbaren Verhaltensänderungen bei Lena automatisch auf ihr Erleben zurückgehen; äußere Einflüsse (z. B. Terminsituation, Schlafdauer) spielen dabei nur eine untergeordnete Rolle.",
+    "richtig": false,
+    "erklaerung": "Wechselwirkung heißt nicht, dass jedes Verhalten allein auf das Erleben zurückgeht. Auch äußere Einflüsse wirken auf Erleben und Verhalten."
+   },
+   {
+    "text": "Lenas Angst vor Versagen und ihre starke Selbstkritik äußern sich in beobachtbarem Verhalten; dieses Verhalten kann wiederum das Erleben verstärken und so einen rückkoppelnden Kreislauf zwischen inneren Zuständen und äußerem Verhalten erzeugen.",
+    "richtig": true,
+    "erklaerung": "Angst und Selbstkritik (Erleben) zeigen sich z. B. im Rückzug (Verhalten), der wiederum das Erleben verstärken kann."
+   }
+  ]
+ },
+ {
+  "id": "kp-lb1-g-paedagogik",
+  "titel": "Gegenstand der Pädagogik: Erziehungspraxis, Erziehungswissenschaft, Gegenstandsbereiche",
+  "lbNum": 1,
+  "vignette": {
+   "titel": "Praktikum im Kinderhort",
+   "zeilen": false,
+   "text": "Mia absolviert ihr Praktikum in einem Kinderhort. Die Erzieherin Frau Demir vereinbart mit den Kindern feste Regeln für die Hausaufgabenzeit, lobt den zehnjährigen Paul, als er seine Aufgaben selbstständig beginnt, und überträgt ihm die Verantwortung für das Austeilen der Hefte. In der Teamsitzung berichtet Frau Demir von einer Studie, die untersucht hat, wie sich Lob auf die Selbstständigkeit von Kindern auswirkt. Ihr Kollege Herr Lang meint dagegen, Kinder entwickelten sich am besten, wenn Erwachsene möglichst wenig eingreifen. Mia fällt auf, dass Paul Ratschläge von Frau Demir eher annimmt, seit er ihr vertraut."
+  },
+  "kontext": "",
+  "stamm": "Die Situation im Kinderhort wird fachlich zutreffend eingeordnet, wenn …",
+  "pruefen": "Neu erstellt (Claude). Bitte fachlich und passend zu deinem Unterricht prüfen.",
+  "aussagen": [
+   {
+    "text": "… das Vereinbaren der Regeln und das Lob für Paul der Erziehungspraxis zugeordnet werden, weil es sich um tatsächliches erzieherisches Handeln mit einer erzieherischen Absicht handelt.",
+    "richtig": true,
+    "erklaerung": "Erziehungspraxis meint das tatsächliche erzieherische Handeln; dahinter steht jeweils eine erzieherische Absicht."
+   },
+   {
+    "text": "… die Studie über die Wirkung von Lob der Erziehungspraxis zugeordnet wird, weil eine Erzieherin sie in der Teamsitzung vorstellt.",
+    "richtig": false,
+    "erklaerung": "Die Studie gehört zur Erziehungswissenschaft: Sie untersucht, wie Erziehung abläuft und wirkt."
+   },
+   {
+    "text": "… die unterschiedlichen Auffassungen von Frau Demir und Herrn Lang dem Gegenstandsbereich „Vorstellungen über Erziehung“ zugeordnet werden, weil solche Vorstellungen oft vom Menschenbild abhängen.",
+    "richtig": true,
+    "erklaerung": "Gezielt anleiten oder möglichst wenig eingreifen: Das sind unterschiedliche Vorstellungen über Erziehung, oft abhängig vom Menschenbild."
+   },
+   {
+    "text": "… Pauls Vertrauen zu Frau Demir dem Gegenstandsbereich „Einrichtungen der Erziehung“ zugeordnet wird, weil es im Kinderhort entstanden ist.",
+    "richtig": false,
+    "erklaerung": "Vertrauen gehört zum Gegenstandsbereich „Beziehung zwischen Erzieher und zu Erziehendem“. Der Hort selbst wäre eine Einrichtung der Erziehung."
+   }
+  ]
+ }
+]);
+CHECKOUT_VORLAGEN_ALLE.push(...[
+ {
+  "id": "kp-lb1-test-gegenstand",
+  "titel": "Gegenstand der Psychologie und Gegenstand der Pädagogik",
+  "lbNum": 1,
+  "nr": 1,
+  "eigeneVignetten": true,
+  "aufgaben": [
+   "kp-lb1-g-lina",
+   "kp-lb1-g-leon",
+   "kp-lb1-g-lena",
+   "kp-lb1-g-paedagogik"
+  ]
+ }
+]);
 const CHECKOUT_VORLAGEN=CHECKOUT_VORLAGEN_ALLE.filter(v=>(v.aufgaben||[]).length===CHECKOUT_MAX_AUFGABEN);
 let coEditor=null;
 // Inhalte einer Vorlage (Titel ihrer K-Prim-Aufgaben), damit klar ist, was getestet wird
@@ -9209,6 +9368,7 @@ async function openCheckoutEditor(id,vorgabe){
      vTitel:a.vignette?.titel??(glob?.titel||""),vText:a.vignette?.text??(glob?.text||""),vZeilen:a.vignette?!!a.vignette.zeilen:!!glob,
      mTitel:a.material?.titel||"",mText:a.material?.text||"",mQuelle:a.material?.quelle||"",
      aussagen:[0,1,2,3].map(j=>({text:a.aussagen?.[j]||"",richtig:!!lo.aufgaben?.[i]?.richtig?.[j],erklaerung:lo.aufgaben?.[i]?.erklaerung?.[j]||""}))}))};
+   coEditor.eigeneVig=(co.aufgaben||[]).some(a=>a.vignette?.text&&a.vignette.text!==(co.aufgaben[0].vignette?.text||"")); // Test mit eigener Fallvignette je Aufgabe
    while(coEditor.aufgaben.length<CHECKOUT_MAX_AUFGABEN)coEditor.aufgaben.push(coLeereAufgabe()); // ältere Entwürfe mit weniger Aufgaben auffüllen
   }catch(e){console.error(e);toast("Konnte nicht geladen werden.");return}
  }else{
@@ -9218,7 +9378,7 @@ async function openCheckoutEditor(id,vorgabe){
   if(vorgabe?.datum)coEditor.datum=vorgabe.datum;
   if(vorgabe?.lbNum)coEditor.lbNum=vorgabe.lbNum;
   const vl=vorgabe?.vorlage?CHECKOUT_VORLAGEN.find(v=>v.id===vorgabe.vorlage):null;
-  if(vl){coEditor.titel=vl.titel;coEditor.lbNum=vl.lbNum;coEditor.aufgaben=vl.aufgaben.map(coAufgabeAusBank);}
+  if(vl){coEditor.titel=vl.titel;coEditor.lbNum=vl.lbNum;coEditor.eigeneVig=!!vl.eigeneVignetten;coEditor.aufgaben=vl.aufgaben.map(coAufgabeAusBank);}
  }
  coEditorRender();
 }
@@ -9234,7 +9394,7 @@ function coEditorLesen(){
   aussagen:[0,1,2,3].map(j=>({text:v(`coA${i}_${j}`),richtig:$(`coR${i}_${j}`)?.value==="r",erklaerung:v(`coE${i}_${j}`)}))}));
  // Eine Fallvignette für den ganzen Test: Aufgabe 1 gibt sie vor, alle weiteren übernehmen sie.
  const a0=coEditor.aufgaben[0];
- if(a0)coEditor.aufgaben.forEach((a,i)=>{if(i>0){a.vTitel=a0.vTitel;a.vText=a0.vText;a.vZeilen=a0.vZeilen;}});
+ if(a0&&!coEditor.eigeneVig)coEditor.aufgaben.forEach((a,i)=>{if(i>0){a.vTitel=a0.vTitel;a.vText=a0.vText;a.vZeilen=a0.vZeilen;}});
 }
 // Aktualisiert nur die Hinweise (beim Tippen), ohne das Formular neu zu zeichnen.
 function coEditorPruefen(){
@@ -9295,8 +9455,8 @@ function coEditorRender(){
     <div class="co-ed-kopf"><b>Aufgabe ${i+1}</b><span id="coHinw${i}"><b>${p.pro[i].richtig} richtig · ${4-p.pro[i].richtig} falsch</b> ${coPruefChips(p.pro[i])}</span></div>
     <div class="co-bankleiste"><span>Aufgabe aus der Bank laden:</span><select id="coBank${i}"class="co-ed-bank"onchange="coBankEinsetzen(${i})">${bankOpt}</select></div>
     ${a.pruefen?`<div class="co-hinweis">⚠ ${esc(a.pruefen)}</div>`:""}
-    ${i===0?`<section class="co-sec co-sec-vig">
-     <div class="co-sec-kopf"><span class="co-sec-nr">1</span>Fallvignette <small>gilt für beide Aufgaben: die Situation, auf die sich alle Aussagen beziehen</small></div>
+    ${(i===0||e.eigeneVig)?`<section class="co-sec co-sec-vig">
+     <div class="co-sec-kopf"><span class="co-sec-nr">1</span>Fallvignette <small>${e.eigeneVig?"eigene Situation für diese Aufgabe":"gilt für alle Aufgaben: die Situation, auf die sich alle Aussagen beziehen"}</small></div>
      <label>Überschrift<input id="coVT${i}"value="${esc(a.vTitel)}"placeholder="z. B. Kindergarten „Wirbelwind“"></label>
      <label>Text<textarea id="coVX${i}"rows="6"placeholder="Situation ohne Hinweise auf die Lösung."oninput="coEditorPruefen()">${esc(a.vText)}</textarea></label>
      <label class="check"><input id="coVZ${i}"type="checkbox"${a.vZeilen?" checked":""}> Zeilen nummerieren (jeder Zeilenumbruch = neue Zeile, für Verweise wie „Z. 15–17“)</label>
@@ -9497,7 +9657,7 @@ function coVorlageWaehlen(){
  const v=CHECKOUT_VORLAGEN.find(x=>x.id===id);if(!v)return;
  const belegt=coEditor.aufgaben.some(a=>a.vText.trim()||a.stamm.trim()||a.aussagen.some(x=>x.text.trim()));
  if(belegt&&!confirm("Der Inhalt dieses Entwurfs wird durch die Vorlage ersetzt. Fortfahren?")){coEditorRender();return}
- coEditor.titel=coLabel(v);coEditor.lbNum=v.lbNum;coEditor.datum=v.datum;coEditor.aufgaben=v.aufgaben.map(coAufgabeAusBank);
+ coEditor.titel=coLabel(v);coEditor.lbNum=v.lbNum;coEditor.datum=v.datum||coEditor.datum;coEditor.eigeneVig=!!v.eigeneVignetten;coEditor.aufgaben=v.aufgaben.map(coAufgabeAusBank);
  coEditorRender();toast("Vorlage eingesetzt – bitte prüfen und speichern.");
 }
 function coEditorAufgabe(d){coEditorLesen();if(d>0&&coEditor.aufgaben.length<CHECKOUT_MAX_AUFGABEN)coEditor.aufgaben.push(coLeereAufgabe());if(d<0&&coEditor.aufgaben.length>CHECKOUT_MIN_AUFGABEN)coEditor.aufgaben.pop();coEditorRender();}
