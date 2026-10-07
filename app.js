@@ -21361,7 +21361,7 @@ function lbModulPills(m){
  if(LB_AUSGENOMMEN.includes(m.modul))return"";
  const lehrer=isTeacher(),hatT=!!m.tafelId,hatL=!!m.lernBoardId,hatW=!!m.whiteboardId,id=esc(m.id);
  const p=[];
- if(hatT||lehrer)p.push(lbPill("Tafel"+(hatT?"":" anlegen"),LB_ICON.tafel,hatT,`data-ppm="lb-tafel" data-id="${id}"`,hatT?"Digitale Tafel öffnen (nur Lehrkräfte ändern sie)":"Digitale Tafel anlegen"));
+ if(hatT||lehrer)p.push(lbPill("Roter Faden"+(hatT?"":" anlegen"),LB_ICON.tafel,hatT,`data-ppm="lb-tafel" data-id="${id}"`,hatT?"Roter Faden (digitale Tafel) öffnen, nur Lehrkräfte ändern ihn":"Roter Faden (digitale Tafel) anlegen"));
  if(hatL||lehrer)p.push(lbPill("Lernübersicht"+(hatL?"":" anlegen"),LB_ICON.lern,hatL,`data-ppm="lb-lern" data-id="${id}"`,hatL?(lehrer?"Lernübersicht (Vorlage) öffnen":"Meine Lernübersicht öffnen"):"Lernübersicht als Whiteboard anlegen"));
  if(lehrer)p.push(lbPill("⇄ zuordnen","",false,`data-ppm="lb-zuordnen" data-id="${id}"`,"Eine vorhandene Lernübersicht diesem Modul zuordnen"));
  if(hatW||lehrer)p.push(lbPill("Whiteboard"+(hatW?"":" anlegen"),LB_ICON.wb,hatW,`data-ppm="lb-wb" data-id="${id}"`,hatW?"Whiteboard öffnen":"Whiteboard anlegen"));
@@ -21369,7 +21369,7 @@ function lbModulPills(m){
 }
 function lbModulBar(m){
  const p=lbModulPills(m);
- return p?`<div class="ppm-box lb-leiste"><b>Tafel, Lernübersicht und Whiteboard</b>${p}</div>`:"";
+ return p?`<div class="ppm-box lb-leiste"><b>Roter Faden, Lernübersicht und Whiteboard</b>${p}</div>`:"";
 }
 async function lbModulTafel(m){
  if(m.tafelId){openWhiteboard(m.tafelId);return;}
