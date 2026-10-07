@@ -21454,7 +21454,7 @@ function lbModulPills(m){
  if(LB_AUSGENOMMEN.includes(m.modul))return"";
  const lehrer=isTeacher(),hatT=!!(m.tafelId||m.rfUrl),hatL=!!m.lernBoardId,hatW=!!m.whiteboardId,id=esc(m.id);
  const p=[];
- if(hatT||lehrer)p.push(lbPill("Roter Faden"+(hatT?"":" anlegen"),LB_ICON.tafel,hatT,`data-ppm="lb-tafel" data-id="${id}"`,hatT?(m.rfTyp==="pdf"?"Roter Faden (PDF) öffnen":m.rfTyp==="web"?"Roter Faden (Webseite) öffnen":"Roter Faden (digitale Tafel) öffnen, nur Lehrkräfte ändern ihn"):"Roter Faden anlegen: digitale Tafel, PDF oder Webseite"));
+ if(hatT)p.push(lbPill("Roter Faden"+(hatT?"":" anlegen"),LB_ICON.tafel,hatT,`data-ppm="lb-tafel" data-id="${id}"`,hatT?(m.rfTyp==="pdf"?"Roter Faden (PDF) öffnen":m.rfTyp==="web"?"Roter Faden (Webseite) öffnen":"Roter Faden (digitale Tafel) öffnen, nur Lehrkräfte ändern ihn"):"Roter Faden anlegen: digitale Tafel, PDF oder Webseite"));
  if(hatL||lehrer)p.push(lbPill("Lernübersicht"+(hatL?"":" anlegen"),LB_ICON.lern,hatL,`data-ppm="lb-lern" data-id="${id}"`,hatL?(lehrer?"Lernübersicht (Vorlage) öffnen":"Meine Lernübersicht öffnen"):"Lernübersicht als Whiteboard anlegen"));
  if(lehrer)p.push(lbPill("⇄ zuordnen","",false,`data-ppm="lb-zuordnen" data-id="${id}"`,"Roten Faden oder Lernübersicht diesem Modul zuordnen"));
  if(lehrer&&(hatT||hatL))p.push(lbPill("✕ entfernen","",false,`data-ppm="lb-loesen" data-id="${id}"`,"Roter Faden oder Lernübersicht von diesem Modul lösen"));
