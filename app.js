@@ -4094,7 +4094,7 @@ function coFuerWoche(coDaten,w){
 function coAktionHTML(c,d){
  const a=d.meineAbgaben?.[c.id];
  if(isTeacher()){
-  const druck=`<button class="secondary"title="Test zum Ausdrucken (PDF)"onclick="coTestDruckId('${c.id}')">🖨 Ausdruck</button>`;
+  const druck=`<button class="secondary"title="Test zum Ausdrucken (PDF)"onclick="coTestDruckId('${c.id}')">🖨 Ausdruck</button><button class="secondary"title="Test mit Lösung als PDF"onclick="coTestDruckId('${c.id}',true)">🖨 mit Lösung</button>`;
   return druck+(c.status==="entwurf"?`<button class="secondary"onclick="openCheckoutEditor('${c.id}')">Bearbeiten</button><button class="primary"onclick="coLiveStarten('${c.id}')">▶ Live freischalten</button>`
    :c.status==="live"?`<button class="primary"onclick="openCheckoutMonitor('${c.id}')">Live-Übersicht</button>`
    :`<button class="secondary"onclick="openCheckoutErgebnisse('${c.id}')">Ergebnisse</button>`);
@@ -5089,7 +5089,7 @@ async function ppmKprimSeite(m){
   const mein=d.meineAbgaben&&d.meineAbgaben[c.id];
   const live=c.status==="live",beendet=c.status==="beendet";
   karte=`<div class="ppm-zeile"><span style="font-size:26px">🏁</span><div style="flex:1;min-width:200px"><b>${esc(coTitelAnzeige(c)||"Check-out")}</b><br><small style="color:var(--muted)">${esc(c.datum||"")} · ${(c.aufgaben||[]).length} K-Prim-Aufgaben · Status: ${esc(c.status||"Entwurf")}</small></div>
-   ${lehrer?`<button type="button" class="ppm-btn klein" data-ppm="co" data-aktion="druck" data-id="${esc(c.id)}">🖨 Test ausdrucken</button><button type="button" class="ppm-btn klein" data-ppm="co" data-aktion="editor" data-id="${esc(c.id)}">Bearbeiten</button>${live?`<button type="button" class="ppm-btn klein" data-ppm="co" data-aktion="monitor" data-id="${esc(c.id)}">Live-Übersicht</button>`:""}`
+   ${lehrer?`<button type="button" class="ppm-btn klein" data-ppm="co" data-aktion="druck" data-id="${esc(c.id)}">🖨 Test ausdrucken</button><button type="button" class="ppm-btn klein" data-ppm="co" data-aktion="druck-l" data-id="${esc(c.id)}">🖨 Test mit Lösung</button><button type="button" class="ppm-btn klein" data-ppm="co" data-aktion="editor" data-id="${esc(c.id)}">Bearbeiten</button>${live?`<button type="button" class="ppm-btn klein" data-ppm="co" data-aktion="monitor" data-id="${esc(c.id)}">Live-Übersicht</button>`:""}`
     :(live&&!(mein&&mein.abgegeben)?`<button type="button" class="ppm-btn primaer" data-ppm="co" data-aktion="test" data-id="${esc(c.id)}">Test starten</button>`:(mein&&mein.ausgewertet?`<button type="button" class="ppm-btn primaer" data-ppm="co" data-aktion="ergebnis" data-id="${esc(c.id)}">Mein Ergebnis</button>`:`<span class="ppm-status">${beendet?"beendet":"noch nicht freigeschaltet"}</span>`))}</div>`;
  }
  return`${ppmKopf(m,"",lehrer?`${c?"":`<button type="button" class="ppm-btn klein primaer" data-ppm="bearbeiten" data-id="${esc(m.id)}">🔗 Check-out verknüpfen</button>`}<button type="button" class="ppm-btn klein" data-ppm="co" data-aktion="neu">＋ Neuen Check-out anlegen</button>`:"")}
@@ -5349,6 +5349,7 @@ async function ppmKlick(e){
    else if(a==="editor")openCheckoutEditor(id);
    else if(a==="monitor")openCheckoutMonitor(id);
    else if(a==="druck")coTestDruckId(id);
+   else if(a==="druck-l")coTestDruckId(id,true);
    else if(a==="test")openCheckoutTest(id);
    else if(a==="ergebnis")openCheckoutMeinErgebnis(id);
    return;
@@ -9330,6 +9331,7 @@ AUFGABE: …</pre>
     ${e.id?`<button class="secondary"onclick="coLoeschen('${e.id}')">Löschen</button>`:""}
     <button class="secondary"onclick="coEditorVorschau()">👁 Vorschau (Schüleransicht)</button>
     <button class="secondary"onclick="coEditorLesen();coTestDruckEditor()">🖨 Test zum Ausdrucken (PDF)</button>
+    <button class="secondary"onclick="coEditorLesen();coTestDruckEditor(true)">🖨 Test mit Lösung (PDF)</button>
     <button class="secondary"onclick="coEditorLesen();coPoolExport('pdf')">PDF für Aufgabenpool</button>
     <button class="secondary"onclick="coEditorLesen();coPoolExport('word')">Word für Aufgabenpool</button>
     <span style="flex:1"></span>
@@ -9851,27 +9853,43 @@ async function openCheckoutSchuelerErgebnis(id,uid){
   <div class="form-actions"><button class="secondary"onclick="openCheckoutErgebnisse('${id}')">← Zurück</button><button class="secondary"onclick="coPdfSchueler('${id}','${uid}')">PDF</button></div>`);
 }
 
-// ---- K-Prim-Test zum Ausdrucken (für den Fall technischer Probleme) ----
+// ---- K-Prim-Test zum Ausdrucken: leer (für den Fall technischer Probleme) oder mit Lösung (für die Lehrkraft) ----
 // Kopf: „Staatliche FOSBOS Weilheim“, Zeile mit KPrim-Test, Datum und Name; unten Gesamtpunktzahl, Umrechnung in Punkte und „Viel Erfolg!“.
-function coDruckModellAusCheckout(co){
- const q=co.aufgaben||[];
- const v0=q[0]?.vignette?.text?q[0].vignette:null;
- const gemeinsam=co.vignette?.text?co.vignette:(v0&&q.every(x=>(x.vignette?.text||"")===v0.text)?v0:null);
- return{titel:coTitelAnzeige(co),lbNum:co.lbNum,vignette:gemeinsam,
-  aufgaben:q.map(x=>({stamm:x.stamm||"",kontext:x.kontext||"",material:x.material?.text?x.material:null,vignette:gemeinsam?null:(x.vignette?.text?x.vignette:null),aussagen:(x.aussagen||[]).map(a=>typeof a==="string"?a:(a.text||""))}))};
+// Mit Lösung: richtige Spalte markiert, Begründung unter jeder Aussage, Umrechnungstabelle, keine Namens- und Datumszeile.
+function coDruckTitelVon(co){return typeof coTitelAnzeige==="function"?coTitelAnzeige(co):(co.titel||"");}
+// Fallvignetten: Gilt eine Vignette für den ganzen Test, steht sie oben. Gilt sie für mehrere Aufgaben in Folge,
+// steht sie nur vor der ersten dieser Aufgaben.
+function coDruckVignetten(vs){
+ const gleich=vs.length>0&&!!vs[0]&&vs.every(v=>v&&v.text===vs[0].text);
+ return{gemeinsam:gleich?vs[0]:null,je:vs.map((v,i)=>gleich?null:((i===0||!v||!vs[i-1]||v.text!==vs[i-1].text)?(v||null):null))};
 }
-function coDruckModellAusEditor(e){
- const a0=e.aufgaben[0]||{};
- return{titel:e.titel||"",lbNum:e.lbNum,vignette:a0.vText&&a0.vText.trim()?{titel:a0.vTitel||"",text:a0.vText,zeilen:!!a0.vZeilen}:null,
-  aufgaben:e.aufgaben.map(a=>({stamm:a.stamm||"",kontext:a.kontext||"",material:a.mText&&a.mText.trim()?{titel:a.mTitel||"",text:a.mText,quelle:a.mQuelle||""}:null,vignette:null,aussagen:a.aussagen.map(x=>x.text||"")}))};
+function coDruckModellAusCheckout(co,lo){
+ const q=co.aufgaben||[];
+ const vs=q.map(x=>x.vignette&&x.vignette.text?x.vignette:(co.vignette&&co.vignette.text?co.vignette:null));
+ const g=coDruckVignetten(vs);
+ return{titel:coDruckTitelVon(co),lbNum:co.lbNum,vignette:g.gemeinsam,mitLoesung:!!lo,
+  aufgaben:q.map((x,i)=>({stamm:x.stamm||"",kontext:x.kontext||"",material:x.material&&x.material.text?x.material:null,vignette:g.je[i],
+   aussagen:(x.aussagen||[]).map(a=>typeof a==="string"?a:(a.text||"")),
+   richtig:lo&&lo.aufgaben&&lo.aufgaben[i]?(lo.aufgaben[i].richtig||[]).map(r=>!!r):null,
+   erklaerung:lo&&lo.aufgaben&&lo.aufgaben[i]?(lo.aufgaben[i].erklaerung||[]):null}))};
+}
+function coDruckModellAusEditor(e,mitLoesung){
+ const vs=e.aufgaben.map(a=>a.vText&&a.vText.trim()?{titel:a.vTitel||"",text:a.vText,zeilen:!!a.vZeilen}:null);
+ const g=coDruckVignetten(vs);
+ return{titel:e.titel||"",lbNum:e.lbNum,vignette:g.gemeinsam,mitLoesung:!!mitLoesung,
+  aufgaben:e.aufgaben.map((a,i)=>({stamm:a.stamm||"",kontext:a.kontext||"",material:a.mText&&a.mText.trim()?{titel:a.mTitel||"",text:a.mText,quelle:a.mQuelle||""}:null,vignette:g.je[i],
+   aussagen:a.aussagen.map(x=>x.text||""),
+   richtig:mitLoesung?a.aussagen.map(x=>!!x.richtig):null,
+   erklaerung:mitLoesung?a.aussagen.map(x=>(x.erklaerung||"").trim()):null}))};
 }
 function coTestDruckHTML(m){
- const E=escPDF,beJe=CHECKOUT_BE_NACH_FEHLERN[0],max=m.aufgaben.length*beJe;
+ const E=escPDF,beJe=CHECKOUT_BE_NACH_FEHLERN[0],max=m.aufgaben.length*beJe,L=!!m.mitLoesung;
  const leer=w=>`<span class="blank" style="min-width:${w}px"></span>`;
  const kopfTitel=m.titel.replace(/^KPrim-Test\s*·\s*/,"");
  const kreuz='<span class="box"></span>';
  const logoUrl=typeof location!=="undefined"?new URL("logo.jpg",location.href).href:"logo.jpg"; // absolute Adresse, weil das Druckfenster leer startet
  const vig=v=>v&&v.text?`<div class="vig"><div class="vig-t">Fallvignette${v.titel?": "+E(v.titel):""}</div>${coSituationHTML({text:v.text},true,!!v.zeilen,true)}</div>`:"";
+ const zelle=(q,j,wert)=>L&&q.richtig?(q.richtig[j]===wert?'<span class="box x">✕</span>':kreuz):kreuz;
  const aufg=m.aufgaben.map((q,i)=>`<div class="aufg">
   <div class="aufg-k">Aufgabe ${i+1}</div>
   ${vig(q.vignette)}
@@ -9879,19 +9897,20 @@ function coTestDruckHTML(m){
   ${q.kontext.trim()?coAbsaetzeHTML(q.kontext,true):""}
   <p class="stamm">${E(q.stamm)}</p>
   <table class="aus"><tr><th class="n">Nr.</th><th>Aussage</th><th class="rf">richtig</th><th class="rf">falsch</th></tr>
-  ${q.aussagen.map((t,j)=>`<tr><td class="n">${j+1}</td><td>${E(t)}</td><td class="rf">${kreuz}</td><td class="rf">${kreuz}</td></tr>`).join("")}</table>
-  <div class="be">____ / ${beJe} BE</div></div>`).join("");
+  ${q.aussagen.map((t,j)=>`<tr><td class="n">${j+1}</td><td>${E(t)}${L&&q.erklaerung&&String(q.erklaerung[j]||"").trim()?`<div class="erk"><b>Begründung:</b> ${E(q.erklaerung[j])}</div>`:""}</td><td class="rf${L&&q.richtig&&q.richtig[j]===true?" ok":""}">${zelle(q,j,true)}</td><td class="rf${L&&q.richtig&&q.richtig[j]===false?" ok":""}">${zelle(q,j,false)}</td></tr>`).join("")}</table>
+  <div class="be">${L?`max. ${beJe} BE`:`____ / ${beJe} BE`}</div></div>`).join("");
  const umr=[];for(let be=max;be>=0;be--)umr.push([be,notenpunkteAusProzent(be/max*100)]);
- return`<div class="kopfzeile"><div class="logo"><img src="${logoUrl}" alt="Logo FOSBOS Weilheim"></div><div class="schule">Staatliche FOSBOS Weilheim</div></div>
- <div class="kopf"><div class="kt">KPrim-Test</div><div class="kf">Datum: ${leer(150)}</div><div class="kf">Name: ${leer(210)}</div></div>
+ return`<div class="${L?"sol":"leer"}"><div class="kopfzeile"><div class="logo"><img src="${logoUrl}" alt="Logo FOSBOS Weilheim"></div><div class="schule">Staatliche FOSBOS Weilheim</div></div>
+ <div class="kopf"><div class="kt">KPrim-Test${L?" · Lösung":""}</div>${L?`<div class="kf"><span class="lsg">Lösung für Lehrkräfte</span></div>`:`<div class="kf">Datum: ${leer(150)}</div><div class="kf">Name: ${leer(210)}</div>`}</div>
  ${kopfTitel?`<div class="thema">${E(kopfTitel)}</div>`:""}
- <div class="hinweis"><b>So funktioniert der Test:</b> Lesen Sie die Fallvignette genau. Jede Aufgabe besteht aus einem Einleitungssatz und vier Aussagen, die den Satz fortführen. Kreuzen Sie bei jeder Aussage an, ob sie richtig oder falsch ist.<br>Bewertung je Aufgabe: 4 richtige Entscheidungen = ${beJe} BE · 3 = ${CHECKOUT_BE_NACH_FEHLERN[1]} BE · 2 = ${CHECKOUT_BE_NACH_FEHLERN[2]} BE · weniger = 0 BE. Gesamt: ${max} BE</div>
+ ${L?`<div class="hinweis"><b>Lösungsblatt:</b> Die richtige Antwort ist je Aussage in der Spalte „richtig“ oder „falsch“ markiert und grün hinterlegt, darunter steht die Begründung.<br>Bewertung je Aufgabe: 4 richtige Entscheidungen = ${beJe} BE · 3 = ${CHECKOUT_BE_NACH_FEHLERN[1]} BE · 2 = ${CHECKOUT_BE_NACH_FEHLERN[2]} BE · weniger = 0 BE. Gesamt: ${max} BE.</div>`
+ :`<div class="hinweis"><b>So funktioniert der Test:</b> Lesen Sie die Fallvignette genau. Jede Aufgabe besteht aus einem Einleitungssatz und vier Aussagen, die den Satz fortführen. Kreuzen Sie bei jeder Aussage an, ob sie richtig oder falsch ist.<br>Bewertung je Aufgabe: 4 richtige Entscheidungen = ${beJe} BE · 3 = ${CHECKOUT_BE_NACH_FEHLERN[1]} BE · 2 = ${CHECKOUT_BE_NACH_FEHLERN[2]} BE · weniger = 0 BE. Gesamt: ${max} BE</div>`}
  ${vig(m.vignette)}
  ${aufg}
- <div class="summe"><div class="sz">Gesamtpunktzahl: ${leer(60)} / ${max} Bewertungseinheiten (BE), das entspricht ${leer(60)} Punkten.</div>
+ <div class="summe">${L?`<div class="sz">Insgesamt ${max} Bewertungseinheiten (BE) = ${notenpunkteAusProzent(100)} Punkte.</div>`:`<div class="sz">Gesamtpunktzahl: ${leer(60)} / ${max} Bewertungseinheiten (BE), das entspricht ${leer(60)} Punkten.</div>`}
   <table class="umr"><tr><th>BE</th>${umr.map(x=>`<td>${x[0]}</td>`).join("")}</tr><tr><th>Punkte</th>${umr.map(x=>`<td>${x[1]}</td>`).join("")}</tr></table>
   <div class="quelle">Umrechnung nach dem Bewertungsschlüssel Pädagogik/Psychologie (Prozent der erreichbaren BE).</div></div>
- <div class="erfolg">Viel Erfolg!</div>`;
+ ${L?"":`<div class="erfolg">Viel Erfolg!</div>`}</div>`;
 }
 function coDruckFenster(titel,html){
  const win=window.open("","_blank","width=900,height=800");
@@ -9909,6 +9928,7 @@ function coDruckFenster(titel,html){
  .kopf{display:flex;gap:18px;align-items:flex-end;border-bottom:2px solid #111;padding-bottom:6px;margin-bottom:8px}
  .kt{font-size:19pt;font-weight:700;flex:1}
  .kf{white-space:nowrap;font-size:11.5pt}
+ .lsg{display:inline-block;background:#1f7a3a;color:#fff;font-weight:700;font-size:10.5pt;padding:3px 10px;border-radius:12px}
  .blank{display:inline-block;border-bottom:1px solid #111;height:1em;vertical-align:baseline}
  .thema{font-size:11pt;color:#333;margin:0 0 10px}
  .hinweis{border:1px solid #999;border-radius:6px;padding:7px 10px;font-size:10pt;margin:0 0 12px}
@@ -9922,8 +9942,14 @@ function coDruckFenster(titel,html){
  table.aus th{background:#f1f1f1;font-size:10pt}
  .n{width:34px;text-align:center!important}
  .rf{width:62px;text-align:center!important}
- .box{display:inline-block;width:15px;height:15px;border:1.6px solid #111;border-radius:2px}
- .be{text-align:right;margin-top:3px}
+ .rf.ok{background:#dff1e4}
+ .box{display:inline-block;width:15px;height:15px;border:1.6px solid #111;border-radius:2px;vertical-align:middle}
+ .box.x{background:#1f7a3a;border-color:#1f7a3a;color:#fff;font-weight:700;font-size:13px;line-height:12px;text-align:center}
+ .sol .aufg{break-inside:auto}
+ .sol .aufg-k,.sol .stamm{break-after:avoid}
+ .sol table.aus tr{break-inside:avoid}
+ .erk{font-size:9.5pt;color:#333;margin-top:3px;line-height:1.35}
+ .be{text-align:right;margin-top:3px;break-before:avoid}
  .quelle{font-size:9pt;color:#555;margin:3px 0 0}
  .summe{border-top:2px solid #111;margin-top:14px;padding-top:10px;break-inside:avoid}
  .sz{font-size:12pt;font-weight:700;margin-bottom:8px}
@@ -9935,17 +9961,19 @@ function coDruckFenster(titel,html){
  </style></head><body><div class="print-note">Im Druckdialog „Als PDF sichern“ bzw. „PDF“ auswählen.</div>${html}<script>window.onload=function(){setTimeout(function(){window.print()},300)}<\/script></body></html>`);
  win.document.close();
 }
-function coTestDruckEditor(){
+function coTestDruckEditor(mitLoesung){
  const e=coEditor;if(!e)return;
  if(!e.aufgaben.some(a=>a.stamm.trim()||a.aussagen.some(x=>x.text.trim()))){toast("Der Test ist noch leer.");return;}
- coDruckFenster("KPrim-Test",coTestDruckHTML(coDruckModellAusEditor(e)));
+ coDruckFenster(mitLoesung?"KPrim-Test mit Lösung":"KPrim-Test",coTestDruckHTML(coDruckModellAusEditor(e,!!mitLoesung)));
 }
-async function coTestDruckId(id){
+async function coTestDruckId(id,mitLoesung){
  if(!isTeacher())return;
  try{
-  const c=await getDoc(doc(db,"checkouts",id));
+  const [c,l]=await Promise.all([getDoc(doc(db,"checkouts",id)),mitLoesung?getDoc(doc(db,"checkoutLoesungen",id)):Promise.resolve(null)]);
   if(!c.exists()){toast("Check-out nicht gefunden.");return;}
-  coDruckFenster("KPrim-Test",coTestDruckHTML(coDruckModellAusCheckout({id,...c.data()})));
+  const lo=mitLoesung&&l&&l.exists()?l.data():null;
+  if(mitLoesung&&!lo){toast("Zu diesem Test ist keine Lösung gespeichert.");return;}
+  coDruckFenster(mitLoesung?"KPrim-Test mit Lösung":"KPrim-Test",coTestDruckHTML(coDruckModellAusCheckout({id,...c.data()},lo)));
  }catch(e){console.error("Test drucken:",e);toast("Der Test konnte nicht geöffnet werden.");}
 }
 window.coTestDruckId=coTestDruckId;window.coTestDruckEditor=coTestDruckEditor;
