@@ -124,22 +124,12 @@
    {
     "type": "note",
     "x": -980,
-    "y": 140,
+    "y": 145,
     "w": 940,
-    "h": 65,
+    "h": 150,
     "c": "tuerkis",
-    "fs": 17,
-    "text": "Wer sich freut (Erleben), reißt gleichzeitig die Arme hoch (Verhalten): beide sind Ausdruck dieser Freude."
-   },
-   {
-    "type": "note",
-    "x": -980,
-    "y": 215,
-    "w": 940,
-    "h": 85,
-    "c": "gelb",
-    "fs": 18,
-    "text": "HANDELN bezeichnet jede menschliche Aktivität, mit welcher bewusst und überlegt eine bestimmte Absicht verfolgt wird."
+    "fs": 19,
+    "text": "BEISPIEL\nWer sich freut (Erleben), reißt gleichzeitig die Arme hoch (Verhalten): beide sind Ausdruck dieser Freude. Verhalten und Erleben sind eins im psychischen Geschehen."
    },
    {
     "type": "frame",
@@ -585,27 +575,37 @@
     "w": 990,
     "h": 340,
     "c": "gruen",
-    "text": "④ HANDELN · mehr als Verhalten"
+    "text": "④ ZWEI BETRACHTUNGSWEISEN · Ursache oder Ziel?"
    },
    {
     "type": "note",
     "x": 30,
     "y": 185,
     "w": 950,
-    "h": 130,
+    "h": 120,
     "c": "gruen",
     "fs": 20,
-    "text": "Handeln bezeichnet jede menschliche Aktivität, mit welcher bewusst und überlegt eine bestimmte Absicht verfolgt wird. Erleben und Verhalten sind der übergeordnete Begriff, der das Handeln miteinschließt."
+    "text": "Verhalten und Erleben können durch bestimmte Ursachen bedingt sein oder von den Zielvorstellungen, den Absichten des Menschen bestimmt sein."
    },
    {
     "type": "note",
     "x": 30,
-    "y": 325,
-    "w": 950,
-    "h": 135,
-    "c": "tuerkis",
-    "fs": 18,
-    "text": "Zwei Betrachtungsweisen: Verhalten und Erleben können durch bestimmte Ursachen bedingt sein oder von den Zielvorstellungen, den Absichten des handelnden Menschen bestimmt sein.\nBeispiel wütendes Kind: Ursache = Verbot der Mutter; Ziel = die Mutter soll das Verbot aufheben."
+    "y": 315,
+    "w": 465,
+    "h": 145,
+    "c": "blau",
+    "fs": 19,
+    "text": "URSACHE\nDas Kind ist wütend, weil die Mutter etwas verboten hat."
+   },
+   {
+    "type": "note",
+    "x": 505,
+    "y": 315,
+    "w": 475,
+    "h": 145,
+    "c": "rosa",
+    "fs": 19,
+    "text": "ZIEL\nDas Kind ist wütend, damit die Mutter das Verbot aufhebt."
    },
    {
     "type": "frame",
@@ -722,7 +722,7 @@
     "h": 150,
     "c": "gelb",
     "fs": 19,
-    "text": "Das kann ich am Ende:\n• Verhalten und Erleben definieren und je ein Beispiel nennen\n• erklären, warum nicht die Seele selbst untersucht wird\n• den Zusammenhang von Verhalten und Erleben erklären\n• Handeln abgrenzen"
+    "text": "Das kann ich am Ende:\n• Verhalten und Erleben definieren und je ein Beispiel nennen\n• erklären, warum nicht die Seele selbst untersucht wird\n• den Zusammenhang von Verhalten und Erleben erklären"
    },
    {
     "type": "note",
