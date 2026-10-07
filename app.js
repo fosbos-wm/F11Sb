@@ -4215,7 +4215,7 @@ const PPM_EINF_THEMEN={
   text:"Tafel mit 2 Seiten (Einstieg „Was ist Psychologie?“, „Psychologie oder Pädagogik?“) und die Selbstlernkurse zu Psychologie und Pädagogik.",
   tafel:["Einstieg: Was ist Psychologie?","Psychologie oder Pädagogik?"],
   kurse:["pp01","pp1a1"],
-  ablauf:["Tafel, Seite 1: Post-its einordnen, eigenes Post-it schreiben, gemeinsam besprechen (ca. 30 Min.)","Selbstlernkurs „Gegenstand der Psychologie“ (Erleben und Verhalten)","Selbstlernkurs „Gegenstand der Pädagogik“ (Erziehungspraxis, Erziehungswissenschaft, fünf Gegenstandsbereiche)","Tafel, Seite 2: „Psychologie oder Pädagogik?“ zuordnen und Beispiele aus dem Praktikum ergänzen (ca. 20 Min.)"]},
+  ablauf:["Tafel, Seite 1: Post-its gemeinsam einordnen (Lehrkraft bedient die Tafel), eigenes Post-it im Whiteboard des Moduls schreiben (ca. 30 Min.)","Selbstlernkurs „Gegenstand der Psychologie“ (Erleben und Verhalten)","Selbstlernkurs „Gegenstand der Pädagogik“ (Erziehungspraxis, Erziehungswissenschaft, fünf Gegenstandsbereiche)","Tafel, Seite 2: „Psychologie oder Pädagogik?“ zuordnen und Beispiele aus dem Praktikum ergänzen (ca. 20 Min.)"]},
  eigen:{titel:"Eigenes Thema (leere Tafel)",text:"Leere Digitale Tafel, die du selbst gestaltest. Kurse gibt es keine.",tafel:[],kurse:[],ablauf:[]}
 };
 const PPM_EINHEITEN={experiment:{icon:"🧪",name:"Das Experiment – interaktive Stunde",text:"Kaugummi-Versuch in Kleingruppen, Klassenvergleich, Merkmale eines Experiments und Abschlussquiz."}};
@@ -4533,11 +4533,14 @@ function ppmKarteHTML(m,fortsetzung){
  const fo=ppmFort(m);
  return`<div class="ppm-karte${isTeacher()?" mit-mv":""}${fo?(fo.done?" ppm-st-done":fo.frac>0?" ppm-st-teil":" ppm-st-offen"):""}" style="--c:${c};--sp:${ppmSpalten(m)}" data-ppm="oeffnen" data-id="${esc(m.id)}" tabindex="0" role="button">
   <span class="ppm-ic">${T.icon}</span>
-  <span class="ppm-txt"><b>${esc(ppmTitel(m)||T.name)}</b><small>${esc(T.art||T.kurz)} · LB${m.lb} · ${esc(ppmDauerText(m))}</small>${ppmStatus(m)}${fo&&!fo.done?`<span class="ppm-mini" title="${Math.round(fo.frac*100)} % geschafft"><i style="width:${Math.round(fo.frac*100)}%"></i></span>`:""}${proj}${exp}${einh}${isTeacher()?ppmMoveHTML(m):""}</span>
+  <span class="ppm-txt"><b>${esc(ppmTitel(m)||T.name)}</b><small>${esc(T.art||T.kurz)} · LB${m.lb} · ${esc(ppmDauerText(m))}</small>${ppmStatus(m)}${fo&&!fo.done?`<span class="ppm-mini" title="${Math.round(fo.frac*100)} % geschafft"><i style="width:${Math.round(fo.frac*100)}%"></i></span>`:""}${proj}${exp}${einh}${lbModulPills(m)}${isTeacher()?ppmMoveHTML(m):""}</span>
   ${fo&&fo.done?`<span class="ppm-haken-k" aria-label="geschafft">✓</span>`:""}${isTeacher()?`<button type="button" class="ppm-edit" data-ppm="bearbeiten" data-id="${esc(m.id)}" title="Modul bearbeiten">✎</button>`:""}
  </div>`;
 }
 const PPM_CSS=`<style>
+.lb-pills{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 2px}.lb-leiste{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.lb-pill{display:inline-flex;align-items:center;gap:4px;min-height:26px;padding:0 9px;border-radius:13px;border:1.5px dashed #6b7c93;background:#fff;color:#3a4a5c;font:inherit;font-size:11px;font-weight:700;cursor:pointer}
+.lb-pill.da{border:1.5px solid #075a9d;background:#075a9d;color:#fff}
 .ppm-legende{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:0 0 18px}
 .ppm-typ{display:flex;flex-direction:column;gap:4px;text-align:left;padding:12px 14px;border-radius:14px;border:1.5px dashed #b9c8d6;background:#fff;cursor:pointer;font:inherit;color:inherit}
 .ppm-typ:hover{border-color:#2f7fc6;background:#f3f9ff}.ppm-typ b{font-size:14px}.ppm-typ small{color:var(--muted);line-height:1.35}
@@ -4960,7 +4963,7 @@ async function ppmTafelAnlegen(titel){
 // Tafel für „Einführung in den Lernbereich“: je Vorlage eine Seite, Mitarbeit für alle geöffnet.
 async function ppmTafelMitVorlagen(titel,namen){
  const von=profile?.displayName||currentUser.email||"Lehrkraft";
- const r=await addDoc(collection(db,"whiteboards"),{title:String(titel).slice(0,120),description:"Tafel zur Einführung in den Lernbereich",art:"tafel",schreibschutz:false,seiten:Math.max(1,namen.length),bg:"blau",createdBy:currentUser.uid,createdByName:von,createdAt:serverTimestamp()});
+ const r=await addDoc(collection(db,"whiteboards"),{title:String(titel).slice(0,120),description:"Tafel zur Einführung in den Lernbereich",art:"tafel",schreibschutz:true,seiten:Math.max(1,namen.length),bg:"blau",createdBy:currentUser.uid,createdByName:von,createdAt:serverTimestamp()});
  const t0=Date.now(),jobs=[];
  namen.forEach((name,i)=>{
   const v=WB_VORLAGEN.find(x=>x.name===name);if(!v)return;
@@ -5049,7 +5052,7 @@ function ppmKopf(m,unter,extraBtn){
  ${PPM_CSS}
  <div class="ppm-box ppm-kopf" style="--c:${c}"><div class="kicker" style="color:${c}">${T.icon} ${esc((T.art||T.kurz).toUpperCase())} · LB${m.lb} · ${zeit} · ${esc(ppmDauerDef(m).lang.toUpperCase())}</div>
   <h1 style="margin:4px 0 6px;font-size:26px">${esc(ppmTitel(m)||T.name)}</h1>${m.notiz?`<p>${esc(m.notiz)}</p>`:""}${unter||""}
-  ${isTeacher()?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" class="ppm-btn klein" data-ppm="bearbeiten" data-id="${esc(m.id)}">✎ Modul bearbeiten</button>${extraBtn||""}</div>`:""}</div>${ppmMaterialBox(m)}`;
+  ${isTeacher()?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" class="ppm-btn klein" data-ppm="bearbeiten" data-id="${esc(m.id)}">✎ Modul bearbeiten</button>${extraBtn||""}</div>`:""}</div>${lbModulBar(m)}${ppmMaterialBox(m)}`;
 }
 // ---- Projekt ----
 async function ppmProjektSeite(m){
@@ -5339,6 +5342,9 @@ async function ppmKlick(e){
   if(aktion==="ea-start"){window.__eaRueck=async()=>{await render();};openEinarbeitung(b.dataset.ea);return;}
   if(aktion==="ea-stand"){await ppmEaStandDialog(b.dataset.ea);return;}
   if(aktion==="projekt-oeffnen"){const ph=PROJEKT_PHASEN.find(p=>p.lbNum===Number(b.dataset.lb));if(ph&&!ph.einstieg){activePPModul=null;activePhaseDetail=ph.id+":projekt";await refresh();}return;}
+  if(aktion==="lb-tafel"&&m){await lbModulTafel(m);await refresh();return;}
+  if(aktion==="lb-lern"&&m){await lbModulLern(m);return;}
+  if(aktion==="lb-wb"&&m){await lbModulWb(m);return;}
   if(aktion==="tafel"){openWhiteboard(id);return;}
   if(aktion==="tafel-neu"&&m){const t=await ppmTafelAnlegen(m.titel);await updateDoc(doc(db,"ppModule",m.id),{tafelId:t});await ppmLaden(true);openWhiteboard(t);return;}
   if(aktion==="einheit-neu"&&m){await ppmDialog(null,"experiment",null,{projektId:m.id});return;}
@@ -10953,7 +10959,7 @@ async function getWhiteboards(){
  try{
   const snap=await getDocs(collection(db,"whiteboards"));
   wbLadeFehler="";
-  return snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+  return snap.docs.map(d=>({id:d.id,...d.data()})).filter(b=>b.art!=="lern").sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
  }catch(e){console.error("Whiteboards laden:",e);wbLadeFehler=(e&&(e.code||e.name))||"unbekannt";return null;}
 }
 function wbFehlerText(code){
@@ -11038,6 +11044,19 @@ async function wbBoardLoeschen(id,artVorgabe){
    await Promise.all(ms.docs.map(d=>updateDoc(doc(db,"ppModule",d.id),{tafelId:""})));
    if(ms.docs.length&&typeof ppmLaden==="function")await ppmLaden(true);
   }catch(e){console.warn("Tafel-Verknüpfung lösen:",e);}
+  try{
+   const mw=await getDocs(query(collection(db,"ppModule"),where("whiteboardId","==",id)));
+   await Promise.all(mw.docs.map(d=>updateDoc(doc(db,"ppModule",d.id),{whiteboardId:""})));
+   if(mw.docs.length&&typeof ppmLaden==="function")await ppmLaden(true);
+   const ml=await getDocs(query(collection(db,"ppModule"),where("lernBoardId","==",id)));
+   await Promise.all(ml.docs.map(d=>updateDoc(doc(db,"ppModule",d.id),{lernBoardId:""})));
+   if(ml.docs.length&&typeof ppmLaden==="function")await ppmLaden(true);
+   for(const feld of["whiteboardId","lernBoardId"]){
+    const lw=await getDocs(query(collection(db,"lehrplanTafeln"),where(feld,"==",id)));
+    await Promise.all(lw.docs.map(d=>updateDoc(doc(db,"lehrplanTafeln",d.id),{[feld]:""})));
+    lw.docs.forEach(d=>{if(typeof PP12_CACHE!=="undefined"&&PP12_CACHE.tafeln&&PP12_CACHE.tafeln[d.id])PP12_CACHE.tafeln[d.id][feld]="";});
+   }
+  }catch(e){console.warn("Whiteboard-Verknüpfung lösen:",e);}
   await deleteDoc(doc(db,"whiteboards",id));
   activeWhiteboardId=null;go(istTafel?"tafel":"whiteboard");toast(istTafel?"Tafel gelöscht.":"Whiteboard gelöscht.");
  }catch(e){console.error("Whiteboard löschen:",e);toast("Konnte nicht vollständig gelöscht werden.");}
@@ -11081,6 +11100,7 @@ async function renderWhiteboardBoard(){
     ${btn("wbHg","Hintergrundfarbe","palette",' hidden')}
     ${btn("wbTpl","Vorlagen","tpl")}
     ${btn("wbExport","Als Bild speichern (PNG)","down")}
+    ${btn("wbExportPdf","Als PDF drucken / speichern","down")}
     ${btn("wbVoll","Vollbild","full")}
     ${btn("wbHilfe","Hilfe und Tastenkürzel","help")}
    </div>
@@ -11839,8 +11859,8 @@ function wbVorlageEinsetzen(i){
   ids.push(wbErzeugen({w:std.w,h:std.h,...t},{zOffset:n}));
  });
  wbUndoPush(async()=>{await wbLoeschenIds(ids,true);});
- if(v.mitarbeit&&wb.board&&wb.board.schreibschutz&&wbBoardVerwalter()){updateDoc(doc(db,"whiteboards",wb.id),{schreibschutz:false}).catch(wbFehler);}
- $("wbTplMenu").hidden=true;wbAuswahlSetzen([]);toast(v.mitarbeit?`Vorlage „${v.name}“ eingefügt. Die Mitarbeit ist für alle geöffnet.`:`Vorlage „${v.name}“ eingefügt.`);
+ if(v.mitarbeit&&wb.board&&wb.board.art!=="tafel"&&wb.board.schreibschutz&&wbBoardVerwalter()){updateDoc(doc(db,"whiteboards",wb.id),{schreibschutz:false}).catch(wbFehler);}
+ $("wbTplMenu").hidden=true;wbAuswahlSetzen([]);toast(v.mitarbeit&&wb.board.art!=="tafel"?`Vorlage „${v.name}“ eingefügt. Die Mitarbeit ist für alle geöffnet.`:`Vorlage „${v.name}“ eingefügt.`);
 }
 function wbVollbild(an){
  const w=wb.wrap;const neu=an===undefined?!w.classList.contains("wb-full"):an;
@@ -11939,6 +11959,7 @@ function wbExportZeichnen(bilderMap){
  });
  c.setTransform(s,0,0,s,0,0);c.fillStyle="#8a99a8";c.font="12px Arial";c.textAlign="left";c.textBaseline="alphabetic";
  c.fillText(`F11Sb · Whiteboard · ${wb.board.title||""}`,pad,H-12);
+ if(wb.pdfModus){wb.pdfModus=false;wbPdfFenster(cv);return;}
  cv.toBlob(b=>{
   if(!b){toast("Das Bild konnte nicht erstellt werden.");return}
   const url=URL.createObjectURL(b);const a=document.createElement("a");
@@ -12148,7 +12169,7 @@ function initWhiteboardBoard(id){
  on($("wbZoomPlus"),"click",()=>wbMitteZoom(1.25));on($("wbZoomMinus"),"click",()=>wbMitteZoom(0.8));on($("wbFit"),"click",wbAlleAnzeigen);
  on($("wbNamen"),"click",()=>{wb.wrap.classList.toggle("wb-hide-namen");$("wbNamen").classList.toggle("on",wb.wrap.classList.contains("wb-hide-namen"));});
  on($("wbTpl"),"click",()=>{const m=$("wbTplMenu");if(m.hidden)wbTplMenuAuf();else m.hidden=true;});
- on($("wbExport"),"click",wbExport);on($("wbVoll"),"click",()=>wbVollbild());on($("wbHilfe"),"click",wbHilfe);
+ on($("wbExport"),"click",wbExport);on($("wbExportPdf"),"click",wbExportPdf);on($("wbVoll"),"click",()=>wbVollbild());on($("wbHilfe"),"click",wbHilfe);
  on($("wbZurueck"),"click",closeWhiteboard);
  const un=$("wbUmbenennen");if(un)on(un,"click",async()=>{
   const n=prompt("Neuer Titel für das Whiteboard:",wb.board.title||"");if(n===null||!n.trim())return;
@@ -12313,13 +12334,13 @@ async function wbSeiteLoeschen(){
 function wbBoardGeaendert(){
  if(!wb)return;
  const b=wb.board;
- wb.ro=b.schreibschutz===true&&!isTeacher();
+ wb.ro=(b.schreibschutz===true||b.art==="tafel")&&!isTeacher();
  wb.wrap.classList.toggle("wb-ro",wb.ro);
  wb.wrap.classList.toggle("wb-tafelmodus",b.art==="tafel");
  const hgb=$("wbHg");if(hgb)hgb.hidden=!wbBoardVerwalter();
  wbHintergrund();
  wb.fuehrt=!!(b.folgen&&b.fuehrer===currentUser.uid);
- const sb=$("wbSchutz");if(sb){sb.hidden=!wbBoardVerwalter();sb.textContent=b.schreibschutz?"Mitarbeit: nur Lehrkräfte":"Mitarbeit: alle";}
+ const sb=$("wbSchutz");if(sb){sb.hidden=!wbBoardVerwalter()||b.art==="tafel";sb.textContent=b.schreibschutz?"Mitarbeit: nur Lehrkräfte":"Mitarbeit: alle";}
  const fb=$("wbFolgen");if(fb){fb.hidden=!isTeacher();fb.classList.toggle("on",!!b.folgen&&wb.fuehrt);}
  const fo=$("wbFolgenBtn");if(fo)fo.hidden=!isTeacher();
  wbSeitenLeiste();
@@ -12346,6 +12367,7 @@ function wbFuehrungSenden(){
  },700);
 }
 async function wbSchutzUmschalten(){
+ if(wb.board&&wb.board.art==="tafel")return;
  try{await updateDoc(doc(db,"whiteboards",wb.id),{schreibschutz:!wb.board.schreibschutz});}catch(e){wbFehler(e);}
 }
 async function wbFolgenUmschalten(){
@@ -21053,3 +21075,159 @@ try{ if(typeof closeResilienzModal==="function") window.closeResilienzModal=clos
 // „mit KI korrigiert“ und der Besprechungswunsch, die serverTimestamp() nutzen.)
 Object.assign(window,{coEditorVorschau,coEditorVorschauZurueck,coBankEinsetzen,coVorlageWaehlen,coStandAktualisieren,reopenDetail,$,
  serverTimestamp:(...a)=>serverTimestamp(...a)});
+
+
+// ============================================================
+// BAUSTEINE AN STUNDEN UND MODULEN: Digitale Tafel · Lernübersicht · Whiteboard
+// (nicht bei K-Prim-Test und Abschlussprüfungstraining)
+//  · Digitale Tafel: nur Lehrkräfte verändern sie, Schüler:innen sehen zu.
+//  · Lernübersicht: Die Lehrkraft baut sie als Whiteboard (art "tafel", nur für Lehrkräfte änderbar) als Zusammenfassung
+//    der Stunde. Jede:r Schüler:in bekommt beim ersten Öffnen eine EIGENE KOPIE (art "lern") und ergänzt dort
+//    Notizen, Bilder, Zeichnungen. Die Zuordnung steht in ppLernuebersicht (ID "<vorlageBoardId>_<uid>").
+//    Als PDF: Knopf „Als PDF“ im Whiteboard (Druckdialog „Als PDF sichern“), weitergearbeitet wird immer in der App.
+//  · Whiteboard: gemeinsames Team-Whiteboard, an dem alle mitarbeiten.
+// ============================================================
+const LB_AUSGENOMMEN=["kprim","apt"];
+function lbId(){return Math.random().toString(36).slice(2,8);}
+function lbPill(label,icon,da,attrs,titel){
+ return`<button type="button" class="lb-pill${da?" da":""}" ${attrs} title="${esc(titel)}">${icon}<span>${label}</span></button>`;
+}
+const LB_ICON={
+ lern:`<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M9 11h7M9 15h7M9 7h3"/></svg>`,
+ wb:`<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 6l3 3"/></svg>`,
+ tafel:`<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20l4-4 4 4"/></svg>`
+};
+// ---- Eigene Kopie der Lernübersicht ----
+// Die Vorlage (Whiteboard der Lehrkraft) wird einmal pro Schüler:in kopiert: Elemente, Bilder, Seitenzahl, Hintergrund.
+let lbBusy=false;
+async function lbMeineKopie(vorlageId,titel){
+ if(lbBusy)return;lbBusy=true;
+ try{
+  const kid=vorlageId+"_"+currentUser.uid,kref=doc(db,"ppLernuebersicht",kid);
+  let s=null;try{s=await getDoc(kref);}catch(e){console.warn("Lernübersicht lesen:",e);}
+  if(s&&s.exists()&&s.data().boardId){
+   const b=await getDoc(doc(db,"whiteboards",s.data().boardId));
+   if(b.exists()){openWhiteboard(b.id);return;}
+  }
+  const v=await getDoc(doc(db,"whiteboards",vorlageId));
+  if(!v.exists()){toast("Die Lernübersicht der Lehrkraft gibt es nicht mehr.");return;}
+  toast("Deine eigene Lernübersicht wird angelegt …");
+  const vd=v.data(),name=profile?.displayName||currentUser.email||"Schüler:in";
+  const nb=await addDoc(collection(db,"whiteboards"),{title:("Meine Lernübersicht: "+(titel||vd.title||"")).slice(0,120),description:"Eigene Kopie der Lernübersicht",art:"lern",schreibschutz:false,seiten:vd.seiten||1,bg:vd.bg||"weiss",lernVon:currentUser.uid,vorlageId,createdBy:currentUser.uid,createdByName:name,createdAt:serverTimestamp()});
+  const [its,ims]=await Promise.all([getDocs(query(collection(db,"whiteboardItems"),where("boardId","==",vorlageId))),getDocs(query(collection(db,"whiteboardImages"),where("boardId","==",vorlageId)))]);
+  const idMap=new Map();
+  its.docs.forEach(d=>idMap.set(d.id,doc(collection(db,"whiteboardItems")).id));
+  ims.docs.forEach(d=>idMap.set(d.id,doc(collection(db,"whiteboardImages")).id));
+  const jobs=[];
+  ims.docs.forEach(d=>jobs.push(()=>setDoc(doc(db,"whiteboardImages",idMap.get(d.id)),{boardId:nb.id,data:d.data().data,authorUid:currentUser.uid,createdAt:serverTimestamp()})));
+  its.docs.forEach(d=>{
+   const x={...d.data()};
+   Object.keys(x).forEach(k=>{if(typeof x[k]==="string"&&idMap.has(x[k]))x[k]=idMap.get(x[k]);});
+   x.boardId=nb.id;x.authorUid=currentUser.uid;x.authorName=name;x.createdAt=serverTimestamp();x.updatedAt=serverTimestamp();
+   jobs.push(()=>setDoc(doc(db,"whiteboardItems",idMap.get(d.id)),x));
+  });
+  for(let i=0;i<jobs.length;i+=20)await Promise.all(jobs.slice(i,i+20).map(f=>f()));
+  await setDoc(kref,{lernId:vorlageId,uid:currentUser.uid,name,boardId:nb.id,titel:titel||"",updatedAt:serverTimestamp()});
+  openWhiteboard(nb.id);
+ }catch(err){
+  console.error("Lernübersicht kopieren:",err);
+  toast(err?.code==="permission-denied"?"Firebase verweigert das Anlegen. Bitte die Firestore-Regeln prüfen.":"Deine Lernübersicht konnte nicht angelegt werden.");
+ }finally{lbBusy=false;}
+}
+async function lbVorlageAnlegen(titel,beschr){
+ const r=await addDoc(collection(db,"whiteboards"),{title:(titel+" – Lernübersicht").slice(0,120),description:beschr,art:"tafel",schreibschutz:true,seiten:1,bg:"weiss",lernVorlage:true,createdBy:currentUser.uid,createdByName:profile?.displayName||currentUser.email||"Lehrkraft",createdAt:serverTimestamp()});
+ return r.id;
+}
+// ---- Zeitstrahl-Stunde (F12Sb): Lernübersicht und Whiteboard neben der Tafel ----
+function pp12BausteineHtml(e){
+ if(typeof PP12_CACHE==="undefined"||!(e.typ==="stoff"||e.typ==="wdh"))return"";
+ const t=PP12_CACHE.tafeln[e.d]||{},lehrer=isTeacher(),hatL=!!t.lernBoardId,hatW=!!t.whiteboardId;
+ return`${hatL||lehrer?lbPill("Lernübersicht"+(hatL?"":" anlegen"),LB_ICON.lern,hatL,`onclick="pp12Lern('${e.d}')"`,hatL?(lehrer?"Lernübersicht (Vorlage) öffnen":"Meine Lernübersicht öffnen"):"Lernübersicht für diese Stunde als Whiteboard anlegen"):""}${hatW||lehrer?lbPill("Whiteboard"+(hatW?"":" anlegen"),LB_ICON.wb,hatW,`onclick="pp12Wb('${e.d}')"`,hatW?"Whiteboard zu dieser Stunde öffnen":"Whiteboard für diese Stunde anlegen"):""}`;
+}
+function lbStundeTitel(d){
+ const e=(typeof PP12_PLAN!=="undefined"?PP12_PLAN:[]).find(x=>x.d===d);
+ return e?`${d.slice(8,10)}.${d.slice(5,7)}. ${e.t}`:"Unterricht";
+}
+async function pp12Lern(d){
+ const t=(PP12_CACHE.tafeln[d]||{});
+ if(t.lernBoardId){
+  if(isTeacher()){openWhiteboard(t.lernBoardId);return;}
+  await lbMeineKopie(t.lernBoardId,lbStundeTitel(d));return;
+ }
+ if(!isTeacher()||pp12Beschaeftigt)return;
+ pp12Beschaeftigt=true;
+ try{
+  const id=await lbVorlageAnlegen(lbStundeTitel(d),"Lernübersicht zur Unterrichtsstunde: Zusammenfassung der Lehrkraft, Schüler:innen bekommen eine eigene Kopie zum Ergänzen");
+  await setDoc(doc(db,"lehrplanTafeln",d),{lernBoardId:id},{merge:true});
+  PP12_CACHE.tafeln[d]={...t,lernBoardId:id};
+  openWhiteboard(id);
+ }catch(err){
+  console.error("Lernübersicht anlegen:",err);
+  toast(err?.code==="permission-denied"?"Firebase verweigert das Anlegen. Bitte die Firestore-Regeln prüfen.":"Die Lernübersicht konnte nicht angelegt werden.");
+ }finally{pp12Beschaeftigt=false;}
+}
+async function pp12Wb(d){
+ const t=(PP12_CACHE.tafeln[d]||{});
+ if(t.whiteboardId){openWhiteboard(t.whiteboardId);return;}
+ if(!isTeacher()||pp12Beschaeftigt)return;
+ pp12Beschaeftigt=true;
+ try{
+  const r=await addDoc(collection(db,"whiteboards"),{title:(lbStundeTitel(d)+" – Whiteboard").slice(0,120),description:"Gemeinsames Whiteboard zur Unterrichtsstunde",art:"team",schreibschutz:false,seiten:1,bg:"weiss",createdBy:currentUser.uid,createdByName:profile?.displayName||currentUser.email||"Lehrkraft",createdAt:serverTimestamp()});
+  await setDoc(doc(db,"lehrplanTafeln",d),{whiteboardId:r.id},{merge:true});
+  PP12_CACHE.tafeln[d]={...t,whiteboardId:r.id};
+  openWhiteboard(r.id);
+ }catch(err){
+  console.error("Stunden-Whiteboard:",err);
+  toast(err?.code==="permission-denied"?"Firebase verweigert das Anlegen. Bitte die Firestore-Regeln prüfen.":"Das Whiteboard konnte nicht angelegt werden.");
+ }finally{pp12Beschaeftigt=false;}
+}
+// ---- Modulkarten und Modulseiten (F11Sb und F12Sb) ----
+function lbModulTitel(m){return(typeof ppmTitel==="function"?ppmTitel(m):m.titel)||"Modul";}
+function lbModulPills(m){
+ if(LB_AUSGENOMMEN.includes(m.modul))return"";
+ const lehrer=isTeacher(),hatT=!!m.tafelId,hatL=!!m.lernBoardId,hatW=!!m.whiteboardId,id=esc(m.id);
+ const p=[];
+ if(hatT||lehrer)p.push(lbPill("Tafel"+(hatT?"":" anlegen"),LB_ICON.tafel,hatT,`data-ppm="lb-tafel" data-id="${id}"`,hatT?"Digitale Tafel öffnen (nur Lehrkräfte ändern sie)":"Digitale Tafel anlegen"));
+ if(hatL||lehrer)p.push(lbPill("Lernübersicht"+(hatL?"":" anlegen"),LB_ICON.lern,hatL,`data-ppm="lb-lern" data-id="${id}"`,hatL?(lehrer?"Lernübersicht (Vorlage) öffnen":"Meine Lernübersicht öffnen"):"Lernübersicht als Whiteboard anlegen"));
+ if(hatW||lehrer)p.push(lbPill("Whiteboard"+(hatW?"":" anlegen"),LB_ICON.wb,hatW,`data-ppm="lb-wb" data-id="${id}"`,hatW?"Whiteboard öffnen":"Whiteboard anlegen"));
+ return p.length?`<span class="lb-pills">${p.join("")}</span>`:"";
+}
+function lbModulBar(m){
+ const p=lbModulPills(m);
+ return p?`<div class="ppm-box lb-leiste"><b>Tafel, Lernübersicht und Whiteboard</b>${p}</div>`:"";
+}
+async function lbModulTafel(m){
+ if(m.tafelId){openWhiteboard(m.tafelId);return;}
+ if(!isTeacher())return;
+ const t=await ppmTafelAnlegen(lbModulTitel(m));
+ await updateDoc(doc(db,"ppModule",m.id),{tafelId:t});await ppmLaden(true);openWhiteboard(t);
+}
+async function lbModulWb(m){
+ if(m.whiteboardId){openWhiteboard(m.whiteboardId);return;}
+ if(!isTeacher())return;
+ const r=await addDoc(collection(db,"whiteboards"),{title:(lbModulTitel(m)+" – Whiteboard").slice(0,120),description:"Gemeinsames Whiteboard zum Modul",art:"team",schreibschutz:false,seiten:1,bg:"weiss",createdBy:currentUser.uid,createdByName:profile?.displayName||currentUser.email||"Lehrkraft",createdAt:serverTimestamp()});
+ await updateDoc(doc(db,"ppModule",m.id),{whiteboardId:r.id});await ppmLaden(true);openWhiteboard(r.id);
+}
+async function lbModulLern(m){
+ if(m.lernBoardId){
+  if(isTeacher()){openWhiteboard(m.lernBoardId);return;}
+  await lbMeineKopie(m.lernBoardId,lbModulTitel(m));return;
+ }
+ if(!isTeacher())return;
+ const id=await lbVorlageAnlegen(lbModulTitel(m),"Lernübersicht zum Modul: Zusammenfassung der Lehrkraft, Schüler:innen bekommen eine eigene Kopie zum Ergänzen");
+ await updateDoc(doc(db,"ppModule",m.id),{lernBoardId:id});await ppmLaden(true);openWhiteboard(id);
+}
+// ---- Whiteboard als PDF (Druckdialog „Als PDF sichern“) ----
+function wbPdfFenster(cv){
+ const win=window.open("","_blank");
+ if(!win){toast("Bitte Pop-ups für diese Seite erlauben.");return}
+ const t=String(wb&&wb.board&&wb.board.title||"Whiteboard").replace(/&/g,"&amp;").replace(/</g,"&lt;");
+ win.document.write(`<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${t}</title><style>@page{size:A4 ${cv.width>cv.height?"landscape":"portrait"};margin:10mm}body{margin:0;font-family:Arial,sans-serif}h1{font-size:15px;margin:0 0 6px}img{max-width:100%;max-height:calc(100vh - 40px);display:block}.n{background:#f3f3f3;padding:8px;border-radius:6px;margin-bottom:10px;font-size:11px}@media print{.n{display:none}img{max-height:none}}</style></head><body><div class="n">Im Druckdialog „Als PDF sichern“ bzw. „PDF“ auswählen. Gedruckt wird die aktuelle Seite des Whiteboards.</div><h1>${t}</h1><img src="${cv.toDataURL("image/png")}" alt=""><script>window.onload=function(){setTimeout(function(){window.print()},400)}<\/script></body></html>`);
+ win.document.close();
+}
+async function wbExportPdf(){
+ if(!wb)return;
+ wb.pdfModus=true;
+ try{await wbExport();}finally{wb.pdfModus=false;}
+}
+Object.assign(window,{pp12Lern:typeof pp12Lern==="function"?pp12Lern:undefined,pp12Wb:typeof pp12Wb==="function"?pp12Wb:undefined});
