@@ -398,6 +398,480 @@
   ]
  },
  {
+  "id": "f11-lb1-alltag-wissenschaft",
+  "thema": "Alltagstheorie und wissenschaftliche Theorie: der Spiegel-Vergleich",
+  "unter": "LB 1 · Alltagstheorie und Merkmale wissenschaftlicher Aussagen",
+  "items": [
+   {
+    "type": "text",
+    "x": -1000,
+    "y": -700,
+    "w": 2000,
+    "h": 70,
+    "fs": 44,
+    "text": "Alltagstheorie und wissenschaftliche Theorie: der Spiegel-Vergleich"
+   },
+   {
+    "type": "text",
+    "x": -1000,
+    "y": -632,
+    "w": 2000,
+    "h": 36,
+    "fs": 20,
+    "text": "LB 1 · Pädagogik und Psychologie als Wissenschaften · Alltagstheorie und Merkmale wissenschaftlicher Aussagen"
+   },
+   {
+    "type": "frame",
+    "x": -1000,
+    "y": -580,
+    "w": 2000,
+    "h": 215,
+    "c": "gruen",
+    "text": "① ZWEI WEGE ZUM WISSEN"
+   },
+   {
+    "type": "note",
+    "x": -980,
+    "y": -525,
+    "w": 960,
+    "h": 145,
+    "c": "gelb",
+    "fs": 20,
+    "text": "ALLTAGSTHEORIE (oft auch Privattheorie)\nMenschen sammeln durch eigene Erfahrungen Wissen über Psychologie und Erziehung und erklären sich damit die Welt."
+   },
+   {
+    "type": "note",
+    "x": 20,
+    "y": -525,
+    "w": 960,
+    "h": 145,
+    "c": "blau",
+    "fs": 19,
+    "text": "WISSENSCHAFTLICHE THEORIE\nstützt sich auf wissenschaftliche Methoden. Wissenschaftliche Pädagogik und Psychologie unterscheiden sich von der Alltagstheorie vor allem darin, wie sie zu ihren Erkenntnissen kommen."
+   },
+   {
+    "type": "frame",
+    "x": -1000,
+    "y": -345,
+    "w": 2000,
+    "h": 585,
+    "c": "orange",
+    "text": "② DER SPIEGEL · vier Merkmale im direkten Vergleich"
+   },
+   {
+    "type": "text",
+    "x": -980,
+    "y": -292,
+    "w": 800,
+    "h": 28,
+    "fs": 18,
+    "text": "ALLTAGSTHEORIE ist in der Regel …"
+   },
+   {
+    "type": "text",
+    "x": 180,
+    "y": -292,
+    "w": 800,
+    "h": 28,
+    "fs": 18,
+    "text": "WISSENSCHAFTLICHE ERKENNTNISSE sind …"
+   },
+   {
+    "type": "shape",
+    "shape": "ellipse",
+    "x": -960,
+    "y": -255,
+    "w": 560,
+    "h": 105,
+    "c": "gelb",
+    "fs": 19,
+    "text": "subjektiv"
+   },
+   {
+    "type": "line",
+    "x": -390,
+    "y": -203,
+    "x2": -250,
+    "y2": -203,
+    "c": "grau",
+    "sw": 4,
+    "arrow": true
+   },
+   {
+    "type": "line",
+    "x": -250,
+    "y": -203,
+    "x2": -390,
+    "y2": -203,
+    "c": "grau",
+    "sw": 4,
+    "arrow": true
+   },
+   {
+    "type": "shape",
+    "shape": "ellipse",
+    "x": -240,
+    "y": -255,
+    "w": 380,
+    "h": 105,
+    "c": "rosa",
+    "fs": 18,
+    "text": "OBJEKTIV"
+   },
+   {
+    "type": "note",
+    "x": 160,
+    "y": -255,
+    "w": 820,
+    "h": 105,
+    "c": "rosa",
+    "fs": 18,
+    "text": "Verschiedene Forscher kommen bei gleichem Sachverhalt und gleichen Bedingungen zum gleichen Ergebnis."
+   },
+   {
+    "type": "shape",
+    "shape": "ellipse",
+    "x": -960,
+    "y": -133,
+    "w": 560,
+    "h": 105,
+    "c": "gelb",
+    "fs": 19,
+    "text": "nicht überprüfbar"
+   },
+   {
+    "type": "line",
+    "x": -390,
+    "y": -81,
+    "x2": -250,
+    "y2": -81,
+    "c": "grau",
+    "sw": 4,
+    "arrow": true
+   },
+   {
+    "type": "line",
+    "x": -250,
+    "y": -81,
+    "x2": -390,
+    "y2": -81,
+    "c": "grau",
+    "sw": 4,
+    "arrow": true
+   },
+   {
+    "type": "shape",
+    "shape": "ellipse",
+    "x": -240,
+    "y": -133,
+    "w": 380,
+    "h": 105,
+    "c": "blau",
+    "fs": 18,
+    "text": "ÜBERPRÜFBAR"
+   },
+   {
+    "type": "note",
+    "x": 160,
+    "y": -133,
+    "w": 820,
+    "h": 105,
+    "c": "blau",
+    "fs": 18,
+    "text": "Andere können die Aussage und ihren Weg dorthin jederzeit nachvollziehen und wiederholen."
+   },
+   {
+    "type": "shape",
+    "shape": "ellipse",
+    "x": -960,
+    "y": -11,
+    "w": 560,
+    "h": 105,
+    "c": "gelb",
+    "fs": 19,
+    "text": "nicht systematisch gewonnen"
+   },
+   {
+    "type": "line",
+    "x": -390,
+    "y": 41,
+    "x2": -250,
+    "y2": 41,
+    "c": "grau",
+    "sw": 4,
+    "arrow": true
+   },
+   {
+    "type": "line",
+    "x": -250,
+    "y": 41,
+    "x2": -390,
+    "y2": 41,
+    "c": "grau",
+    "sw": 4,
+    "arrow": true
+   },
+   {
+    "type": "shape",
+    "shape": "ellipse",
+    "x": -240,
+    "y": -11,
+    "w": 380,
+    "h": 105,
+    "c": "lila",
+    "fs": 18,
+    "text": "SYSTEMATISCH GEWONNEN"
+   },
+   {
+    "type": "note",
+    "x": 160,
+    "y": -11,
+    "w": 820,
+    "h": 105,
+    "c": "lila",
+    "fs": 18,
+    "text": "Sie entstehen nach klaren Regeln und Methoden, geplant und organisiert."
+   },
+   {
+    "type": "shape",
+    "shape": "ellipse",
+    "x": -960,
+    "y": 111,
+    "w": 560,
+    "h": 105,
+    "c": "gelb",
+    "fs": 19,
+    "text": "oft mit unzulässigen Verallgemeinerungen"
+   },
+   {
+    "type": "line",
+    "x": -390,
+    "y": 163,
+    "x2": -250,
+    "y2": 163,
+    "c": "grau",
+    "sw": 4,
+    "arrow": true
+   },
+   {
+    "type": "line",
+    "x": -250,
+    "y": 163,
+    "x2": -390,
+    "y2": 163,
+    "c": "grau",
+    "sw": 4,
+    "arrow": true
+   },
+   {
+    "type": "shape",
+    "shape": "ellipse",
+    "x": -240,
+    "y": 111,
+    "w": 380,
+    "h": 105,
+    "c": "gruen",
+    "fs": 18,
+    "text": "ALLGEMEINGÜLTIG"
+   },
+   {
+    "type": "note",
+    "x": 160,
+    "y": 111,
+    "w": 820,
+    "h": 105,
+    "c": "gruen",
+    "fs": 18,
+    "text": "Die Aussage trifft auf alle genannten Personen oder Gruppen zu."
+   },
+   {
+    "type": "frame",
+    "x": -1000,
+    "y": 260,
+    "w": 980,
+    "h": 300,
+    "c": "lila",
+    "text": "③ WOZU DANN ALLTAGSTHEORIEN?"
+   },
+   {
+    "type": "note",
+    "x": -980,
+    "y": 315,
+    "w": 300,
+    "h": 150,
+    "c": "gelb",
+    "fs": 17,
+    "text": "ORIENTIERUNG\n\nhilft, andere schnell einzuschätzen"
+   },
+   {
+    "type": "note",
+    "x": -665,
+    "y": 315,
+    "w": 300,
+    "h": 150,
+    "c": "rosa",
+    "fs": 17,
+    "text": "ERKLÄRUNGEN\n\nhilft, Alltagsprobleme zu lösen"
+   },
+   {
+    "type": "note",
+    "x": -350,
+    "y": 315,
+    "w": 300,
+    "h": 150,
+    "c": "blau",
+    "fs": 17,
+    "text": "SICHERHEIT\n\nwie verhalte ich mich richtig? Angst und Unsicherheit werden verringert"
+   },
+   {
+    "type": "note",
+    "x": -980,
+    "y": 475,
+    "w": 940,
+    "h": 72,
+    "c": "tuerkis",
+    "fs": 16,
+    "text": "Sprichwort-Duell: „Gleich und gleich gesellt sich gern.“  ⚔  „Gegensätze ziehen sich an.“ – beide klingen überzeugend."
+   },
+   {
+    "type": "frame",
+    "x": 10,
+    "y": 260,
+    "w": 990,
+    "h": 300,
+    "c": "tuerkis",
+    "text": "④ KEIN ENTWEDER-ODER"
+   },
+   {
+    "type": "note",
+    "x": 30,
+    "y": 315,
+    "w": 950,
+    "h": 125,
+    "c": "gelb",
+    "fs": 18,
+    "text": "Die Grenze zwischen wissenschaftlicher Theorie und Alltagstheorie ist nicht absolut. Es ist kein reines Entweder-oder. Ganz absolute Aussagen über Menschen sind kaum möglich. Deshalb spricht man von Wahrscheinlichkeitsaussagen: Einzelne Ausnahmen bleiben möglich."
+   },
+   {
+    "type": "note",
+    "x": 30,
+    "y": 450,
+    "w": 950,
+    "h": 97,
+    "c": "rosa",
+    "fs": 17,
+    "text": "BEISPIEL: Frau Rudolfs bemerkt im Urlaub, dass Franzosen gemütlicher wirken als Deutsche, und folgert: Franzosen sind generell gemütlicher. Das ist eine unzulässige Verallgemeinerung."
+   },
+   {
+    "type": "frame",
+    "x": -1000,
+    "y": 580,
+    "w": 1300,
+    "h": 300,
+    "c": "lila",
+    "text": "⑤ VOM ALLTAG ZUR WISSENSCHAFT · was fehlt, was müsste man tun?"
+   },
+   {
+    "type": "note",
+    "x": -980,
+    "y": 635,
+    "w": 412,
+    "h": 125,
+    "c": "gelb",
+    "fs": 17,
+    "text": "a) „Alle Jugendlichen hängen nur am Handy – das sehe ich jeden Tag.“\nWelche Merkmale der Alltagstheorie erkennst du?"
+   },
+   {
+    "type": "note",
+    "x": -980,
+    "y": 770,
+    "w": 412,
+    "h": 55,
+    "c": "grau",
+    "fs": 17,
+    "text": "Meine Antwort:  "
+   },
+   {
+    "type": "note",
+    "x": -556,
+    "y": 635,
+    "w": 412,
+    "h": 125,
+    "c": "gelb",
+    "fs": 17,
+    "text": "b) Ein Forscherteam legt Fragestellung und Methode vorab fest, untersucht 500 Kinder und veröffentlicht den Ablauf.\nWelche Merkmale sind erfüllt?"
+   },
+   {
+    "type": "note",
+    "x": -556,
+    "y": 770,
+    "w": 412,
+    "h": 55,
+    "c": "grau",
+    "fs": 17,
+    "text": "Meine Antwort:  "
+   },
+   {
+    "type": "note",
+    "x": -132,
+    "y": 635,
+    "w": 412,
+    "h": 125,
+    "c": "gelb",
+    "fs": 17,
+    "text": "c) Wie könnte man Aussage a) wissenschaftlich überprüfen?"
+   },
+   {
+    "type": "note",
+    "x": -132,
+    "y": 770,
+    "w": 412,
+    "h": 55,
+    "c": "grau",
+    "fs": 17,
+    "text": "Meine Antwort:  "
+   },
+   {
+    "type": "text",
+    "x": -980,
+    "y": 838,
+    "w": 1260,
+    "h": 30,
+    "fs": 15,
+    "text": "Lösung: a) subjektiv, unzulässige Verallgemeinerung · b) systematisch gewonnen, überprüfbar · c) z. B. viele Jugendliche nach festen Regeln befragen"
+   },
+   {
+    "type": "frame",
+    "x": 330,
+    "y": 580,
+    "w": 670,
+    "h": 300,
+    "c": "tuerkis",
+    "text": "MEIN LERNANKER"
+   },
+   {
+    "type": "note",
+    "x": 350,
+    "y": 635,
+    "w": 630,
+    "h": 150,
+    "c": "gelb",
+    "fs": 17,
+    "text": "Das kann ich am Ende:\n• Alltagstheorie und wissenschaftliche Theorie erklären und abgrenzen\n• die vier Merkmalspaare gegenüberstellen\n• zwei Aufgaben der Alltagstheorie nennen\n• erklären, was Wahrscheinlichkeitsaussagen sind"
+   },
+   {
+    "type": "note",
+    "x": 350,
+    "y": 795,
+    "w": 630,
+    "h": 70,
+    "c": "grau",
+    "fs": 18,
+    "text": "Meine Eselsbrücke / mein Beispiel:"
+   }
+  ]
+ },
+ {
   "id": "f11-psy-gegenstand",
   "thema": "Gegenstand der Psychologie: Verhalten und Erleben",
   "unter": "LB 1 · Objektbereiche der Psychologie",
