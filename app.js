@@ -1184,12 +1184,12 @@ const F11SB_FACHGRUPPEN=[
 // und Praktikumszeit 2026/2027" der FOSBOS Weilheim übernommen (nur 6 Blöcke,
 // nicht 7 – vorherige Annahme war hier ungenau).
 const PRAKTIKUMSPHASEN=[
- {id:"pr1",start:"2026-09-15",end:"2026-10-02",titel:"Praktikum – B-Block – Erziehung (Block 1)",bereich:"Erziehungsbereich",icon:"🏫"},
- {id:"pr2",start:"2026-10-26",end:"2026-11-20",titel:"Praktikum – B-Block – Erziehung (Block 2)",bereich:"Erziehungsbereich",icon:"🏫"},
- {id:"pr3",start:"2026-12-14",end:"2027-01-15",titel:"Praktikum – B-Block – Erziehung (Block 3)",bereich:"Erziehungsbereich",icon:"🏫"},
- {id:"pr4",start:"2027-02-15",end:"2027-03-05",titel:"Praktikum – B-Block – Pflege (Block 1)",bereich:"Pflegebereich",icon:"🏥"},
- {id:"pr5",start:"2027-04-19",end:"2027-05-07",titel:"Praktikum – B-Block – Pflege (Block 2)",bereich:"Pflegebereich",icon:"🏥"},
- {id:"pr6",start:"2027-06-14",end:"2027-07-09",titel:"Praktikum – B-Block – Pflege (Block 3)",bereich:"Pflegebereich",icon:"🏥"}
+ {id:"pr1",start:"2026-09-15",end:"2026-10-02",titel:"Praktikum – B-Block – Erziehung (Block 1)",bereich:"Erziehungsbereich",icon:""},
+ {id:"pr2",start:"2026-10-26",end:"2026-11-20",titel:"Praktikum – B-Block – Erziehung (Block 2)",bereich:"Erziehungsbereich",icon:""},
+ {id:"pr3",start:"2026-12-14",end:"2027-01-15",titel:"Praktikum – B-Block – Erziehung (Block 3)",bereich:"Erziehungsbereich",icon:""},
+ {id:"pr4",start:"2027-02-15",end:"2027-03-05",titel:"Praktikum – B-Block – Pflege (Block 1)",bereich:"Pflegebereich",icon:""},
+ {id:"pr5",start:"2027-04-19",end:"2027-05-07",titel:"Praktikum – B-Block – Pflege (Block 2)",bereich:"Pflegebereich",icon:""},
+ {id:"pr6",start:"2027-06-14",end:"2027-07-09",titel:"Praktikum – B-Block – Pflege (Block 3)",bereich:"Pflegebereich",icon:""}
 ];
 
 // Aufträge je Praktikumsphase: von Lehrkräften gepflegt, überall live
@@ -4203,14 +4203,14 @@ function ppNaechsterSchrittHTML(fortschrittMap,heute){
 // (Teams, Meilensteine, 4 Schritte); die Wochen kommen jetzt aus dem Plan.
 // ============================================================
 const PPM_TYPEN={
- projekt:{icon:"🔬",name:"Ein Projekt durchführen",kurz:"Projekt",art:"Projekt",text:"Team-Projekt mit Meilensteinen anlegen."},
- stunde:{icon:"🧭",name:"Unterrichtsstunde nach dem Deeper-Learning-Konzept",kurz:"Stunde",art:"Deeper-Learning-Einheit",text:"Mit Digitaler Tafel, Material (PDF, Film, Audio, Bilder, Links) und einem Check-out mit offener Frage."},
- apt:{icon:"🎓",name:"Abschlussprüfungstraining",kurz:"Prüfungstraining",art:"Abschlussprüfungstraining",text:"Prüfungsfrage, relevanter Inhalt, Bearbeitung durch die Schüler:innen und Vergleich mit der Lösung."},
- kprim:{icon:"🏁",name:"K-Prim-Aufgabentest",kurz:"K-Prim-Test",art:"K-Prim-Aufgabensatz",text:"Check-out mit K-Prim-Aufgaben, automatisch ausgewertet."},
- selbstlern:{icon:"🎒",name:"Selbstlernkurs",kurz:"Selbstlernkurs",art:"Selbstlernkurs",text:"Schüler:innen bearbeiten den Kurs selbstständig von A bis Z."},
- experiment:{icon:"🧪",name:"Experiment (interaktive Einheit)",kurz:"Experiment",art:"Experiment",text:"„Das Experiment“ als interaktive Einheit. Du wählst selbst, welche Teile dabei sind."},
- einfuehrung:{icon:"🚪",name:"Einführung in den Lernbereich",kurz:"Einführung",art:"Einführung in den Lernbereich",text:"Thema wählen: Die Digitale Tafel mit Vorlagen und die passenden Selbstlernkurse sind sofort vorbereitet."},
- rallye:{icon:"🚩",name:"Lernrallye",kurz:"Lernrallye",art:"Lernrallye",text:"Stationen mit Aufgaben, per QR-Code oder der Reihe nach, einzeln oder in Teams, mit Punkten und Rangliste."}
+ projekt:{icon:"",name:"Ein Projekt durchführen",kurz:"Projekt",art:"Projekt",text:"Team-Projekt mit Meilensteinen anlegen."},
+ stunde:{icon:"",name:"Unterrichtsstunde nach dem Deeper-Learning-Konzept",kurz:"Stunde",art:"Deeper-Learning-Einheit",text:"Mit Digitaler Tafel, Material (PDF, Film, Audio, Bilder, Links) und einem Check-out mit offener Frage."},
+ apt:{icon:"",name:"Abschlussprüfungstraining",kurz:"Prüfungstraining",art:"Abschlussprüfungstraining",text:"Prüfungsfrage, relevanter Inhalt, Bearbeitung durch die Schüler:innen und Vergleich mit der Lösung."},
+ kprim:{icon:"",name:"K-Prim-Aufgabentest",kurz:"K-Prim-Test",art:"K-Prim-Aufgabensatz",text:"Check-out mit K-Prim-Aufgaben, automatisch ausgewertet."},
+ selbstlern:{icon:"",name:"Selbstlernkurs",kurz:"Selbstlernkurs",art:"Selbstlernkurs",text:"Schüler:innen bearbeiten den Kurs selbstständig von A bis Z."},
+ experiment:{icon:"",name:"Experiment (interaktive Einheit)",kurz:"Experiment",art:"Experiment",text:"„Das Experiment“ als interaktive Einheit. Du wählst selbst, welche Teile dabei sind."},
+ einfuehrung:{icon:"",name:"Einführung in den Lernbereich",kurz:"Einführung",art:"Einführung in den Lernbereich",text:"Thema wählen: Die Digitale Tafel mit Vorlagen und die passenden Selbstlernkurse sind sofort vorbereitet."},
+ rallye:{icon:"",name:"Lernrallye",kurz:"Lernrallye",art:"Lernrallye",text:"Stationen mit Aufgaben, per QR-Code oder der Reihe nach, einzeln oder in Teams, mit Punkten und Rangliste."}
 };
 // Themen für „Einführung in den Lernbereich“: Tafel-Vorlagen (Seiten in der Reihenfolge) und verknüpfte Selbstlernkurse (Einheiten-IDs aus einarbeitung/inhalte).
 // Weitere Themen lassen sich hier einfach ergänzen.
@@ -4222,7 +4222,7 @@ const PPM_EINF_THEMEN={
   ablauf:["Tafel, Seite 1: Post-its gemeinsam einordnen (Lehrkraft bedient die Tafel), eigenes Post-it im Whiteboard des Moduls schreiben (ca. 30 Min.)","Selbstlernkurs „Gegenstand der Psychologie“ (Erleben und Verhalten)","Selbstlernkurs „Gegenstand der Pädagogik“ (Erziehungspraxis, Erziehungswissenschaft, fünf Gegenstandsbereiche)","Tafel, Seite 2: „Psychologie oder Pädagogik?“ zuordnen und Beispiele aus dem Praktikum ergänzen (ca. 20 Min.)"]},
  eigen:{titel:"Eigenes Thema (leere Tafel)",text:"Leere Digitale Tafel, die du selbst gestaltest. Kurse gibt es keine.",tafel:[],kurse:[],ablauf:[]}
 };
-const PPM_EINHEITEN={experiment:{icon:"🧪",name:"Das Experiment – interaktive Stunde",text:"Kaugummi-Versuch in Kleingruppen, Klassenvergleich, Merkmale eines Experiments und Abschlussquiz."}};
+const PPM_EINHEITEN={experiment:{icon:"",name:"Das Experiment – interaktive Stunde",text:"Kaugummi-Versuch in Kleingruppen, Klassenvergleich, Merkmale eines Experiments und Abschlussquiz."}};
 // Dauer eines Moduls: eine Unterrichtsstunde (45 Min.), Doppelstunde, 120 oder 180 Minuten,
 // oder eine bis drei ganze Wochen. Minutenmodule gehören zu der Woche, in der sie beginnen.
 const PPM_DAUERN=[
@@ -4416,7 +4416,7 @@ function ppmZeitleiste(){
   const fe=pr?null:FERIEN_2026_27.find(x=>x.start<=fr&&x.end>=start);
   const key=pr?pr.id:(fe?fe.titel:"frei");
   if(cur&&cur.key===key){cur.n++;cur.bis=fr;continue;}
-  cur={art:"block",key,kind:pr?"praktikum":(fe?"ferien":"frei"),titel:pr?pr.titel:(fe?fe.titel:"Unterrichtsfrei"),icon:pr?pr.icon:"🌴",von:pr?pr.start:(fe?fe.start:start),bis:pr?pr.end:(fe?fe.end:fr),n:1};
+  cur={art:"block",key,kind:pr?"praktikum":(fe?"ferien":"frei"),titel:pr?pr.titel:(fe?fe.titel:"Unterrichtsfrei"),icon:pr?pr.icon:"",von:pr?pr.start:(fe?fe.start:start),bis:pr?pr.end:(fe?fe.end:fr),n:1};
   out.push(cur);
  }
  return out;
@@ -4538,9 +4538,8 @@ function ppmKarteHTML(m,fortsetzung){
  const proj=m.projektId?`<span class="ppm-chip">Einheit im Projekt</span>`:"";
  const fo=ppmFort(m);
  return`<div class="ppm-karte${isTeacher()?" ppm-ziehbar":""}${fo?(fo.done?" ppm-st-done":fo.frac>0?" ppm-st-teil":" ppm-st-offen"):""}" style="--c:${c};--sp:${ppmSpalten(m)}" data-ppm="oeffnen" data-id="${esc(m.id)}" tabindex="0" role="button">
-  <span class="ppm-ic">${T.icon}</span>
-  <span class="ppm-txt"><b>${esc(ppmTitel(m)||T.name)}</b><small>${esc(T.art||T.kurz)} · LB${m.lb} · ${esc(ppmDauerText(m))}</small>${ppmStatus(m)}${fo&&!fo.done?`<span class="ppm-mini" title="${Math.round(fo.frac*100)} % geschafft"><i style="width:${Math.round(fo.frac*100)}%"></i></span>`:""}${proj}${exp}${einh}${m.modul==="projekt"&&m.vorlage?bepKachelHTML(m):""}${lbModulPills(m)}</span>
-  ${fo&&fo.done?`<span class="ppm-haken-k" aria-label="geschafft">✓</span>`:""}${isTeacher()?`<button type="button" class="ppm-edit" data-ppm="bearbeiten" data-id="${esc(m.id)}" title="Modul bearbeiten">✎</button>`:""}
+    <span class="ppm-txt"><b>${esc(ppmTitel(m)||T.name)}</b><small>${esc(T.art||T.kurz)} · LB${m.lb} · ${esc(ppmDauerText(m))}</small>${ppmStatus(m)}${fo&&!fo.done?`<span class="ppm-mini" title="${Math.round(fo.frac*100)} % geschafft"><i style="width:${Math.round(fo.frac*100)}%"></i></span>`:""}${proj}${exp}${einh}${m.modul==="projekt"&&m.vorlage?bepKachelHTML(m):""}${lbModulPills(m)}</span>
+  ${fo&&fo.done?`<span class="ppm-haken-k" aria-label="geschafft">✓</span>`:""}${isTeacher()?`<button type="button" class="ppm-edit" data-ppm="bearbeiten" data-id="${esc(m.id)}" title="Modul bearbeiten">Ändern</button>`:""}
  </div>`;
 }
 const PPM_CSS=`<style>
@@ -4562,7 +4561,7 @@ body.ppm-dnd-an{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .ppm-karte{position:relative;display:flex;gap:8px;min-width:0;grid-column:span var(--sp,1);padding:10px 10px 10px 12px;border-radius:12px;background:color-mix(in srgb,var(--c) 11%,#fff);border:1px solid color-mix(in srgb,var(--c) 38%,#fff);border-left:6px solid var(--c);cursor:pointer;text-align:left}
 .ppm-karte:hover{box-shadow:0 6px 18px rgba(24,67,96,.14)}.ppm-ic{font-size:22px}
 .ppm-txt{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}.ppm-txt b{font-size:14px;line-height:1.3;padding-right:26px;overflow-wrap:anywhere}.ppm-txt small{color:var(--muted)}
-.ppm-edit{position:absolute;right:6px;top:6px;border:0;background:#fff;border-radius:8px;width:28px;height:28px;color:#3a4a5c;cursor:pointer}
+.ppm-edit{position:absolute;right:6px;top:6px;border:0;background:#fff;border-radius:8px;height:28px;padding:0 10px;font:inherit;font-size:12px;font-weight:700;color:#3a4a5c;cursor:pointer}.ppm-ziehbar .ppm-txt b{padding-right:64px}
 .ppm-fort{min-width:0;display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:10px;background:color-mix(in srgb,var(--c) 8%,#fff);border:1px dashed var(--c);font-size:12px;cursor:pointer}
 .ppm-karte.mit-mv{padding-bottom:50px}.ppm-mv{position:absolute;left:-6px;right:0;bottom:10px;display:flex;justify-content:center;gap:10px}.ppm-mv button{font:inherit;font-size:16px;line-height:1;font-weight:800;min-width:44px;height:30px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;border-radius:999px;border:1.5px solid #b9c8d6;background:#fff;color:#2f5f8a;cursor:pointer}.ppm-mv button:hover:not(:disabled){border-color:#2f7fc6;background:#f3f9ff}.ppm-mv button:disabled{opacity:.35;cursor:not-allowed}
 .ppm-mini{display:block;height:6px;border-radius:4px;background:#dbe4ec;overflow:hidden;margin-top:6px}.ppm-mini i{display:block;height:100%;background:#3d8fd0}
@@ -4709,7 +4708,7 @@ async function renderPPModulplan(){
   <p>Pro Schulwoche stehen <b>${PPM_STD_PRO_WOCHE} Unterrichtsstunden</b> (je ${PPM_MIN_PRO_STUNDE} Minuten) zur Verfügung. In den <b>Praktikumsblöcken (fpA)</b> und in den Ferien ist kein Unterricht, dort lässt sich nichts planen. Das Schuljahr hat <b>${SCHULWOCHEN_PP.length} Schulwochen</b> (${blockWochen} Wochen Praktikum und Ferien dazwischen).</p>
   <div class="ppm-balken"><span><b>Verplant:</b> ${ppmStd(belegt)} von ${ppmStd(gesamt)} Unterrichtsstunden (${proz} %)</span><div class="ppm-bar" role="progressbar" aria-valuenow="${proz}" aria-valuemin="0" aria-valuemax="100"><i style="width:${proz}%"></i></div></div>
   <div class="ppm-balken"><span><b>Schuljahr:</b> ${vergangen} von ${SCHULWOCHEN_PP.length} Schulwochen vorbei (${jahrProz} %)</span><div class="ppm-bar ppm-bar-jahr" role="progressbar" aria-valuenow="${jahrProz}" aria-valuemin="0" aria-valuemax="100"><i style="width:${jahrProz}%"></i></div></div>
-  <div class="ppm-leg"><span><i style="background:#3d8fd0"></i>Woche teilweise belegt</span><span><i style="background:#3fa66a"></i>Woche voll (6,3 Stunden)</span><span><i style="background:#d9534f"></i>Woche überbucht</span><span>🏫 🏥 Praktikum (gesperrt)</span><span>🌴 Ferien (gesperrt)</span></div></div>`;
+  <div class="ppm-leg"><span><i style="background:#3d8fd0"></i>Woche teilweise belegt</span><span><i style="background:#3fa66a"></i>Woche voll (6,3 Stunden)</span><span><i style="background:#d9534f"></i>Woche überbucht</span><span>  Praktikum (gesperrt)</span><span> Ferien (gesperrt)</span></div></div>`;
  const legende=lehrer?`<div class="ppm-legende">${Object.entries(PPM_TYPEN).filter(([k])=>k!=="experiment").map(([k,T])=>`<button type="button" class="ppm-typ" data-ppm="neu" data-typ="${k}"><b>${T.icon} ${esc(T.name)}</b><small>${esc(T.text)}</small></button>`).join("")}</div>`:"";
  const zeilen=ppmZeitleiste().map(z=>{
   if(z.art==="block"){
@@ -4741,7 +4740,7 @@ async function renderPPModulplan(){
  const coBox=co?`${checkoutLiveBannerHTML(co)}<details class="ppm-box ppm-details"><summary>Check-outs (K-Prim-Tests)</summary><div style="margin-top:10px">${checkoutSektionHTML(co)}</div></details>`:"";
  return`<button class="secondary" onclick="closeFach()">← Zurück zu den Fächern</button>
  ${pageHead("PÄDAGOGIK/PSYCHOLOGIE","Modulplan",lehrer?"Plane Woche für Woche, welches Modul in welchem Lernbereich dran ist. Wähle unten ein Modul oder klicke bei einer Woche auf „＋ Modul“.":"Dein Plan durchs Schuljahr: Klicke ein Modul an, um loszulegen.",
-  lehrer?`<button class="secondary" onclick="openProjektGesamtcheck()">🔬 Projekt-Gesamtcheck</button> <button class="secondary" onclick="openFachaufsatzTrainingCheck()">🎓 APT-Gesamtcheck</button>`:"")}
+  lehrer?`<button class="secondary" onclick="openProjektGesamtcheck()"> Projekt-Gesamtcheck</button> <button class="secondary" onclick="openFachaufsatzTrainingCheck()"> APT-Gesamtcheck</button>`:"")}
  ${PPM_CSS}${fehler}${coBox}${standBox}${legende}
  ${leer&&lehrer&&!PPM.fehler?`<div class="ppm-box"><h2>Noch kein Plan</h2><p>Du kannst von vorn beginnen oder den bisherigen Ablauf (je Lernbereich ein Projekt und ein Prüfungstraining, dazu das Experiment als Einheit im ersten Projekt) als Startpunkt übernehmen. Danach lässt sich jedes Modul ändern, verschieben oder löschen.</p><button type="button" class="ppm-btn primaer" data-ppm="standard">Bisherigen Ablauf als Plan übernehmen</button></div>`:""}
  ${leer&&!lehrer&&!PPM.fehler?`<div class="empty"><strong>Noch kein Plan.</strong>Deine Lehrkraft hat noch keine Module geplant.</div>`:""}
@@ -4775,7 +4774,7 @@ function ppmDateiTyp(f){
  if(/^audio\//.test(t)||dateiIstAudio(n))return"audio";
  return"pdf";
 }
-const PPM_MAT_INFO={pdf:["📄","PDF"],bild:["🖼️","Bild"],video:["🎬","Film"],audio:["🎧","Audio"],link:["🔗","Webseite"]};
+const PPM_MAT_INFO={pdf:["","PDF"],bild:["","Bild"],video:["","Film"],audio:["","Audio"],link:["","Webseite"]};
 function ppmWochenOptionen(sel){
  return SCHULWOCHEN_PP.map(w=>`<option value="${w.id}"${w.id===sel?" selected":""}>${fmtKurz(w.start)}–${fmtKurz(w.end)}</option>`).join("");
 }
@@ -4886,20 +4885,20 @@ async function ppmDialog(id,typ,woche,opt){
  modal(`<button class="modal-close" onclick="closeModal()">×</button>
   <div class="kicker">${T.icon} ${esc(T.kurz.toUpperCase())}</div><h2>${bearb?"Modul bearbeiten":esc(T.name)}</h2>
   <div class="form ppm-form">
-   <div class="ppm-sek ppm-sek-1"><p class="ppm-sek-kopf">① Worum geht es?</p>
+   <div class="ppm-sek ppm-sek-1"><p class="ppm-sek-kopf">1 Worum geht es?</p>
     <label>Lernbereich<select id="ppmLb"${projekt?" disabled":""}>${lbOpt}</select></label>
     <label>Titel<input id="ppmTitel" maxlength="120" value="${esc(bearb?bearb.titel:"")}" placeholder="${esc(t==="projekt"&&ph0?ph0.titel:(t==="experiment"?"Das Experiment":T.name))}"></label>
    </div>
-   <div class="ppm-sek ppm-sek-2"><p class="ppm-sek-kopf">② Wann und wie lange?</p>
+   <div class="ppm-sek ppm-sek-2"><p class="ppm-sek-kopf">2 Wann und wie lange?</p>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><label>Beginn (Schulwoche)<select id="ppmStart">${wochenOpt}</select></label>
     <label>Dauer<select id="ppmDauer">${dauerOpt}</select></label></div>
     <div id="ppmKapa" class="ppm-kapahint"></div>
    </div>
-   ${extra?`<div class="ppm-sek ppm-sek-3"><p class="ppm-sek-kopf">③ Inhalt</p>${extra}</div>`:""}
-   <div class="ppm-sek ppm-sek-4"><p class="ppm-sek-kopf">④ Für die Klasse</p>
+   ${extra?`<div class="ppm-sek ppm-sek-3"><p class="ppm-sek-kopf">3 Inhalt</p>${extra}</div>`:""}
+   <div class="ppm-sek ppm-sek-4"><p class="ppm-sek-kopf">4 Für die Klasse</p>
     <label>Hinweis an die Klasse (optional)<textarea id="ppmNotiz" rows="2" maxlength="400">${esc(bearb?bearb.notiz||"":"")}</textarea></label>
    </div>
-   <div class="ppm-sek ppm-sek-5"><p class="ppm-sek-kopf">⑤ Material</p>
+   <div class="ppm-sek ppm-sek-5"><p class="ppm-sek-kopf">5 Material</p>
     <div id="ppmMatBox" class="ppm-matbox"></div>
    </div>
    <div class="form-actions">${bearb?`<button class="secondary" type="button" id="ppmLoeschen">Modul löschen</button>`:""}<button class="secondary" type="button" onclick="closeModal()">Abbrechen</button><button class="primary" type="button" id="ppmSpeichern">Speichern</button></div>
@@ -4915,7 +4914,7 @@ async function ppmDialog(id,typ,woche,opt){
    const zeile=(x,attr)=>{const inf=PPM_MAT_INFO[x.typ]||PPM_MAT_INFO.link;return`<div class="ppm-mat" style="flex-wrap:wrap"><span style="font-size:20px">${inf[0]}</span><div style="flex:1;min-width:140px"><b>${esc(x.titel||x.name||"Material")}</b><br><small style="color:var(--muted)">${inf[1]}${x.file?" · wird beim Speichern hochgeladen":""}</small></div><button type="button" class="ppm-btn klein" ${attr} title="Entfernen" aria-label="Material entfernen">✕</button></div>`;};
    box.innerHTML=`<b style="font-size:14px">Material anhängen (optional)</b>
     ${matBest.map((x,i)=>zeile(x,`data-mb="${i}"`)).join("")}${matNeu.map((x,i)=>zeile(x,`data-mn="${i}"`)).join("")}
-    <div class="ppm-zeile" style="border:0;padding:6px 0 0"><button type="button" class="ppm-btn" data-mat="datei">📎 Datei (PDF, Film, Audio, Bild)</button><button type="button" class="ppm-btn" data-mat="link">🔗 Link</button><input type="file" id="ppmMatInput" accept="application/pdf,.pdf,video/*,audio/*,image/*" hidden></div>
+    <div class="ppm-zeile" style="border:0;padding:6px 0 0"><button type="button" class="ppm-btn" data-mat="datei"> Datei (PDF, Film, Audio, Bild)</button><button type="button" class="ppm-btn" data-mat="link"> Link</button><input type="file" id="ppmMatInput" accept="application/pdf,.pdf,video/*,audio/*,image/*" hidden></div>
     ${matLinkOffen?`<div style="display:grid;gap:8px;margin-top:6px"><input id="ppmMatUrl" placeholder="https://…" aria-label="Adresse"><input id="ppmMatUrlTitel" maxlength="100" placeholder="Titel (optional)" aria-label="Titel"><div><button type="button" class="ppm-btn primaer" data-mat="link-ok">Link hinzufügen</button> <button type="button" class="ppm-btn" data-mat="link-x">Abbrechen</button></div></div>`:""}
     <small style="color:var(--muted)">Dateien bis 15 MB. Das Material erscheint auf der Modulseite für die Klasse.</small>`;
   };
@@ -5147,10 +5146,10 @@ async function ppmProjektSeite(m){
  const done=!!f.experimentErledigt;
  const eig=PPM.liste.filter(x=>x.projektId===m.id);
  const eigZeilen=eig.map(x=>{const sw=swById(x.start),teile=ppmExpTeile(x);
-  return`<div class="ppm-zeile"><span style="font-size:26px">🧪</span><div style="flex:1;min-width:200px"><b>${esc(x.titel||"Das Experiment")}</b><br><small style="color:var(--muted)">${esc(ppmDauerText(x))} · ${teile.length} von ${PPM_EXP_TEILE.length} Teilen${sw?` · Woche ${fmtKurz(sw.start)}–${fmtKurz(sw.end)}`:""}</small></div>
+  return`<div class="ppm-zeile"><div style="flex:1;min-width:200px"><b>${esc(x.titel||"Das Experiment")}</b><br><small style="color:var(--muted)">${esc(ppmDauerText(x))} · ${teile.length} von ${PPM_EXP_TEILE.length} Teilen${sw?` · Woche ${fmtKurz(sw.start)}–${fmtKurz(sw.end)}`:""}</small></div>
    ${lehrer?"":`<span class="ppm-status${done?" ok":""}">${done?"gemacht ✓":"noch offen"}</span>`}
    <button type="button" class="ppm-btn primaer" data-ppm="oeffnen" data-id="${esc(x.id)}">Einheit öffnen</button>
-   ${lehrer?`<button type="button" class="ppm-btn klein" data-ppm="bearbeiten" data-id="${esc(x.id)}" title="Einheit bearbeiten">✎</button>`:""}</div>`;}).join("");
+   ${lehrer?`<button type="button" class="ppm-btn klein" data-ppm="bearbeiten" data-id="${esc(x.id)}" title="Einheit bearbeiten">Ändern</button>`:""}</div>`;}).join("");
  const alt=(m.einheiten||[]).map((e,i)=>{
   const def=PPM_EINHEITEN[e.typ];if(!def)return"";
   const sw=swById(e.woche);
@@ -5173,7 +5172,7 @@ async function ppmProjektSeite(m){
 // ------------------------------------------------------------
 // Inhalte stehen in projekte/<id>.json (z. B. projekte/bep-in-aktion.json) und lassen sich dort
 // ohne Programmieren ändern. Ein Projekt-Modul bekommt die Vorlage über das Feld "vorlage"
-// (Modul bearbeiten → ③ Inhalt → Projektvorlage).
+// (Modul bearbeiten → 3 Inhalt → Projektvorlage).
 // Teams: Collection lehrplanTeams (wocheId "vorlage_<modulId>"), Beiträge: meilensteinBeitraege,
 // Bestätigung durch die Lehrkraft: Feld msPruefung am Team. Persönliche Haken (Aufgaben, Checkliste)
 // liegen im Dokument ppKursFortschritt des Moduls. Termine der Lehrkraft: Feld "termine" am Modul.
@@ -5287,12 +5286,12 @@ function bepKachelHTML(m){
  if(lehrer){
   let warten=0,ueber=0;
   d.teams.forEach(t=>v.meilensteine.forEach((x,k)=>{const i=k+1,st=msStatus(ph,t,d.beitraege,i);if(st.zustand==="wartet")warten++;const f=bepFrist(m,v,i);if(f&&f<h&&st.zustand!=="erreicht")ueber++;}));
-  chips=`<span class="ppm-chip">👥 ${d.teams.length} Team${d.teams.length===1?"":"s"}</span>${warten?`<span class="ppm-chip bep-warn">⏳ ${warten} warten auf dich</span>`:""}${ueber?`<span class="ppm-chip bep-rot">${ueber} Meilenstein${ueber===1?"":"e"} überfällig</span>`:""}`;
+  chips=`<span class="ppm-chip"> ${d.teams.length} Team${d.teams.length===1?"":"s"}</span>${warten?`<span class="ppm-chip bep-warn">${warten} warten auf dich</span>`:""}${ueber?`<span class="ppm-chip bep-rot">${ueber} Meilenstein${ueber===1?"":"e"} überfällig</span>`:""}`;
  }else if(!d.team){
   chips=`<span class="ppm-chip bep-rot">Noch kein Team: jetzt eins bilden</span>`;
  }else{
   const i=bepNaechster(m),f=i?bepFrist(m,v,i):null;
-  chips=`<span class="ppm-chip">👥 ${esc(d.team.teamName||"Team")}</span>`+(i?`<span class="ppm-chip ${bepFristKlasse(f)==="rot"?"bep-rot":bepFristKlasse(f)==="warn"?"bep-warn":""}">Als Nächstes: ${esc(v.meilensteine[i-1].kurz)}${f?" · fällig "+esc(bepTagText(f)):""}</span>`:`<span class="ppm-chip">Alle Beiträge eingereicht ✓</span>`);
+  chips=`<span class="ppm-chip"> ${esc(d.team.teamName||"Team")}</span>`+(i?`<span class="ppm-chip ${bepFristKlasse(f)==="rot"?"bep-rot":bepFristKlasse(f)==="warn"?"bep-warn":""}">Als Nächstes: ${esc(v.meilensteine[i-1].kurz)}${f?" · fällig "+esc(bepTagText(f)):""}</span>`:`<span class="ppm-chip">Alle Beiträge eingereicht ✓</span>`);
  }
  return`<span class="bep-kachel">${leiste}<small class="bep-leg">Phase 1–2 Schule · 3–4 Praktikum · 5–6 Schule</small><span class="bep-chips">${chips}</span></span>`;
 }
@@ -5369,7 +5368,7 @@ Object.assign(window,{bepTeamNeu,bepTeamBeitreten,bepTeamVerlassen,bepTeamAufloe
 // ------------------------------------------------------------ Modulseite
 function bepNamenListe(team){return(team.mitgliederNamen||[]).map(n=>esc(wbKurz?wbKurz(n)||n:n)).join(", ");}
 function bepBlickHTML(v){
- return`<div class="bep-blick">${v.blick.map(b=>`<div class="bep-tile"><span class="bep-ti">${b.icon}</span><b>${esc(b.titel)}</b><small>${esc(b.text)}</small></div>`).join("")}</div>`;
+ return`<div class="bep-blick">${v.blick.map(b=>`<div class="bep-tile"><b>${esc(b.titel)}</b><small>${esc(b.text)}</small></div>`).join("")}</div>`;
 }
 function bepAuftragHTML(v){
  return`<div class="ppm-box"><h2>Dein Auftrag</h2><p>${esc(v.auftrag)}</p><p>${esc(v.teamText)}</p>
@@ -5388,7 +5387,7 @@ function bepTeamWahlHTML(m,v,d){
    :`<button type="button" class="ppm-btn klein primaer" onclick="bepTeamBeitreten('${m.id}','${t.id}')">Beitreten (${n}/${max})</button>`;
   return`${kopf}<div class="bep-bz${t?" vergeben":""}"><span class="bep-kap">${esc(b.kap)}</span><div style="flex:1;min-width:0"><b>${esc(b.name)}</b>${t?`<br><small>Team: ${bepNamenListe(t)}</small>`:`<br><small>noch frei</small>`}</div>${akt}</div>`;
  }).join("");
- return`<div class="ppm-box bep-teamwahl"><h2>👥 Schritt 1: Such dir dein Team</h2>
+ return`<div class="ppm-box bep-teamwahl"><h2> Schritt 1: Such dir dein Team</h2>
   <p>Jedes Team arbeitet an <b>einem</b> Bildungsbereich des BayBEP (${v.teamGroesse.min}–${max} Personen). Ist dein Wunschbereich noch frei, gründest du das Team. Ist schon ein Team da und noch Platz, trittst du bei.</p>
   <p class="bep-klein">${esc(v.bereichHinweis)}</p>${zeilen}</div>`;
 }
@@ -5405,7 +5404,7 @@ function bepTeamBoxHTML(m,v,d,lehrer){
   return`<tr${mine?' class="ich"':""}><td data-l="Name"><b>${esc((t.mitgliederNamen||[])[k]||"Mitglied")}</b>${mine?" (ich)":""}</td><td data-l="Rolle im Team">${rolle}</td><td data-l="Praktikumsstelle">${stelle}</td><td data-l="Krippe / Kiga">${art}</td><td data-l="Altersgruppe">${alter}</td></tr>`;
  }).join("");
  const verlassen=!lehrer?`<button type="button" class="ppm-btn klein" onclick="bepTeamVerlassen('${m.id}','${t.id}')">Team verlassen</button>`:"";
- return`<div class="ppm-box"><h2>👥 Mein Team: ${esc(t.bereichKap?t.bereichKap+" ":"")}${esc(t.bereichName||t.teamName||"")}</h2>
+ return`<div class="ppm-box"><h2> Mein Team: ${esc(t.bereichKap?t.bereichKap+" ":"")}${esc(t.bereichName||t.teamName||"")}</h2>
   <div class="bep-tabwrap"><table class="bep-tab bep-teamtab"><thead><tr><th>Name</th><th>Rolle im Team</th><th>Praktikumsstelle</th><th>Krippe / Kiga</th><th>Altersgruppe</th></tr></thead><tbody>${zeilen}</tbody></table></div>
   <p class="bep-klein">Rollen im Team: ${v.rollen.map(esc).join(", ")}. Trage deine Rolle und deine Praktikumsstelle ein. Keine Namen von Kindern!</p>
   <div class="ppm-zeile" style="border:0;padding-bottom:0">${(t.mitgliederUids||[]).length<max?`<small>Es ist noch Platz für ${max-(t.mitgliederUids||[]).length} Person${max-(t.mitgliederUids||[]).length===1?"":"en"}.</small>`:""}${verlassen}</div></div>`;
@@ -5429,7 +5428,7 @@ function bepWoStehIchHTML(m,v,d){
   <div class="ppm-balken"><span><b>${e.n} von ${e.g}</b> Meilensteinen hast du eingereicht (${proz} %)</span><div class="ppm-bar" role="progressbar" aria-valuenow="${proz}" aria-valuemin="0" aria-valuemax="100"><i style="width:${proz}%"></i></div></div>
   <div class="bep-ampeln" aria-label="Stand der Meilensteine">${ampel}</div>
   <p class="bep-klein">✓ erreicht (Team komplett${""}) · ● dein Beitrag ist eingereicht · ○ dein Beitrag fehlt noch</p>
-  ${x?`<div class="bep-next ${bepFristKlasse(f)}"><div><small>Dein nächster Schritt</small><b>${esc(x.kurz)} · ${esc(x.titel)}</b><span>${esc(x.text)}</span>${f?`<em>📅 fällig ${esc(bepTagText(f))} · ${esc(bepTageText(bepTageBis(f)))}</em>`:""}</div><button type="button" class="ppm-btn primaer" onclick="openMsBeitrag('${v.id}','${d.team.id}',${i},'seite')">Beitrag eintragen</button></div>`
+  ${x?`<div class="bep-next ${bepFristKlasse(f)}"><div><small>Dein nächster Schritt</small><b>${esc(x.kurz)} · ${esc(x.titel)}</b><span>${esc(x.text)}</span>${f?`<em> fällig ${esc(bepTagText(f))} · ${esc(bepTageText(bepTageBis(f)))}</em>`:""}</div><button type="button" class="ppm-btn primaer" onclick="openMsBeitrag('${v.id}','${d.team.id}',${i},'seite')">Beitrag eintragen</button></div>`
    :`<div class="bep-next fertig"><div><b>Alle Beiträge sind eingereicht ✓</b><span>Schau unten bei den Meilensteinen, ob deine Lehrkraft etwas zurückgegeben hat.</span></div></div>`}
   ${warte.length?`<p class="bep-klein">Dein Beitrag liegt vor, aber im Team fehlt noch etwas: ${warte.map(o=>`<b>${esc(o.mx.kurz)}</b> (${esc(o.s.fehlend.map(f=>f.name).join(", "))})`).join("; ")}.</p>`:""}</div>`;
 }
@@ -5461,7 +5460,7 @@ function bepMsZeile(m,v,ph,d,i,lehrer){
    <div class="bep-ms-kopf"><b>${esc(x.kurz)} · ${esc(x.titel)}</b><span class="ppm-chip">${esc(x.wer)}</span>${x.bestaetigung==="lehrkraft"?`<span class="ppm-chip">Lehrkraft bestätigt</span>`:""}</div>
    <small class="bep-ms-text">${esc(x.text)}</small>
    <details class="bep-inh"><summary>Das gehört hinein</summary><ul>${x.inhalt.map(a=>`<li>${esc(a)}</li>`).join("")}</ul></details>
-   ${fr?`<div class="bep-frist ${fk}">📅 fällig ${esc(bepTagText(fr))}${erreicht?"":" · "+esc(bepTageText(tage))}</div>`:`<div class="bep-frist">📅 Termin folgt</div>`}
+   ${fr?`<div class="bep-frist ${fk}"> fällig ${esc(bepTagText(fr))}${erreicht?"":" · "+esc(bepTageText(tage))}</div>`:`<div class="bep-frist"> Termin folgt</div>`}
    <small class="ms-status" style="color:${Z.f}">${esc(statusText)}</small>
    ${personen}${mein}
   </div>
@@ -5476,9 +5475,9 @@ function bepZeitplanHTML(m,v,d,lehrer,aufg){
    zoneIdx++;letzterOrt=p.ort;
    if(p.ort==="schule"){
     const von=zoneIdx===0?(z&&z.w1):(z&&z.wL),bis=zoneIdx===0?(z&&z.w1Ende):(z&&z.wLEnde);
-    kopf=`<div class="bep-zone schule"><b>🏫 Schule</b><span>${von?`${esc(fmtKurz(von))}–${esc(fmtKurz(bis))}`:""}</span></div>`;
+    kopf=`<div class="bep-zone schule"><b>Schule</b><span>${von?`${esc(fmtKurz(von))}–${esc(fmtKurz(bis))}`:""}</span></div>`;
    }else{
-    kopf=`<div class="bep-zone praktikum"><b>🧸 Praktikum (Krippe oder Kindergarten)</b><span>${z&&z.p1?`${esc(fmtKurz(z.p1))}–${esc(fmtKurz(z.pEnde))}${z.ferien.length?` · darin: ${esc(z.ferien.join(", "))}`:""}`:"Zeitraum noch offen"}</span></div>`;
+    kopf=`<div class="bep-zone praktikum"><b>Praktikum (Krippe oder Kindergarten)</b><span>${z&&z.p1?`${esc(fmtKurz(z.p1))}–${esc(fmtKurz(z.pEnde))}${z.ferien.length?` · darin: ${esc(z.ferien.join(", "))}`:""}`:"Zeitraum noch offen"}</span></div>`;
    }
   }
   const jetzt=bepPhaseJetzt(m,p);
@@ -5499,11 +5498,11 @@ function bepZeitplanHTML(m,v,d,lehrer,aufg){
   ${warn}<div class="bep-zeit">${html}</div><p class="bep-klein">${esc(v.verschiebung)}</p></div>`;
 }
 function bepDatenschutzHTML(v){
- return`<div class="ppm-box bep-ds"><h2>🔒 Datenschutz und Sicherheit: bitte unbedingt beachten</h2><ul>${v.datenschutz.map(a=>`<li>${esc(a)}</li>`).join("")}</ul></div>`;
+ return`<div class="ppm-box bep-ds"><h2> Datenschutz und Sicherheit: bitte unbedingt beachten</h2><ul>${v.datenschutz.map(a=>`<li>${esc(a)}</li>`).join("")}</ul></div>`;
 }
 function bepMaterialHTML(v){
  return`<div class="ppm-box"><h2>Das brauchst du für das Projekt</h2>
-  <div class="bep-mat">${v.material.map(x=>`<div class="bep-matk"><span class="bep-ti">${x.icon}</span><div><b>${esc(x.titel)}</b><small>${esc(x.text)}</small><em>Phase ${esc(x.phase)}</em></div></div>`).join("")}</div></div>`;
+  <div class="bep-mat">${v.material.map(x=>`<div class="bep-matk"><div><b>${esc(x.titel)}</b><small>${esc(x.text)}</small><em>${esc(x.phase)}</em></div></div>`).join("")}</div></div>`;
 }
 function bepWerHTML(v){
  return`<div class="ppm-box"><h2>Wer macht was?</h2><div class="bep-zwei">
@@ -5543,7 +5542,7 @@ async function bepLehrerHTML(m,v,d){
   return`<tr><td class="bep-tn"><b>${esc(t.bereichKap||"")}</b> ${esc(t.bereichName||t.teamName||"")}<small>${bepNamenListe(t)}</small></td>${zellen}</tr>`;
  }).join("");
  const matrix=d.teams.length?`<div class="bep-tabwrap"><table class="bep-matrix"><thead><tr><th>Team (Bildungsbereich)</th>${kopfZellen}</tr></thead><tbody>${zeilen}</tbody></table></div>
-   <p class="bep-klein">✓ erreicht · ⏳ wartet auf deine Bestätigung · ↩ zurückgegeben · ○ offen (darunter: Beiträge vorhanden / Teamgröße). Rot umrandet: Frist ist verstrichen.</p>`
+   <p class="bep-klein">✓ erreicht · wartet auf deine Bestätigung · ↩ zurückgegeben · ○ offen (darunter: Beiträge vorhanden / Teamgröße). Rot umrandet: Frist ist verstrichen.</p>`
   :`<p class="ppm-leer">Noch hat sich kein Team gebildet.</p>`;
  const frei=v.bereiche.filter(b=>!d.teams.some(t=>t.bereichKap===b.kap));
  const queue=warten.length?warten.map(w=>`<div class="bep-wq"><b>${esc(w.t.bereichKap||"")} ${esc(w.t.bereichName||w.t.teamName||"")}</b> · ${esc(v.meilensteine[w.i-1].kurz)} ${esc(v.meilensteine[w.i-1].titel)}
@@ -5557,7 +5556,7 @@ async function bepLehrerHTML(m,v,d){
   return`<label class="bep-termin"><span><b>${esc(x.kurz)}</b> ${esc(x.titel)}<small>Standard: ${std?esc(bepTagText(std)):"–"}</small></span><input type="date" id="bepT${i}" value="${esc(eig)}"></label>`;}).join("");
  return`<div class="ppm-box bep-lehrer"><h2>Für dich als Lehrkraft: Teamstand</h2>
   <div class="bep-zahlen"><div><b>${d.teams.length}</b><small>Teams</small></div><div><b>${students.length-ohne.length}/${students.length}</b><small>Schüler:innen im Team</small></div><div class="${warten.length?"warn":""}"><b>${warten.length}</b><small>warten auf dich</small></div><div><b>${frei.length}</b><small>Bereiche noch frei</small></div></div>
-  <h3>⏳ Wartet auf deine Bestätigung</h3>${queue}
+  <h3>Wartet auf deine Bestätigung</h3>${queue}
   <h3>Stand aller Teams</h3>${matrix}
   ${ohne.length?`<h3>Noch ohne Team (${ohne.length})</h3><p>${ohne.map(s=>esc(s.displayName||s.email||"Schüler:in")).join(", ")}</p>`:(students.length?`<p><b>Alle Schüler:innen haben ein Team ✓</b></p>`:"")}
   ${frei.length?`<p class="bep-klein"><b>Noch freie Bereiche:</b> ${frei.map(b=>esc(b.kap+" "+b.name)).join(" · ")}</p>`:""}
@@ -5580,7 +5579,7 @@ async function ppmProjektVorlageSeite(m,v){
  ${bepZeitplanHTML(m,v,d,lehrer,aufg)}
  ${bepDatenschutzHTML(v)}
  ${bepMaterialHTML(v)}
- ${mitMaterial?"":(lehrer?`<p class="bep-klein">Tipp: Das Projektblatt (Word oder PDF) kannst du unter „Modul bearbeiten“ → ⑤ Material anhängen. Es erscheint dann oben auf dieser Seite.</p>`:"")}
+ ${mitMaterial?"":(lehrer?`<p class="bep-klein">Tipp: Das Projektblatt (Word oder PDF) kannst du unter „Modul bearbeiten“ → 5 Material anhängen. Es erscheint dann oben auf dieser Seite.</p>`:"")}
  ${bepWerHTML(v)}
  ${bepReferenzHTML(v,lehrer,chk,m)}
  ${footer()}`;
@@ -5594,11 +5593,11 @@ async function ppmKprimSeite(m){
  if(c){
   const mein=d.meineAbgaben&&d.meineAbgaben[c.id];
   const live=c.status==="live",beendet=c.status==="beendet";
-  karte=`<div class="ppm-zeile"><span style="font-size:26px">🏁</span><div style="flex:1;min-width:200px"><b>${esc(coTitelAnzeige(c)||"Check-out")}</b><br><small style="color:var(--muted)">${esc(c.datum||"")} · ${(c.aufgaben||[]).length} K-Prim-Aufgaben · Status: ${esc(c.status||"Entwurf")}</small></div>
-   ${lehrer?`<button type="button" class="ppm-btn klein" data-ppm="co" data-aktion="druck" data-id="${esc(c.id)}">🖨 Test ausdrucken</button><button type="button" class="ppm-btn klein" data-ppm="co" data-aktion="druck-l" data-id="${esc(c.id)}">🖨 Test mit Lösung</button><button type="button" class="ppm-btn klein" data-ppm="co" data-aktion="editor" data-id="${esc(c.id)}">Bearbeiten</button>${live?`<button type="button" class="ppm-btn klein" data-ppm="co" data-aktion="monitor" data-id="${esc(c.id)}">Live-Übersicht</button>`:""}`
+  karte=`<div class="ppm-zeile"><div style="flex:1;min-width:200px"><b>${esc(coTitelAnzeige(c)||"Check-out")}</b><br><small style="color:var(--muted)">${esc(c.datum||"")} · ${(c.aufgaben||[]).length} K-Prim-Aufgaben · Status: ${esc(c.status||"Entwurf")}</small></div>
+   ${lehrer?`<button type="button" class="ppm-btn klein" data-ppm="co" data-aktion="druck" data-id="${esc(c.id)}"> Test ausdrucken</button><button type="button" class="ppm-btn klein" data-ppm="co" data-aktion="druck-l" data-id="${esc(c.id)}"> Test mit Lösung</button><button type="button" class="ppm-btn klein" data-ppm="co" data-aktion="editor" data-id="${esc(c.id)}">Bearbeiten</button>${live?`<button type="button" class="ppm-btn klein" data-ppm="co" data-aktion="monitor" data-id="${esc(c.id)}">Live-Übersicht</button>`:""}`
     :(live&&!(mein&&mein.abgegeben)?`<button type="button" class="ppm-btn primaer" data-ppm="co" data-aktion="test" data-id="${esc(c.id)}">Test starten</button>`:(mein&&mein.ausgewertet?`<button type="button" class="ppm-btn primaer" data-ppm="co" data-aktion="ergebnis" data-id="${esc(c.id)}">Mein Ergebnis</button>`:`<span class="ppm-status">${beendet?"beendet":"noch nicht freigeschaltet"}</span>`))}</div>`;
  }
- return`${ppmKopf(m,"",lehrer?`${c?"":`<button type="button" class="ppm-btn klein primaer" data-ppm="bearbeiten" data-id="${esc(m.id)}">🔗 Check-out verknüpfen</button>`}<button type="button" class="ppm-btn klein" data-ppm="co" data-aktion="neu">＋ Neuen Check-out anlegen</button>`:"")}
+ return`${ppmKopf(m,"",lehrer?`${c?"":`<button type="button" class="ppm-btn klein primaer" data-ppm="bearbeiten" data-id="${esc(m.id)}"> Check-out verknüpfen</button>`}<button type="button" class="ppm-btn klein" data-ppm="co" data-aktion="neu">＋ Neuen Check-out anlegen</button>`:"")}
  <div class="ppm-box"><h2>K-Prim-Aufgabentest</h2><p>Eine Fallvignette mit ${CHECKOUT_MAX_AUFGABEN} K-Prim-Aufgaben zu je 4 Aussagen. Du entscheidest bei jeder Aussage, ob sie richtig oder falsch ist. Die Bepunktung (BE und Notenpunkte) steht oben im Test, die Auswertung kommt automatisch.</p>${karte}</div>
  ${checkoutLiveBannerHTML(d)}${checkoutSektionHTML(d)}${footer()}`;
 }
@@ -5634,7 +5633,7 @@ async function ppmStundeSeite(m){
    }
   }catch(e){console.error("Tafel einbetten:",e);}
   activeWhiteboardId=vorher;
-  if(!tafel)tafel=`<p class="ppm-leer">Die Tafel konnte nicht geladen werden.</p><button type="button" class="ppm-btn primaer" data-ppm="tafel" data-id="${esc(m.tafelId)}">🖥 Digitale Tafel öffnen</button>`;
+  if(!tafel)tafel=`<p class="ppm-leer">Die Tafel konnte nicht geladen werden.</p><button type="button" class="ppm-btn primaer" data-ppm="tafel" data-id="${esc(m.tafelId)}"> Digitale Tafel öffnen</button>`;
  }else tafel=lehrer?`<button type="button" class="ppm-btn primaer" data-ppm="tafel-neu" data-id="${esc(m.id)}">＋ Digitale Tafel anlegen</button>`:`<span class="ppm-leer">Die Tafel wird von deiner Lehrkraft vorbereitet.</span>`;
  const matListe=mat.map((x,i)=>ppmMaterialHTML(x,i,m,lehrer)).join("");
  let check="";
@@ -5678,7 +5677,7 @@ async function ppmEinfuehrungSeite(m){
    }
   }catch(e){console.error("Tafel einbetten:",e);}
   activeWhiteboardId=vorher;
-  if(!tafel)tafel=`<p class="ppm-leer">Die Tafel konnte nicht geladen werden.</p><button type="button" class="ppm-btn primaer" data-ppm="tafel" data-id="${esc(m.tafelId)}">🖥 Digitale Tafel öffnen</button>`;
+  if(!tafel)tafel=`<p class="ppm-leer">Die Tafel konnte nicht geladen werden.</p><button type="button" class="ppm-btn primaer" data-ppm="tafel" data-id="${esc(m.tafelId)}"> Digitale Tafel öffnen</button>`;
  }else tafel=lehrer?`<button type="button" class="ppm-btn primaer" data-ppm="tafel-neu" data-id="${esc(m.id)}">＋ Digitale Tafel anlegen</button>`:`<span class="ppm-leer">Die Tafel wird von deiner Lehrkraft vorbereitet.</span>`;
  const kurse=await Promise.all(kursIds.map(async id=>{const info=await einarbeitungInfo(id);const f=lehrer?{}:await getLehrplanFortschritt(id).catch(()=>({}));return{id,info,f};}));
  const kursHtml=kurse.length?kurse.map(({id,info,f},i)=>{
@@ -5696,8 +5695,8 @@ async function ppmEinfuehrungSeite(m){
  ${footer()}`;
 }
 // ---- Abschlussprüfungstraining ----
-// Vier Schritte: ① Frage aus der Abschlussprüfung · ② Relevanter Inhalt · ③ Bearbeitung durch die Schüler:innen · ④ Vergleich mit der Lösung.
-// Lehrkraft gestaltet ①, ② und ④ direkt auf dieser Seite. Antworten liegen in ppStundenAntworten (Felder aptAntwort, aptAbgegeben, aptBewertung).
+// Vier Schritte: 1 Frage aus der Abschlussprüfung · 2 Relevanter Inhalt · 3 Bearbeitung durch die Schüler:innen · 4 Vergleich mit der Lösung.
+// Lehrkraft gestaltet 1, 2 und 4 direkt auf dieser Seite. Antworten liegen in ppStundenAntworten (Felder aptAntwort, aptAbgegeben, aptBewertung).
 function ppmAptDateiHTML(d,m,feld,lehrer){
  if(!d||!d.url)return"";
  return`<div style="margin:8px 0">${dateiEmbedHTML(d.url,d.name)}${lehrer?` <button type="button" class="ppm-btn klein" data-ppm="apt-datei-weg" data-id="${esc(m.id)}" data-feld="${feld}">Datei entfernen</button>`:""}</div>`;
@@ -5709,19 +5708,19 @@ async function ppmAptSeite(m){
  const nr=(n,t,sub)=>`<div style="display:flex;gap:10px;align-items:center;margin-bottom:8px"><span class="ppm-snr">${n}</span><div><h2 style="margin:0">${t}</h2>${sub?`<small style="color:var(--muted)">${sub}</small>`:""}</div></div>`;
  const speichern=`<div class="ppm-zeile" style="border:0"><button type="button" class="ppm-btn primaer" data-ppm="apt-speichern" data-id="${esc(m.id)}">Speichern</button></div>`;
  const kopfInfo=`<div class="ppm-phasen">${[["1","Prüfungsfrage"],["2","Relevanter Inhalt"],["3","Meine Bearbeitung"],["4","Vergleich mit Lösung"]].map(([n,t],i)=>`<div class="ppm-ph${lehrer||i<2||(i===2)||(i===3&&abgegeben)?" an":""}"><span>${n}</span>${t}</div>`).join("")}</div>`;
- // ① Frage
+ // 1 Frage
  const s1=lehrer?`${nr(1,"Frage aus der Abschlussprüfung","Text und/oder Datei (PDF, Bild).")}
    <textarea id="aptFrage" rows="6" style="width:100%;font:inherit" placeholder="Prüfungsfrage einfügen …">${esc(m.frage||"")}</textarea>
    ${ppmAptDateiHTML(m.frageDatei,m,"frage",true)}
    <div class="ppm-zeile" style="border:0"><button type="button" class="ppm-btn" data-ppm="apt-datei" data-id="${esc(m.id)}" data-feld="frage">＋ Datei zur Frage</button></div>${speichern}`
   :`${nr(1,"Frage aus der Abschlussprüfung")}${m.frage||(m.frageDatei&&m.frageDatei.url)?`${m.frage?`<p style="white-space:pre-wrap;font-size:15px;line-height:1.55">${esc(m.frage)}</p>`:""}${ppmAptDateiHTML(m.frageDatei,m,"frage",false)}`:`<p class="ppm-leer">Deine Lehrkraft stellt die Frage hier bereit.</p>`}`;
- // ② Relevanter Inhalt
+ // 2 Relevanter Inhalt
  const s2=lehrer?`${nr(2,"Relevanter Inhalt","Was Schüler:innen wissen müssen, um die Frage zu beantworten. Mit „- “ entstehen Aufzählungen, mit **fett** Hervorhebungen.")}
    <textarea id="aptInhalt" rows="7" style="width:100%;font:inherit" placeholder="Wichtige Begriffe, Modelle, Merkmale …">${esc(m.inhalt||"")}</textarea>
    ${mat.map((x,i)=>ppmMaterialHTML(x,i,m,true)).join("")}
    <div class="ppm-zeile"><button type="button" class="ppm-btn" data-ppm="mat-datei" data-id="${esc(m.id)}">＋ Datei (PDF, Film, Audio, Bild)</button><button type="button" class="ppm-btn" data-ppm="mat-link" data-id="${esc(m.id)}">＋ Link</button><input type="file" id="ppmDatei" accept="application/pdf,.pdf,video/*,audio/*,image/*" hidden></div>${speichern}`
   :`${nr(2,"Relevanter Inhalt")}${m.inhalt?`<div style="line-height:1.55">${ppmMd(m.inhalt)}</div>`:""}${mat.map((x,i)=>ppmMaterialHTML(x,i,m,false)).join("")}${!m.inhalt&&!mat.length?`<p class="ppm-leer">Noch kein Inhalt hinterlegt.</p>`:""}`;
- // ③ Bearbeitung
+ // 3 Bearbeitung
  const s3=lehrer?`${nr(3,"Bearbeitung durch die Schüler:innen","So sehen es die Schüler:innen: ein Antwortfeld, dann „Abgeben und vergleichen“.")}
    <textarea rows="4" disabled placeholder="Hier schreiben die Schüler:innen ihre Antwort …" style="width:100%;font:inherit;opacity:.7"></textarea>
    <div class="ppm-zeile" style="border:0"><button type="button" class="ppm-btn" data-ppm="apt-antworten" data-id="${esc(m.id)}">Antworten der Klasse ansehen</button></div>`
@@ -5729,7 +5728,7 @@ async function ppmAptSeite(m){
    <textarea id="aptAntwort" rows="10" style="width:100%;font:inherit"${abgegeben?" readonly":""} placeholder="Deine Antwort …">${esc(mein.aptAntwort||"")}</textarea>
    <div class="ppm-zeile" style="border:0">${abgegeben?`<button type="button" class="ppm-btn" data-ppm="apt-wieder" data-id="${esc(m.id)}">Antwort überarbeiten</button>`
     :`<button type="button" class="ppm-btn" data-ppm="apt-zwischen" data-id="${esc(m.id)}">Zwischenspeichern</button><button type="button" class="ppm-btn primaer" data-ppm="apt-abgeben" data-id="${esc(m.id)}">Abgeben und mit der Lösung vergleichen</button>`}</div>`;
- // ④ Vergleich
+ // 4 Vergleich
  const bew=mein.aptBewertung;
  const loesungBox=`<div class="ppm-loesung"><b>Lösung</b>${m.loesung?`<div style="line-height:1.5">${ppmMd(m.loesung)}</div>`:`<p class="ppm-leer">Noch keine Lösung hinterlegt.</p>`}${ppmAptDateiHTML(m.loesungDatei,m,"loesung",lehrer)}</div>`;
  const s4=lehrer?`${nr(4,"Vergleich mit der Lösung","Wird erst nach dem Abgeben sichtbar.")}
