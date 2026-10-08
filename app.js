@@ -1365,7 +1365,8 @@ const PROJEKT_PHASEN=PROJEKT_PHASEN_ROH.map(ph=>{
   aptStart:aw[0].start,aptEnde:aw[aw.length-1].end,
   start:pw[0].start,end:aw[aw.length-1].end};
 });
-function projektPhaseById(id){return PROJEKT_PHASEN.find(p=>p.id===id)||null;}
+const PROJEKT_VORLAGEN_PH={}; // Phasenobjekte der Projektvorlagen (projekte/<id>.json), s. bepPh()
+function projektPhaseById(id){return PROJEKT_PHASEN.find(p=>p.id===id)||PROJEKT_VORLAGEN_PH[id]||null;}
 function projektPhaseByWoche(wocheId){return PROJEKT_PHASEN.find(p=>p.notwendigeWochen.includes(wocheId)||p.trainingWochen.includes(wocheId))||null;}
 // LB 1 ist nur die interaktive Einstiegsstunde: kein Team, keine Meilensteine.
 function wocheHatTeam(woche){return woche?.typ==="projekt"&&!projektPhaseByWoche(woche.id)?.einstieg;}
@@ -1962,11 +1963,11 @@ async function openMsBeitrag(phId,teamId,i,ansicht){
  let b=null;
  try{const s=await getDoc(doc(db,"meilensteinBeitraege",`${teamId}_${i}_${currentUser.uid}`));b=s.exists()?s.data():null;}catch(e){}
  modal(`<button class="modal-close"onclick="closeModal()">×</button>
-  <div class="kicker"style="color:${ppFarbe(ph)}">${esc(ph.lb)} · PROJEKT-MEILENSTEIN ${i+1}/${ph.meilensteine.length}</div>
+  <div class="kicker"style="color:${ppFarbe(ph)}">${esc(ph.lb)} · PROJEKT-MEILENSTEIN${ph.beitragHinweis?"":` ${i+1}/${ph.meilensteine.length}`}</div>
   <h2>${esc(ph.meilensteine[i])}</h2>
   <p style="color:var(--muted);font-size:13px;margin-top:0">Was hast <b>du</b> zu diesem Meilenstein beigetragen? Der Meilenstein gilt erst als erreicht, wenn alle aus eurem Team ihren Beitrag eingetragen haben${msBrauchtBestaetigung(ph,i)?" und eure Lehrkraft ihn bestätigt hat":""}.</p>
   <div class="form">
-   <label>Mein Beitrag<textarea id="msText"rows="4"maxlength="1500"placeholder="z. B. Ich habe die Hypothese mit UV und AV formuliert und die Kontrollgruppe geplant.">${esc(b?.text||"")}</textarea></label>
+   <label>Mein Beitrag<textarea id="msText"rows="4"maxlength="1500"placeholder="${esc((ph.beitragHinweis&&ph.beitragHinweis[i])||"z. B. Ich habe die Hypothese mit UV und AV formuliert und die Kontrollgruppe geplant.")}">${esc(b?.text||"")}</textarea></label>
    <label>Link (optional)<input id="msLink"type="url"value="${esc(b?.link||"")}"placeholder="https://…"></label>
    <label>Datei (optional, max. 15 MB)<input id="msDatei"type="file"></label>
    ${b?.dateiUrl?`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><a class="pill"href="${esc(b.dateiUrl)}"target="_blank"rel="noopener">${esc(b.dateiName||"Datei")} ↗</a><label class="check"style="font-size:12px"><input id="msDateiWeg"type="checkbox"> Datei löschen</label></div>`:""}
@@ -4298,7 +4299,7 @@ async function ppmEaListe(){
  const r=await Promise.all(PPM_EA_IDS.map(async id=>{const i=await einarbeitungInfo(id);if(!i)return null;const m=ppmEaMeta(id,i);return{id,titel:i.titel,entwurf:i.entwurf,art:m.art,lb:m.lb,nr:i.nr||""};}));
  return r.filter(Boolean);
 }
-const PPM={liste:[],geladen:0,fehler:"",meine:{kurs:{},stunde:{},ea:{}}};
+const PPM={liste:[],geladen:0,fehler:"",meine:{kurs:{},stunde:{},ea:{}},bep:{},bepV:{}};
 let activePPModul=null;
 
 const PPM_KURSE={
@@ -4461,6 +4462,7 @@ function ppmFort(m){
   if(m.modul==="selbstlern"&&String(m.kursId||"").startsWith("ea:")){const f=PPM.meine.ea[m.kursId.slice(3)]||{},a=f.einarbeitungAufgaben,done=!!f.einarbeitungAbgeschlossen;return{done,frac:done?1:(a&&a.gesamt?a.richtig/a.gesamt:0)};}
   if(m.modul==="rallye"){const p=lrFortschritt(m);return p.n?{done:p.done,frac:p.frac}:null;}
   if(m.modul==="einfuehrung"){const ids=m.kurse||[];if(!ids.length)return null;const n=ids.filter(id=>(PPM.meine.ea[id]||{}).einarbeitungAbgeschlossen).length;return{done:n===ids.length,frac:n/ids.length};}
+  if(m.modul==="projekt"&&m.vorlage)return bepFort(m);
   if(m.modul==="experiment"||(m.modul==="projekt"&&ppmProjektDirekt(m))){const f=PPM.meine.exp||{},done=!!f.experimentErledigt;return{done,frac:done?1:0};}
   if(m.modul==="selbstlern"){const sch=ppmKursSchritte(m).filter(x=>x.typ!=="abschluss"),f=PPM.meine.kurs[m.id],n=f?sch.filter(x=>f.erledigt&&f.erledigt[x.id]).length:0,done=!!sch.length&&n===sch.length;return{done,frac:sch.length?n/sch.length:0};}
   if(m.modul==="apt"){const f=PPM.meine.stunde[m.id]||{},done=!!f.aptBewertung;return{done,frac:done?1:(f.aptAbgegeben?2/3:(f.aptAntwort?1/3:0))};}
@@ -4473,6 +4475,7 @@ function ppmKW(w){const d=new Date(w.start+"T12:00:00Z");d.setUTCDate(d.getUTCDa
 function ppmStatus(m){
  if(isTeacher())return"";
  if(m.modul==="selbstlern"&&String(m.kursId||"").startsWith("ea:")){const f=PPM.meine.ea[m.kursId.slice(3)]||{},a=f.einarbeitungAufgaben;return`<span class="ppm-status${f.einarbeitungAbgeschlossen?" ok":""}">${f.einarbeitungAbgeschlossen?"abgeschlossen ✓":(a&&a.gesamt?`${a.richtig}/${a.gesamt} Aufgaben`:"noch offen")}</span>`;}
+ if(m.modul==="projekt"&&m.vorlage)return bepStatusHTML(m);
  if(m.modul==="experiment"||(m.modul==="projekt"&&ppmProjektDirekt(m))){const f=PPM.meine.exp||{};return`<span class="ppm-status${f.experimentErledigt?" ok":""}">${f.experimentErledigt?"gemacht ✓":"noch offen"}</span>`;}
  if(m.modul==="selbstlern"){const sch=ppmKursSchritte(m).filter(s=>s.typ!=="abschluss"),f=PPM.meine.kurs[m.id];const n=f?sch.filter(s=>f.erledigt&&f.erledigt[s.id]).length:0;return`<span class="ppm-status${n===sch.length&&sch.length?" ok":""}">${n}/${sch.length} Schritte</span>`;}
  if(m.modul==="apt"){const f=PPM.meine.stunde[m.id]||{};return`<span class="ppm-status${f.aptAbgegeben?" ok":""}">${f.aptBewertung?"verglichen ✓":(f.aptAbgegeben?"abgegeben":(f.aptAntwort?"in Arbeit":"noch offen"))}</span>`;}
@@ -4536,7 +4539,7 @@ function ppmKarteHTML(m,fortsetzung){
  const fo=ppmFort(m);
  return`<div class="ppm-karte${isTeacher()?" ppm-ziehbar":""}${fo?(fo.done?" ppm-st-done":fo.frac>0?" ppm-st-teil":" ppm-st-offen"):""}" style="--c:${c};--sp:${ppmSpalten(m)}" data-ppm="oeffnen" data-id="${esc(m.id)}" tabindex="0" role="button">
   <span class="ppm-ic">${T.icon}</span>
-  <span class="ppm-txt"><b>${esc(ppmTitel(m)||T.name)}</b><small>${esc(T.art||T.kurz)} · LB${m.lb} · ${esc(ppmDauerText(m))}</small>${ppmStatus(m)}${fo&&!fo.done?`<span class="ppm-mini" title="${Math.round(fo.frac*100)} % geschafft"><i style="width:${Math.round(fo.frac*100)}%"></i></span>`:""}${proj}${exp}${einh}${lbModulPills(m)}</span>
+  <span class="ppm-txt"><b>${esc(ppmTitel(m)||T.name)}</b><small>${esc(T.art||T.kurz)} · LB${m.lb} · ${esc(ppmDauerText(m))}</small>${ppmStatus(m)}${fo&&!fo.done?`<span class="ppm-mini" title="${Math.round(fo.frac*100)} % geschafft"><i style="width:${Math.round(fo.frac*100)}%"></i></span>`:""}${proj}${exp}${einh}${m.modul==="projekt"&&m.vorlage?bepKachelHTML(m):""}${lbModulPills(m)}</span>
   ${fo&&fo.done?`<span class="ppm-haken-k" aria-label="geschafft">✓</span>`:""}${isTeacher()?`<button type="button" class="ppm-edit" data-ppm="bearbeiten" data-id="${esc(m.id)}" title="Modul bearbeiten">✎</button>`:""}
  </div>`;
 }
@@ -4616,10 +4619,77 @@ body.ppm-dnd-an{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .ppm-fertig:hover{border-color:#2f7fc6}.ppm-fertig.an{border-color:#3fa66a;background:#e3f4e8;color:#1f6a3a}
 .ppm-haken{width:28px;height:28px;border-radius:8px;border:2px solid #8aa0b3;background:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:18px;flex:none}.ppm-fertig.an .ppm-haken{background:#3fa66a;border-color:#3fa66a;color:#fff}
 @media(max-width:760px){.ppm-woche{grid-template-columns:1fr}.ppm-reihe{grid-template-columns:repeat(2,minmax(0,1fr))}.ppm-karte{grid-column:1/-1}}
+.bep-sub{color:var(--muted);margin:0 0 4px;font-size:15px}
+.bep-kachel{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.bep-leiste{display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap}
+.bep-pt{font-style:normal;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;border:2px solid #b9c8d6;background:#fff;color:#51657a}
+.bep-pt.praktikum{border-style:dashed;background:#fff7ea;border-color:#d9a85a;color:#8a5a12}
+.bep-pt.jetzt{box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 40%,#fff);border-color:var(--c);color:var(--ink)}
+.bep-pt.fertig{background:#3fa66a;border-color:#3fa66a;color:#fff}
+.bep-chips{display:flex;flex-wrap:wrap;gap:6px}
+.ppm-chip.bep-warn{background:#fff3d6;border-color:#f0d28a;color:#7a4b00}.ppm-chip.bep-rot{background:#fdecea;border-color:#f1b0aa;color:#9b1c14}
+.bep-blick{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin:0 0 14px}
+.bep-tile{display:flex;flex-direction:column;gap:3px;padding:12px 14px;border-radius:14px;background:#fff;border:1px solid var(--line)}
+.bep-tile b{font-size:15px}.bep-tile small{color:var(--muted);line-height:1.4}.bep-ti{font-size:24px}
+.bep-hinweis{margin:10px 0;padding:10px 12px;border-radius:12px;background:#eef6fd;border:1px solid #cfe3f4;line-height:1.5}
+.bep-rot-box{background:#fdecea;border-color:#f1b0aa}
+.bep-bsp{color:var(--muted);font-size:14px}.bep-klein{font-size:12px;color:var(--muted);line-height:1.5;margin:6px 0}
+.bep-gruppe{margin:12px 0 4px;font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#6b7c93}
+.bep-bz{display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:#fff;margin:0 0 6px}
+.bep-bz.vergeben{background:#f6f9fc}
+.bep-kap{flex:none;min-width:38px;height:30px;padding:0 6px;border-radius:8px;background:#17384f;color:#fff;font-weight:800;font-size:12px;display:inline-flex;align-items:center;justify-content:center}
+.bep-tabwrap{overflow-x:auto}
+.bep-tab{width:100%;border-collapse:collapse;font-size:14px}.bep-tab th{text-align:left;font-size:12px;color:var(--muted);padding:6px 8px;border-bottom:2px solid var(--line)}.bep-tab td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.45}
+.bep-teamtab input,.bep-teamtab select{box-sizing:border-box;min-width:0;width:100%;min-height:36px;font:inherit;padding:0 8px;border:1px solid var(--line);border-radius:8px;background:#fff}.bep-teamtab tr.ich{background:#f3f9ff}
+.bep-ampeln{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.bep-amp{display:inline-flex;flex-direction:column;align-items:center;gap:1px;min-width:42px;padding:4px 6px;border-radius:10px;border:2px solid #c7d0d6;background:#fff;font-size:11px}.bep-amp i{font-style:normal;font-size:14px;font-weight:800}
+.bep-amp.erreicht{border-color:#3fa66a;background:#e3f4e8;color:#1f6a3a}.bep-amp.wartet{border-color:#e0a324;background:#fff3d6}.bep-amp.zurueck{border-color:#d9534f;background:#fdecea}
+.bep-next{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:14px 16px;border-radius:14px;background:#eaf3fc;border:2px solid #3d8fd0;margin-top:10px}
+.bep-next>div{display:flex;flex-direction:column;gap:3px;min-width:200px;flex:1}.bep-next small{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#2f5f8a}.bep-next b{font-size:17px}.bep-next em{font-style:normal;font-weight:700}
+.bep-next.warn{background:#fff6e6;border-color:#e0a324}.bep-next.rot{background:#fdecea;border-color:#d9534f}.bep-next.fertig{background:#e3f4e8;border-color:#3fa66a}
+.bep-zone{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin:16px 0 8px;padding:8px 12px;border-radius:10px;font-size:14px}
+.bep-zone.schule{background:#eaf3fc;border-left:6px solid #3d8fd0}.bep-zone.praktikum{background:#fff7ea;border-left:6px solid #d9a85a}.bep-zone span{color:var(--muted);font-size:13px}
+.bep-zeit{display:block}
+.bep-ph{border:1px solid var(--line);border-left:6px solid #3d8fd0;border-radius:14px;background:#fff;padding:12px 14px;margin:0 0 10px}.bep-ph.praktikum{border-left-color:#d9a85a}
+.bep-ph.jetzt{box-shadow:0 0 0 3px #bfdcf5}
+.bep-ph-kopf{display:flex;gap:12px;align-items:center}.bep-ph-kopf b{font-size:16px;display:block}.bep-ph-kopf small{color:var(--muted)}
+.bep-nr{flex:none;width:32px;height:32px;border-radius:50%;background:#17384f;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:800}
+.bep-jetzt{flex:none;padding:3px 10px;border-radius:999px;background:#075a9d;color:#fff;font-size:12px;font-weight:800}
+.bep-lab{margin:12px 0 4px;font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#6b7c93}
+.bep-aufg{list-style:none;margin:0;padding:0}.bep-a{padding:3px 0}
+.bep-chk{display:flex;gap:10px;align-items:flex-start;cursor:pointer;line-height:1.45}.bep-chk input{width:20px;height:20px;margin-top:1px;flex:none}
+.bep-chk-zeile{padding:6px 0;border-bottom:1px solid var(--line)}
+.bep-dot{color:#6b7c93;margin-right:8px}
+.bep-ms{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;border-radius:12px;background:#f6f9fc;border:1px solid var(--line);margin:6px 0}
+.bep-ms.erreicht{background:#eef9f1;border-color:#9fd3ae}.bep-ms.wartet{background:#fff8e8;border-color:#f0d28a}.bep-ms.zurueck{background:#fdf1ef;border-color:#f1b0aa}
+.bep-ms-ic{flex:none;width:30px;height:30px;border-radius:50%;border:2px solid;display:inline-flex;align-items:center;justify-content:center;font-weight:800}
+.bep-ms-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}.bep-ms-kopf{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.bep-ms-text{color:var(--muted)}.bep-inh summary{cursor:pointer;font-size:13px;font-weight:700;color:#2f5f8a}.bep-inh ul{margin:4px 0 0 18px;padding:0;line-height:1.5;font-size:13px}
+.bep-frist{font-size:13px;font-weight:700}.bep-frist.warn{color:#9a6200}.bep-frist.rot{color:#b3261e}
+.bep-ds{background:#fff8e8;border-color:#f0d28a;border-left:6px solid #e0a324}.bep-ds ul{margin:6px 0 0 18px;padding:0;line-height:1.55}
+.bep-mat{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.bep-matk{display:flex;gap:10px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#fbfdff}.bep-matk div{display:flex;flex-direction:column;gap:2px}.bep-matk small{color:var(--muted);line-height:1.4}.bep-matk em{font-style:normal;font-size:11px;font-weight:800;color:#2f5f8a}
+.bep-zwei{display:grid;grid-template-columns:1fr 1fr;gap:12px}.bep-spalte{padding:12px 14px;border-radius:12px}.bep-spalte h3{margin:0 0 6px}.bep-spalte ul{margin:0 0 0 18px;padding:0;line-height:1.55}
+.bep-spalte.team{background:#f4f0fb;border:1px solid #ddd2f2}.bep-spalte.einzeln{background:#eff8ec;border:1px solid #cfe6c6}
+.bep-formate{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin:10px 0}.bep-fmt{display:flex;gap:10px;padding:10px 12px;border-radius:12px;border:1px solid var(--line)}.bep-fmt div{display:flex;flex-direction:column;gap:2px}.bep-fmt small{color:var(--muted);line-height:1.4}
+.bep-lehrer{border-left:6px solid #075a9d}
+.bep-zahlen{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 10px}.bep-zahlen div{flex:1;min-width:110px;padding:10px 12px;border-radius:12px;background:#f6f9fc;border:1px solid var(--line);display:flex;flex-direction:column}.bep-zahlen b{font-size:22px}.bep-zahlen small{color:var(--muted)}.bep-zahlen .warn{background:#fff3d6;border-color:#f0d28a}
+.bep-matrix{width:100%;border-collapse:collapse;font-size:13px}.bep-matrix th{padding:6px 4px;text-align:center;font-size:12px;border-bottom:2px solid var(--line)}.bep-matrix th small{display:block;font-weight:400;color:var(--muted)}.bep-matrix th:first-child{text-align:left}
+.bep-tn{padding:6px 8px;min-width:200px}.bep-tn small{display:block;color:var(--muted)}
+.bep-z{text-align:center;padding:4px;border:1px solid #fff;background:#eef1f4}.bep-z b{display:block}.bep-z small{color:var(--muted);font-size:11px}
+.bep-z.erreicht{background:#dff3e5;color:#1f6a3a}.bep-z.wartet{background:#fff0c9}.bep-z.zurueck{background:#fbe0dd}.bep-z.ueber{outline:2px solid #d9534f;outline-offset:-2px}
+.bep-wq{padding:10px 12px;border-radius:12px;background:#fff8e8;border:1px solid #f0d28a;margin:6px 0}
+.bep-td{border:1px solid var(--line);border-radius:12px;padding:8px 12px;margin:6px 0;background:#fff}.bep-td summary{cursor:pointer}
+.bep-termine{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:8px;margin:8px 0}
+.bep-termin{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:6px 10px;border:1px solid var(--line);border-radius:10px}.bep-termin span{display:flex;flex-direction:column}.bep-termin small{color:var(--muted)}.bep-termin input{min-height:36px;font:inherit}
+@media(max-width:760px){.bep-zwei{grid-template-columns:1fr}.bep-ms{flex-wrap:wrap}.ms-aktion{width:100%}.bep-teamtab thead{display:none}.bep-teamtab td{display:block;border:0;padding:4px 8px}.bep-teamtab td::before{content:attr(data-l);display:block;font-size:11px;color:var(--muted)}.bep-teamtab tr{display:block;border-bottom:1px solid var(--line);padding:6px 0}}
+.bep-leg{color:var(--muted);font-size:11px}
 </style>`;
 
 async function renderPPModulplan(){
  await ppmLaden();await ppmMeineLaden();
+ await Promise.all(PPM.liste.filter(m=>m.modul==="projekt"&&m.vorlage).map(m=>bepVorlage(m.vorlage)));
+ await bepAlleLaden();
  const co=await ladeCheckoutDaten().catch(()=>null);
  PPM.co=co;
  const heute=new Date().toISOString().slice(0,10),lehrer=isTeacher();
@@ -4692,6 +4762,7 @@ function ppmTypWahl(woche){
 }
 // Projekt: öffnet direkt „Das Experiment“ (Standard im Lernbereich mit Einstieg) oder die Projektseite mit Teams und Meilensteinen.
 function ppmProjektDirekt(m){
+ if(m&&m.vorlage)return false;
  if(m&&m.direkt==="experiment")return true;
  if(m&&m.direkt==="projekt")return false;
  const ph=PROJEKT_PHASEN.find(p=>p.lbNum===Number(m&&m.lb));
@@ -4760,6 +4831,7 @@ async function ppmDialog(id,typ,woche,opt){
  let checkouts=[];
  if(t==="kprim"){try{checkouts=(await ladeCheckoutDaten()).checkouts||[];}catch(e){}}
  const ea=t==="selbstlern"?await ppmEaListe():[];
+ const vorlagen=t==="projekt"?(await Promise.all(BEP_VORLAGEN_IDS.map(bepVorlage))).filter(Boolean):[];
  const lb0=bearb?bearb.lb:(projekt?projekt.lb:1);
  const lbOpt=[1,2,3,4].map(n=>`<option value="${n}"${n===lb0?" selected":""}>Lernbereich ${n} · ${esc((PROJEKT_PHASEN.find(p=>p.lbNum===n)||{}).lbTitel||"")}</option>`).join("");
  const ph0=PROJEKT_PHASEN.find(p=>p.lbNum===lb0);
@@ -4773,6 +4845,8 @@ async function ppmDialog(id,typ,woche,opt){
  if(t==="projekt"){
   const dir0=ppmProjektDirekt(bearb||{lb:lb0});
   extra=`<label>Beim Aufrufen öffnet sich<select id="ppmDirekt"><option value="experiment"${dir0?" selected":""}>direkt „Das Experiment“ (interaktive Stunde)</option><option value="projekt"${dir0?"":" selected"}>die Projektseite mit Teams und Meilensteinen</option></select></label>
+   ${vorlagen.length?`<label>Projektvorlage<select id="ppmVorlage"><option value="">Keine: Standardprojekt des Lernbereichs</option>${vorlagen.map(x=>`<option value="${esc(x.id)}"${bearb&&bearb.vorlage===x.id?" selected":""}>${esc(x.titel)}</option>`).join("")}</select></label>
+   <p style="font-size:13px;color:var(--muted);margin:0">Mit Vorlage entsteht eine eigene Projektseite mit Teamwahl, Zeitplan, Fristen, Material und Teamübersicht. Empfohlen: Dauer 2 Wochen (Schulwoche, dann der Praktikumsblock, dann Schulwoche).</p>`:""}
    <p style="font-size:13px;color:var(--muted);margin:0">Team-Projekt mit Meilensteinen anlegen: Das Projekt nutzt die Meilensteine und die Teams des Lernbereichs.</p>`;
  }
  if(t==="apt")extra=`<p style="font-size:13px;color:var(--muted);margin:0">Die Frage aus der Abschlussprüfung, den relevanten Inhalt und die Lösung gestaltest du danach direkt auf der Modulseite.</p>`;
@@ -4877,6 +4951,8 @@ async function ppmDialog(id,typ,woche,opt){
  if(t==="selbstlern"){const ks=$("ppmKurs");if(ks)ks.addEventListener("change",()=>{const o=ks.options[ks.selectedIndex],n=o&&o.dataset.lb;if(n&&!lbSel.disabled)lbSel.value=n;});}
  if(t==="projekt"&&!bearb)lbSel.addEventListener("change",()=>{const x=PROJEKT_PHASEN.find(y=>y.lbNum===Number(lbSel.value));ti.placeholder=x?x.titel:T.name;const d=$("ppmDirekt");if(d)d.value=(x&&x.einstieg)?"experiment":"projekt";});
  $("ppmStart").addEventListener("change",aktualisieren);$("ppmDauer").addEventListener("change",aktualisieren);
+ const vSel=$("ppmVorlage");
+ if(vSel)vSel.addEventListener("change",()=>{const x=vorlagen.find(y=>y.id===vSel.value);if(x){ti.placeholder=x.titel;if(!bearb&&x.dauerEmpfohlen&&[...$("ppmDauer").options].some(o=>o.value===x.dauerEmpfohlen))$("ppmDauer").value=x.dauerEmpfohlen;}aktualisieren();});
  document.querySelectorAll(".ppmTeil").forEach(c=>c.addEventListener("change",()=>{
   const box=[...document.querySelectorAll(".ppmTeil")],get=k=>box.find(x=>x.value===k);
   if(c.value==="ergebnisse"&&c.checked)get("experiment").checked=true;
@@ -4898,6 +4974,7 @@ async function ppmDialog(id,typ,woche,opt){
   }
   if(projektId)daten.projektId=projektId;
   if(t==="projekt"&&$("ppmDirekt"))daten.direkt=$("ppmDirekt").value;
+  if(t==="projekt"&&$("ppmVorlage")){daten.vorlage=$("ppmVorlage").value;if(daten.vorlage&&!ti.value.trim()){const vv=vorlagen.find(y=>y.id===daten.vorlage);if(vv)daten.titel=vv.titel;}}
   if(t==="stunde")daten.phase=Number($("ppmPhase").value);
   if(t==="kprim"){
     const sel=$("ppmCheckout").value||"";
@@ -5000,7 +5077,7 @@ async function ppmStandardplan(){
 // ------------------------------------------------------------ Modulseiten
 async function ppmModulSeite(m){
  await ppmMeineLaden();
- if(m.modul==="projekt")return await ppmProjektSeite(m);
+ if(m.modul==="projekt"){if(m.vorlage){const v=await bepVorlage(m.vorlage);if(v)return await ppmProjektVorlageSeite(m,v);}return await ppmProjektSeite(m);}
  if(m.modul==="stunde")return await ppmStundeSeite(m);
  if(m.modul==="einfuehrung")return await ppmEinfuehrungSeite(m);
  if(m.modul==="rallye")return await ppmRallyeSeite(m);
@@ -5091,6 +5168,424 @@ async function ppmProjektSeite(m){
   ${lehrer?`<div class="ppm-zeile"><button type="button" class="ppm-btn" data-ppm="einheit-neu" data-id="${esc(m.id)}">＋ Experiment-Einheit einfügen</button></div>`:""}</div>
  ${footer()}`;
 }
+// ============================================================
+// PROJEKTVORLAGE · Team-Projekt mit Zeitplan, Material und Teamstand
+// ------------------------------------------------------------
+// Inhalte stehen in projekte/<id>.json (z. B. projekte/bep-in-aktion.json) und lassen sich dort
+// ohne Programmieren ändern. Ein Projekt-Modul bekommt die Vorlage über das Feld "vorlage"
+// (Modul bearbeiten → ③ Inhalt → Projektvorlage).
+// Teams: Collection lehrplanTeams (wocheId "vorlage_<modulId>"), Beiträge: meilensteinBeitraege,
+// Bestätigung durch die Lehrkraft: Feld msPruefung am Team. Persönliche Haken (Aufgaben, Checkliste)
+// liegen im Dokument ppKursFortschritt des Moduls. Termine der Lehrkraft: Feld "termine" am Modul.
+// Meilenstein 0 = „Team gebildet“ (automatisch), M1 bis Mn = Index 1 bis n.
+// ============================================================
+const BEP_VORLAGEN_IDS=["bep-in-aktion"];
+async function bepVorlage(id){
+ if(!id)return null;
+ if(id in PPM.bepV)return PPM.bepV[id];
+ let v=null;
+ try{const r=await fetch(`projekte/${encodeURIComponent(id)}.json`,{cache:"no-cache"});if(r.ok)v=await r.json();}catch(e){v=null;}
+ PPM.bepV[id]=v;return v;
+}
+function bepHeute(){return new Date().toISOString().slice(0,10);}
+function bepTagText(iso){if(!iso)return"";const T=["So","Mo","Di","Mi","Do","Fr","Sa"];return T[new Date(iso+"T12:00:00Z").getUTCDay()]+", "+fmtKurz(iso);}
+function bepTageBis(iso){return Math.round((new Date(iso+"T12:00:00Z")-new Date(bepHeute()+"T12:00:00Z"))/86400000);}
+function bepTageText(n){return n<0?`seit ${-n} Tag${n===-1?"":"en"} überfällig`:n===0?"heute":n===1?"morgen":`in ${n} Tagen`;}
+// Zeitraum des Moduls: erste und letzte Schulwoche, dazwischen der Praktikumsblock (falls vorhanden)
+function bepZeitraum(m){
+ const w=ppmWochen(m);if(!w.length)return null;
+ const w1=w[0],wL=w[w.length-1];
+ const pr=w.length>1?PRAKTIKUMSPHASEN.filter(p=>p.start>w1.end&&p.end<wL.start):[];
+ return{w1:w1.start,w1Ende:w1.end,wL:wL.start,wLEnde:wL.end,einWoche:w.length===1,
+  p1:pr.length?pr[0].start:null,pEnde:pr.length?pr[pr.length-1].end:null,
+  ferien:pr.length?FERIEN_2026_27.filter(f=>f.start<=pr[pr.length-1].end&&f.end>=pr[0].start).map(f=>f.titel):[]};
+}
+function bepAnker(z,a){
+ if(!z||!a)return null;
+ const basis=a[0]==="w1"?z.w1:a[0]==="wL"?z.wL:a[0]==="p1"?z.p1:a[0]==="pEnde"?z.pEnde:null;
+ return basis?ppmPlusTage(basis,Number(a[1])||0):null;
+}
+// Frist eines Meilensteins (i = 1 bis n): zuerst der Termin der Lehrkraft, sonst der Standard aus der Vorlage
+function bepFrist(m,v,i){
+ const t=m.termine&&m.termine[i];
+ if(t&&/^\d{4}-\d{2}-\d{2}$/.test(t))return t;
+ const x=v.meilensteine[i-1];
+ return x?bepAnker(bepZeitraum(m),x.faellig):null;
+}
+function bepPhasenZeit(m,p){
+ const z=bepZeitraum(m);let von=bepAnker(z,p.zeit.von),bis=bepAnker(z,p.zeit.bis);
+ if(z&&z.pEnde&&p.ort==="praktikum"&&von){if(von>z.pEnde)von=bis=null;else if(bis>z.pEnde)bis=z.pEnde;}
+ return{von,bis};
+}
+function bepPhasenText(m,p){
+ const t=bepPhasenZeit(m,p);
+ if(!t.von||!t.bis)return"Termin folgt";
+ return t.von===t.bis?bepTagText(t.von):`${fmtKurz(t.von)}–${fmtKurz(t.bis)}`;
+}
+function bepPhaseJetzt(m,p){const t=bepPhasenZeit(m,p),h=bepHeute();return!!(t.von&&t.bis&&h>=t.von&&h<=t.bis);}
+// Phasenobjekt im Format der Projekt-Meilensteine (msListeHTML, openMsBeitrag, msPruefen)
+function bepPh(m,v){
+ const ph={id:v.id,lb:v.kurz||"Projekt",lbNum:Number(m.lb)||v.lb||2,titel:v.titel,projektWocheId:"vorlage_"+m.id,einstieg:false,
+  meilensteine:["Team gebildet",...v.meilensteine.map(x=>x.kurz+" · "+x.titel)],
+  bestaetigung:v.meilensteine.map((x,i)=>x.bestaetigung==="lehrkraft"?i+1:-1).filter(i=>i>0),
+  beitragHinweis:["",...v.meilensteine.map(x=>x.beitragHinweis||"")],notwendigeWochen:[],trainingWochen:[]};
+ PROJEKT_VORLAGEN_PH[v.id]=ph;return ph;
+}
+async function bepLaden(m){
+ const v=await bepVorlage(m.vorlage);if(!v)return null;
+ bepPh(m,v);
+ const teams=await getLehrplanTeams("vorlage_"+m.id);
+ const beitraege=await getMeilensteinBeitraege(teams.map(t=>t.id));
+ const team=currentUser?(teams.find(t=>(t.mitgliederUids||[]).includes(currentUser.uid))||null):null;
+ return PPM.bep[m.id]={v,teams,beitraege,team};
+}
+async function bepAlleLaden(){
+ await Promise.all(PPM.liste.filter(m=>m.modul==="projekt"&&m.vorlage).map(m=>bepLaden(m).catch(e=>{console.error("Projektvorlage laden:",e);return null;})));
+}
+function bepHatBeitrag(d,teamId,i,uid){return d.beitraege.some(b=>b.teamId===teamId&&Number(b.index)===i&&b.uid===uid);}
+function bepEigene(m){
+ const d=PPM.bep[m.id],g=d?d.v.meilensteine.length:0;
+ if(!d||!d.team)return{n:0,g};
+ let n=0;for(let i=1;i<=g;i++)if(bepHatBeitrag(d,d.team.id,i,currentUser.uid))n++;
+ return{n,g};
+}
+function bepFort(m){
+ if(isTeacher())return null;
+ const d=PPM.bep[m.id];if(!d)return{done:false,frac:0};
+ const e=bepEigene(m);return{done:!!e.g&&e.n===e.g,frac:e.g?e.n/e.g:0};
+}
+function bepStatusHTML(m){
+ const d=PPM.bep[m.id];if(!d)return"";
+ if(!d.team)return`<span class="ppm-status">noch kein Team</span>`;
+ const e=bepEigene(m);return`<span class="ppm-status${e.n===e.g?" ok":""}">${e.n}/${e.g} Meilensteine</span>`;
+}
+// nächster Meilenstein, zu dem die angemeldete Person noch etwas einreichen muss (oder der zurückgegeben wurde)
+function bepNaechster(m){
+ const d=PPM.bep[m.id];if(!d||!d.team)return null;
+ const ph=bepPh(m,d.v);
+ for(let i=1;i<=d.v.meilensteine.length;i++){
+  const st=msStatus(ph,d.team,d.beitraege,i);
+  if(!bepHatBeitrag(d,d.team.id,i,currentUser.uid)||st.zustand==="zurueck")return i;
+ }
+ return null;
+}
+function bepFristKlasse(fr,erreicht){
+ if(!fr||erreicht)return"";
+ const n=bepTageBis(fr);return n<0?"rot":n<=2?"warn":"";
+}
+// Zusatzzeilen auf der Modulkachel im Modulplan
+function bepKachelHTML(m){
+ const d=PPM.bep[m.id];if(!d)return"";
+ const v=d.v,h=bepHeute(),lehrer=isTeacher(),ph=bepPh(m,v);
+ const punkte=v.phasen.map(p=>{
+  const jetzt=bepPhaseJetzt(m,p);
+  const fertig=!lehrer&&d.team&&p.ms.every(i=>bepHatBeitrag(d,d.team.id,i,currentUser.uid));
+  return`<i class="bep-pt ${p.ort}${jetzt?" jetzt":""}${fertig?" fertig":""}" title="${esc(p.nr+". "+p.name+(p.ort==="praktikum"?" (Praktikum)":" (Schule)"))}">${fertig?"✓":p.nr}</i>`;
+ }).join("");
+ const leiste=`<span class="bep-leiste" aria-label="Die ${v.phasen.length} Phasen des Projekts">${punkte}</span>`;
+ let chips="";
+ if(lehrer){
+  let warten=0,ueber=0;
+  d.teams.forEach(t=>v.meilensteine.forEach((x,k)=>{const i=k+1,st=msStatus(ph,t,d.beitraege,i);if(st.zustand==="wartet")warten++;const f=bepFrist(m,v,i);if(f&&f<h&&st.zustand!=="erreicht")ueber++;}));
+  chips=`<span class="ppm-chip">👥 ${d.teams.length} Team${d.teams.length===1?"":"s"}</span>${warten?`<span class="ppm-chip bep-warn">⏳ ${warten} warten auf dich</span>`:""}${ueber?`<span class="ppm-chip bep-rot">${ueber} Meilenstein${ueber===1?"":"e"} überfällig</span>`:""}`;
+ }else if(!d.team){
+  chips=`<span class="ppm-chip bep-rot">Noch kein Team: jetzt eins bilden</span>`;
+ }else{
+  const i=bepNaechster(m),f=i?bepFrist(m,v,i):null;
+  chips=`<span class="ppm-chip">👥 ${esc(d.team.teamName||"Team")}</span>`+(i?`<span class="ppm-chip ${bepFristKlasse(f)==="rot"?"bep-rot":bepFristKlasse(f)==="warn"?"bep-warn":""}">Als Nächstes: ${esc(v.meilensteine[i-1].kurz)}${f?" · fällig "+esc(bepTagText(f)):""}</span>`:`<span class="ppm-chip">Alle Beiträge eingereicht ✓</span>`);
+ }
+ return`<span class="bep-kachel">${leiste}<small class="bep-leg">Phase 1–2 Schule · 3–4 Praktikum · 5–6 Schule</small><span class="bep-chips">${chips}</span></span>`;
+}
+
+// ------------------------------------------------------------ Team
+async function bepTeamNeu(mId,idx){
+ const m=ppmById(mId);if(!m)return;
+ const v=await bepVorlage(m.vorlage),d=await bepLaden(m);if(!v||!d)return;
+ if(d.team){toast("Du bist schon in einem Team.");return;}
+ const b=v.bereiche[idx];if(!b)return;
+ if(d.teams.some(t=>t.bereichKap===b.kap)){toast("Dieser Bereich ist schon vergeben. Tritt dem Team bei.");await render();return;}
+ try{
+  await addDoc(collection(db,"lehrplanTeams"),{wocheId:"vorlage_"+m.id,fach:"paedagogik",teamName:b.name,bereichKap:b.kap,bereichName:b.name,
+   mitgliederUids:[currentUser.uid],mitgliederNamen:[profile?.displayName||"Ich"],createdBy:currentUser.uid,createdAt:serverTimestamp()});
+  toast("Team gegründet. Du bist Mitglied.");showMotivationsBild(false,"team");await render();
+ }catch(e){ppmFehler(e,"Das Team konnte nicht gegründet werden");}
+}
+async function bepTeamBeitreten(mId,teamId){
+ const m=ppmById(mId);if(!m)return;
+ const v=await bepVorlage(m.vorlage),d=await bepLaden(m);if(!v||!d)return;
+ if(d.team){toast("Du bist schon in einem Team. Verlasse es zuerst.");return;}
+ const max=(v.teamGroesse&&v.teamGroesse.max)||3;
+ try{
+  const ref=doc(db,"lehrplanTeams",teamId),s=await getDoc(ref);if(!s.exists())return;
+  const x=s.data();
+  if((x.mitgliederUids||[]).length>=max){toast(`Das Team ist voll (${max} Personen).`);await render();return;}
+  await updateDoc(ref,{mitgliederUids:[...(x.mitgliederUids||[]),currentUser.uid],mitgliederNamen:[...(x.mitgliederNamen||[]),profile?.displayName||"Mitglied"]});
+  toast("Team beigetreten!");showMotivationsBild(false,"team");await render();
+ }catch(e){ppmFehler(e,"Beitreten nicht möglich");}
+}
+async function bepTeamVerlassen(mId,teamId){
+ if(!confirm("Dieses Team wirklich verlassen? Deine bisherigen Beiträge bleiben gespeichert."))return;
+ try{
+  const ref=doc(db,"lehrplanTeams",teamId),s=await getDoc(ref);if(!s.exists())return;
+  const x=s.data(),uids=[...(x.mitgliederUids||[])],namen=[...(x.mitgliederNamen||[])],k=uids.indexOf(currentUser.uid);
+  if(k>-1){uids.splice(k,1);namen.splice(k,1);}
+  await updateDoc(ref,{mitgliederUids:uids,mitgliederNamen:namen});
+  if(!uids.length){try{await deleteDoc(ref);}catch(e){}}
+  toast("Team verlassen.");await render();
+ }catch(e){ppmFehler(e,"Verlassen nicht möglich");}
+}
+async function bepTeamAufloesen(mId,teamId){
+ if(!confirm("Dieses Team wirklich auflösen? Die Beiträge der Mitglieder gehen für dieses Team verloren."))return;
+ try{await deleteDoc(doc(db,"lehrplanTeams",teamId));toast("Team aufgelöst.");await render();}
+ catch(e){ppmFehler(e,"Auflösen nicht möglich");}
+}
+const BEP_TEAMFELD={rolle:u=>`rollen.${u}`,art:u=>`stellen.${u}.art`,alter:u=>`stellen.${u}.alter`,stelle:u=>`stellen.${u}.stelle`};
+async function bepTeamFeld(teamId,feld,wert){
+ const f=BEP_TEAMFELD[feld];if(!f)return;
+ try{await updateDoc(doc(db,"lehrplanTeams",teamId),{[f(currentUser.uid)]:String(wert||"").trim().slice(0,80)});toast("Gespeichert.");}
+ catch(e){ppmFehler(e,"Das konnte nicht gespeichert werden");}
+}
+async function bepAufgabeHaken(mId,key,an){
+ const m=ppmById(mId);if(!m)return;
+ try{await ppmKursSchreiben(m,d=>{d.bepAufg=d.bepAufg||{};if(an)d.bepAufg[key]=true;else delete d.bepAufg[key];});}
+ catch(e){ppmFehler(e,"Der Haken konnte nicht gespeichert werden");}
+}
+async function bepCheckHaken(mId,key,an){
+ const m=ppmById(mId);if(!m)return;
+ const n=document.querySelectorAll(".bep-chk-j:checked").length,z=$("bepChkN");if(z)z.textContent=n;
+ try{await ppmKursSchreiben(m,d=>{d.bepCheck=d.bepCheck||{};if(an)d.bepCheck[key]=true;else delete d.bepCheck[key];});}
+ catch(e){ppmFehler(e,"Der Haken konnte nicht gespeichert werden");}
+}
+async function bepTermineSpeichern(mId,zuruecksetzen){
+ if(!isTeacher())return;
+ const m=ppmById(mId);if(!m)return;const v=await bepVorlage(m.vorlage);if(!v)return;
+ const t={};
+ if(!zuruecksetzen)v.meilensteine.forEach((x,k)=>{const el=$("bepT"+(k+1));if(el&&el.value)t[k+1]=el.value;});
+ try{await updateDoc(doc(db,"ppModule",m.id),{termine:t,updatedAt:serverTimestamp()});await ppmLaden(true);toast(zuruecksetzen?"Termine auf Standard zurückgesetzt.":"Termine gespeichert.");await render();}
+ catch(e){ppmFehler(e,"Termine konnten nicht gespeichert werden");}
+}
+Object.assign(window,{bepTeamNeu,bepTeamBeitreten,bepTeamVerlassen,bepTeamAufloesen,bepTeamFeld,bepAufgabeHaken,bepCheckHaken,bepTermineSpeichern});
+
+// ------------------------------------------------------------ Modulseite
+function bepNamenListe(team){return(team.mitgliederNamen||[]).map(n=>esc(wbKurz?wbKurz(n)||n:n)).join(", ");}
+function bepBlickHTML(v){
+ return`<div class="bep-blick">${v.blick.map(b=>`<div class="bep-tile"><span class="bep-ti">${b.icon}</span><b>${esc(b.titel)}</b><small>${esc(b.text)}</small></div>`).join("")}</div>`;
+}
+function bepAuftragHTML(v){
+ return`<div class="ppm-box"><h2>Dein Auftrag</h2><p>${esc(v.auftrag)}</p><p>${esc(v.teamText)}</p>
+  <div class="bep-hinweis"><b>Worauf es ankommt.</b> ${esc(v.worauf)}</div>
+  <p class="bep-bsp"><b>Beispiel:</b> ${esc(v.beispiel)}</p></div>`;
+}
+// Teamwahl: elf Bildungsbereiche, jeder genau einmal
+function bepTeamWahlHTML(m,v,d){
+ const max=(v.teamGroesse&&v.teamGroesse.max)||3;
+ let gruppe="";
+ const zeilen=v.bereiche.map((b,idx)=>{
+  const t=d.teams.find(x=>x.bereichKap===b.kap),n=t?(t.mitgliederUids||[]).length:0;
+  const kopf=b.gruppe!==gruppe?`<div class="bep-gruppe">${esc(b.gruppe)}</div>`:"";gruppe=b.gruppe;
+  const akt=!t?`<button type="button" class="ppm-btn klein primaer" onclick="bepTeamNeu('${m.id}',${idx})">Team gründen</button>`
+   :n>=max?`<span class="ppm-status">voll (${n}/${max})</span>`
+   :`<button type="button" class="ppm-btn klein primaer" onclick="bepTeamBeitreten('${m.id}','${t.id}')">Beitreten (${n}/${max})</button>`;
+  return`${kopf}<div class="bep-bz${t?" vergeben":""}"><span class="bep-kap">${esc(b.kap)}</span><div style="flex:1;min-width:0"><b>${esc(b.name)}</b>${t?`<br><small>Team: ${bepNamenListe(t)}</small>`:`<br><small>noch frei</small>`}</div>${akt}</div>`;
+ }).join("");
+ return`<div class="ppm-box bep-teamwahl"><h2>👥 Schritt 1: Such dir dein Team</h2>
+  <p>Jedes Team arbeitet an <b>einem</b> Bildungsbereich des BayBEP (${v.teamGroesse.min}–${max} Personen). Ist dein Wunschbereich noch frei, gründest du das Team. Ist schon ein Team da und noch Platz, trittst du bei.</p>
+  <p class="bep-klein">${esc(v.bereichHinweis)}</p>${zeilen}</div>`;
+}
+function bepTeamBoxHTML(m,v,d,lehrer){
+ const t=d.team;if(!t)return"";
+ const ich=currentUser.uid,max=(v.teamGroesse&&v.teamGroesse.max)||3;
+ const st=t.stellen||{},ro=t.rollen||{};
+ const zeilen=(t.mitgliederUids||[]).map((u,k)=>{
+  const mine=u===ich,s=st[u]||{};
+  const rolle=mine?`<select onchange="bepTeamFeld('${t.id}','rolle',this.value)" aria-label="Meine Rolle"><option value="">– Rolle wählen –</option>${v.rollen.map(r=>`<option${ro[u]===r?" selected":""}>${esc(r)}</option>`).join("")}</select>`:esc(ro[u]||"–");
+  const art=mine?`<select onchange="bepTeamFeld('${t.id}','art',this.value)" aria-label="Krippe oder Kindergarten"><option value="">–</option>${v.einrichtungen.map(r=>`<option${s.art===r?" selected":""}>${esc(r)}</option>`).join("")}</select>`:esc(s.art||"–");
+  const alter=mine?`<input maxlength="30" value="${esc(s.alter||"")}" placeholder="z. B. 3–4 Jahre" onchange="bepTeamFeld('${t.id}','alter',this.value)" aria-label="Altersgruppe">`:esc(s.alter||"–");
+  const stelle=mine?`<input maxlength="60" value="${esc(s.stelle||"")}" placeholder="Einrichtung" onchange="bepTeamFeld('${t.id}','stelle',this.value)" aria-label="Praktikumsstelle">`:esc(s.stelle||"–");
+  return`<tr${mine?' class="ich"':""}><td data-l="Name"><b>${esc((t.mitgliederNamen||[])[k]||"Mitglied")}</b>${mine?" (ich)":""}</td><td data-l="Rolle im Team">${rolle}</td><td data-l="Praktikumsstelle">${stelle}</td><td data-l="Krippe / Kiga">${art}</td><td data-l="Altersgruppe">${alter}</td></tr>`;
+ }).join("");
+ const verlassen=!lehrer?`<button type="button" class="ppm-btn klein" onclick="bepTeamVerlassen('${m.id}','${t.id}')">Team verlassen</button>`:"";
+ return`<div class="ppm-box"><h2>👥 Mein Team: ${esc(t.bereichKap?t.bereichKap+" ":"")}${esc(t.bereichName||t.teamName||"")}</h2>
+  <div class="bep-tabwrap"><table class="bep-tab bep-teamtab"><thead><tr><th>Name</th><th>Rolle im Team</th><th>Praktikumsstelle</th><th>Krippe / Kiga</th><th>Altersgruppe</th></tr></thead><tbody>${zeilen}</tbody></table></div>
+  <p class="bep-klein">Rollen im Team: ${v.rollen.map(esc).join(", ")}. Trage deine Rolle und deine Praktikumsstelle ein. Keine Namen von Kindern!</p>
+  <div class="ppm-zeile" style="border:0;padding-bottom:0">${(t.mitgliederUids||[]).length<max?`<small>Es ist noch Platz für ${max-(t.mitgliederUids||[]).length} Person${max-(t.mitgliederUids||[]).length===1?"":"en"}.</small>`:""}${verlassen}</div></div>`;
+}
+// „Wo stehe ich?“ für Schüler:innen
+function bepWoStehIchHTML(m,v,d){
+ const ph=bepPh(m,v),e=bepEigene(m),h=bepHeute();
+ if(!d.team)return"";
+ const i=bepNaechster(m),f=i?bepFrist(m,v,i):null,x=i?v.meilensteine[i-1]:null;
+ const jetzt=v.phasen.filter(p=>bepPhaseJetzt(m,p));
+ const z=bepZeitraum(m);
+ let lage="";
+ if(z&&h<z.w1)lage=`Das Projekt startet am ${esc(bepTagText(z.w1))}.`;
+ else if(jetzt.length)lage=`Jetzt läuft: ${jetzt.map(p=>`<b>Phase ${p.nr} · ${esc(p.name)}</b>`).join(" und ")} (${jetzt[0].ort==="praktikum"?"im Praktikum":"in der Schule"}).`;
+ const proz=e.g?Math.round(e.n/e.g*100):0;
+ const ampel=v.meilensteine.map((mx,k)=>{const j=k+1,s=msStatus(ph,d.team,d.beitraege,j),Z=MS_ZUSTAND[s.zustand],meine=bepHatBeitrag(d,d.team.id,j,currentUser.uid);
+  return`<span class="bep-amp ${s.zustand}" title="${esc(mx.kurz+" · "+mx.titel+": "+(s.zustand==="erreicht"?"erreicht":meine?"dein Beitrag ist da, "+Z.t:"dein Beitrag fehlt"))}"><b>${esc(mx.kurz)}</b><i>${s.zustand==="erreicht"?"✓":meine?"●":"○"}</i></span>`;}).join("");
+ const warte=v.meilensteine.map((mx,k)=>({mx,j:k+1,s:msStatus(ph,d.team,d.beitraege,k+1)})).filter(o=>o.s.zustand==="offen"&&bepHatBeitrag(d,d.team.id,o.j,currentUser.uid)&&o.s.fehlend.length);
+ return`<div class="ppm-box bep-wo"><h2>Wo stehe ich?</h2>
+  ${lage?`<p>${lage}</p>`:""}
+  <div class="ppm-balken"><span><b>${e.n} von ${e.g}</b> Meilensteinen hast du eingereicht (${proz} %)</span><div class="ppm-bar" role="progressbar" aria-valuenow="${proz}" aria-valuemin="0" aria-valuemax="100"><i style="width:${proz}%"></i></div></div>
+  <div class="bep-ampeln" aria-label="Stand der Meilensteine">${ampel}</div>
+  <p class="bep-klein">✓ erreicht (Team komplett${""}) · ● dein Beitrag ist eingereicht · ○ dein Beitrag fehlt noch</p>
+  ${x?`<div class="bep-next ${bepFristKlasse(f)}"><div><small>Dein nächster Schritt</small><b>${esc(x.kurz)} · ${esc(x.titel)}</b><span>${esc(x.text)}</span>${f?`<em>📅 fällig ${esc(bepTagText(f))} · ${esc(bepTageText(bepTageBis(f)))}</em>`:""}</div><button type="button" class="ppm-btn primaer" onclick="openMsBeitrag('${v.id}','${d.team.id}',${i},'seite')">Beitrag eintragen</button></div>`
+   :`<div class="bep-next fertig"><div><b>Alle Beiträge sind eingereicht ✓</b><span>Schau unten bei den Meilensteinen, ob deine Lehrkraft etwas zurückgegeben hat.</span></div></div>`}
+  ${warte.length?`<p class="bep-klein">Dein Beitrag liegt vor, aber im Team fehlt noch etwas: ${warte.map(o=>`<b>${esc(o.mx.kurz)}</b> (${esc(o.s.fehlend.map(f=>f.name).join(", "))})`).join("; ")}.</p>`:""}</div>`;
+}
+function bepMsZeile(m,v,ph,d,i,lehrer){
+ const x=v.meilensteine[i-1],fr=bepFrist(m,v,i);
+ const team=d.team;
+ let Z,st=null,erreicht=false,statusText="",aktion="",personen="",mein="";
+ if(lehrer){
+  const n=d.teams.filter(t=>msStatus(ph,t,d.beitraege,i).zustand==="erreicht").length;
+  erreicht=d.teams.length>0&&n===d.teams.length;
+  Z=erreicht?MS_ZUSTAND.erreicht:MS_ZUSTAND.offen;
+  const warten=d.teams.filter(t=>msStatus(ph,t,d.beitraege,i).zustand==="wartet").length;
+  statusText=`${n} von ${d.teams.length} Teams erreicht${warten?` · ${warten} warten auf deine Bestätigung`:""}`;
+ }else if(team){
+  st=msStatus(ph,team,d.beitraege,i);Z=MS_ZUSTAND[st.zustand];erreicht=st.zustand==="erreicht";
+  const meiner=st.beitraege.find(b=>b.uid===currentUser.uid);
+  statusText=Z.t+(st.zustand==="offen"&&st.fehlend.length?` · es fehlt noch: ${st.fehlend.map(f=>f.name).join(", ")}`:"");
+  personen=`<div class="ms-personen">${(team.mitgliederUids||[]).map((u,k)=>{const b=st.beitraege.find(y=>y.uid===u);return`<span class="ms-person${b?" ok":""}" title="${esc(b?b.text:"noch kein Beitrag")}">${b?"✓":"○"} ${esc((team.mitgliederNamen||[])[k]||"Mitglied")}</span>`;}).join("")}</div>`;
+  if(st.pruefung&&st.pruefung.kommentar&&st.zustand==="zurueck")personen+=`<div class="ms-kommentar"><b>Rückmeldung der Lehrkraft:</b> ${esc(st.pruefung.kommentar)}</div>`;
+  if(meiner)mein=`<div class="ms-meiner"><b>Dein Beitrag:</b> ${esc(meiner.text)}${msLinksHTML(meiner)}</div>`;
+  aktion=`<button type="button" class="ppm-btn klein ${meiner?"":"primaer"}" onclick="openMsBeitrag('${v.id}','${team.id}',${i},'seite')">${meiner?"Beitrag ändern":"Beitrag eintragen"}</button>`;
+ }else{
+  Z=MS_ZUSTAND.offen;statusText="Bilde zuerst ein Team.";
+ }
+ const tage=fr?bepTageBis(fr):null,fk=bepFristKlasse(fr,erreicht);
+ return`<div class="bep-ms ${st?st.zustand:(erreicht?"erreicht":"offen")}">
+  <span class="bep-ms-ic" style="border-color:${Z.f};color:${erreicht?"#fff":Z.f};background:${erreicht?Z.f:"#fff"}">${Z.i}</span>
+  <div class="bep-ms-body">
+   <div class="bep-ms-kopf"><b>${esc(x.kurz)} · ${esc(x.titel)}</b><span class="ppm-chip">${esc(x.wer)}</span>${x.bestaetigung==="lehrkraft"?`<span class="ppm-chip">Lehrkraft bestätigt</span>`:""}</div>
+   <small class="bep-ms-text">${esc(x.text)}</small>
+   <details class="bep-inh"><summary>Das gehört hinein</summary><ul>${x.inhalt.map(a=>`<li>${esc(a)}</li>`).join("")}</ul></details>
+   ${fr?`<div class="bep-frist ${fk}">📅 fällig ${esc(bepTagText(fr))}${erreicht?"":" · "+esc(bepTageText(tage))}</div>`:`<div class="bep-frist">📅 Termin folgt</div>`}
+   <small class="ms-status" style="color:${Z.f}">${esc(statusText)}</small>
+   ${personen}${mein}
+  </div>
+  <div class="ms-aktion">${aktion}</div></div>`;
+}
+function bepZeitplanHTML(m,v,d,lehrer,aufg){
+ const ph=bepPh(m,v),z=bepZeitraum(m);
+ let zoneIdx=-1,letzterOrt="";
+ const html=v.phasen.map(p=>{
+  let kopf="";
+  if(p.ort!==letzterOrt){
+   zoneIdx++;letzterOrt=p.ort;
+   if(p.ort==="schule"){
+    const von=zoneIdx===0?(z&&z.w1):(z&&z.wL),bis=zoneIdx===0?(z&&z.w1Ende):(z&&z.wLEnde);
+    kopf=`<div class="bep-zone schule"><b>🏫 Schule</b><span>${von?`${esc(fmtKurz(von))}–${esc(fmtKurz(bis))}`:""}</span></div>`;
+   }else{
+    kopf=`<div class="bep-zone praktikum"><b>🧸 Praktikum (Krippe oder Kindergarten)</b><span>${z&&z.p1?`${esc(fmtKurz(z.p1))}–${esc(fmtKurz(z.pEnde))}${z.ferien.length?` · darin: ${esc(z.ferien.join(", "))}`:""}`:"Zeitraum noch offen"}</span></div>`;
+   }
+  }
+  const jetzt=bepPhaseJetzt(m,p);
+  const af=p.aufgaben.map((a,j)=>{
+   const key=`p${p.nr}_${j}`,an=!!aufg[key];
+   return lehrer?`<li class="bep-a"><span class="bep-dot">▪</span><span>${esc(a)}</span></li>`
+    :`<li class="bep-a"><label class="bep-chk"><input type="checkbox"${an?" checked":""} onchange="bepAufgabeHaken('${m.id}','${key}',this.checked)"><span>${esc(a)}</span></label></li>`;
+  }).join("");
+  return`${kopf}<div class="bep-ph ${p.ort}${jetzt?" jetzt":""}">
+   <div class="bep-ph-kopf"><span class="bep-nr">${p.nr}</span><div style="flex:1;min-width:0"><b>${esc(p.name)}</b><small>${esc(p.wer)} · ${esc(bepPhasenText(m,p))}</small></div>${jetzt?`<span class="bep-jetzt">jetzt</span>`:""}</div>
+   <p class="bep-lab">Aufgaben${lehrer?"":" (zum Abhaken)"}</p><ul class="bep-aufg">${af}</ul>
+   <p class="bep-lab">Ergebnis (Meilenstein)</p>${p.ms.map(i=>bepMsZeile(m,v,ph,d,i,lehrer)).join("")}
+  </div>`;
+ }).join("");
+ const warn=z&&z.einWoche?`<div class="bep-hinweis bep-rot-box"><b>Hinweis für die Planung:</b> Dieses Modul ist nur eine Woche lang. Das Projekt braucht <b>zwei Schulwochen</b> mit dem Praktikumsblock dazwischen. Stelle bei „Modul bearbeiten“ die Dauer auf 2 Wochen.</div>`:"";
+ return`<div class="ppm-box"><h2>Zeitplan: Phasen, Aufgaben und Meilensteine</h2>
+  <p>Das Projekt dauert vier Wochen: eine Schulwoche zur Vorbereitung, der Praktikumsblock für Planung vor Ort und Durchführung und eine Schulwoche für Auswertung und Präsentation. Hake Erledigtes ab. Die Fristen siehst du bei jedem Meilenstein.</p>
+  ${warn}<div class="bep-zeit">${html}</div><p class="bep-klein">${esc(v.verschiebung)}</p></div>`;
+}
+function bepDatenschutzHTML(v){
+ return`<div class="ppm-box bep-ds"><h2>🔒 Datenschutz und Sicherheit: bitte unbedingt beachten</h2><ul>${v.datenschutz.map(a=>`<li>${esc(a)}</li>`).join("")}</ul></div>`;
+}
+function bepMaterialHTML(v){
+ return`<div class="ppm-box"><h2>Das brauchst du für das Projekt</h2>
+  <div class="bep-mat">${v.material.map(x=>`<div class="bep-matk"><span class="bep-ti">${x.icon}</span><div><b>${esc(x.titel)}</b><small>${esc(x.text)}</small><em>Phase ${esc(x.phase)}</em></div></div>`).join("")}</div></div>`;
+}
+function bepWerHTML(v){
+ return`<div class="ppm-box"><h2>Wer macht was?</h2><div class="bep-zwei">
+  <div class="bep-spalte team"><h3>Gemeinsam im Team</h3><ul>${v.teamEinzeln.gemeinsam.map(a=>`<li>${esc(a)}</li>`).join("")}</ul></div>
+  <div class="bep-spalte einzeln"><h3>Jede/r einzeln</h3><ul>${v.teamEinzeln.einzeln.map(a=>`<li>${esc(a)}</li>`).join("")}</ul></div></div></div>`;
+}
+function bepReferenzHTML(v,lehrer,chk,m){
+ const aus=v.ausarbeitung,me=v.messe,bw=v.bewertung;
+ const nChk=Object.keys(chk).filter(k=>chk[k]).length;
+ return`<details class="ppm-box ppm-details"><summary>Die schriftliche Ausarbeitung (Einzelnote)</summary><div style="margin-top:10px"><p>${esc(aus.umfang)} Gliedere so:</p>
+   <div class="bep-tabwrap"><table class="bep-tab"><thead><tr><th>Teil</th><th>Inhalt und Leitfragen</th><th>Umfang</th></tr></thead><tbody>${aus.teile.map(t=>`<tr><td data-l="Teil"><b>${esc(t.teil)}</b></td><td data-l="Inhalt">${esc(t.inhalt)}</td><td data-l="Umfang">${esc(t.umfang)}</td></tr>`).join("")}</tbody></table></div></div></details>
+  <details class="ppm-box ppm-details"><summary>So präsentierst du: die BEP-Messe</summary><div style="margin-top:10px"><p>${esc(me.text)}</p>
+   <div class="bep-formate">${me.formate.map(f=>`<div class="bep-fmt"><span class="bep-kap">${esc(f.k)}</span><div><b>${esc(f.name)}</b><small>${esc(f.text)}</small></div></div>`).join("")}</div>
+   <div class="bep-hinweis"><b>${esc(me.pflicht.split(":")[0])}:</b>${esc(me.pflicht.slice(me.pflicht.indexOf(":")+1))}</div>
+   <h3>Abgabe auf einen Blick</h3><ol>${v.abgabe.map(a=>`<li>${esc(a)}</li>`).join("")}</ol></div></details>
+  <details class="ppm-box ppm-details"><summary>So wird bewertet</summary><div style="margin-top:10px"><p>${esc(bw.text)}</p>
+   <div class="bep-tabwrap"><table class="bep-tab"><thead><tr><th>Kriterium</th><th>Darauf achte ich</th><th>Punkte</th></tr></thead><tbody>${bw.kriterien.map(k=>`<tr><td data-l="Kriterium"><b>${esc(k.k)}</b></td><td data-l="Darauf achte ich">${esc(k.text)}</td><td data-l="Punkte"><b>${k.bonus?"+ ":""}${k.p}</b></td></tr>`).join("")}</tbody></table></div></div></details>
+  <details class="ppm-box ppm-details"${lehrer?"":" open"}><summary>Checkliste vor der Abgabe${lehrer?"":` (<span id="bepChkN">${nChk}</span> von ${v.checkliste.length})`}</summary><div style="margin-top:10px">
+   ${v.checkliste.map((a,j)=>`<label class="bep-chk bep-chk-zeile"><input type="checkbox" class="bep-chk-j"${chk["c"+j]?" checked":""}${lehrer?" disabled":""} onchange="bepCheckHaken('${m.id}','c${j}',this.checked)"><span>${esc(a)}</span></label>`).join("")}
+   <div class="bep-hinweis" style="margin-top:10px"><b>Auf den Punkt gebracht:</b> ${esc(v.punkt)}</div></div></details>`;
+}
+// ---- Lehrkraft: Teamstand, Bestätigungen, Termine ----
+async function bepLehrerHTML(m,v,d){
+ const ph=bepPh(m,v),h=bepHeute();
+ let students=[];try{students=await getAllUsersForLernstand();}catch(e){console.error(e);}
+ const imTeam=new Set(d.teams.flatMap(t=>t.mitgliederUids||[]));
+ const ohne=students.filter(s=>!imTeam.has(s.uid));
+ const warten=[];
+ d.teams.forEach(t=>ph.bestaetigung.forEach(i=>{const st=msStatus(ph,t,d.beitraege,i);if(st.zustand==="wartet")warten.push({t,i,st});}));
+ const kopfZellen=v.meilensteine.map((x,k)=>{const f=bepFrist(m,v,k+1);return`<th title="${esc(x.titel)}">${esc(x.kurz)}<small>${f?esc(fmtKurz(f)):""}</small></th>`;}).join("");
+ const zeilen=d.teams.slice().sort((a,b)=>String(a.bereichKap||"").localeCompare(String(b.bereichKap||""),"de",{numeric:true})).map(t=>{
+  const zellen=v.meilensteine.map((x,k)=>{
+   const i=k+1,st=msStatus(ph,t,d.beitraege,i),Z=MS_ZUSTAND[st.zustand],f=bepFrist(m,v,i);
+   const n=(t.mitgliederUids||[]).length-st.fehlend.length,ueber=f&&f<h&&st.zustand!=="erreicht";
+   return`<td class="bep-z ${st.zustand}${ueber?" ueber":""}" title="${esc(x.kurz+": "+Z.t+(ueber?" (Frist verstrichen)":""))}"><b>${st.zustand==="erreicht"?"✓":Z.i}</b><small>${n}/${(t.mitgliederUids||[]).length}</small></td>`;
+  }).join("");
+  return`<tr><td class="bep-tn"><b>${esc(t.bereichKap||"")}</b> ${esc(t.bereichName||t.teamName||"")}<small>${bepNamenListe(t)}</small></td>${zellen}</tr>`;
+ }).join("");
+ const matrix=d.teams.length?`<div class="bep-tabwrap"><table class="bep-matrix"><thead><tr><th>Team (Bildungsbereich)</th>${kopfZellen}</tr></thead><tbody>${zeilen}</tbody></table></div>
+   <p class="bep-klein">✓ erreicht · ⏳ wartet auf deine Bestätigung · ↩ zurückgegeben · ○ offen (darunter: Beiträge vorhanden / Teamgröße). Rot umrandet: Frist ist verstrichen.</p>`
+  :`<p class="ppm-leer">Noch hat sich kein Team gebildet.</p>`;
+ const frei=v.bereiche.filter(b=>!d.teams.some(t=>t.bereichKap===b.kap));
+ const queue=warten.length?warten.map(w=>`<div class="bep-wq"><b>${esc(w.t.bereichKap||"")} ${esc(w.t.bereichName||w.t.teamName||"")}</b> · ${esc(v.meilensteine[w.i-1].kurz)} ${esc(v.meilensteine[w.i-1].titel)}
+   <div class="ms-beitraege">${w.st.beitraege.map(b=>`<div><b>${esc(b.name||"")}:</b> ${esc(b.text||"")}${msLinksHTML(b)}</div>`).join("")}</div>
+   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"><button class="ppm-btn klein primaer" onclick="msPruefen('${v.id}','${w.t.id}',${w.i},true,'seite')">✓ Bestätigen</button><button class="ppm-btn klein" onclick="msPruefen('${v.id}','${w.t.id}',${w.i},false,'seite')">↩ Zurückgeben</button></div></div>`).join("")
+  :`<p class="ppm-leer">Gerade wartet nichts auf deine Bestätigung.</p>`;
+ const teamDetails=d.teams.map(t=>`<details class="bep-td"><summary><b>${esc(t.bereichKap||"")} ${esc(t.bereichName||t.teamName||"")}</b> · ${bepNamenListe(t)}</summary>
+   ${msListeHTML(ph,t,d.beitraege,"seite")}
+   <div class="ppm-zeile" style="border:0"><button type="button" class="ppm-btn klein" onclick="bepTeamAufloesen('${m.id}','${t.id}')">Team auflösen</button></div></details>`).join("");
+ const termine=v.meilensteine.map((x,k)=>{const i=k+1,eig=m.termine&&m.termine[i]||"",std=bepAnker(bepZeitraum(m),x.faellig);
+  return`<label class="bep-termin"><span><b>${esc(x.kurz)}</b> ${esc(x.titel)}<small>Standard: ${std?esc(bepTagText(std)):"–"}</small></span><input type="date" id="bepT${i}" value="${esc(eig)}"></label>`;}).join("");
+ return`<div class="ppm-box bep-lehrer"><h2>Für dich als Lehrkraft: Teamstand</h2>
+  <div class="bep-zahlen"><div><b>${d.teams.length}</b><small>Teams</small></div><div><b>${students.length-ohne.length}/${students.length}</b><small>Schüler:innen im Team</small></div><div class="${warten.length?"warn":""}"><b>${warten.length}</b><small>warten auf dich</small></div><div><b>${frei.length}</b><small>Bereiche noch frei</small></div></div>
+  <h3>⏳ Wartet auf deine Bestätigung</h3>${queue}
+  <h3>Stand aller Teams</h3>${matrix}
+  ${ohne.length?`<h3>Noch ohne Team (${ohne.length})</h3><p>${ohne.map(s=>esc(s.displayName||s.email||"Schüler:in")).join(", ")}</p>`:(students.length?`<p><b>Alle Schüler:innen haben ein Team ✓</b></p>`:"")}
+  ${frei.length?`<p class="bep-klein"><b>Noch freie Bereiche:</b> ${frei.map(b=>esc(b.kap+" "+b.name)).join(" · ")}</p>`:""}
+  ${teamDetails?`<h3>Teams im Einzelnen (Beiträge ansehen, bestätigen, zurückgeben)</h3>${teamDetails}`:""}
+  <details class="ppm-details" style="margin-top:12px"><summary>Termine festlegen</summary><div style="margin-top:8px"><p class="bep-klein">Die Fristen ergeben sich aus der Lage des Moduls im Plan. Hier kannst du sie überschreiben. Leer lassen = Standard.</p><div class="bep-termine">${termine}</div>
+   <div class="ppm-zeile" style="border:0"><button type="button" class="ppm-btn primaer" onclick="bepTermineSpeichern('${m.id}')">Termine speichern</button><button type="button" class="ppm-btn" onclick="bepTermineSpeichern('${m.id}',true)">Alle auf Standard zurücksetzen</button></div></div></details></div>`;
+}
+async function ppmProjektVorlageSeite(m,v){
+ const lehrer=isTeacher();
+ const d=(await bepLaden(m))||{v,teams:[],beitraege:[],team:null};
+ const meinK=PPM.meine.kurs[m.id]||{};
+ const aufg=meinK.bepAufg||{},chk=meinK.bepCheck||{};
+ const kopf=ppmKopf(m,`<p class="bep-sub">${esc(v.untertitel)}</p>`);
+ const mitMaterial=(m.material||[]).length;
+ return`${kopf}
+ ${bepBlickHTML(v)}
+ ${lehrer?await bepLehrerHTML(m,v,d):(d.team?bepWoStehIchHTML(m,v,d):bepTeamWahlHTML(m,v,d))}
+ ${!lehrer&&d.team?bepTeamBoxHTML(m,v,d,lehrer):""}
+ ${bepAuftragHTML(v)}
+ ${bepZeitplanHTML(m,v,d,lehrer,aufg)}
+ ${bepDatenschutzHTML(v)}
+ ${bepMaterialHTML(v)}
+ ${mitMaterial?"":(lehrer?`<p class="bep-klein">Tipp: Das Projektblatt (Word oder PDF) kannst du unter „Modul bearbeiten“ → ⑤ Material anhängen. Es erscheint dann oben auf dieser Seite.</p>`:"")}
+ ${bepWerHTML(v)}
+ ${bepReferenzHTML(v,lehrer,chk,m)}
+ ${footer()}`;
+}
+
 // ---- K-Prim-Test ----
 async function ppmKprimSeite(m){
  const d=await ladeCheckoutDaten();const lehrer=isTeacher();
