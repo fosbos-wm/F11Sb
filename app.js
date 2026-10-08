@@ -4542,7 +4542,67 @@ function ppmKarteHTML(m,fortsetzung){
   ${fo&&fo.done?`<span class="ppm-haken-k" aria-label="geschafft">✓</span>`:""}${isTeacher()?`<button type="button" class="ppm-edit" data-ppm="bearbeiten" data-id="${esc(m.id)}" title="Modul bearbeiten">Ändern</button>`:""}
  </div>`;
 }
+// ---- Zoom im Modulplan: Normal / Kompakt / Übersicht (zum Verschieben über weite Strecken) ----
+function ppmZoomLesen(){try{const z=Number(localStorage.getItem("ppmZoom"));return z>=1&&z<=3?z:1;}catch(e){return 1;}}
+function ppmZoomSetzen(z){
+ z=Math.max(1,Math.min(3,Math.round(z)));
+ try{localStorage.setItem("ppmZoom",String(z));}catch(e){}
+ const p=document.querySelector(".ppm-plan");if(!p)return;
+ // die Woche in der Bildschirmmitte merken, damit sie nach dem Umschalten an gleicher Stelle bleibt
+ const mitte=window.innerHeight/2;let anker=null,off=0;
+ for(const w of p.querySelectorAll(".ppm-woche,.ppm-block")){const r=w.getBoundingClientRect();if(r.bottom>=mitte){anker=w;off=r.top;break;}}
+ p.classList.remove("z1","z2","z3");p.classList.add("z"+z);
+ p.querySelectorAll("[data-ppm=zoom]").forEach(b=>{const an=Number(b.dataset.z)===z;b.classList.toggle("an",an);b.setAttribute("aria-pressed",an?"true":"false");});
+ if(anker){const r=anker.getBoundingClientRect();window.scrollBy(0,r.top-off);}
+}
+if(!window.__ppmZoomRad){
+ window.__ppmZoomRad=true;
+ window.addEventListener("wheel",e=>{
+  if(!(e.ctrlKey||e.metaKey)||!e.target.closest||!e.target.closest(".ppm-plan"))return;
+  e.preventDefault();
+  const z=ppmZoomLesen(),n=e.deltaY>0?z+1:z-1;
+  if(n!==z&&n>=1&&n<=3&&!ppmZoomRad.warte){ppmZoomRad.warte=true;setTimeout(()=>{ppmZoomRad.warte=false;},350);ppmZoomSetzen(n);}
+ },{passive:false});
+}
+const ppmZoomRad={warte:false};
+function ppmZoomLeisteHTML(){
+ const z=ppmZoomLesen(),b=(n,t)=>`<button type="button" class="ppm-zb${z===n?" an":""}" data-ppm="zoom" data-z="${n}" aria-pressed="${z===n}">${t}</button>`;
+ return`<div class="ppm-zoomleiste"><b>Ansicht</b>${b(1,"Normal")}${b(2,"Kompakt")}${b(3,"Übersicht")}<small>${isTeacher()?"Zum Verschieben in „Übersicht“ wechseln, Modul ziehen und in der gewünschten Woche loslassen. ":""}Strg + Mausrad zoomt ebenfalls.</small></div>`;
+}
+const PPM_ZOOM_CSS=(()=>{
+ const K2=":is(.ppm-plan.z2 .ppm-karte,.ppm-karte.ppm-geist.z2)",K3=":is(.ppm-plan.z3 .ppm-karte,.ppm-karte.ppm-geist.z3)";
+ return`
+.ppm-zoomleiste{position:sticky;top:0;z-index:30;display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:8px 10px;margin:0 0 10px;border-radius:12px;background:#fff;border:1px solid var(--line);box-shadow:0 4px 14px rgba(24,67,96,.10)}
+.ppm-zoomleiste small{color:var(--muted);font-size:12px;flex:1 1 220px}
+.ppm-zb{min-height:36px;padding:0 14px;border-radius:999px;border:1.5px solid #b9c8d6;background:#fff;font:inherit;font-size:13px;font-weight:700;color:#3a4a5c;cursor:pointer}
+.ppm-zb.an{background:#075a9d;border-color:#075a9d;color:#fff}
+.ppm-plan.z2 .ppm-woche{padding:5px 8px;margin:0 0 6px;grid-template-columns:104px minmax(0,1fr)}
+.ppm-plan.z2 .ppm-reihe{gap:6px}
+${K2}{padding:6px 8px 6px 10px}
+${K2} .ppm-txt{gap:1px}${K2} .ppm-txt b{font-size:13px}${K2} .ppm-txt small{font-size:11px}
+${K2} .ppm-status,${K2} .ppm-mini,${K2} .ppm-chip,${K2} .lb-pills,${K2} .bep-kachel,${K2} .ppm-mv{display:none!important}
+${K2}.mit-mv{padding-bottom:6px}
+${K2} .ppm-edit{height:22px;padding:0 6px;font-size:11px}
+.ppm-plan.z2 .ppm-neu{min-height:32px}.ppm-plan.z2 .ppm-block{padding:6px 12px;margin:0 0 6px}
+.ppm-plan.z3 .ppm-woche{padding:3px 6px;margin:0 0 3px;gap:8px;grid-template-columns:70px minmax(0,1fr);border-radius:8px}
+.ppm-plan.z3 .ppm-wl{font-size:10px;line-height:1.25}.ppm-plan.z3 .ppm-wl b{font-size:12px}
+.ppm-plan.z3 .ppm-wl em,.ppm-plan.z3 .ppm-wl small{display:none}
+.ppm-plan.z3 .ppm-kap{margin:2px 0 0;height:5px}
+.ppm-plan.z3 .ppm-reihe{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px}
+${K3}{grid-column:auto;padding:4px 6px 4px 8px;border-left-width:5px;border-radius:8px;min-height:30px;align-items:center}
+${K3} .ppm-txt{gap:0}${K3} .ppm-txt b{font-size:11px;line-height:1.2;padding-right:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+${K3} .ppm-txt small,${K3} .ppm-status,${K3} .ppm-mini,${K3} .ppm-chip,${K3} .lb-pills,${K3} .bep-kachel,${K3} .ppm-mv,${K3} .ppm-edit,${K3} .ppm-ic{display:none!important}
+${K3}.mit-mv{padding-bottom:4px}
+${K3} .ppm-haken-k{width:16px;height:16px;font-size:10px;right:3px;top:3px}
+.ppm-plan.z3 .ppm-fort{font-size:10px;padding:3px 6px}
+.ppm-plan.z3 .ppm-neu{font-size:0;min-height:26px;padding:0 10px;border-radius:8px}.ppm-plan.z3 .ppm-neu::before{content:"＋";font-size:14px}
+.ppm-plan.z3 .ppm-leer{font-size:10px}
+.ppm-plan.z3 .ppm-block{padding:3px 10px;margin:0 0 3px;border-radius:8px;font-size:11px}.ppm-plan.z3 .ppm-block small{display:none}.ppm-plan.z3 .ppm-block span{font-size:14px!important}
+.ppm-plan.z3 .ppm-woche.ppm-ziel{outline-width:3px}
+@media(max-width:760px){.ppm-plan.z3 .ppm-woche{grid-template-columns:1fr}.ppm-plan.z3 .ppm-reihe{grid-template-columns:repeat(2,minmax(0,1fr))}.ppm-plan.z2 .ppm-woche{grid-template-columns:1fr}}`;
+})();
 const PPM_CSS=`<style>
+${PPM_ZOOM_CSS}
 .lb-pills{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 2px}.lb-leiste{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .lb-pill{display:inline-flex;align-items:center;gap:4px;min-height:26px;padding:0 9px;border-radius:13px;border:1.5px dashed #6b7c93;background:#fff;color:#3a4a5c;font:inherit;font-size:11px;font-weight:700;cursor:pointer}
 .lb-pill.da{border:1.5px solid #075a9d;background:#075a9d;color:#fff}
@@ -4744,7 +4804,7 @@ async function renderPPModulplan(){
  ${PPM_CSS}${fehler}${coBox}${standBox}${legende}
  ${leer&&lehrer&&!PPM.fehler?`<div class="ppm-box"><h2>Noch kein Plan</h2><p>Du kannst von vorn beginnen oder den bisherigen Ablauf (je Lernbereich ein Projekt und ein Prüfungstraining, dazu das Experiment als Einheit im ersten Projekt) als Startpunkt übernehmen. Danach lässt sich jedes Modul ändern, verschieben oder löschen.</p><button type="button" class="ppm-btn primaer" data-ppm="standard">Bisherigen Ablauf als Plan übernehmen</button></div>`:""}
  ${leer&&!lehrer&&!PPM.fehler?`<div class="empty"><strong>Noch kein Plan.</strong>Deine Lehrkraft hat noch keine Module geplant.</div>`:""}
- ${zeilen}
+ <div class="ppm-plan z${ppmZoomLesen()}">${ppmZoomLeisteHTML()}${zeilen}</div>
  ${footer()}`;
 }
 // ------------------------------------------------------------ Modul anlegen/ändern
@@ -5833,6 +5893,7 @@ async function ppmKlick(e){
  if(b.classList.contains("ppm-karte")&&e.target.closest(".ppm-edit"))return;
  const refresh=async()=>{await render();};
  try{
+  if(aktion==="zoom"){ppmZoomSetzen(Number(b.dataset.z)||1);return;}
   if(aktion==="oeffnen"){ppmOeffnen(id);return;}
   if(aktion==="plan"){activePPModul=null;await refresh();return;}
   if(aktion==="neu"){if(!isTeacher())return;if(!b.dataset.typ){ppmTypWahl(b.dataset.woche||null);return;}await ppmDialog(null,b.dataset.typ,b.dataset.woche||null);return;}
@@ -6039,7 +6100,7 @@ function ppmDndStart(){
  const k=ppmDnd.k;if(!k||ppmDnd.aktiv)return;
  ppmDnd.aktiv=true;
  const r=k.getBoundingClientRect(),g=k.cloneNode(true);
- g.classList.add("ppm-geist");g.removeAttribute("data-ppm");
+ g.classList.add("ppm-geist","z"+ppmZoomLesen());g.removeAttribute("data-ppm");
  g.style.width=r.width+"px";g.style.left=r.left+"px";g.style.top=r.top+"px";
  ppmDnd.ox=ppmDnd.px-r.left;ppmDnd.oy=ppmDnd.py-r.top;
  document.body.appendChild(g);ppmDnd.geist=g;
