@@ -52,6 +52,11 @@ textarea{width:100%;min-height:130px}
 .situation{background:#fff;border:1px solid var(--line);border-left:5px solid var(--accent);border-radius:12px;padding:12px 16px;margin:12px 0}
 .situation span{white-space:pre-line}
 .situation b{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:3px}
+.situation .zl{display:flex;gap:12px;align-items:baseline;line-height:1.5}
+.situation .zn{flex:0 0 2em;text-align:right;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums;user-select:none;border-right:1px solid var(--line);padding-right:8px}
+.situation .zt{flex:1;min-width:0}
+.situation .zl.leer{height:10px}
+.situation .zn-nach{font-style:italic;margin-top:8px;padding-left:calc(2em + 21px)}
 .zitat{background:#eef1fb;border-left:5px solid #8a96d6;border-radius:10px;padding:12px 16px;margin:14px 0}
 .zitat small{display:block;margin-top:4px;color:var(--muted)}
 .notizen{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin:14px 0}
@@ -468,7 +473,18 @@ TYPEN.strukturstreifen=taskStruktur;
 function bText(b){return para(b.text||'');}
 function bMerke(b){return h('div',{class:'merke'},h('b',null,b.label||'Merke'),md(h('span'),b.text||''));}
 function bZitat(b){return h('div',{class:'zitat'},md(h('span'),b.text||''),b.quelle?h('small',null,b.quelle):null);}
-function bSituation(b){return h('div',{class:'situation'},h('b',null,b.label||'Lernsituation'),md(h('span'),b.text||''));}
+function bSituation(b){
+  if(Array.isArray(b.zeilen)&&b.zeilen.length){
+    var n=0;
+    var rows=b.zeilen.map(function(z){
+      if(!z)return h('div',{class:'zl leer','aria-hidden':'true'});
+      n++;
+      return h('div',{class:'zl'},h('span',{class:'zn','aria-label':'Zeile '+n},String(n)),h('span',{class:'zt'},z));
+    });
+    return h('div',{class:'situation'},h('b',null,b.label||'Lernsituation'),rows,b.nachsatz?h('div',{class:'zn-nach'},b.nachsatz):null);
+  }
+  return h('div',{class:'situation'},h('b',null,b.label||'Lernsituation'),md(h('span'),b.text||''));
+}
 function bNotizen(b){
   var g=h('div',{class:'notizen'},(b.items||[]).map(function(x){return h('div',{class:'notiz'},x);}));
   return b.beschriftung?h('div',null,g,h('div',{class:'cap'},b.beschriftung)):g;
