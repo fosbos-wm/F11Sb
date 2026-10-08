@@ -4370,17 +4370,21 @@ function ppmSwIndex(id){return SCHULWOCHEN_PP.findIndex(w=>w.id===id);}
 function ppmWochen(m){const i=ppmSwIndex(m.start);if(i<0)return[];return SCHULWOCHEN_PP.slice(i,i+ppmDauerDef(m).wochen);}
 function ppmStd(min){return String(Math.round(min/PPM_MIN_PRO_STUNDE*10)/10).replace(".",",");} // Minuten → Unterrichtsstunden (à 45 Min.)
 // Belegte Minuten je Schulwoche. Experiment-Einheiten innerhalb eines Projekts zählen zur Projektzeit.
+// Projekte über ganze Wochen laufen auf einer eigenen „Projektspur“: Sie belegen keine der 6,3 Stunden,
+// daneben bleibt in jeder Woche eine normale Zeile für Selbstlernkurse und andere Module.
+function ppmIstSpur(m){return !!m&&m.modul==="projekt"&&!m.projektId&&!ppmDauerDef(m).min;}
 function ppmLast(ohneId){
- const last={};SCHULWOCHEN_PP.forEach(w=>{last[w.id]={min:0,liste:[]};});
+ const last={};SCHULWOCHEN_PP.forEach(w=>{last[w.id]={min:0,liste:[],spur:[]};});
  PPM.liste.forEach(m=>{
   if(m.id===ohneId||m.projektId)return;
+  if(ppmIstSpur(m)){ppmWochen(m).forEach(w=>{last[w.id].spur.push(m);});return;}
   const d=ppmDauerDef(m);
   if(d.min){const w=last[m.start];if(w){w.min+=d.min;w.liste.push(m);}}
   else ppmWochen(m).forEach(w=>{last[w.id].min+=PPM_MIN_PRO_WOCHE;last[w.id].liste.push(m);});
  });
  return last;
 }
-function ppmPruefen(startId,dauerKey,ohneId){
+function ppmPruefen(startId,dauerKey,ohneId,modul){
  const d=PPM_DAUERN.find(x=>x.k===dauerKey)||{k:dauerKey,wochen:Number(String(dauerKey).slice(1))||1};
  const i=ppmSwIndex(startId);
  if(i<0)return{ok:false,zeilen:[],fehler:"Bitte eine Schulwoche wählen."};
@@ -4391,7 +4395,8 @@ function ppmPruefen(startId,dauerKey,ohneId){
  }else{
   const ws=SCHULWOCHEN_PP.slice(i,i+d.wochen);
   if(ws.length<d.wochen)return{ok:false,zeilen:[],fehler:`Ab dieser Woche gibt es nur noch ${ws.length} Schulwoche${ws.length===1?"":"n"}.`};
-  ws.forEach(w=>{const belegt=last[w.id].min;zeilen.push({w,belegt,neu:PPM_MIN_PRO_WOCHE,frei:PPM_MIN_PRO_WOCHE-belegt,ok:belegt===0});});
+  if(modul==="projekt")ws.forEach(w=>{const a=last[w.id].spur[0];zeilen.push({w,spur:true,konflikt:a?ppmTitel(a):"",belegt:last[w.id].min,neu:0,frei:PPM_MIN_PRO_WOCHE-last[w.id].min,ok:!a});});
+  else ws.forEach(w=>{const belegt=last[w.id].min;zeilen.push({w,belegt,neu:PPM_MIN_PRO_WOCHE,frei:PPM_MIN_PRO_WOCHE-belegt,ok:belegt===0});});
  }
  return{ok:zeilen.every(z=>z.ok),zeilen};
 }
@@ -4400,6 +4405,10 @@ function ppmKapaHtml(p){
  let vorher=null;
  return p.zeilen.map(z=>{
   const sprung=vorher&&(new Date(z.w.start)-new Date(vorher.end))>4*86400000;vorher=z.w;
+  if(z.spur){
+   const t2=`${fmtKurz(z.w.start)}–${fmtKurz(z.w.end)}: `+(z.ok?"Projektspur frei, die 6,3 Stunden der Woche bleiben für andere Module":`hier läuft schon ein Projekt${z.konflikt?` („${z.konflikt}“)`:""}`);
+   return`${sprung?`<span style="color:#7a4b00">↷ dazwischen Praktikum oder Ferien</span><br>`:""}<span style="color:${z.ok?"#1f6a3a":"#b3261e"}">${z.ok?"✓":"✗"} ${esc(t2)}</span>`;
+  }
   const txt=`${fmtKurz(z.w.start)}–${fmtKurz(z.w.end)}: ${ppmStd(z.belegt)} von ${PPM_STD_PRO_WOCHE} Stunden belegt`+(z.ok?` → danach ${ppmStd(z.belegt+z.neu)} von ${PPM_STD_PRO_WOCHE} Stunden`:` – nicht genug Platz (frei: ${ppmStd(Math.max(0,z.frei))} Stunden)`);
   return`${sprung?`<span style="color:#7a4b00">↷ dazwischen Praktikum oder Ferien</span><br>`:""}<span style="color:${z.ok?"#1f6a3a":"#b3261e"}">${z.ok?"✓":"✗"} ${esc(txt)}</span>`;
  }).join("<br>");
@@ -4508,7 +4517,7 @@ async function ppmVerschieben(m,d){
  if(i<0||n<0||n>=SCHULWOCHEN_PP.length){toast("Weiter verschieben geht nicht.");return;}
  const neu=SCHULWOCHEN_PP[n];
  if(!m.projektId){
-  const pr=ppmPruefen(neu.id,ppmDauerKey(m),m.id);
+  const pr=ppmPruefen(neu.id,ppmDauerKey(m),m.id,m.modul);
   if(!pr.ok){toast(pr.fehler||`In der Woche ${fmtKurz(neu.start)}–${fmtKurz(neu.end)} ist nicht genug Platz.`);return;}
  }
  const y=window.scrollY;
@@ -4572,6 +4581,7 @@ function ppmZoomLeisteHTML(){
 const PPM_ZOOM_CSS=(()=>{
  const K2=":is(.ppm-plan.z2 .ppm-karte,.ppm-karte.ppm-geist.z2)",K3=":is(.ppm-plan.z3 .ppm-karte,.ppm-karte.ppm-geist.z3)";
  return`
+.ppm-wi{min-width:0;display:flex;flex-direction:column;gap:8px}.ppm-spurreihe{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;padding-bottom:8px;border-bottom:1.5px dashed #b9c8d6}.ppm-spurreihe .ppm-karte{grid-column:auto}.ppm-spurreihe .ppm-fort{width:100%}
 .ppm-zoomleiste{position:sticky;top:0;z-index:30;display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:8px 10px;margin:0 0 10px;border-radius:12px;background:#fff;border:1px solid var(--line);box-shadow:0 4px 14px rgba(24,67,96,.10)}
 .ppm-zoomleiste small{color:var(--muted);font-size:12px;flex:1 1 220px}
 .ppm-zb{min-height:36px;padding:0 14px;border-radius:999px;border:1.5px solid #b9c8d6;background:#fff;font:inherit;font-size:13px;font-weight:700;color:#3a4a5c;cursor:pointer}
@@ -4765,7 +4775,7 @@ async function renderPPModulplan(){
  const vergangen=SCHULWOCHEN_PP.filter(w=>w.end<heute).length,jahrProz=Math.round(vergangen/SCHULWOCHEN_PP.length*100);
  const blockWochen=ppmZeitleiste().filter(z=>z.art==="block").reduce((n,z)=>n+z.n,0);
  const zeitBox=`<div class="ppm-box ppm-zeitbox"><h2>Zeitstruktur</h2>
-  <p>Pro Schulwoche stehen <b>${PPM_STD_PRO_WOCHE} Unterrichtsstunden</b> (je ${PPM_MIN_PRO_STUNDE} Minuten) zur Verfügung. In den <b>Praktikumsblöcken (fpA)</b> und in den Ferien ist kein Unterricht, dort lässt sich nichts planen. Das Schuljahr hat <b>${SCHULWOCHEN_PP.length} Schulwochen</b> (${blockWochen} Wochen Praktikum und Ferien dazwischen).</p>
+  <p>Pro Schulwoche stehen <b>${PPM_STD_PRO_WOCHE} Unterrichtsstunden</b> (je ${PPM_MIN_PRO_STUNDE} Minuten) zur Verfügung. In den <b>Praktikumsblöcken (fpA)</b> und in den Ferien ist kein Unterricht, dort lässt sich nichts planen. Projekte über ganze Wochen laufen auf einer eigenen <b>Projektspur</b> (oberste Zeile der Woche): Sie belegen keine der 6,3 Stunden, daneben lassen sich in jeder Woche normal Selbstlernkurse und andere Module planen. Das Schuljahr hat <b>${SCHULWOCHEN_PP.length} Schulwochen</b> (${blockWochen} Wochen Praktikum und Ferien dazwischen).</p>
   <div class="ppm-balken"><span><b>Verplant:</b> ${ppmStd(belegt)} von ${ppmStd(gesamt)} Unterrichtsstunden (${proz} %)</span><div class="ppm-bar" role="progressbar" aria-valuenow="${proz}" aria-valuemin="0" aria-valuemax="100"><i style="width:${proz}%"></i></div></div>
   <div class="ppm-balken"><span><b>Schuljahr:</b> ${vergangen} von ${SCHULWOCHEN_PP.length} Schulwochen vorbei (${jahrProz} %)</span><div class="ppm-bar ppm-bar-jahr" role="progressbar" aria-valuenow="${jahrProz}" aria-valuemin="0" aria-valuemax="100"><i style="width:${jahrProz}%"></i></div></div>
   <div class="ppm-leg"><span><i style="background:#3d8fd0"></i>Woche teilweise belegt</span><span><i style="background:#3fa66a"></i>Woche voll (6,3 Stunden)</span><span><i style="background:#d9534f"></i>Woche überbucht</span><span>  Praktikum (gesperrt)</span><span> Ferien (gesperrt)</span></div></div>`;
@@ -4779,12 +4789,14 @@ async function renderPPModulplan(){
   if(!lehrer&&!mm.length&&!ff.length&&!ee.length)return"";
   const jetzt=heute>=w.start&&heute<=w.end,min=last[w.id].min,pct=Math.min(100,Math.round(min/PPM_MIN_PRO_WOCHE*100)),cls=min>PPM_MIN_PRO_WOCHE?"ueber":(min===PPM_MIN_PRO_WOCHE?"voll":"");
   const kw=ppmKW(w);
+  const spurM=mm.filter(ppmIstSpur),normM=mm.filter(m=>!ppmIstSpur(m)),ffS=ff.filter(ppmIstSpur),ffN=ff.filter(m=>!ppmIstSpur(m));
+  const spurZeile=(spurM.length||ffS.length)?`<div class="ppm-spurreihe">${spurM.map(m=>ppmKarteHTML(m,false)).join("")}${ffS.map(m=>ppmKarteHTML(m,true)).join("")}</div>`:"";
   const stW=lehrer?[]:mm.map(ppmFort).filter(Boolean),nOkW=stW.filter(x=>x.done).length,pzW=stW.length?Math.round(nOkW/stW.length*100):0;
   const wochenFort=stW.length?`<div class="ppm-kap voll" title="${nOkW} von ${stW.length} Modulen geschafft"><i style="width:${pzW}%"></i></div><small class="kapa">${nOkW===stW.length?"alles geschafft ✓":nOkW+" von "+stW.length+" geschafft"}</small>${w.end<heute&&nOkW<stW.length?`<small class="ppm-nach">${stW.length-nOkW} noch offen</small>`:""}`:"";
   return`<div class="ppm-woche${jetzt?" jetzt":""}" data-w="${w.id}"><div class="ppm-wl"><b>KW ${kw}</b><span>${fmtKurz(w.start)}–${fmtKurz(w.end)}</span>${jetzt?`<em style="font-style:normal;font-weight:700;color:#075a9d">diese Woche</em>`:""}
     ${lehrer?`<div class="ppm-kap ${cls}" title="${ppmStd(min)} von ${PPM_STD_PRO_WOCHE} Unterrichtsstunden belegt"><i style="width:${pct}%"></i></div><small class="kapa">${ppmStd(min)} von ${PPM_STD_PRO_WOCHE} Stunden${min>PPM_MIN_PRO_WOCHE?" · überbucht":(min===PPM_MIN_PRO_WOCHE?" · voll":"")}</small>`:wochenFort}</div>
-   <div class="ppm-reihe">${mm.map(m=>ppmKarteHTML(m,false)).join("")}${ff.map(m=>ppmKarteHTML(m,true)).join("")}${ee.map(x=>`<span class="ppm-fort" style="--c:${ppmFarbe(x.m)}" data-ppm="oeffnen" data-id="${esc(x.m.id)}">${(PPM_EINHEITEN[x.e.typ]||{}).icon||""} Einheit: ${esc((PPM_EINHEITEN[x.e.typ]||{}).name||x.e.typ)}</span>`).join("")}
-   ${lehrer?(min<PPM_MIN_PRO_WOCHE?`<button type="button" class="ppm-neu" data-ppm="neu" data-woche="${w.id}">＋ Modul</button>`:`<span class="ppm-leer"${min>PPM_MIN_PRO_WOCHE?' style="color:#b3261e;font-weight:700"':""}>${min>PPM_MIN_PRO_WOCHE?`Woche überbucht: ${ppmStd(min)} von ${PPM_STD_PRO_WOCHE} Stunden, bitte ein Modul verschieben oder kürzen`:"Woche voll"}</span>`):(mm.length||ff.length||ee.length?"":`<span class="ppm-leer">–</span>`)}</div></div>`;
+   <div class="ppm-wi">${spurZeile}<div class="ppm-reihe">${normM.map(m=>ppmKarteHTML(m,false)).join("")}${ffN.map(m=>ppmKarteHTML(m,true)).join("")}${ee.map(x=>`<span class="ppm-fort" style="--c:${ppmFarbe(x.m)}" data-ppm="oeffnen" data-id="${esc(x.m.id)}">${(PPM_EINHEITEN[x.e.typ]||{}).icon||""} Einheit: ${esc((PPM_EINHEITEN[x.e.typ]||{}).name||x.e.typ)}</span>`).join("")}
+   ${lehrer?(min<PPM_MIN_PRO_WOCHE?`<button type="button" class="ppm-neu" data-ppm="neu" data-woche="${w.id}">＋ Modul</button>`:`<span class="ppm-leer"${min>PPM_MIN_PRO_WOCHE?' style="color:#b3261e;font-weight:700"':""}>${min>PPM_MIN_PRO_WOCHE?`Woche überbucht: ${ppmStd(min)} von ${PPM_STD_PRO_WOCHE} Stunden, bitte ein Modul verschieben oder kürzen`:"Woche voll"}</span>`):(normM.length||ffN.length||ee.length||spurM.length||ffS.length?"":`<span class="ppm-leer">–</span>`)}</div></div></div>`;
  }).join("");
  const alleSt=lehrer?[]:PPM.liste.map(m=>({m,p:ppmFort(m)})).filter(x=>x.p);
  const nGes=alleSt.length,nOk=alleSt.filter(x=>x.p.done).length,pzGes=nGes?Math.round(nOk/nGes*100):0;
@@ -4997,7 +5009,7 @@ async function ppmDialog(id,typ,woche,opt){
   const dk=$("ppmDauer").value;
   let ok=true;
   if(projekt){$("ppmKapa").innerHTML=`<span style="color:#1f6a3a">✓ Einheit im Projekt: zählt zur Projektzeit, kein eigener Platz nötig.</span>`;}
-  else{const pr=ppmPruefen($("ppmStart").value,dk,bearb?bearb.id:null);ok=pr.ok;$("ppmKapa").innerHTML=ppmKapaHtml(pr);}
+  else{const pr=ppmPruefen($("ppmStart").value,dk,bearb?bearb.id:null,t);ok=pr.ok;$("ppmKapa").innerHTML=ppmKapaHtml(pr);}
   if(t==="experiment"){
    const g=teileGewaehlt(),min=ppmExpMinuten(g),d=PPM_DAUERN.find(x=>x.k===dk),info=$("ppmTeileInfo");
    let txt=`Gewählt: ${g.length} von ${PPM_EXP_TEILE.length} Teilen, ca. ${min} Min.`;
@@ -5020,8 +5032,8 @@ async function ppmDialog(id,typ,woche,opt){
  }));
  aktualisieren();
  btn.addEventListener("click",async()=>{
-  const lb=Number(lbSel.value),pr=projekt?{ok:true}:ppmPruefen($("ppmStart").value,$("ppmDauer").value,bearb?bearb.id:null);
-  if(!pr.ok){toast("In dieser Woche ist nicht genug Platz (6,3 Unterrichtsstunden pro Woche).");return;}
+  const lb=Number(lbSel.value),pr=projekt?{ok:true}:ppmPruefen($("ppmStart").value,$("ppmDauer").value,bearb?bearb.id:null,t);
+  if(!pr.ok){toast(pr.zeilen&&pr.zeilen[0]&&pr.zeilen[0].spur?"In dieser Zeit läuft schon ein anderes Projekt.":"In dieser Woche ist nicht genug Platz (6,3 Unterrichtsstunden pro Woche).");return;}
   const dk=$("ppmDauer").value,def=PPM_DAUERN.find(d=>d.k===dk);
   const daten={modul:t,lb,titel:ti.value.trim(),start:$("ppmStart").value,dauer:dk,wochen:def?def.wochen:(Number(dk.slice(1))||1),notiz:$("ppmNotiz").value.trim()};
   if(!daten.titel){const x=PROJEKT_PHASEN.find(y=>y.lbNum===lb);daten.titel=t==="projekt"&&x?x.titel:(t==="apt"?"Prüfungstraining · LB"+lb:t==="kprim"?"K-Prim-Aufgabensatz · LB"+lb:t==="stunde"?"Deeper-Learning-Einheit · LB"+lb:t==="experiment"?"Das Experiment":t==="rallye"?"Lernrallye · LB"+lb:"Selbstlernkurs · LB"+lb);}
@@ -6138,7 +6150,7 @@ async function ppmDndAblegen(id,zielW,vorId){
  if(iNeu<0){toast("Hier lässt sich nichts planen.");return;}
  const d=iNeu-iAlt,neu=SCHULWOCHEN_PP[iNeu];
  if(d!==0&&!m.projektId){
-  const pr=ppmPruefen(neu.id,ppmDauerKey(m),m.id);
+  const pr=ppmPruefen(neu.id,ppmDauerKey(m),m.id,m.modul);
   if(!pr.ok){toast(pr.fehler||`In der Woche ${fmtKurz(neu.start)}–${fmtKurz(neu.end)} ist nicht genug Platz.`);return;}
  }
  // Reihenfolge der Zielwoche so, wie sie gerade angezeigt wird, mit dem gezogenen Modul an der Ablagestelle
@@ -6171,7 +6183,7 @@ if(!window.__ppmDndGebunden){
  window.__ppmDndGebunden=true;
  document.addEventListener("pointerdown",e=>{
   if(ppmDnd.k||!isTeacher()||(e.pointerType==="mouse"&&e.button!==0))return;
-  const k=e.target.closest&&e.target.closest(".ppm-reihe > .ppm-karte[data-id]");
+  const k=e.target.closest&&e.target.closest(".ppm-reihe > .ppm-karte[data-id],.ppm-spurreihe > .ppm-karte[data-id]");
   if(!k||e.target.closest("button,a,input,select,textarea,.lb-pill"))return;
   Object.assign(ppmDnd,{k,id:k.dataset.id,x:e.clientX,y:e.clientY,px:e.clientX,py:e.clientY,touch:e.pointerType!=="mouse",ptr:e.pointerId,aktiv:false});
   if(ppmDnd.touch)ppmDnd.timer=setTimeout(ppmDndStart,380);
