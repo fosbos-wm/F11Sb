@@ -4262,7 +4262,7 @@ const PPM_EXP_TEILE=[
 function ppmExpMinuten(teile){return PPM_EXP_TEILE.filter(t=>(teile||[]).includes(t.k)).reduce((n,t)=>n+t.min,0);}
 function ppmExpTeile(m){return Array.isArray(m&&m.teile)&&m.teile.length?m.teile:PPM_EXP_TEILE.map(t=>t.k);}
 // Fertige Einarbeitungs-Inhalte (einarbeitung/inhalte/<id>.json); wählbar im Selbstlernkurs.
-const PPM_EA_IDS=["fa01","pp01","pp02","pp03","pp1a1","pp1a2","pp1a3","pp1a4","pp04a","pp04b","pp04c","pp04d","pp05","pp06","pp07","pp21a","pp21b","pp2a1","pp10","pp11","pp15","pp16"];
+const PPM_EA_IDS=["fa01","fa02","pp01","pp02","pp03","pp1a1","pp1a2","pp1a3","pp1a4","pp04a","pp04b","pp04c","pp04d","pp05","pp06","pp07","pp21a","pp21b","pp2a1","pp10","pp11","pp15","pp16"];
 // Einheitliche Bezeichnung: Inhalt · Modulart · LB1 (LB nur, wenn bekannt)
 function ppmBez(inhalt,modul,lb){const T=PPM_TYPEN[modul];return[inhalt,T?T.art:"",lb?"LB"+lb:""].filter(Boolean).join(" · ");}
 // Modulart und Lernbereich einer Einarbeitung: zuerst die Angaben in der JSON-Datei ("modulart", "lb"),
@@ -12882,7 +12882,7 @@ function wbNamenModal(id){
  $("wbNamenKlasse").addEventListener("click",async()=>{
   try{
    const s=await getDocs(collection(db,"users"));
-   const n=s.docs.map(d=>d.data()).filter(u=>u.status==="approved"&&u.role==="student").map(u=>wbKurz(u.displayName)||u.displayName).filter(Boolean).sort((a,b)=>a.localeCompare(b,"de"));
+   const n=s.docs.map(d=>d.data()).filter(u=>u.status==="approved"&&u.role==="student"&&istKlasse11Sb(u)).map(u=>wbKurz(u.displayName)||u.displayName).filter(Boolean).sort((a,b)=>a.localeCompare(b,"de"));
    $("wbNamenText").value=n.join("\n");toast(`${n.length} Namen geladen. Prüfe die Liste und speichere.`);
   }catch(e){toast("Die Klassenliste konnte nicht geladen werden.");}
  });
@@ -14539,7 +14539,7 @@ async function renderZufallspicker(){
 async function pickRandomStudent(){
  try{
  const snap=await getDocs(collection(db,"users"));
- const students=snap.docs.map(d=>({uid:d.id,...d.data()})).filter(u=>u.status==="approved");
+ const students=snap.docs.map(d=>({uid:d.id,...d.data()})).filter(u=>u.status==="approved"&&u.role==="student"&&istKlasse11Sb(u));
  const remaining=students.filter(u=>!pickedStudentUids.includes(u.uid));
  const pool=remaining.length?remaining:students;
  if(!pool.length){toast("Keine freigeschalteten Klassenmitglieder gefunden.");return}
@@ -20028,12 +20028,37 @@ function lernstandBar(points,max=3){
  return`<span class="ls-mini-bar"><i style="width:${Math.round(p/max*100)}%"></i></span>`;
 }
 
+// ---- Klassenliste 11Sb (Nachname, Vorname) ----
+// Nur diese Personen zählen in Lernständen, Ergebnissen, Check-outs, Berichten und Auslosungen als Schüler:innen.
+// Alle anderen Konten sind Lehrkräfte (oder Testkonten) und tauchen dort nicht auf.
+// Bei Miranda, Nguyen und Nicoly war der Nachname gekürzt; es zählen nur die bekannten Namensteile.
+// Neue Schüler:innen: hier eine Zeile ergänzen, z. B. ["Mustermann","Max"].
+const KLASSE_11SB=[
+ ["Bartl","Julian"],["Berger","Christopher"],["Buzov","Lilli"],["Byrne","Sara"],["Caci","Elena"],
+ ["Donner","Rasmus"],["Drexler","Finja"],["Hasch","Sabrina"],["Heinlein","Lara"],["Hussein","Dunia"],
+ ["Junker","Livia"],["Klein","Livia"],["Kolahsa","Matteo"],["Kostka","Laura"],["Lang","Sophie"],
+ ["Lemke","Eliza"],["Menter","Lina"],["Menter","Noah"],["Miranda","Camila"],["Müller","Simon"],
+ ["Neumann","Maya"],["Nguyen","Tiệp"],["Nicoly","Maiara"],["Obholzer","Lisa"],["Richter","Leonie"],
+ ["Saragosa","Djamila"],["Schlierf","Johanna"],["Schmid","Karim"],["Schulz","Thea-Marie"],["Takać","Anna","Luna"],
+ ["Ukimeri","Bora"],["Wittek","Hannah"],["Zwiener","Zoe"]
+];
+function klassenNamensteile(s){
+ return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()
+  .replace(/ß/g,"ss").replace(/ae/g,"a").replace(/oe/g,"o").replace(/ue/g,"u").split(/[^a-z]+/).filter(Boolean);
+}
+const KLASSE_11SB_TEILE=KLASSE_11SB.map(e=>klassenNamensteile(e.join(" ")));
+// true, wenn der Anzeigename alle Namensteile eines Listeneintrags enthält (Reihenfolge egal, Akzente egal, ü = ue, ö = oe, ä = ae)
+function istKlasse11Sb(u){
+ const teile=klassenNamensteile((u&&(u.displayName||u.name))||"");
+ if(!teile.length)return false;
+ return KLASSE_11SB_TEILE.some(e=>e.every(x=>teile.includes(x)));
+}
 async function getAllUsersForLernstand(){
  if(!isTeacher()) throw new Error("Nur Lehrkräfte dürfen die Schülerübersicht öffnen.");
  try{
  const snap=await getDocs(collection(db,"users"));
  return snap.docs.map(d=>({uid:d.id,...d.data()}))
- .filter(u=>u.role!=="teacher"&&u.role!=="admin")
+ .filter(u=>u.role!=="teacher"&&u.role!=="admin"&&istKlasse11Sb(u))
  .sort((a,b)=>String(a.displayName||a.email||"").localeCompare(String(b.displayName||b.email||""),"de"));
  }catch(e){
  console.error("Schülerliste Lernstand:",e);
