@@ -11272,37 +11272,44 @@ async function renderTafelUebersicht(){return renderWhiteboardUebersicht("tafel"
 async function renderWhiteboardUebersicht(modus){
  const istTafel=modus==="tafel";
  const alle=await getWhiteboards();
- const boards=alle===null?null:(istTafel?alle.filter(b=>b.art==="tafel"):alle.filter(b=>b.art!=="tafel"));
+ const boards=alle===null?null:(istTafel?alle.filter(b=>b.art==="tafel"&&!b.einstieg):alle.filter(b=>b.art!=="tafel"));
+ const einstiege=istTafel&&alle?alle.filter(b=>b.art==="tafel"&&b.einstieg):[];
  const kopf=istTafel
   ?pageHead("UNTERRICHT","Digitale Tafel","Die Tafel für deinen Unterricht: Seiten, Karten, Bilder, Videos und Werkzeuge wie Timer, Würfel, Lostopf und Ampel. Lehrkräfte gestalten, alle anderen sehen live zu.",
     isTeacher()?`<button class="primary"onclick="openWhiteboardForm('tafel')">＋ Neue Tafel</button>`:"")
   :pageHead("ZUSAMMENARBEIT","Team-Whiteboard","Gemeinsam auf einer unendlichen Fläche arbeiten: Haftnotizen, Text, Formen, Pfeile und Zeichnungen – alle sehen Änderungen live.",
     `<button class="primary"onclick="openWhiteboardForm()">＋ Neues Whiteboard</button>`);
  if(boards===null)return`${WB_CSS}${kopf}<div class="empty"><strong>${istTafel?"Tafeln":"Whiteboards"} konnten nicht geladen werden.</strong>${esc(wbFehlerText(wbLadeFehler))}<br><small>Tipp: Auf der Seite diagnose.html lässt sich das genau prüfen.</small></div>${footer()}`;
- return`${WB_CSS}${kopf}
- <div class="wb-gitter">${boards.map(b=>`<div class="wb-karte-wrap"><button type="button"class="wb-karte"onclick="openWhiteboard('${b.id}')">
+ const karte=b=>`<div class="wb-karte-wrap"><button type="button"class="wb-karte"onclick="openWhiteboard('${b.id}')">
   ${wbKarteKopf(b.id)}
   <div class="wb-karte-text"><strong>${esc(b.title||"Whiteboard")}</strong>
   <small>${esc(b.description||"")||(b.art==="tafel"?"Tafel für den Unterricht.":"Gemeinsame Arbeitsfläche.")}</small>
-  <small>${b.art==="tafel"?'<b class="wb-art-chip"style="margin:0 6px 0 0">Tafel</b>':""}Angelegt von ${esc(b.createdByName||"Campus-Mitglied")} · ${esc(fmtDate(b.createdAt))}</small></div></button>
-  ${isTeacher()?`<button type="button"class="wb-karte-del"title="${b.art==="tafel"?"Tafel":"Whiteboard"} löschen"aria-label="${b.art==="tafel"?"Tafel":"Whiteboard"} löschen"onclick="wbBoardLoeschen('${b.id}','${b.art==="tafel"?"tafel":"team"}')">${wbIcon("papierkorb",18)}</button>`:""}</div>`).join("")}</div>
+  <small>${b.art==="tafel"?(b.einstieg?'<b class="wb-art-chip einstieg"style="margin:0 6px 0 0">Einstieg</b>':'<b class="wb-art-chip"style="margin:0 6px 0 0">Tafel</b>'):""}Angelegt von ${esc(b.createdByName||"Campus-Mitglied")} · ${esc(fmtDate(b.createdAt))}</small></div></button>
+  ${isTeacher()?`<button type="button"class="wb-karte-del"title="${b.art==="tafel"?"Tafel":"Whiteboard"} löschen"aria-label="${b.art==="tafel"?"Tafel":"Whiteboard"} löschen"onclick="wbBoardLoeschen('${b.id}','${b.art==="tafel"?"tafel":"team"}')">${wbIcon("papierkorb",18)}</button>`:""}</div>`;
+ const einstiegBereich=istTafel?`<section class="wb-bereich wb-einstiege"><div class="wb-bereich-kopf"><div><h2>🚀 Einstiege</h2><small>Tafeln für den Stundeneinstieg: Impuls, Bild, Frage oder kurzes Spiel zum Ankommen.</small></div>${isTeacher()?`<button class="secondary"type="button"onclick="openWhiteboardForm('einstieg')">＋ Neuer Einstieg</button>`:""}</div>
+  ${einstiege.length?`<div class="wb-gitter">${einstiege.map(karte).join("")}</div>`:`<div class="empty"style="margin:0"><strong>Noch kein Einstieg.</strong>${isTeacher()?"Lege den ersten Einstieg an.":"Sobald deine Lehrkraft einen Einstieg anlegt, erscheint er hier."}</div>`}</section>
+  <div class="wb-bereich-kopf"style="margin-top:22px"><div><h2>🧑‍🏫 Tafeln</h2><small>Tafeln für den Unterricht.</small></div></div>`:"";
+ return`${WB_CSS}${kopf}${istTafel?`<style>.wb-bereich-kopf{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin:0 0 12px}.wb-bereich-kopf h2{margin:0;font-size:20px}.wb-bereich-kopf small{color:var(--muted)}.wb-einstiege{background:#fff7ec;border:1px solid #f1d6ad;border-left:6px solid #e08a1e;border-radius:16px;padding:16px;margin:0 0 6px}.wb-art-chip.einstieg{background:#e08a1e}</style>`:""}
+ ${einstiegBereich}
+ <div class="wb-gitter">${boards.map(karte).join("")}</div>
  ${boards.length?"":(istTafel?`<div class="empty"><strong>Noch keine Tafel.</strong>${isTeacher()?"Lege die erste Tafel für eine Unterrichtsstunde an.":"Sobald deine Lehrkraft eine Tafel anlegt, erscheint sie hier."}</div>`:`<div class="empty"><strong>Noch kein Whiteboard.</strong>Lege das erste Whiteboard für dein Team oder ein Thema an.</div>`)}
  ${footer()}`;
 }
 function openWhiteboard(id){activeWhiteboardId=id;go("whiteboard-board")}
 function closeWhiteboard(){const art=wb&&wb.board&&wb.board.art;activeWhiteboardId=null;go(art==="tafel"?"tafel":"whiteboard")}
-let wbFormArt="";
+let wbFormArt="",wbFormEinstieg=false;
 function openWhiteboardForm(artVorgabe){
  if(!isApproved()){toast("Nur freigeschaltete Nutzer können ein Whiteboard anlegen.");return}
- wbFormArt=artVorgabe==="tafel"&&isTeacher()?"tafel":"";
+ wbFormEinstieg=artVorgabe==="einstieg"&&isTeacher();
+ wbFormArt=(artVorgabe==="tafel"||wbFormEinstieg)&&isTeacher()?"tafel":"";
  modal(`<button class="modal-close"onclick="closeModal()">×</button>
-  <div class="kicker">${wbFormArt?"DIGITALE TAFEL":"TEAM-WHITEBOARD"}</div><h2>${wbFormArt?"Neue Tafel":"Neues Whiteboard"}</h2>
-  <p>${wbFormArt?"Eine Tafel für den Unterricht, die du vorbereiten und präsentieren kannst. Schüler:innen sehen zu.":"Eine Arbeitsfläche mit mehreren Seiten, Karten und Unterrichts-Werkzeugen."}</p>
+  <div class="kicker">${wbFormEinstieg?"DIGITALE TAFEL · EINSTIEG":wbFormArt?"DIGITALE TAFEL":"TEAM-WHITEBOARD"}</div><h2>${wbFormEinstieg?"Neuer Einstieg":wbFormArt?"Neue Tafel":"Neues Whiteboard"}</h2>
+  <p>${wbFormEinstieg?"Eine Tafel für den Einstieg in eine Stunde (Impuls, Bild, Frage, kurzes Spiel). Nur Lehrkräfte bearbeiten, Schüler:innen sehen zu. Später lässt sich der Einstieg mit Modulen verknüpfen.":wbFormArt?"Eine Tafel für den Unterricht, die du vorbereiten und präsentieren kannst. Schüler:innen sehen zu.":"Eine Arbeitsfläche mit mehreren Seiten, Karten und Unterrichts-Werkzeugen."}</p>
   <div class="form">
    ${isTeacher()&&!wbFormArt?`<label>Art<select id="wbNeuArt"><option value="team">Team-Whiteboard – alle arbeiten mit</option><option value="tafel">Tafel – nur Lehrkräfte bearbeiten, Schüler:innen sehen zu</option></select></label>`:""}
-   <label>Titel<input id="wbNeuTitel"maxlength="120"placeholder="${wbFormArt?"z. B. Freud – Instanzenmodell":"z. B. Projektteam 3 – Ideensammlung"}"></label>
+   <label>Titel<input id="wbNeuTitel"maxlength="120"placeholder="${wbFormEinstieg?"z. B. Einstieg: Was ist eigentlich normal?":wbFormArt?"z. B. Freud – Instanzenmodell":"z. B. Projektteam 3 – Ideensammlung"}"></label>
    <label>Kurzbeschreibung<textarea id="wbNeuBeschr"rows="3"maxlength="300"placeholder="Wofür ist dieses Whiteboard gedacht?"></textarea></label>
-   <div class="form-actions"><button class="secondary"onclick="closeModal()">Abbrechen</button><button class="primary"onclick="addWhiteboard()">${wbFormArt?"Tafel anlegen":"Whiteboard anlegen"}</button></div>
+   <div class="form-actions"><button class="secondary"onclick="closeModal()">Abbrechen</button><button class="primary"onclick="addWhiteboard()">${wbFormEinstieg?"Einstieg anlegen":wbFormArt?"Tafel anlegen":"Whiteboard anlegen"}</button></div>
   </div>`);
 }
 async function addWhiteboard(){
@@ -11310,7 +11317,7 @@ async function addWhiteboard(){
  if(!title){toast("Bitte einen Titel eingeben.");return}
  try{
   const art=(isTeacher()&&(wbFormArt==="tafel"||$("wbNeuArt")?.value==="tafel"))?"tafel":"team";
-  const r=await addDoc(collection(db,"whiteboards"),{title,description,art,schreibschutz:art==="tafel",seiten:1,bg:art==="tafel"?"blau":"weiss",createdBy:currentUser.uid,
+  const r=await addDoc(collection(db,"whiteboards"),{title,description,art,schreibschutz:art==="tafel",seiten:1,bg:art==="tafel"?"blau":"weiss",...(art==="tafel"&&wbFormEinstieg?{einstieg:true}:{}),createdBy:currentUser.uid,
    createdByName:profile?.displayName||currentUser.email||"Campus-Mitglied",createdAt:serverTimestamp()});
   closeModal();openWhiteboard(r.id);
  }catch(e){
@@ -11368,7 +11375,7 @@ async function renderWhiteboardBoard(){
  <div class="wb-seite">
   <div class="wb-kopf">
    <button class="secondary"type="button"id="wbZurueck">← ${board.art==="tafel"?"Tafeln":"Whiteboards"}</button>
-   <div><h1>${esc(board.title||"Whiteboard")}${board.art==="tafel"?'<span class="wb-art-chip">Tafel</span>':""}</h1><small>${esc(board.description||"")||(board.art==="tafel"?"Tafel für den Unterricht":"Gemeinsame Arbeitsfläche")}</small></div>
+   <div><h1>${esc(board.title||"Whiteboard")}${board.art==="tafel"?(board.einstieg?'<span class="wb-art-chip"style="background:#e08a1e">Einstieg</span>':'<span class="wb-art-chip">Tafel</span>'):""}</h1><small>${esc(board.description||"")||(board.art==="tafel"?"Tafel für den Unterricht":"Gemeinsame Arbeitsfläche")}</small></div>
    ${kann?`<button class="secondary"type="button"id="wbUmbenennen">Umbenennen</button>`:""}
    <button class="secondary"type="button"id="wbSchutz"hidden></button>
    ${isTeacher()?`<button class="secondary"type="button"id="wbLoeschen">Löschen</button>`:""}
@@ -21555,7 +21562,7 @@ async function lbZuordnenDialog(q,ref,tab){
  let daten;
  try{
   const [t,l,w]=await Promise.all([lade(where("art","==","tafel")),lade(where("lernVorlage","==",true)),lade(where("art","==","team"))]);
-  daten={tafel:sort(t.filter(b=>!b.lernVorlage)),lern:sort(l),wb:sort(w.filter(b=>!b.lernVorlage))};
+  daten={tafel:sort(t.filter(b=>!b.lernVorlage&&!b.einstieg)),lern:sort(l),wb:sort(w.filter(b=>!b.lernVorlage))};
  }catch(err){console.error("Zuordnen laden:",err);toast("Die Boards konnten nicht geladen werden.");return;}
  window.__lbZ={q,ref,tab:tab||"lern",daten};
  modal(`<button class="modal-close" onclick="closeModal()">×</button><div class="kicker">ZUORDNEN</div><h2>Zu ${q==="z"?"dieser Stunde":"diesem Modul"} zuordnen</h2>
