@@ -401,6 +401,10 @@
   "id": "f11-lb1-alltag-wissenschaft",
   "thema": "Alltagstheorie und wissenschaftliche Theorie: der Spiegel-Vergleich",
   "unter": "LB 1 · Alltagstheorie und Merkmale wissenschaftlicher Aussagen",
+  "modul": [
+   "LB1 · Nr. 3, 4 · Wissenschaftliche und alltagspsychologische Aussagen",
+   "Wissenschaftliche und alltagspsychologische Aussagen"
+  ],
   "items": [
    {
     "type": "text",
@@ -875,6 +879,10 @@
   "id": "f11-psy-gegenstand",
   "thema": "Gegenstand der Psychologie: Verhalten und Erleben",
   "unter": "LB 1 · Objektbereiche der Psychologie",
+  "modul": [
+   "LB1 · Nr. 1 · Gegenstand der Psychologie: Erleben und Verhalten",
+   "Gegenstand der Psychologie: Erleben und Verhalten"
+  ],
   "items": [
    {
     "type": "text",
@@ -1214,6 +1222,10 @@
   "id": "f11-paed-gegenstand",
   "thema": "Gegenstand der Pädagogik: das Haus der Erziehung",
   "unter": "LB 1 · Erziehungspraxis, Erziehungswissenschaft, fünf Gegenstandsbereiche",
+  "modul": [
+   "LB1 · Nr. 2 · Gegenstand der Pädagogik: Erziehungspraxis, Erziehungswissenschaft und die fünf Gegenstandsbereiche",
+   "Gegenstand der Pädagogik: Erziehungspraxis, Erziehungswissenschaft und die fünf Gegenstandsbereiche"
+  ],
   "items": [
    {
     "type": "text",
@@ -2463,6 +2475,10 @@
   "id": "f11-lb3-soziale-beziehung",
   "thema": "Erziehung als soziale Beziehung",
   "unter": "LB 3 · Merkmale von Erziehung · soziale Interaktion und Beziehung",
+  "modul": [
+   "LB3 · Nr. 1 · Erziehung als soziale Beziehung",
+   "Erziehung als soziale Beziehung"
+  ],
   "items": [
    {
     "type": "text",
@@ -2872,6 +2888,10 @@
   "id": "f11-lb3-kommunikation",
   "thema": "Erziehung als Austausch von Informationen",
   "unter": "LB 3 · Merkmale von Erziehung · soziale Kommunikation und Symbole",
+  "modul": [
+   "LB3 · Nr. 2 · Erziehung als Austausch von Informationen",
+   "Erziehung als Austausch von Informationen"
+  ],
   "items": [
    {
     "type": "text",
@@ -3365,6 +3385,10 @@
   "id": "f11-lb3-lernhilfe",
   "thema": "Erziehung als beabsichtigte Lernhilfe",
   "unter": "LB 3 · Merkmale von Erziehung · Erziehungsziel und wertorientiertes Handeln",
+  "modul": [
+   "LB3 · Nr. 3 · Erziehung als beabsichtigte Lernhilfe",
+   "Erziehung als beabsichtigte Lernhilfe"
+  ],
   "items": [
    {
     "type": "text",
@@ -3696,6 +3720,10 @@
   "id": "f11-lb3-soziales-handeln",
   "thema": "Erziehung als soziales Handeln",
   "unter": "LB 3 · Merkmale von Erziehung · pädagogisches Handeln, sechs Merkmale, Definition",
+  "modul": [
+   "LB3 · Nr. 4 · Erziehung als soziales Handeln",
+   "Erziehung als soziales Handeln"
+  ],
   "items": [
    {
     "type": "text",
@@ -4084,6 +4112,10 @@
   "id": "f11-lb3-erziehungsstile",
   "thema": "Erziehungsstile nach Baumrind",
   "unter": "LB 3 · Erziehungsstile · Wärme und Anforderung, vier Stile",
+  "modul": [
+   "LB3 · Nr. 5 · Erziehungsstile nach Baumrind",
+   "Erziehungsstile nach Baumrind"
+  ],
   "items": [
    {
     "type": "text",
@@ -4501,6 +4533,10 @@
   "id": "f11-lb3-kindergarten",
   "thema": "Der Kindergarten als Erziehungs- und Bildungseinrichtung",
   "unter": "LB 3 · Kita, Kindergarten, Träger, Fachpersonal",
+  "modul": [
+   "LB3 · Nr. 6 · Der Kindergarten als Erziehungs- und Bildungseinrichtung",
+   "Der Kindergarten als Erziehungs- und Bildungseinrichtung"
+  ],
   "items": [
    {
     "type": "text",
@@ -4900,6 +4936,10 @@
   "id": "f11-lb3-baybep",
   "thema": "BayBEP: Digitale Medien, Umwelt, Gesundheit",
   "unter": "LB 3 · Bayerischer Bildungs- und Erziehungsplan · Kap. 7.4, 7.7, 7.11",
+  "modul": [
+   "LB3 · Nr. 7 · Der Bayerische Bildungs- und Erziehungsplan",
+   "Der Bayerische Bildungs- und Erziehungsplan"
+  ],
   "items": [
    {
     "type": "text",
@@ -5263,6 +5303,76 @@
     "fs": 18,
     "text": "Meine Eselsbrücke / mein Beispiel:"
    }
+  ]
+ },
+ {
+  "id": "f11-fa-bauplan",
+  "thema": "Der Aufbau eines Fachaufsatzes: Bauplan",
+  "unter": "LB 1 · Basiskurs Fachaufsatztraining · Einleitung, Hauptteil, Schluss",
+  "modul": [
+   "Basiskurs Fachaufsatztraining: Der Aufbau eines Fachaufsatzes · Selbstlernkurs · LB1",
+   "Basiskurs Fachaufsatztraining: Der Aufbau eines Fachaufsatzes"
+  ],
+  "frage": "Wie baue ich einen Fachaufsatz in Pädagogik/Psychologie auf, und wie bringe ich Theorie und Fall zusammen?",
+  "wissen": [
+   {
+    "c": "blau",
+    "text": "EINLEITUNG\n• knappe, allgemeine Hinführung zum Thema\n• zentrale Fachbegriffe definieren (je ein Kasten)\n• Überleitung: Aufgabenstellung aufgreifen und Vorgehen nennen"
+   },
+   {
+    "c": "gruen",
+    "text": "HAUPTTEIL\n• kurze Einordnung des Themas\n• je Aspekt: Nennung → Erläuterung → Transfer\n• Transfer mit Textbeleg (Z. …), im Wechsel (Reißverschlussverfahren)"
+   },
+   {
+    "c": "rosa",
+    "text": "SCHLUSS\n• kurzer (!) Verweis auf die Gesamttheorie\n• Rückgriff auf die Aufgabenstellung\n• Ausblick"
+   }
+  ],
+  "mitte": "Fachaufsatz",
+  "begriffe": [
+   "Einleitung",
+   "Hauptteil",
+   "Schluss"
+  ],
+  "zusammen": "Die Einleitung führt zur Frage, der Hauptteil beantwortet sie Aspekt für Aspekt, der Schluss rundet ab.",
+  "fall": "Beispiel „Die Jugend von heute“ (LB 11.1):\nNennung: Ein Merkmal der Alltagstheorie ist die Subjektivität.\nErläuterung: Verschiedene Personen kommen beim selben Sachverhalt zu unterschiedlichen Erkenntnissen. Wissenschaftliche Aussagen sind dagegen objektiv.\nTransfer: Die Aussage der älteren Damen, Jugendliche hätten keinen Respekt (Z. 9), ist eine Meinung. Die Shell-Studie kam dagegen unabhängig zum gleichen Ergebnis (Z. 14f.).",
+  "anker": [
+   "Ich kann die drei Teile eines Fachaufsatzes nennen und sagen, was in jedem steht.",
+   "Ich kann einen Aspekt in Nennung, Erläuterung und Transfer aufteilen.",
+   "Ich kann Textbelege mit Zeilenangabe nennen und mit dem Fachbegriff deuten."
+  ]
+ },
+ {
+  "id": "f11-fa-baustein-transfer",
+  "thema": "Nennung, Erläuterung, Transfer: der Baustein im Hauptteil",
+  "unter": "LB 1 · Fachaufsatz · Reißverschlussverfahren",
+  "frage": "Wie bearbeite ich einen Aspekt der Aufgabe im Hauptteil, damit Theorie und Fall sauber zusammenkommen?",
+  "wissen": [
+   {
+    "c": "lila",
+    "text": "NENNUNG\nDas Merkmal oder den Fachbegriff benennen und im Text hervorheben (Kasten oder Unterstreichen)."
+   },
+   {
+    "c": "gruen",
+    "text": "ERLÄUTERUNG\nDie dahinterliegende Theorie in eigenen Worten darstellen: Begriff nennen und definieren, bei Bedarf weitere Erläuterungen."
+   },
+   {
+    "c": "orange",
+    "text": "TRANSFER\nTheorie auf das Fallbeispiel anwenden und mit Textbeleg (Z. …) untermauern, im Wechsel: erst Alltagstheorie, dann Wissenschaft."
+   }
+  ],
+  "mitte": "Aspekt",
+  "begriffe": [
+   "Nennung",
+   "Erläuterung",
+   "Transfer"
+  ],
+  "zusammen": "Erst benennen, dann die Theorie erklären, dann am Fall mit Zeile belegen und deuten.",
+  "fall": "Beispiel „Die Jugend von heute“, Merkmal Überprüfbarkeit:\nNennung: Wissenschaftliche Aussagen sind überprüfbar und wiederholbar.\nErläuterung: Aussage und Art der Gewinnung sind jederzeit nachvollziehbar und in der Realität wiederholbar.\nTransfer: Fragebogen und Interviewfragen der Shell-Studie sind veröffentlicht (Z. 16), die Studie wird regelmäßig wiederholt. Der Gang von Iris über die rote Ampel (Z. 4f.) lässt sich dagegen nicht wiederholen.",
+  "anker": [
+   "Ich kann zu einem Merkmal Nennung, Erläuterung und Transfer in der richtigen Reihenfolge schreiben.",
+   "Ich kann Alltagstheorie und Wissenschaft abwechselnd anwenden (Reißverschlussverfahren).",
+   "Ich erzähle den Fall nicht nach: Jede Zeilenangabe bekommt eine Deutung mit dem Fachbegriff."
   ]
  }
 ]
