@@ -5343,6 +5343,344 @@
   ]
  },
  {
+  "id": "f11-fa-muster-jugend",
+  "thema": "Das Muster am Fall „Die Jugend von heute“",
+  "unter": "LB 1 · Fachaufsatz · Alltagstheorie und wissenschaftliche Theorie, mit Zeilenangaben",
+  "modul": [
+   "Fachaufsatz am Fall: Die Jugend von heute",
+   "LB1 · Fachaufsatz am Fall: Die Jugend von heute",
+   "Fachaufsatz am Fall: Die Jugend von heute · Selbstlernkurs · LB1"
+  ],
+  "items": [
+   {
+    "type": "text",
+    "x": -1000,
+    "y": -700,
+    "w": 2000,
+    "h": 70,
+    "fs": 44,
+    "text": "Lernübersicht: Das Muster am Fall „Die Jugend von heute“"
+   },
+   {
+    "type": "text",
+    "x": -1000,
+    "y": -632,
+    "w": 2000,
+    "h": 36,
+    "fs": 20,
+    "text": "Fachaufsatz · LB 1 · Alltagstheorie und wissenschaftliche Theorie · so steckt der Bauplan in der Lösungsskizze"
+   },
+   {
+    "type": "frame",
+    "x": -1000,
+    "y": -580,
+    "w": 2000,
+    "h": 200,
+    "c": "blau",
+    "text": "1 EINLEITUNG"
+   },
+   {
+    "type": "note",
+    "x": -980,
+    "y": -530,
+    "w": 640,
+    "h": 140,
+    "c": "gelb",
+    "fs": 19,
+    "text": "1.1 Hinführung: Jeder Mensch ist „psychologisch“ tätig. Diesem Vorgehen stehen wissenschaftliche Aussagen gegenüber."
+   },
+   {
+    "type": "note",
+    "x": -320,
+    "y": -530,
+    "w": 640,
+    "h": 140,
+    "c": "gelb",
+    "fs": 19,
+    "text": "1.2 Begriffsbestimmung: Alltagstheorie (Wissen aus persönlichen Erfahrungen, auch Privattheorie) und wissenschaftliche Theorie (methodisches Vorgehen), je im Kasten."
+   },
+   {
+    "type": "note",
+    "x": 340,
+    "y": -530,
+    "w": 640,
+    "h": 140,
+    "c": "gelb",
+    "fs": 19,
+    "text": "1.3 Vorgehen: Die Merkmale beider Theorien werden an der Lernsituation verdeutlicht."
+   },
+   {
+    "type": "frame",
+    "x": -1000,
+    "y": -360,
+    "w": 2000,
+    "h": 1180,
+    "c": "gruen",
+    "text": "2 HAUPTTEIL"
+   },
+   {
+    "type": "text",
+    "x": -980,
+    "y": -312,
+    "w": 1960,
+    "h": 40,
+    "fs": 20,
+    "text": "Einordnung: Beide Psychologien geben Orientierung und Ordnung im Sinne von Sicherheit. Die Unterschiede sind jedoch vielfältig, hier in vier Merkmalen (je Merkmal: Nennung, Erläuterung, Transfer im Wechsel):"
+   },
+   {
+    "type": "text",
+    "x": -980,
+    "y": -262,
+    "w": 470,
+    "h": 56,
+    "fs": 18,
+    "text": "Alltagstheorie: Nennung + Erläuterung"
+   },
+   {
+    "type": "text",
+    "x": -490,
+    "y": -262,
+    "w": 470,
+    "h": 56,
+    "fs": 18,
+    "text": "Wissenschaftliche Theorie: Nennung + Erläuterung"
+   },
+   {
+    "type": "text",
+    "x": 0,
+    "y": -262,
+    "w": 470,
+    "h": 56,
+    "fs": 18,
+    "text": "Transfer: die älteren Damen (Alltagstheorie am Fall)"
+   },
+   {
+    "type": "text",
+    "x": 490,
+    "y": -262,
+    "w": 470,
+    "h": 56,
+    "fs": 18,
+    "text": "Transfer: Shell-Studie (Wissenschaft am Fall)"
+   },
+   {
+    "type": "text",
+    "x": -980,
+    "y": -200,
+    "w": 1960,
+    "h": 34,
+    "fs": 22,
+    "text": "2.1 Subjektivität vs. Objektivität"
+   },
+   {
+    "type": "note",
+    "x": -980,
+    "y": -162,
+    "w": 470,
+    "h": 196,
+    "c": "rosa",
+    "fs": 18,
+    "text": "subjektiv: Verschiedene Personen kommen beim selben Sachverhalt zu unterschiedlichen Erkenntnissen."
+   },
+   {
+    "type": "note",
+    "x": -490,
+    "y": -162,
+    "w": 470,
+    "h": 196,
+    "c": "tuerkis",
+    "fs": 18,
+    "text": "objektiv: Verschiedene Forscher erzielen bei gleichen Bedingungen gleiche Ergebnisse."
+   },
+   {
+    "type": "note",
+    "x": 0,
+    "y": -162,
+    "w": 470,
+    "h": 196,
+    "c": "rosa",
+    "fs": 18,
+    "text": "Die Aussage, die Jugendlichen hätten keinen Respekt mehr vor Gesetz und Ordnung (Z. 9), ist eine Meinung, die andere Personen nicht teilen müssen."
+   },
+   {
+    "type": "note",
+    "x": 490,
+    "y": -162,
+    "w": 470,
+    "h": 196,
+    "c": "tuerkis",
+    "fs": 18,
+    "text": "Mit standardisierten Fragebögen und Interviews kommt die Shell-Studie zum Ergebnis, dass den meisten Jugendlichen Gesetz und Ordnung wichtig ist (Z. 14f., 16f.)."
+   },
+   {
+    "type": "text",
+    "x": -980,
+    "y": 50,
+    "w": 1960,
+    "h": 34,
+    "fs": 22,
+    "text": "2.2 persönliche Erfahrung vs. systematische Gewinnung"
+   },
+   {
+    "type": "note",
+    "x": -980,
+    "y": 88,
+    "w": 470,
+    "h": 196,
+    "c": "rosa",
+    "fs": 18,
+    "text": "persönliche Erfahrung: unsystematisch und zufällig gewonnen, ohne geplantes methodisches Vorgehen."
+   },
+   {
+    "type": "note",
+    "x": -490,
+    "y": 88,
+    "w": 470,
+    "h": 196,
+    "c": "tuerkis",
+    "fs": 18,
+    "text": "systematisch: nach bestimmten Regeln durch wissenschaftliche Methoden, geplant und organisiert."
+   },
+   {
+    "type": "note",
+    "x": 0,
+    "y": 88,
+    "w": 470,
+    "h": 196,
+    "c": "rosa",
+    "fs": 18,
+    "text": "Beruht auf einer Einzelbeobachtung: Iris geht bei Rot über die Ampel (Z. 4f.), nicht auf vielen geplanten Beobachtungen."
+   },
+   {
+    "type": "note",
+    "x": 490,
+    "y": 88,
+    "w": 470,
+    "h": 196,
+    "c": "tuerkis",
+    "fs": 18,
+    "text": "Standardisierte Fragebögen und Interviews (Z. 16f.); Alter der Befragten und Vorgehen sind genau angegeben (Z. 15)."
+   },
+   {
+    "type": "text",
+    "x": -980,
+    "y": 300,
+    "w": 1960,
+    "h": 34,
+    "fs": 22,
+    "text": "2.3 unzulässige Verallgemeinerung vs. Allgemeingültigkeit"
+   },
+   {
+    "type": "note",
+    "x": -980,
+    "y": 338,
+    "w": 470,
+    "h": 196,
+    "c": "rosa",
+    "fs": 18,
+    "text": "unzulässig verallgemeinert: von „einmal auf immer“, von einem oder wenigen Fällen auf „alle“."
+   },
+   {
+    "type": "note",
+    "x": -490,
+    "y": 338,
+    "w": 470,
+    "h": 196,
+    "c": "tuerkis",
+    "fs": 18,
+    "text": "allgemeingültig: Die Feststellung lässt sich mit hoher Wahrscheinlichkeit auf viele Fälle übertragen."
+   },
+   {
+    "type": "note",
+    "x": 0,
+    "y": 338,
+    "w": 470,
+    "h": 196,
+    "c": "rosa",
+    "fs": 18,
+    "text": "Von einem Fall (Iris, Z. 4f.) wird auf alle Jugendlichen geschlossen (Z. 6–9)."
+   },
+   {
+    "type": "note",
+    "x": 490,
+    "y": 338,
+    "w": 470,
+    "h": 196,
+    "c": "tuerkis",
+    "fs": 18,
+    "text": "Befragt wurden 2.572 Jugendliche im Alter von 12 bis 25 Jahren (Z. 15): eine große Stichprobe, das Ergebnis gilt mit hoher Wahrscheinlichkeit für viele."
+   },
+   {
+    "type": "text",
+    "x": -980,
+    "y": 550,
+    "w": 1960,
+    "h": 34,
+    "fs": 22,
+    "text": "2.4 nicht überprüfbar vs. überprüfbar und wiederholbar"
+   },
+   {
+    "type": "note",
+    "x": -980,
+    "y": 588,
+    "w": 470,
+    "h": 196,
+    "c": "rosa",
+    "fs": 18,
+    "text": "nicht überprüfbar: Der Vorgang, der zur Aussage führte, lässt sich nicht noch einmal durchführen."
+   },
+   {
+    "type": "note",
+    "x": -490,
+    "y": 588,
+    "w": 470,
+    "h": 196,
+    "c": "tuerkis",
+    "fs": 18,
+    "text": "überprüfbar, wiederholbar: Aussage und Gewinnung sind jederzeit nachvollziehbar."
+   },
+   {
+    "type": "note",
+    "x": 0,
+    "y": 588,
+    "w": 470,
+    "h": 196,
+    "c": "rosa",
+    "fs": 18,
+    "text": "Der Gang über die rote Ampel (Z. 4f.) ist nicht wiederholbar; weitere Beobachtungen oder Befragungen gab es nicht."
+   },
+   {
+    "type": "note",
+    "x": 490,
+    "y": 588,
+    "w": 470,
+    "h": 196,
+    "c": "tuerkis",
+    "fs": 18,
+    "text": "Ergebnisse und Vorgehen sind auf der Homepage nachlesbar (Z. 13f.), Fragebögen und Interviews sind beschrieben (Z. 16f.): nachvollziehbar und wiederholbar."
+   },
+   {
+    "type": "frame",
+    "x": -1000,
+    "y": 850,
+    "w": 2000,
+    "h": 170,
+    "c": "lila",
+    "text": "3 SCHLUSS"
+   },
+   {
+    "type": "note",
+    "x": -980,
+    "y": 900,
+    "w": 1960,
+    "h": 100,
+    "c": "gelb",
+    "fs": 21,
+    "text": "Es wurde deutlich, dass sich die beiden älteren Damen der Alltagstheorie bedienen, während die Shell-Jugendstudie eine wissenschaftliche Theorie darstellt."
+   }
+  ]
+ },
+ {
   "id": "f11-fa-baustein-transfer",
   "thema": "Nennung, Erläuterung, Transfer: der Baustein im Hauptteil",
   "unter": "LB 1 · Fachaufsatz · Reißverschlussverfahren",
@@ -5373,6 +5711,129 @@
    "Ich kann zu einem Merkmal Nennung, Erläuterung und Transfer in der richtigen Reihenfolge schreiben.",
    "Ich kann Alltagstheorie und Wissenschaft abwechselnd anwenden (Reißverschlussverfahren).",
    "Ich erzähle den Fall nicht nach: Jede Zeilenangabe bekommt eine Deutung mit dem Fachbegriff."
+  ]
+ },
+ {
+  "id": "f11-fa-formulierungen",
+  "thema": "Formulierungshilfen und Checkliste für den Fachaufsatz",
+  "unter": "LB 1 · Fachaufsatz · Satzanfänge und Kontrolle vor der Abgabe",
+  "items": [
+   {
+    "type": "text",
+    "x": -1000,
+    "y": -700,
+    "w": 2000,
+    "h": 70,
+    "fs": 44,
+    "text": "Lernübersicht: Formulierungshilfen und Checkliste"
+   },
+   {
+    "type": "text",
+    "x": -1000,
+    "y": -632,
+    "w": 2000,
+    "h": 36,
+    "fs": 20,
+    "text": "Fachaufsatz · Satzanfänge aus den Lösungsskizzen (LB 11.1 und 12.1) zum Einprägen, rechts die Kontrolle vor der Abgabe"
+   },
+   {
+    "type": "frame",
+    "x": -1000,
+    "y": -580,
+    "w": 1180,
+    "h": 1300,
+    "c": "gruen",
+    "text": "SATZANFÄNGE ZUM EINPRÄGEN"
+   },
+   {
+    "type": "note",
+    "x": -980,
+    "y": -510,
+    "w": 560,
+    "h": 400,
+    "c": "blau",
+    "fs": 21,
+    "text": "EINLEITUNG\n\n„Jeder Mensch ist … tätig, indem … Diesem Vorgehen stehen … gegenüber.“\n\n„Im Folgenden werden die Merkmale … an der Lernsituation verdeutlicht.“"
+   },
+   {
+    "type": "note",
+    "x": -400,
+    "y": -510,
+    "w": 560,
+    "h": 400,
+    "c": "lila",
+    "fs": 21,
+    "text": "DEFINITION\n\n„Unter dem Begriff … versteht man …“\n\n„… bezeichnet dabei …“\n\n„… meint alle …“"
+   },
+   {
+    "type": "note",
+    "x": -980,
+    "y": -90,
+    "w": 560,
+    "h": 400,
+    "c": "gelb",
+    "fs": 21,
+    "text": "NENNUNG UND ERLÄUTERUNG\n\n„Ein Merkmal der … ist die … (= Nennung).“\n\n„Diese meint, dass … (= Erläuterung).“"
+   },
+   {
+    "type": "note",
+    "x": -400,
+    "y": -90,
+    "w": 560,
+    "h": 400,
+    "c": "orange",
+    "fs": 21,
+    "text": "FALLBEZUG\n\n„Die Aussage …, dass … (Z. …), ist …, da …“\n\n„Im Gegensatz dazu …“ (Reißverschluss: zweite Seite)\n\n„Hierzu sind der Fallbeschreibung keinerlei Daten zu entnehmen.“"
+   },
+   {
+    "type": "note",
+    "x": -980,
+    "y": 330,
+    "w": 560,
+    "h": 400,
+    "c": "tuerkis",
+    "fs": 21,
+    "text": "WEITERES MERKMAL / WECHSELWIRKUNG\n\n„Ein weiteres Merkmal ist, dass …“\n\n„Das letzte Merkmal besteht darin, dass …“\n\n„Ohne … hätte sich … nicht so entfalten können.“ (12. Klasse)"
+   },
+   {
+    "type": "note",
+    "x": -400,
+    "y": 330,
+    "w": 560,
+    "h": 400,
+    "c": "rosa",
+    "fs": 21,
+    "text": "SCHLUSS\n\n„In den Ausführungen wurde deutlich, dass …“\n\nKurzer (!) Verweis auf die Gesamttheorie, Rückgriff auf die Aufgabenstellung, Ausblick."
+   },
+   {
+    "type": "frame",
+    "x": 200,
+    "y": -580,
+    "w": 800,
+    "h": 1300,
+    "c": "orange",
+    "text": "CHECKLISTE VOR DER ABGABE"
+   },
+   {
+    "type": "note",
+    "x": 220,
+    "y": -510,
+    "w": 760,
+    "h": 900,
+    "c": "gelb",
+    "fs": 24,
+    "text": "1. Einleitung knapp und allgemein, ohne Fall\n\n2. Lernbereich eingegrenzt, zentraler Begriff definiert\n\n3. Überleitung nennt Person, Frage und Vorgehen\n\n4. Jeder Fachbegriff ist definiert, bevor er angewendet wird\n\n5. Jeder Aspekt: Nennung, Erläuterung, Transfer\n\n6. Jede Anwendung hat Zeilenangabe und Deutung\n\n7. Transfer im Reißverschlussverfahren (abwechselnd)\n\n8. Schluss kurz, mit Rückgriff auf die Aufgabenstellung"
+   },
+   {
+    "type": "note",
+    "x": 220,
+    "y": 410,
+    "w": 760,
+    "h": 290,
+    "c": "tuerkis",
+    "fs": 23,
+    "text": "Lerntipp: Pro Lernbereich eine Karteikarte je Fachbegriff mit Definition, Theorie und einer Fallbezug-Frage."
+   }
   ]
  }
 ]
