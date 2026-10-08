@@ -11285,11 +11285,11 @@ async function renderWhiteboardUebersicht(modus){
   <div class="wb-karte-text"><strong>${esc(b.title||"Whiteboard")}</strong>
   <small>${esc(b.description||"")||(b.art==="tafel"?"Tafel für den Unterricht.":"Gemeinsame Arbeitsfläche.")}</small>
   <small>${b.art==="tafel"?(b.einstieg?'<b class="wb-art-chip einstieg"style="margin:0 6px 0 0">Einstieg</b>':'<b class="wb-art-chip"style="margin:0 6px 0 0">Tafel</b>'):""}Angelegt von ${esc(b.createdByName||"Campus-Mitglied")} · ${esc(fmtDate(b.createdAt))}</small></div></button>
-  ${isTeacher()?`<button type="button"class="wb-karte-del"title="${b.art==="tafel"?"Tafel":"Whiteboard"} löschen"aria-label="${b.art==="tafel"?"Tafel":"Whiteboard"} löschen"onclick="wbBoardLoeschen('${b.id}','${b.art==="tafel"?"tafel":"team"}')">${wbIcon("papierkorb",18)}</button>`:""}</div>`;
+  ${isTeacher()?`<button type="button"class="wb-karte-del"title="${b.art==="tafel"?"Tafel":"Whiteboard"} löschen"aria-label="${b.art==="tafel"?"Tafel":"Whiteboard"} löschen"onclick="wbBoardLoeschen('${b.id}','${b.art==="tafel"?"tafel":"team"}')">${wbIcon("papierkorb",18)}</button>${b.art==="tafel"?`<button type="button"class="wb-karte-einst"title="${b.einstieg?"Zurück zu den Tafeln verschieben":"In die Einstiege verschieben"}"onclick="wbEinstiegSetzen('${b.id}',${b.einstieg?"false":"true"})">${b.einstieg?"→ zu Tafeln":"→ zu Einstiegen"}</button>`:""}`:""}</div>`;
  const einstiegBereich=istTafel?`<section class="wb-bereich wb-einstiege"><div class="wb-bereich-kopf"><div><h2>🚀 Einstiege</h2><small>Tafeln für den Stundeneinstieg: Impuls, Bild, Frage oder kurzes Spiel zum Ankommen.</small></div>${isTeacher()?`<button class="secondary"type="button"onclick="openWhiteboardForm('einstieg')">＋ Neuer Einstieg</button>`:""}</div>
   ${einstiege.length?`<div class="wb-gitter">${einstiege.map(karte).join("")}</div>`:`<div class="empty"style="margin:0"><strong>Noch kein Einstieg.</strong>${isTeacher()?"Lege den ersten Einstieg an.":"Sobald deine Lehrkraft einen Einstieg anlegt, erscheint er hier."}</div>`}</section>
   <div class="wb-bereich-kopf"style="margin-top:22px"><div><h2>🧑‍🏫 Tafeln</h2><small>Tafeln für den Unterricht.</small></div></div>`:"";
- return`${WB_CSS}${kopf}${istTafel?`<style>.wb-bereich-kopf{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin:0 0 12px}.wb-bereich-kopf h2{margin:0;font-size:20px}.wb-bereich-kopf small{color:var(--muted)}.wb-einstiege{background:#fff7ec;border:1px solid #f1d6ad;border-left:6px solid #e08a1e;border-radius:16px;padding:16px;margin:0 0 6px}.wb-art-chip.einstieg{background:#e08a1e}</style>`:""}
+ return`${WB_CSS}${kopf}${istTafel?`<style>.wb-bereich-kopf{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin:0 0 12px}.wb-bereich-kopf h2{margin:0;font-size:20px}.wb-bereich-kopf small{color:var(--muted)}.wb-einstiege{background:#fff7ec;border:1px solid #f1d6ad;border-left:6px solid #e08a1e;border-radius:16px;padding:16px;margin:0 0 6px}.wb-art-chip.einstieg{background:#e08a1e}.wb-karte-einst{position:absolute;right:52px;top:12px;height:30px;padding:0 12px;border-radius:15px;border:1px solid #f1d6ad;background:#fff;color:#a35f0c;font:inherit;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(24,67,96,.15);z-index:2}.wb-karte-einst:hover{background:#fff7ec}</style>`:""}
  ${einstiegBereich}
  <div class="wb-gitter">${boards.map(karte).join("")}</div>
  ${boards.length?"":(istTafel?`<div class="empty"><strong>Noch keine Tafel.</strong>${isTeacher()?"Lege die erste Tafel für eine Unterrichtsstunde an.":"Sobald deine Lehrkraft eine Tafel anlegt, erscheint sie hier."}</div>`:`<div class="empty"><strong>Noch kein Whiteboard.</strong>Lege das erste Whiteboard für dein Team oder ein Thema an.</div>`)}
@@ -11325,6 +11325,15 @@ async function addWhiteboard(){
   toast(e?.code==="permission-denied"?"Firebase verweigert das Anlegen (permission-denied). Bitte die Firestore-Regeln prüfen.":`Whiteboard konnte nicht angelegt werden (${(e&&(e.code||e.name))||"unbekannt"}).`);
  }
 }
+async function wbEinstiegSetzen(id,an){
+ if(!isTeacher())return;
+ try{
+  await updateDoc(doc(db,"whiteboards",id),{einstieg:!!an});
+  toast(an?"In die Einstiege verschoben.":"Zu den Tafeln verschoben.");
+  await render();
+ }catch(e){console.error("Einstieg setzen:",e);toast(e?.code==="permission-denied"?"Firebase verweigert die Änderung.":"Das hat nicht geklappt.");}
+}
+window.wbEinstiegSetzen=wbEinstiegSetzen;
 async function wbBoardLoeschen(id,artVorgabe){
  if(!isTeacher()){toast("Nur Lehrkräfte können ein Whiteboard oder eine Tafel löschen.");return}
  const art=artVorgabe||(wb&&wb.id===id&&wb.board&&wb.board.art)||"team";
