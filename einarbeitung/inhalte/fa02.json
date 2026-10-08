@@ -11,7 +11,30 @@
     {
      "typ": "situation",
      "label": "Lernsituation „Die Jugend von heute“",
-     "text": "Es ist Mittwochabend und Sie sind in Ihrer Praktikumsstelle im Jugendzentrum „Treff“. Mit ein paar Jugendlichen aus dem Zentrum sind Sie auf den Gehsteig vor die Tür gegangen, um frische Luft zu schnappen. Auf der anderen Straßenseite sehen Sie Iris, ein 15-jähriges Mädchen, das auch regelmäßig zum „Treff“ kommt, an der roten Fußgängerampel stehen. Als Iris Sie und die anderen erblickt, schaut sie kurz nach links und rechts und rennt dann auf Sie zu, ohne zu warten bis es grün ist. [Z. 5]\n\nZwei ältere Damen haben dies beobachtet und kommen schimpfend auf Sie und Ihre Gruppe zu: „Vorschriften interessieren die jungen Menschen offenbar nicht mehr. Früher hat noch Recht und Ordnung gegolten, aber heutzutage ist alles zu spät. Und diese Bande hier beweist wieder einmal, dass die Jugendlichen heute keinen Respekt mehr vor Gesetz und Ordnung haben.“ Sie sind in diesem Moment ganz perplex und wissen nicht, wie Sie auf diese Anschuldigung reagieren sollen. [Z. 10]\n\nWieder im „Treff“ kommt Robert, der zuvor auch auf dem Gehsteig dabei war, auf Sie zu und meint: „Das was die beiden älteren Damen so überzeugt gesagt haben, stimmt doch gar nicht. In der Schule haben wir die Shell-Jugendstudie besprochen und schau (er zeigt auf sein Smartphone) auf der Homepage der Shell-Jugendstudie steht, dass 87% der Jugendlichen die Achtung von Gesetz und Ordnung wichtig ist. Um auf diese Ergebnisse zu kommen, wurden 2.572 Jugendliche im Alter zwischen 12-25 Jahren von [Z. 15] Forschern mithilfe standardisierter Fragebögen befragt. Zusätzlich wurden ausführliche Interviews mit 20 Jugendlichen durchgeführt. Das was die beiden älteren Damen behauptet haben, find ich eine Frechheit. Wieso behaupten die beiden sowas einfach? Kannst du mir das erklären?“\n\nSie sind sich nicht sicher, wie Sie die Aussage der beiden älteren Damen einordnen sollen und wollen sich erst informieren, um Robert dann zu antworten."
+     "text": "Es ist Mittwochabend und Sie sind in Ihrer Praktikumsstelle im Jugendzentrum „Treff“. Mit ein paar Jugendli-\nchen aus dem Zentrum sind Sie auf den Gehsteig vor die Tür gegangen, um frische Luft zu schnappen. Auf\nder anderen Straßenseite sehen Sie Iris, ein 15-jähriges Mädchen, das auch regelmäßig zum „Treff“ kommt,\nan der roten Fußgängerampel stehen. Als Iris Sie und die anderen erblickt, schaut sie kurz nach links und\nrechts und rennt dann auf Sie zu, ohne zu warten bis es grün ist.\n\nZwei ältere Damen haben dies beobachtet und kommen schimpfend auf Sie und Ihre Gruppe\nzu: „Vorschriften interessieren die jungen Menschen offenbar nicht mehr. Früher hat noch\nRecht und Ordnung gegolten, aber heutzutage ist alles zu spät. Und diese Bande hier beweist\nwieder einmal, dass die Jugendlichen heute keinen Respekt mehr vor Gesetz und Ordnung haben.“ Sie sind\nin diesem Moment ganz perplex und wissen nicht, wie Sie auf diese Anschuldigung reagieren sollen.\n\nWieder im „Treff“ kommt Robert, der zuvor auch auf dem Gehsteig dabei war, auf Sie zu und meint:\n„Das was die beiden älteren Damen so überzeugt gesagt haben, stimmt doch gar nicht. In der Schule\nhaben wir die Shell-Jugendstudie besprochen und schau (er zeigt auf sein Smartphone) auf der Home-\npage der Shell-Jugendstudie steht, dass 87% der Jugendlichen die Achtung von Gesetz und Ordnung wichtig\nist. Um auf diese Ergebnisse zu kommen, wurden 2.572 Jugendliche im Alter zwischen 12-25 Jahren von\nForschern mithilfe standardisierter Fragebögen befragt. Zusätzlich wurden ausführliche Interviews mit 20 Ju-\ngendlichen durchgeführt. Das was die beiden älteren Damen behauptet haben, find ich eine Frechheit. Wieso\nbehaupten die beiden sowas einfach? Kannst du mir das erklären?“\n\nSie sind sich nicht sicher, wie Sie die Aussage der beiden älteren Damen einordnen sollen und wollen sich erst informieren, um Robert dann zu antworten.",
+     "zeilen": [
+      "Es ist Mittwochabend und Sie sind in Ihrer Praktikumsstelle im Jugendzentrum „Treff“. Mit ein paar Jugendli-",
+      "chen aus dem Zentrum sind Sie auf den Gehsteig vor die Tür gegangen, um frische Luft zu schnappen. Auf",
+      "der anderen Straßenseite sehen Sie Iris, ein 15-jähriges Mädchen, das auch regelmäßig zum „Treff“ kommt,",
+      "an der roten Fußgängerampel stehen. Als Iris Sie und die anderen erblickt, schaut sie kurz nach links und",
+      "rechts und rennt dann auf Sie zu, ohne zu warten bis es grün ist.",
+      "",
+      "Zwei ältere Damen haben dies beobachtet und kommen schimpfend auf Sie und Ihre Gruppe",
+      "zu: „Vorschriften interessieren die jungen Menschen offenbar nicht mehr. Früher hat noch",
+      "Recht und Ordnung gegolten, aber heutzutage ist alles zu spät. Und diese Bande hier beweist",
+      "wieder einmal, dass die Jugendlichen heute keinen Respekt mehr vor Gesetz und Ordnung haben.“ Sie sind",
+      "in diesem Moment ganz perplex und wissen nicht, wie Sie auf diese Anschuldigung reagieren sollen.",
+      "",
+      "Wieder im „Treff“ kommt Robert, der zuvor auch auf dem Gehsteig dabei war, auf Sie zu und meint:",
+      "„Das was die beiden älteren Damen so überzeugt gesagt haben, stimmt doch gar nicht. In der Schule",
+      "haben wir die Shell-Jugendstudie besprochen und schau (er zeigt auf sein Smartphone) auf der Home-",
+      "page der Shell-Jugendstudie steht, dass 87% der Jugendlichen die Achtung von Gesetz und Ordnung wichtig",
+      "ist. Um auf diese Ergebnisse zu kommen, wurden 2.572 Jugendliche im Alter zwischen 12-25 Jahren von",
+      "Forschern mithilfe standardisierter Fragebögen befragt. Zusätzlich wurden ausführliche Interviews mit 20 Ju-",
+      "gendlichen durchgeführt. Das was die beiden älteren Damen behauptet haben, find ich eine Frechheit. Wieso",
+      "behaupten die beiden sowas einfach? Kannst du mir das erklären?“"
+     ],
+     "nachsatz": "Sie sind sich nicht sicher, wie Sie die Aussage der beiden älteren Damen einordnen sollen und wollen sich erst informieren, um Robert dann zu antworten."
     },
     {
      "typ": "situation",
@@ -77,7 +100,7 @@
        "name": "Shell-Jugendstudie",
        "items": [
         "Befragt wurden 2.572 Jugendliche zwischen 12 und 25 Jahren (Z. 15).",
-        "Eingesetzt wurden standardisierte Fragebögen und 20 ausführliche Interviews (Z. 15f.).",
+        "Eingesetzt wurden standardisierte Fragebögen und 20 ausführliche Interviews (Z. 16f.).",
         "Ergebnisse und Vorgehen sind für alle auf der Homepage nachlesbar (Z. 13f.)."
        ]
       }
@@ -299,7 +322,7 @@
        "name": "Transfer",
        "items": [
         "Die Damen stützen ihre Aussage auf eine Einzelbeobachtung: Iris läuft bei Rot über die Straße (Z. 4f.).",
-        "Die Shell-Studie befragte 2.572 Jugendliche mit standardisierten Fragebögen und Interviews (Z. 15f.)."
+        "Die Shell-Studie befragte 2.572 Jugendliche mit standardisierten Fragebögen und Interviews (Z. 16f.)."
        ]
       }
      ],
@@ -349,7 +372,7 @@
        "erklaerung": "Zwei Personen mit derselben Einzelbeobachtung ergeben keine systematische Erkenntnis. Entscheidend sind methodisches Vorgehen und Überprüfbarkeit."
       },
       {
-       "text": "Die Shell-Studie stützt sich auf ein methodisches Vorgehen: standardisierte Fragebögen und Interviews (Z. 15f.).",
+       "text": "Die Shell-Studie stützt sich auf ein methodisches Vorgehen: standardisierte Fragebögen und Interviews (Z. 16f.).",
        "richtig": true,
        "erklaerung": "Das planvolle, genau beschriebene Vorgehen macht die Aussage zu einer wissenschaftlichen Theorie."
       },
@@ -386,13 +409,13 @@
      "typ": "frei",
      "frage": "Formulieren Sie den Baustein zum Merkmal „Überprüfbarkeit und Wiederholbarkeit“ aus: Nennung, Erläuterung, Transfer für die Aussage der älteren Damen und im Gegensatz dazu für die Shell-Studie.",
      "hinweis": "Schreibe in ganzen Sätzen. Erst Nennung und Erläuterung ohne Fallbezug, dann der Transfer mit Zeilenangaben. Danach siehst du eine Musterlösung und prüfst dich mit sechs Fragen.",
-     "muster": "Das letzte Merkmal besteht darin, dass alltagstheoretische Aussagen nicht überprüfbar und nicht wiederholbar sind. Wie man zu der Aussage kommt, lässt sich nicht noch einmal durchführen und daher nicht überprüfen. Wissenschaftliche Aussagen sind dagegen überprüfbar und wiederholbar: Die Aussage und die Art, wie sie gewonnen wurde, sind jederzeit nachvollziehbar. Der Vorgang, aus dem die Damen ihre Aussage ableiten (Iris an der Ampel, Z. 4f.), lässt sich nicht wiederholen und deshalb nicht überprüfen. Im Gegensatz dazu können Ergebnis und Vorgehen der Shell-Studie auf der Homepage nachgelesen werden (Z. 13f., 15f.). Die Studie ist damit jederzeit nachvollziehbar und wiederholbar.",
+     "muster": "Das letzte Merkmal besteht darin, dass alltagstheoretische Aussagen nicht überprüfbar und nicht wiederholbar sind. Wie man zu der Aussage kommt, lässt sich nicht noch einmal durchführen und daher nicht überprüfen. Wissenschaftliche Aussagen sind dagegen überprüfbar und wiederholbar: Die Aussage und die Art, wie sie gewonnen wurde, sind jederzeit nachvollziehbar. Der Vorgang, aus dem die Damen ihre Aussage ableiten (Iris an der Ampel, Z. 4f.), lässt sich nicht wiederholen und deshalb nicht überprüfen. Im Gegensatz dazu können Ergebnis und Vorgehen der Shell-Studie auf der Homepage nachgelesen werden (Z. 13f., 16f.). Die Studie ist damit jederzeit nachvollziehbar und wiederholbar.",
      "kriterien": [
       "Ich habe die **Nennung** formuliert: Aussagen der Alltagstheorie sind nicht überprüfbar und nicht wiederholbar.",
       "Ich habe **erläutert**, was das heißt: Wie man zur Aussage kommt, lässt sich nicht noch einmal durchführen.",
       "Ich habe den **Gegensatz** erläutert: Wissenschaftliche Aussagen sind überprüfbar und wiederholbar.",
       "Ich habe den **Transfer** zu den Damen geschrieben: Der Vorgang an der Ampel (Z. 4f.) lässt sich nicht wiederholen.",
-      "Ich habe mit „Im Gegensatz dazu“ den Transfer zur **Shell-Studie** angeschlossen: Ergebnis und Vorgehen sind nachlesbar (Z. 13f., 15f.).",
+      "Ich habe mit „Im Gegensatz dazu“ den Transfer zur **Shell-Studie** angeschlossen: Ergebnis und Vorgehen sind nachlesbar (Z. 13f., 16f.).",
       "Jede Zeilenangabe hat eine **Deutung** mit dem Fachbegriff und ist nicht nur Nacherzählung."
      ]
     }
@@ -444,8 +467,8 @@
       {
        "titel": "Merkmal 2: Gewinnung der Aussagen",
        "farbe": "gruen",
-       "hilfe": "Persönliche Erfahrung gegen systematische Gewinnung. Beachte Z. 4f. und Z. 15f.",
-       "muster": "Ein weiteres Merkmal ist, dass alltagstheoretische Aussagen aufgrund persönlicher Erfahrungen gewonnen werden. Die Erkenntnis entsteht unsystematisch und zufällig, ohne ein geplantes methodisches Vorgehen. Wissenschaftliche Aussagen werden dagegen systematisch gewonnen, nach bestimmten Regeln und mit wissenschaftlichen Methoden. Die Aussage der Damen beruht auf einer Einzelbeobachtung: Iris läuft bei Rot über die Straße (Z. 4f.). Im Gegensatz dazu wurde das Ergebnis der Shell-Studie systematisch gewonnen: mit standardisierten Fragebögen und Interviews (Z. 15f.)."
+       "hilfe": "Persönliche Erfahrung gegen systematische Gewinnung. Beachte Z. 4f. und Z. 16f.",
+       "muster": "Ein weiteres Merkmal ist, dass alltagstheoretische Aussagen aufgrund persönlicher Erfahrungen gewonnen werden. Die Erkenntnis entsteht unsystematisch und zufällig, ohne ein geplantes methodisches Vorgehen. Wissenschaftliche Aussagen werden dagegen systematisch gewonnen, nach bestimmten Regeln und mit wissenschaftlichen Methoden. Die Aussage der Damen beruht auf einer Einzelbeobachtung: Iris läuft bei Rot über die Straße (Z. 4f.). Im Gegensatz dazu wurde das Ergebnis der Shell-Studie systematisch gewonnen: mit standardisierten Fragebögen und Interviews (Z. 16f.)."
       },
       {
        "titel": "Merkmal 3: Verallgemeinerung",
@@ -456,8 +479,8 @@
       {
        "titel": "Merkmal 4: Überprüfbarkeit",
        "farbe": "blau",
-       "hilfe": "Nicht überprüfbar gegen überprüfbar und wiederholbar. Beachte Z. 4f., 13f. und 15f.",
-       "muster": "Das letzte Merkmal besteht darin, dass alltagstheoretische Aussagen nicht überprüfbar und nicht wiederholbar sind. Wie man zu der Aussage kommt, lässt sich nicht noch einmal durchführen und daher nicht überprüfen. Wissenschaftliche Aussagen sind dagegen überprüfbar und wiederholbar: Die Aussage und die Art, wie sie gewonnen wurde, sind jederzeit nachvollziehbar. Der Vorgang, aus dem die Damen ihre Aussage ableiten (Iris an der Ampel, Z. 4f.), lässt sich nicht wiederholen und deshalb nicht überprüfen. Im Gegensatz dazu können Ergebnis und Vorgehen der Shell-Studie auf der Homepage nachgelesen werden (Z. 13f., 15f.). Die Studie ist damit jederzeit nachvollziehbar und wiederholbar."
+       "hilfe": "Nicht überprüfbar gegen überprüfbar und wiederholbar. Beachte Z. 4f., 13f. und 16f.",
+       "muster": "Das letzte Merkmal besteht darin, dass alltagstheoretische Aussagen nicht überprüfbar und nicht wiederholbar sind. Wie man zu der Aussage kommt, lässt sich nicht noch einmal durchführen und daher nicht überprüfen. Wissenschaftliche Aussagen sind dagegen überprüfbar und wiederholbar: Die Aussage und die Art, wie sie gewonnen wurde, sind jederzeit nachvollziehbar. Der Vorgang, aus dem die Damen ihre Aussage ableiten (Iris an der Ampel, Z. 4f.), lässt sich nicht wiederholen und deshalb nicht überprüfen. Im Gegensatz dazu können Ergebnis und Vorgehen der Shell-Studie auf der Homepage nachgelesen werden (Z. 13f., 16f.). Die Studie ist damit jederzeit nachvollziehbar und wiederholbar."
       },
       {
        "titel": "Schluss",
@@ -477,7 +500,7 @@
      "typ": "frei",
      "frage": "Robert fragt: „Wieso behaupten die beiden sowas einfach?“ Antworte ihm in drei bis fünf Sätzen: Warum ist die Aussage der Damen eine Alltagstheorie und die Shell-Studie eine wissenschaftliche Theorie?",
      "hinweis": "Verwende mindestens zwei der vier Merkmale und beziehe dich auf den Fall.",
-     "muster": "Die Damen haben ihre Aussage aus einem einzigen Erlebnis abgeleitet: Iris geht bei Rot über die Ampel (Z. 4f.). Sie schließen daraus auf alle Jugendlichen. Das ist eine unzulässige Verallgemeinerung, und die Aussage ist eine subjektive Meinung. Die Shell-Studie hat dagegen 2.572 Jugendliche mit standardisierten Fragebögen und Interviews befragt (Z. 15f.). Weil das Vorgehen systematisch und nachlesbar ist, ist das Ergebnis wissenschaftlich und lässt sich auf viele Jugendliche übertragen."
+     "muster": "Die Damen haben ihre Aussage aus einem einzigen Erlebnis abgeleitet: Iris geht bei Rot über die Ampel (Z. 4f.). Sie schließen daraus auf alle Jugendlichen. Das ist eine unzulässige Verallgemeinerung, und die Aussage ist eine subjektive Meinung. Die Shell-Studie hat dagegen 2.572 Jugendliche mit standardisierten Fragebögen und Interviews befragt (Z. 16f.). Weil das Vorgehen systematisch und nachlesbar ist, ist das Ergebnis wissenschaftlich und lässt sich auf viele Jugendliche übertragen."
     },
     {
      "typ": "merke",
