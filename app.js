@@ -60,6 +60,10 @@ function showImpressum(){
  Fax: +49 881 9239-40<br>
  E-Mail: 0897.Sekretariat@schule.bayern.de</p>
 
+ <p><strong>Datenschutzbeauftragter der Schule</strong><br>
+ Niklas Hilber<br>
+ E-Mail: <a href="mailto:niklas.hilber@schule.bayern.de">niklas.hilber@schule.bayern.de</a></p>
+
  <p><strong>Aufsichtsbehörde</strong><br>
  Bayerisches Staatsministerium für Unterricht und Kultus<br>
  Salvatorstraße 2<br>
@@ -3429,7 +3433,7 @@ async function renderStart(){
  const upcomingTime=nextCalendar?.time?` · ${esc(nextCalendar.time)} Uhr`:"";
  const newsAction=(isTeacher()?`<button class="primary"onclick="openNewsForm()">＋ News veröffentlichen</button>`:"")
  +(isTeacher()?`<button class="secondary"onclick="openUserManagement()"> Benutzer verwalten</button>`:"");
- return`${coBanner}<section class="hero"><a class="hero-qr"href="https://fosbos-wm.github.io/F11Sb/"target="_blank"rel="noopener"title="F11Sb im Browser öffnen oder mit dem Handy scannen"aria-label="QR-Code: Link zur F11Sb-App"><img src="qr-f11sb.png"alt="QR-Code zur F11Sb-App"width="108"height="108"></a><div><span class="badge"> F11Sb 26/27</span><h1>Willkommen auf dem Campus.</h1><p>Hier
+ return`${coBanner}<section class="hero"><div><span class="badge"> F11Sb 26/27</span><h1>Willkommen auf dem Campus.</h1><p>Hier
 verbinden wir Lernen, Projekte, Praxis und Gemeinschaft. Alle angemeldeten Mitglieder arbeiten am selben digitalen Campus.</p>
 </div><div class="actions">${isTeacher()?`<button class="primary"onclick="openNewsForm()">＋ News veröffentlichen</button>`:""}<button class="secondary"onclick="go('kompass')">Mein Kompass →</button><button class="secondary"onclick="go('forum')">Campus-Forum</button></div></section>
  ${anstehend}
