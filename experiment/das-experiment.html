@@ -548,7 +548,7 @@ function runTimer(ring,seconds,onDone){
 const WORDS=['Regenschirm','Tastatur','Unsinn','Versprechen','Leuchtturm','Vertrieb','Schublade','Entschluss','Spaziergang','Geduld'];
 const PHASES=['Vorbereitung','Lernphase','Pause','Auswertung'];
 const XP={phase:0,group:store.get('group',null),fast:false,result:store.get('myResult',null)};
-function dur(kind){ return kind==='learn'?(XP.fast?12:300):(XP.fast?6:60); }
+function dur(kind){ return kind==='learn'?(XP.fast?12:180):(XP.fast?6:60); }
 function setPhase(i){XP.phase=i;renderXP();window.scrollTo({top:0});}
 
 function renderXP(){
@@ -590,7 +590,7 @@ function xpLearn(box){
     h('ul',{class:'clean'},
       h('li',{},'Beginnen Sie in Ihrer Gruppe ',h('strong',{},'gemeinsam'),'.'),
       h('li',{},h('strong',{},'Gruppe B'),' beginnt mit dem ',h('strong',{},'Kaugummikauen'),'.'),
-      h('li',{},'Sie haben ',h('strong',{},XP.fast?'12 Sekunden (Testlauf)':'5 Minuten'),' Zeit, sich möglichst viele Wörter zu merken. Notizen sind nicht erlaubt.'))
+      h('li',{},'Sie haben ',h('strong',{},XP.fast?'12 Sekunden (Testlauf)':'3 Minuten'),' Zeit, sich möglichst viele Wörter zu merken. Notizen sind nicht erlaubt.'))
   );
   const stage=h('div',{});
   const start=h('button',{class:'btn big',type:'button'},'Sobald Sie in Ihrer Kleingruppe gemeinsam den Timer starten, klicken Sie hier.');
