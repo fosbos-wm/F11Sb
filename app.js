@@ -5644,6 +5644,12 @@ async function bepTeamFeld(teamId,feld,wert){
  try{await updateDoc(doc(db,"lehrplanTeams",teamId),{[f(currentUser.uid)]:String(wert||"").trim().slice(0,80)});toast("Gespeichert.");}
  catch(e){ppmFehler(e,"Das konnte nicht gespeichert werden");}
 }
+function bepTeamArtWahl(teamId,sel){
+ const frei=sel.parentNode&&sel.parentNode.querySelector(".bep-art-frei");
+ if(sel.value==="__andere"){if(frei){frei.style.display="";frei.focus();}return;}
+ if(frei){frei.style.display="none";frei.value="";}
+ bepTeamFeld(teamId,"art",sel.value);
+}
 async function bepAufgabeHaken(mId,key,an){
  const m=ppmById(mId);if(!m)return;
  try{await ppmKursSchreiben(m,d=>{d.bepAufg=d.bepAufg||{};if(an)d.bepAufg[key]=true;else delete d.bepAufg[key];});}
@@ -5663,7 +5669,7 @@ async function bepTermineSpeichern(mId,zuruecksetzen){
  try{await updateDoc(doc(db,"ppModule",m.id),{termine:t,updatedAt:serverTimestamp()});await ppmLaden(true);toast(zuruecksetzen?"Termine auf Standard zurückgesetzt.":"Termine gespeichert.");await render();}
  catch(e){ppmFehler(e,"Termine konnten nicht gespeichert werden");}
 }
-Object.assign(window,{bepTeamNeu,bepTeamBeitreten,bepTeamVerlassen,bepTeamAufloesen,bepTeamFeld,bepAufgabeHaken,bepCheckHaken,bepTermineSpeichern});
+Object.assign(window,{bepTeamNeu,bepTeamBeitreten,bepTeamVerlassen,bepTeamAufloesen,bepTeamFeld,bepTeamArtWahl,bepAufgabeHaken,bepCheckHaken,bepTermineSpeichern});
 
 // ------------------------------------------------------------ Modulseite
 // Mehrere Teams pro Bildungsbereich: Nummer innerhalb des Bereichs (ältere Teams ohne teamNr werden nach Gründungszeit gezählt)
@@ -5710,14 +5716,15 @@ function bepTeamBoxHTML(m,v,d,lehrer){
  const zeilen=(t.mitgliederUids||[]).map((u,k)=>{
   const mine=u===ich,s=st[u]||{};
   const rolle=mine?`<select onchange="bepTeamFeld('${t.id}','rolle',this.value)" aria-label="Meine Rolle"><option value="">– Rolle wählen –</option>${v.rollen.map(r=>`<option${ro[u]===r?" selected":""}>${esc(r)}</option>`).join("")}</select>`:esc(ro[u]||"–");
-  const art=mine?`<select onchange="bepTeamFeld('${t.id}','art',this.value)" aria-label="Krippe oder Kindergarten"><option value="">–</option>${v.einrichtungen.map(r=>`<option${s.art===r?" selected":""}>${esc(r)}</option>`).join("")}</select>`:esc(s.art||"–");
+  const artListe=v.einrichtungen||[],artWert=s.art||"",artAnders=!!artWert&&!artListe.includes(artWert);
+  const art=mine?`<select onchange="bepTeamArtWahl('${t.id}',this)" aria-label="Art der Einrichtung"><option value="">–</option>${artListe.map(r=>`<option${artWert===r?" selected":""}>${esc(r)}</option>`).join("")}<option value="__andere"${artAnders?" selected":""}>Andere …</option></select><input class="bep-art-frei" maxlength="40" value="${artAnders?esc(artWert):""}" placeholder="z. B. Hort, Grundschule" style="margin-top:6px${artAnders?"":";display:none"}" onchange="bepTeamFeld('${t.id}','art',this.value)" aria-label="Art der Einrichtung (freie Eingabe)">`:esc(artWert||"–");
   const alter=mine?`<input maxlength="30" value="${esc(s.alter||"")}" placeholder="z. B. 3–4 Jahre" onchange="bepTeamFeld('${t.id}','alter',this.value)" aria-label="Altersgruppe">`:esc(s.alter||"–");
   const stelle=mine?`<input maxlength="60" value="${esc(s.stelle||"")}" placeholder="Einrichtung" onchange="bepTeamFeld('${t.id}','stelle',this.value)" aria-label="Praktikumsstelle">`:esc(s.stelle||"–");
-  return`<tr${mine?' class="ich"':""}><td data-l="Name"><b>${esc((t.mitgliederNamen||[])[k]||"Mitglied")}</b>${mine?" (ich)":""}</td><td data-l="Rolle im Team">${rolle}</td><td data-l="Praktikumsstelle">${stelle}</td><td data-l="Krippe / Kiga">${art}</td><td data-l="Altersgruppe">${alter}</td></tr>`;
+  return`<tr${mine?' class="ich"':""}><td data-l="Name"><b>${esc((t.mitgliederNamen||[])[k]||"Mitglied")}</b>${mine?" (ich)":""}</td><td data-l="Rolle im Team">${rolle}</td><td data-l="Praktikumsstelle">${stelle}</td><td data-l="Art der Einrichtung">${art}</td><td data-l="Altersgruppe">${alter}</td></tr>`;
  }).join("");
  const verlassen=!lehrer?`<button type="button" class="ppm-btn klein" onclick="bepTeamVerlassen('${m.id}','${t.id}')">Team verlassen</button>`:"";
  return`<div class="ppm-box"><h2> Mein Team: ${esc(bepTeamLabel(t,d))}</h2>
-  <div class="bep-tabwrap"><table class="bep-tab bep-teamtab"><thead><tr><th>Name</th><th>Rolle im Team</th><th>Praktikumsstelle</th><th>Krippe / Kiga</th><th>Altersgruppe</th></tr></thead><tbody>${zeilen}</tbody></table></div>
+  <div class="bep-tabwrap"><table class="bep-tab bep-teamtab"><thead><tr><th>Name</th><th>Rolle im Team</th><th>Praktikumsstelle</th><th>Art der Einrichtung</th><th>Altersgruppe</th></tr></thead><tbody>${zeilen}</tbody></table></div>
   <p class="bep-klein">Rollen im Team: ${v.rollen.map(esc).join(", ")}. Trage deine Rolle und deine Praktikumsstelle ein. Keine Namen von Kindern!</p>
   <div class="ppm-zeile" style="border:0;padding-bottom:0">${(t.mitgliederUids||[]).length<max?`<small>Es ist noch Platz für ${max-(t.mitgliederUids||[]).length} Person${max-(t.mitgliederUids||[]).length===1?"":"en"}.</small>`:""}${verlassen}</div></div>`;
 }
@@ -5837,6 +5844,29 @@ function bepReferenzHTML(v,lehrer,chk,m){
    <div class="bep-hinweis" style="margin-top:10px"><b>Auf den Punkt gebracht:</b> ${esc(v.punkt)}</div></div></details>`;
 }
 // ---- Lehrkraft: Teamstand, Bestätigungen, Termine ----
+// Alle Abgaben je Meilenstein und Person (auch wenn das Team noch nicht komplett ist)
+function bepAbgabenHTML(m,v,d,students){
+ const ph=bepPh(m,v),h=bepHeute();
+ const nach=new Map();(d.beitraege||[]).forEach(b=>nach.set(b.teamId+"|"+Number(b.index)+"|"+b.uid,b));
+ const namen=new Map(students.map(s=>[s.uid,s.displayName||s.email||"Schüler:in"]));
+ const teams=d.teams.slice().sort((a,b)=>String(a.bereichKap||"").localeCompare(String(b.bereichKap||""),"de",{numeric:true})||bepTeamNr(a,d)-bepTeamNr(b,d));
+ const imTeam=new Set(d.teams.flatMap(t=>t.mitgliederUids||[]));
+ const blocks=v.meilensteine.map((x,k)=>{
+  const i=k+1,f=bepFrist(m,v,i),zeilen=[];let da=0,gesamt=0;
+  teams.forEach(t=>(t.mitgliederUids||[]).forEach((u,j)=>{
+   const b=nach.get(t.id+"|"+i+"|"+u),name=namen.get(u)||(t.mitgliederNamen||[])[j]||"Mitglied";
+   gesamt++;if(b)da++;
+   const inhalt=b?`${esc(b.text||"")}${msLinksHTML(b)}`:`<span style="color:var(--muted)">noch nichts abgegeben</span>`;
+   zeilen.push(`<tr><td data-l="Schüler:in"><b>${esc(name)}</b></td><td data-l="Team">${esc(bepTeamLabel(t,d))}</td><td data-l="Status">${b?"✓":"○"}</td><td data-l="Abgabe">${inhalt}</td></tr>`);
+  }));
+  students.filter(s=>!imTeam.has(s.uid)).forEach(s=>{gesamt++;zeilen.push(`<tr><td data-l="Schüler:in"><b>${esc(s.displayName||s.email||"Schüler:in")}</b></td><td data-l="Team"><span style="color:var(--muted)">kein Team</span></td><td data-l="Status">○</td><td data-l="Abgabe"><span style="color:var(--muted)">noch nichts abgegeben</span></td></tr>`);});
+  const bestaetigen=ph.bestaetigung.includes(i);
+  const offen=f&&f<=h&&da<gesamt;
+  return`<details class="ppm-details"${offen?" open":""} style="margin-top:8px"><summary><b>${esc(x.kurz)}</b> ${esc(x.titel)} · ${da}/${gesamt} abgegeben${f?` · Frist ${esc(fmtKurz(f))}`:""}${bestaetigen?" · Lehrkraft bestätigt":""}</summary>
+   <div class="bep-tabwrap" style="margin-top:8px"><table class="bep-tab"><thead><tr><th>Schüler:in</th><th>Team</th><th></th><th>Abgabe</th></tr></thead><tbody>${zeilen.join("")||`<tr><td colspan="4">Noch kein Team.</td></tr>`}</tbody></table></div></details>`;
+ }).join("");
+ return`<h3>Abgaben im Überblick (wer hat was abgegeben?)</h3>${blocks}`;
+}
 async function bepLehrerHTML(m,v,d){
  const ph=bepPh(m,v),h=bepHeute();
  let students=[];try{students=await getAllUsersForLernstand();}catch(e){console.error(e);}
@@ -5849,7 +5879,7 @@ async function bepLehrerHTML(m,v,d){
   const zellen=v.meilensteine.map((x,k)=>{
    const i=k+1,st=msStatus(ph,t,d.beitraege,i),Z=MS_ZUSTAND[st.zustand],f=bepFrist(m,v,i);
    const n=(t.mitgliederUids||[]).length-st.fehlend.length,ueber=f&&f<h&&st.zustand!=="erreicht";
-   return`<td class="bep-z ${st.zustand}${ueber?" ueber":""}" title="${esc(x.kurz+": "+Z.t+(ueber?" (Frist verstrichen)":""))}"><b>${st.zustand==="erreicht"?"✓":Z.i}</b><small>${n}/${(t.mitgliederUids||[]).length}</small></td>`;
+   return`<td class="bep-z ${st.zustand}${ueber?" ueber":""}" title="${esc(x.kurz+": "+Z.t+(st.fehlend.length&&st.fehlend.length<(t.mitgliederUids||[]).length?" · fehlt: "+st.fehlend.map(f=>f.name).join(", "):"")+(ueber?" (Frist verstrichen)":""))}"><b>${st.zustand==="erreicht"?"✓":Z.i}</b><small>${n}/${(t.mitgliederUids||[]).length}</small></td>`;
   }).join("");
   return`<tr><td class="bep-tn"><b>${esc(bepTeamLabel(t,d))}</b><small>${bepNamenListe(t)}</small></td>${zellen}</tr>`;
  }).join("");
@@ -5869,6 +5899,7 @@ async function bepLehrerHTML(m,v,d){
  return`<div class="ppm-box bep-lehrer"><h2>Für dich als Lehrkraft: Teamstand</h2>
   <div class="bep-zahlen"><div><b>${d.teams.length}</b><small>Teams</small></div><div><b>${students.length-ohne.length}/${students.length}</b><small>Schüler:innen im Team</small></div><div class="${warten.length?"warn":""}"><b>${warten.length}</b><small>warten auf dich</small></div><div><b>${frei.length}</b><small>Bereiche ohne Team</small></div></div>
   <h3>Wartet auf deine Bestätigung</h3>${queue}
+  ${bepAbgabenHTML(m,v,d,students)}
   <h3>Stand aller Teams</h3>${matrix}
   ${ohne.length?`<h3>Noch ohne Team (${ohne.length})</h3><p>${ohne.map(s=>esc(s.displayName||s.email||"Schüler:in")).join(", ")}</p>`:(students.length?`<p><b>Alle Schüler:innen haben ein Team ✓</b></p>`:"")}
   ${frei.length?`<p class="bep-klein"><b>Noch freie Bereiche:</b> ${frei.map(b=>esc(b.kap+" "+b.name)).join(" · ")}</p>`:""}
