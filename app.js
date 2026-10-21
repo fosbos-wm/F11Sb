@@ -2067,6 +2067,7 @@ function msStatus(ph,team,beitraege,i){
  if(!team)return{zustand:"offen",fehlend:[],beitraege:[]};
  if(i===0)return{zustand:"erreicht",fehlend:[],beitraege:[],auto:true};
  const uids=team.mitgliederUids||[],namen=team.mitgliederNamen||[];
+ if(!uids.length)return{zustand:"offen",fehlend:[],beitraege:[],pruefung:null,leer:true};
  const bs=(beitraege||[]).filter(b=>b.teamId===team.id&&Number(b.index)===i&&uids.includes(b.uid));
  const fehlend=uids.map((u,k)=>({uid:u,name:namen[k]||"Mitglied"})).filter(m=>!bs.some(b=>b.uid===m.uid));
  const pr=(team.msPruefung||{})[i]||null;
@@ -5881,7 +5882,7 @@ async function bepLehrerHTML(m,v,d){
    const n=(t.mitgliederUids||[]).length-st.fehlend.length,ueber=f&&f<h&&st.zustand!=="erreicht";
    return`<td class="bep-z ${st.zustand}${ueber?" ueber":""}" title="${esc(x.kurz+": "+Z.t+(st.fehlend.length&&st.fehlend.length<(t.mitgliederUids||[]).length?" · fehlt: "+st.fehlend.map(f=>f.name).join(", "):"")+(ueber?" (Frist verstrichen)":""))}"><b>${st.zustand==="erreicht"?"✓":Z.i}</b><small>${n}/${(t.mitgliederUids||[]).length}</small></td>`;
   }).join("");
-  return`<tr><td class="bep-tn"><b>${esc(bepTeamLabel(t,d))}</b><small>${bepNamenListe(t)}</small></td>${zellen}</tr>`;
+  return`<tr><td class="bep-tn"><b>${esc(bepTeamLabel(t,d))}</b><small>${(t.mitgliederUids||[]).length?bepNamenListe(t):"<i>keine Mitglieder – bitte unten auflösen</i>"}</small></td>${zellen}</tr>`;
  }).join("");
  const matrix=d.teams.length?`<div class="bep-tabwrap"><table class="bep-matrix"><thead><tr><th>Team (Bildungsbereich)</th>${kopfZellen}</tr></thead><tbody>${zeilen}</tbody></table></div>
    <p class="bep-klein">✓ erreicht · wartet auf deine Bestätigung · ↩ zurückgegeben · ○ offen (darunter: Beiträge vorhanden / Teamgröße). Rot umrandet: Frist ist verstrichen.</p>`
@@ -5891,7 +5892,7 @@ async function bepLehrerHTML(m,v,d){
    <div class="ms-beitraege">${w.st.beitraege.map(b=>`<div><b>${esc(b.name||"")}:</b> ${esc(b.text||"")}${msLinksHTML(b)}</div>`).join("")}</div>
    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"><button class="ppm-btn klein primaer" onclick="msPruefen('${v.id}','${w.t.id}',${w.i},true,'seite')">✓ Bestätigen</button><button class="ppm-btn klein" onclick="msPruefen('${v.id}','${w.t.id}',${w.i},false,'seite')">↩ Zurückgeben</button></div></div>`).join("")
   :`<p class="ppm-leer">Gerade wartet nichts auf deine Bestätigung.</p>`;
- const teamDetails=d.teams.map(t=>`<details class="bep-td"><summary><b>${esc(bepTeamLabel(t,d))}</b> · ${bepNamenListe(t)}</summary>
+ const teamDetails=d.teams.map(t=>`<details class="bep-td"><summary><b>${esc(bepTeamLabel(t,d))}</b> · ${(t.mitgliederUids||[]).length?bepNamenListe(t):"<i>keine Mitglieder (leeres Team, kann aufgelöst werden)</i>"}</summary>
    ${msListeHTML(ph,t,d.beitraege,"seite")}
    <div class="ppm-zeile" style="border:0"><button type="button" class="ppm-btn klein" onclick="bepTeamAufloesen('${m.id}','${t.id}')">Team auflösen</button></div></details>`).join("");
  const termine=v.meilensteine.map((x,k)=>{const i=k+1,eig=m.termine&&m.termine[i]||"",std=bepAnker(bepZeitraum(m),x.faellig);
