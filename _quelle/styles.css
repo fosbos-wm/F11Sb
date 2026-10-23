@@ -817,3 +817,30 @@ body.exp-offen{overflow:hidden}
 .hero:has(.hero-qr){padding-right:150px}
 @media(max-width:800px){.hero-qr{position:static;order:-1;align-self:flex-end;width:84px;height:84px}.hero:has(.hero-qr){padding-right:28px}}
 @media print{.hero-qr{display:none}}
+
+/* Startseite: „Noch offen im Modulplan“ (nach Schulwochen) */
+.ofm-box{border-left:4px solid #e0a324;margin-bottom:20px}
+.ofm-box>summary{display:flex;align-items:center;gap:12px;cursor:pointer;list-style:none}
+.ofm-box>summary::-webkit-details-marker{display:none}
+.ofm-box>summary>span:first-child{flex:1;min-width:0}
+.ofm-box>summary .kicker{display:block}
+.ofm-box h2{margin:4px 0 0}
+.ofm-box[open]>summary{margin-bottom:6px}
+.ofm-box:not([open]) .an-pfeil{transform:rotate(-90deg)}
+.ofm-woche{margin-top:14px}
+.ofm-wkopf{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;padding-bottom:6px;border-bottom:2px solid var(--line)}
+.ofm-wkopf b{font-size:15px}
+.ofm-wkopf span{color:var(--muted);font-size:13px}
+.ofm-wkopf em{font-style:normal;font-weight:800;font-size:12px;padding:2px 9px;border-radius:999px;background:#e4edfb;color:var(--blue-dark)}
+.ofm-wkopf em.spaet{background:#fde8e6;color:#b3261e}
+.ofm-wkopf em.ok{background:#e3f4e8;color:#1f7a3f}
+.ofm-zeile{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+.ofm-zeile:last-child{border-bottom:0}
+.ofm-balken{flex:none;width:6px;align-self:stretch;border-radius:3px;background:var(--c,#8a99a3)}
+.ofm-zeile>div{flex:1;min-width:0}
+.ofm-zeile b{display:block}
+.ofm-zeile small{color:var(--muted)}
+.ofm-st{display:block;width:max-content;max-width:100%;margin-top:5px;font-size:11px;font-weight:700;padding:1px 8px;border-radius:999px;background:#fff3d6;border:1px solid #f0d28a;color:#7a4b00}
+.ofm-bar{display:block;height:6px;border-radius:4px;background:#dbe4ec;overflow:hidden;margin-top:6px;max-width:260px}
+.ofm-bar i{display:block;height:100%;background:#3d8fd0}
+@media(max-width:560px){.ofm-zeile{flex-wrap:wrap}.ofm-zeile>button{margin-left:18px}}
