@@ -3596,6 +3596,7 @@ async function renderStart(){
  const miniKalender=await miniKalenderHTML();
  const coBanner=await checkoutStartBannerHTML();
  const anstehend=await anstehendBoxHTML(wochenplan);
+ const offenBox=await offeneModuleBoxHTML();
  const praktikumsphase=aktuellePraktikumsphase();
  const praktikumsAuftraegeMap=await getPraktikumsAuftraege().catch(()=>({}));
  const aktuellerPraktikumsauftrag=(praktikumsphase?.status==="laufend")?praktikumsAuftraegeMap[praktikumsphase.id]:null;
@@ -3608,6 +3609,7 @@ async function renderStart(){
 verbinden wir Lernen, Projekte, Praxis und Gemeinschaft. Alle angemeldeten Mitglieder arbeiten am selben digitalen Campus.</p>
 </div><div class="actions">${isTeacher()?`<button class="primary"onclick="openNewsForm()">＋ News veröffentlichen</button>`:""}<button class="secondary"onclick="go('kompass')">Mein Kompass →</button><button class="secondary"onclick="go('forum')">Campus-Forum</button></div></section>
  ${anstehend}
+ ${offenBox}
  <div class="grid grid-3"style="gap:20px;margin-bottom:20px">
  <div class="card card-compact"style="border-left:4px solid #4a90d9"><h3> Campus-News</h3><div class="list">${news.slice(0,3).map(p=>`<div
 class="list-item"><div><strong>${esc(p.title||p.text)}</strong>${p.title?`<small>${esc(p.text)} · ${fmtDate(p.createdAt)}</small>`:`<small>${fmtDate(p.createdAt)}</small>`}</div><div style="display:flex;align-items:center;gap:8px"><span class="pill">Info</span>${isAdmin()?`<button class="secondary"onclick="deleteNews('${p.id}')">Löschen</button>`:""}</div>
@@ -3667,6 +3669,39 @@ class="list-item"><div><strong>${esc(p.title||p.text)}</strong>${p.title?`<small
  ${tile(" ","fpA","Theorie-Praxis-Transfer-Aufträge und Reflexion.","praktikum")}
  ${tile(" ","KI-Innovationslabor","KI-Ideen und Innovationspartnerschaften.","ki")}</div>
 </div>${footer()}`;
+}
+// ---- Startseite: „Noch offen im Modulplan“, nach Schulwochen geordnet (nur Schüler:innen) ----
+// Zeigt für jede Schulwoche bis einschließlich dieser Woche, welche der von den Lehrkräften angelegten Module
+// (Stunden, Übungen, Selbstlernkurse, Tests, Projekte …) die angemeldete Person noch nicht gemacht hat.
+// Rechnet mit ppmFort() wie der Modulplan selbst. Module über mehrere Wochen (z. B. Projekte) stehen in der Woche,
+// in der sie gerade laufen, danach in ihrer letzten Woche. Zuerst kommt diese Woche, dann die früheren Wochen.
+async function offeneModuleBoxHTML(){
+ if(!currentUser||!isApproved()||isTeacher())return"";
+ try{
+  if(!PPM.geladen){await ppmLaden();await ppmMeineLaden();}
+  if(!PPM.co)PPM.co=await ladeCheckoutDaten().catch(()=>null);
+  const heute=new Date().toISOString().slice(0,10);
+  const proWoche={};
+  PPM.liste.forEach(m=>{
+   const p=ppmFort(m);if(!p)return;
+   const bisher=ppmWochen(m).filter(w=>w.start<=heute);
+   if(!bisher.length)return; // noch nicht begonnen
+   const w=bisher[bisher.length-1];
+   (proWoche[w.id]=proWoche[w.id]||[]).push({m,p});
+  });
+  const wochen=SCHULWOCHEN_PP.filter(w=>proWoche[w.id]);
+  if(!wochen.length)return"";
+  const gruppen=wochen.map(w=>{const alle=proWoche[w.id];return{w,alle,offen:alle.filter(x=>!x.p.done),jetzt:heute<=w.end};}).filter(g=>g.offen.length||g.jetzt).reverse();
+  const n=gruppen.reduce((s,g)=>s+g.offen.length,0);
+  const kopf=g=>{const k=g.offen.length;return`<div class="ofm-wkopf"><b>KW ${ppmKW(g.w)}</b><span>${esc(fmtKurz(g.w.start))}–${esc(fmtKurz(g.w.end))}</span>${g.jetzt?`<em>diese Woche</em>`:""}${k?`<em${g.jetzt?"":' class="spaet"'}>${g.jetzt?`${k} von ${g.alle.length} offen`:`${k} noch offen`}</em>`:`<em class="ok">alles geschafft ✓</em>`}</div>`;};
+  const zeile=x=>{
+   const T=PPM_TYPEN[x.m.modul]||{},lw=ppmWochen(x.m),letzte=lw[lw.length-1],laeuft=lw.length>1&&!!letzte&&letzte.end>=heute,proz=Math.round(x.p.frac*100);
+   return`<div class="ofm-zeile"style="--c:${ppmFarbe(x.m)}"><span class="ofm-balken"aria-hidden="true"></span><div><b>${esc(ppmTitel(x.m)||T.name||"Modul")}</b><small>${esc(T.art||T.kurz||"Modul")}${x.m.lb?` · LB${esc(x.m.lb)}`:""} · ${esc(ppmDauerText(x.m))}${x.m.projektId?" · Einheit im Projekt":""}${laeuft?` · läuft bis KW ${ppmKW(letzte)}`:""}</small><span class="ofm-st">${proz>0?`${proz} % geschafft`:"noch nicht begonnen"}</span>${proz>0?`<span class="ofm-bar"role="progressbar"aria-valuenow="${proz}"aria-valuemin="0"aria-valuemax="100"><i style="width:${proz}%"></i></span>`:""}</div><button type="button"class="secondary"data-ppm="oeffnen"data-id="${esc(x.m.id)}">Öffnen</button></div>`;
+  };
+  let zu=false;try{zu=localStorage.getItem("f11sb_offen_modulplan_zu")==="1";}catch(e){}
+  const inhalt=gruppen.length?gruppen.map(g=>`<div class="ofm-woche">${kopf(g)}${g.offen.map(zeile).join("")}</div>`).join(""):`<p class="an-leer">Du bist im Modulplan auf dem aktuellen Stand.</p>`;
+  return`<details class="card ofm-box"${zu?"":" open"} ontoggle="try{localStorage.setItem('f11sb_offen_modulplan_zu',this.open?'0':'1')}catch(e){}"><summary><span><span class="kicker">NACH SCHULWOCHEN</span><h2>Noch offen im Modulplan</h2></span><span class="pill${n?"":" green"}">${n?`${n} offen`:"alles erledigt ✓"}</span><span class="an-pfeil"aria-hidden="true">▾</span></summary>${inhalt}<div style="margin-top:12px"><button type="button"class="secondary"onclick="openFach('paedagogik')">Zum Modulplan →</button></div></details>`;
+ }catch(e){console.error("Offene Module:",e);return"";}
 }
 async function getRecentForumActivityCount(days){
  try{
