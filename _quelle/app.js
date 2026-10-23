@@ -15,7 +15,7 @@ let activeFach=null;
 let activePhaseDetail=null;
 let ppDirty=false; // Zeitstrahl nach Änderungen im Modal neu zeichnen
 function openFach(fach){activeFach=fach;activePhaseDetail=null;go("fach")}
-function closeFach(){activeFach=null;activePhaseDetail=null;go("faecher")}
+function closeFach(){activeFach=null;activePhaseDetail=null;go("lernwerkstatt")}
 function openPhaseDetail(phaseId){activePhaseDetail=phaseId;render()}
 function closePhaseDetail(){activePhaseDetail=null;render()}
 window.openFach=openFach;window.closeFach=closeFach;
@@ -213,7 +213,7 @@ function showDatenschutz(){
  <p><strong>5. Empfänger und Dienstleister</strong><br>
  <em>Google Firebase</em> (Google Cloud EMEA Limited / Google LLC): Anmeldung, Datenbank (Firestore) und Dateispeicher. Die Daten werden in einem Rechenzentrum von Google gespeichert; eine Verarbeitung durch das US-Unternehmen Google LLC ist dabei nicht ausgeschlossen. Grundlage der Übermittlung sind der Angemessenheitsbeschluss zum EU-US Data Privacy Framework bzw. Standardvertragsklauseln.<br>
  <em>GitHub Pages</em> (GitHub Inc., Microsoft): Auslieferung der Webseite. Dabei wird deine IP-Adresse verarbeitet.<br>
- <em>Eingebettete Inhalte</em> (YouTube, Vimeo, WebUntis): Erst wenn du solche Inhalte öffnest, wird eine Verbindung zum jeweiligen Anbieter aufgebaut und deine IP-Adresse übermittelt.<br>
+ <em>Eingebettete Inhalte</em> (YouTube, Vimeo): Erst wenn du solche Inhalte öffnest, wird eine Verbindung zum jeweiligen Anbieter aufgebaut und deine IP-Adresse übermittelt.<br>
  Die Software der App wird von dieser Seite selbst ausgeliefert, es werden keine Schriftarten, Tracker oder Werbedienste von Dritten geladen.</p>
 
  <p><strong>6. Cookies und lokaler Speicher</strong><br>
@@ -3653,10 +3653,9 @@ class="list-item"><div><strong>${esc(p.title||p.text)}</strong>${p.title?`<small
  </a>`:""}
  ${(()=>{ensureGlobalClock();return"";})()}
  <div class="card"style="margin-top:16px;margin-bottom:16px">
- <div class="kicker">STUNDENPLAN</div>
- <h2 style="margin-top:4px">Aktueller Stundenplan</h2>
- ${webUntisEmbedHTML(300)}
- <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+ <div class="kicker">WOCHENPLANUNG</div>
+ <h2 style="margin-top:4px">Meine Woche</h2>
+ <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
  <input id="quickWpInput"type="text"maxlength="140"placeholder="Was steht diese Woche an? Kurz eintragen …"style="flex:1;min-width:220px">
  <button class="primary"onclick="quickAddWochenplan()">＋ Zur Wochenplanung</button>
  <button class="secondary"onclick="go('kompass')">Ausführlicher planen →</button>
@@ -3790,22 +3789,16 @@ async function renderKompass(){
  const offenePlanung=wochenplan.filter(w=>!w.done);
  const erledigtePlanung=wochenplan.filter(w=>w.done);
 
- return`${pageHead("PERSÖNLICH","Mein Campus-Kompass","Dein persönlicher Überblick über Stundenplan, Aufgaben, Noten und Projekte.",`<button class="primary"onclick="openTaskForm()">＋ Aufgabe</button>`)}
+ return`${pageHead("PERSÖNLICH","Mein Campus-Kompass","Dein persönlicher Überblick über Aufgaben, Noten und Projekte.",`<button class="primary"onclick="openTaskForm()">＋ Aufgabe</button>`)}
 
  ${(unreadCount>0||forumActivity>0)?`<div class="kompass-alerts">
  ${unreadCount>0?`<a href="#forum-nachrichten"class="pill kompass-alert-msg"> ${unreadCount} neue Nachricht${unreadCount===1?"":"en"}</a>`:""}
  ${forumActivity>0?`<a href="#forum-board"class="pill kompass-alert-forum"> ${forumActivity} neue${forumActivity===1?"r":""} Forum-Beitrag${forumActivity===1?"":"e"} (3 Tage)</a>`:""}
  </div>`:""}
 
- <div class="kicker"style="margin-top:6px">ORIENTIERUNG</div>
- <div class="card"style="margin-top:8px">
- <h2 style="margin-top:0"> Aktueller Stundenplan</h2>
- ${webUntisEmbedHTML(360)}
- </div>
-
- <div class="kicker"style="margin:22px 0 8px">WOCHEN-/MONATSPLANUNG</div>
+ <div class="kicker"style="margin:6px 0 8px">WOCHEN-/MONATSPLANUNG</div>
  <div class="card">
- <p style="color:var(--muted);margin-top:0">Orientiere dich am Stundenplan oben: Was steht diese Woche oder diesen Monat an? Nur du siehst deine eigene Planung.</p>
+ <p style="color:var(--muted);margin-top:0">Was steht diese Woche oder diesen Monat an? Nur du siehst deine eigene Planung.</p>
  <div class="form-actions"style="margin-bottom:10px">
  <button class="primary"onclick="openWochenplanForm(null)">＋ Neuer Planungspunkt</button>
  ${wochenplan.length?`<button class="secondary"onclick="printWochenplanPDF(${JSON.stringify(wochenplan).replace(/"/g,"&quot;")})"> Als PDF</button>`:""}
@@ -4062,7 +4055,7 @@ async function renderDidaktikKompass(){
  const phasen=[1,2,3].map(n=>{const p=PP12_PHASEN[n];return`<article class="dk-karte"><span class="pp12-phase pp12-ph${n}">${p.kurz}</span><h3>${esc(p.name)}</h3><p>${esc(p.was)}</p><p class="dk-rolle"><b>Deine Rolle:</b> ${esc(p.rolle)}</p><p><b>Ziel der Schüler:innen:</b> ${esc(p.ziel)}</p><p class="dk-app"><b>Das hilft in der App:</b> ${p.tools.map(t=>esc(t[0])).join(", ")}.</p></article>`;}).join("");
  const udl=DK_UDL.map(([zeile,felder])=>`<div class="dk-zeile"><div class="dk-label">${zeile}</div>${felder.map(([nr,k,t,f,b])=>`<div class="dk-feld"style="--c:${PP12_UDL[k].col}"><div class="dk-fkopf"><span>${nr}</span><b>${esc(t)}</b></div><p>${esc(f)}</p><p class="dk-bsp"><b>In der F11Sb:</b> ${esc(b)}</p></div>`).join("")}</div>`).join("");
  const kopfzeile=`<div class="dk-zeile dk-kopf"><div></div>${Object.values(PP12_UDL).map(v=>`<div class="dk-spalte"style="background:${v.col}"><b>${esc(v.name)}</b><small>${esc(v.leit)}</small></div>`).join("")}</div>`;
- return`<button class="secondary"onclick="go('faecher')">← Fächer 11. Klasse</button>
+ return`<button class="secondary"onclick="openFach('paedagogik')">← Zurück zum Modulplan</button>
  ${pageHead("UNTERRICHT · ORIENTIERUNG FÜR LEHRKRÄFTE","Didaktik-Kompass","Zwei Modelle, ein Ziel: Alle Schüler:innen bekommen Zugang, Wahl und Tiefe im Lernen. Alles ist freiwillig und kann angepasst werden.",`<button class="secondary"onclick="pp12KompassDrucken()">Als A4 drucken</button>`)}
  <style>
   .dk-saetze{display:grid;gap:10px;margin:0 0 6px}.dk-satz{display:grid;grid-template-columns:42px 1fr;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;line-height:1.45}
@@ -4119,22 +4112,9 @@ function pp12CssBausteine(){
 Object.assign(window,{pp12HinweiseSchalter,pp12KompassDrucken});
 
 async function renderFaecherUebersicht(){
- const kachel=f=>{
-  const wochen=LEHRPLAN_WOCHEN[f.key]||[];
-  const c=personColor(f.key);
-  return`<button class="card tile"style="background:#fff;border-left:4px solid ${c.border};text-align:left"onclick="openFach('${f.key}')">
- <strong style="font-size:15px;color:${c.text}">${f.label}</strong>
- <small style="display:block;margin-top:6px">${f.key==="paedagogik"?"4 Lernbereiche · Projekt + Abschlussprüfungs-Training":wochen.length?`${wochen.length} Lehrplan-Wochen hinterlegt`:f.key==="foerder"?"Förderunterricht · Lehrplan-Zeitstrahl folgt":"Lehrplan-Zeitstrahl folgt"}</small>
- </button>`;
- };
- const fpa=`<a class="card tile"href="#praktikum"style="background:#fff;border-left:4px solid #e8890c;text-align:left;text-decoration:none">
- <strong style="font-size:15px;color:#b86400">fpA</strong>
- <small style="display:block;margin-top:6px">Fachpraktische Ausbildung: Theorie-Praxis-Transfer-Aufträge, Fragen und Projekte aus der Praxis.</small>
- </a>`;
- return`${pageHead("LEHRPLAN & LERNINHALTE","Fächer 11. Klasse","Wähle ein Fach, um den Lehrplan-Zeitstrahl mit Themen, Aufträgen und Material zu öffnen.",isTeacher()?`<button class="secondary"type="button"onclick="go('didaktik')">Didaktik-Kompass</button>`:"")}
- ${F11SB_FACHGRUPPEN.map(g=>`<div class="kicker"style="margin:22px 0 10px">${g.title}</div><div class="grid grid-4">${g.keys.map(k=>F11SB_LEHRPLAN_FAECHER.find(f=>f.key===k)).filter(Boolean).map(kachel).join("")}</div>`).join("")}
- <div class="kicker"style="margin:22px 0 10px">Fachpraktische Ausbildung</div><div class="grid grid-4">${fpa}</div>
- ${footer()}`;
+ // In der F11Sb gibt es nur noch Pädagogik/Psychologie: Die frühere Fächerübersicht führt direkt in den Modulplan.
+ activeFach="paedagogik";activePhaseDetail=null;
+ return await renderFachDetail();
 }
 
 // ============================================================
@@ -5029,9 +5009,9 @@ async function renderPPModulplan(){
  const leer=!PPM.liste.length;
  const fehler=PPM.fehler?`<div class="empty"><strong>Der Modulplan konnte nicht geladen werden.</strong>${esc(PPM.fehler==="permission-denied"?"Firebase verweigert den Zugriff (permission-denied). Die Firestore-Regeln für den Modulplan sind noch nicht veröffentlicht.":"Fehler: "+PPM.fehler)}</div>`:"";
  const coBox=co?`${checkoutLiveBannerHTML(co)}<details class="ppm-box ppm-details"><summary>Check-outs (K-Prim-Tests)</summary><div style="margin-top:10px">${checkoutSektionHTML(co)}</div></details>`:"";
- return`<button class="secondary" onclick="closeFach()">← Zurück zu den Fächern</button>
+ return`<button class="secondary" onclick="closeFach()">← Zurück zur Lernwerkstatt</button>
  ${pageHead("PÄDAGOGIK/PSYCHOLOGIE","Modulplan",lehrer?"Plane Woche für Woche, welches Modul in welchem Lernbereich dran ist. Wähle unten ein Modul oder klicke bei einer Woche auf „＋ Modul“.":"Dein Plan durchs Schuljahr: Klicke ein Modul an, um loszulegen.",
-  lehrer?`<button class="secondary" onclick="openProjektGesamtcheck()"> Projekt-Gesamtcheck</button> <button class="secondary" onclick="openFachaufsatzTrainingCheck()"> APT-Gesamtcheck</button>`:"")}
+  lehrer?`<button class="secondary" onclick="openProjektGesamtcheck()"> Projekt-Gesamtcheck</button> <button class="secondary" onclick="openFachaufsatzTrainingCheck()"> APT-Gesamtcheck</button> <button class="secondary" onclick="go('didaktik')">Didaktik-Kompass</button>`:"")}
  ${PPM_CSS}${fehler}${coBox}${standBox}${legende}
  ${leer&&lehrer&&!PPM.fehler?`<div class="ppm-box"><h2>Noch kein Plan</h2><p>Du kannst von vorn beginnen oder den bisherigen Ablauf (je Lernbereich ein Projekt und ein Prüfungstraining, dazu das Experiment als Einheit im ersten Projekt) als Startpunkt übernehmen. Danach lässt sich jedes Modul ändern, verschieben oder löschen.</p><button type="button" class="ppm-btn primaer" data-ppm="standard">Bisherigen Ablauf als Plan übernehmen</button></div>`:""}
  ${leer&&!lehrer&&!PPM.fehler?`<div class="empty"><strong>Noch kein Plan.</strong>Deine Lehrkraft hat noch keine Module geplant.</div>`:""}
@@ -7109,7 +7089,7 @@ function renderPPJahresuebersicht(fortschrittMap,meineTeams,heute,coDaten){
  const gesamtProzent=gesamt.g?Math.round(gesamt.e/gesamt.g*100):0;
  const teile=ppAlleTeile(),aktIdx=ppAktuellerIndex(heute),akt=teile[aktIdx];
  const unter=isTeacher()?"Acht Stationen durchs Schuljahr: je Lernbereich ein Projekt und ein Prüfungstraining.":`Acht Stationen durchs Schuljahr. Der Ring zeigt, wie viel du geschafft hast – ${gesamtProzent} % deines Jahres.`;
- return`<button class="secondary"onclick="closeFach()">← Zurück zu den Fächern</button>
+ return`<button class="secondary"onclick="closeFach()">← Zurück zur Lernwerkstatt</button>
  ${pageHead("LERNPFAD","Pädagogik/Psychologie",unter,isTeacher()?`<button class="secondary"onclick="openProjektGesamtcheck()">🔬 Projekt-Gesamtcheck</button> <button class="secondary"onclick="openFachaufsatzTrainingCheck()">🎓 APT-Gesamtcheck</button>`:"")}
  ${checkoutLiveBannerHTML(coDaten)}
  <div class="card pp-weg-card">
@@ -11257,7 +11237,7 @@ Object.assign(window,{coBankEinsetzen,coVorlageWaehlen,coEditorPruefen,coEditorL
  openCheckoutAuswahl,coAuswahlStand,coAuswahlSpeichern,coPdfErsatzSchueler,openCheckoutEinstellungen,coEinstellungenSpeichern,openCheckoutKlassenuebersicht,coPdfErsatzKlasse,coPdfRespizienz,coPdfRespizienzKlasse,coPdfSchuelerAlle});
 
 async function renderFachDetail(){
- if(!activeFach)return await renderFaecherUebersicht();
+ if(activeFach!=="paedagogik")return await renderFaecherUebersicht();
  const fach=F11SB_LEHRPLAN_FAECHER.find(f=>f.key===activeFach);
  const timeline=combinedTimeline(activeFach);
  const wochenItems=timeline.filter(t=>t.kind==="woche");
@@ -11271,7 +11251,7 @@ async function renderFachDetail(){
 
  if(activeFach==="paedagogik")return await renderPaedagogikPhasenZeitstrahl(fach,fortschrittMap,heute);
 
- return`<button class="secondary"onclick="closeFach()">← Zurück zu den Fächern</button>
+ return`<button class="secondary"onclick="closeFach()">← Zurück zur Lernwerkstatt</button>
  ${pageHead("LERNPFAD",fach?.label||"Fach",`Dein Weg durchs Schuljahr – ${erledigtCount} von ${wochenItems.length} Wochen geschafft.`,isTeacher()?`<button class="secondary"onclick="openLehrplanKlassenuebersicht('${activeFach}')"> Klassenübersicht</button>`:"")}
  <style>
  .lernpfad{position:relative;margin:20px 0 10px;padding-left:44px}
@@ -11749,9 +11729,9 @@ async function renderLernwerkstatt(){
  ];
  return`${pageHead("SELBSTSTÄNDIG LERNEN","Lernwerkstatt","Der offene Lernraum für Lernaufträge, Methoden, Tools und KI.",`<button class="primary"onclick="openPostForm('idea')">＋ Lernimpuls</button>`)}
  <div class="kicker"style="margin-bottom:10px">LEHRPLAN & LERNINHALTE</div>
- <a class="card tile"href="#faecher"style="background:#fff;border-left:4px solid #4a90d9;min-height:110px;margin-bottom:22px">
- <span class="emoji"></span><strong style="font-size:16px">Fächer 11. Klasse</strong>
- <small>Lehrplan-Zeitstrahl je Fach: Themen, Aufträge, Material, Teams und Produkte – Schritt für Schritt durchs Schuljahr.</small>
+ <a class="card tile"href="#fach"onclick="event.preventDefault();openFach('paedagogik')"style="background:#fff;border-left:4px solid #4a90d9;min-height:110px;margin-bottom:22px">
+ <span class="emoji"></span><strong style="font-size:16px">Pädagogik und Psychologie</strong>
+ <small>Modulplan: Lernbereiche, Projekte, Prüfungstraining und Check-outs – Woche für Woche durchs Schuljahr.</small>
  </a>
  ${groups.map(g=>`<div class="kicker"style="margin:26px 0 2px">${g.title}</div><p style="margin:0 0 10px;color:var(--muted)">${g.sub}</p><div class="grid grid-4">${g.items.map(x=>`<a class="card tile"style="background:#fff;border-left:4px solid ${g.color}"href="#${x[3]}"><span class="emoji">${x[0]}</span>
 <strong>${x[1]}</strong><small>${x[2]}</small></a>`).join("")}</div>`).join("")}
@@ -21225,7 +21205,7 @@ async function render(){
  };
  const fn=pages[p]||renderStart;
  document.querySelectorAll(".nav-link").forEach(a=>a.classList.toggle("active",
- a.dataset.page===p || (a.dataset.page==="forum" && p.startsWith("forum-")) || (a.dataset.page==="lernwerkstatt" && ["whiteboard","whiteboard-board","didaktik","tafel"].includes(p))));
+ a.dataset.page===p || (a.dataset.page==="forum" && p.startsWith("forum-")) || (a.dataset.page==="lernwerkstatt" && ["whiteboard","whiteboard-board","didaktik","tafel","fach","faecher"].includes(p))));
  const content=$("content");
  if(!content)return;
  // Never leave a blank page while a module is loading.
