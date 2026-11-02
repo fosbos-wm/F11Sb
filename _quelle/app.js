@@ -67,7 +67,7 @@ function authError(err){
 }
 function modal(html){$("modal").innerHTML=html;$("modalBackdrop").hidden=false}
 function closeModal(){$("modalBackdrop").hidden=true;if(window.__coUnsub){try{window.__coUnsub()}catch(e){}window.__coUnsub=null;}if(ppDirty){ppDirty=false;if(activeFach==="paedagogik")render();}}
-function pageHead(k,h,p,actions=""){return`<header class="kw-kopf page-head" style="--c:#1F5B3E;--t:#1F5B3E"><div><div class="kicker">${k}</div><h1>${h}</h1><p>${p}</p>
+function pageHead(k,h,p,actions=""){return`<header class="kw-kopf page-head" style="--c:#3A8FD4;--t:#1F6FB2"><div><div class="kicker">${k}</div><h1>${h}</h1><p>${p}</p>
 </div><div class="actions">${actions}</div></header>`}
 function footer(){return`<div class="footer"><span>F11Sb 26/27 · FOSBOS Weilheim</span><span>Gemeinsam · offen ·
 respektvoll</span><span><button type="button"onclick="showImpressum()"style="background:none;border:none;padding:0;font:inherit;color:inherit;text-decoration:underline;cursor:pointer">Impressum</button> · <button type="button"onclick="showDatenschutz()"style="background:none;border:none;padding:0;font:inherit;color:inherit;text-decoration:underline;cursor:pointer">Datenschutz</button></span></div>`}
@@ -5130,7 +5130,7 @@ async function renderPPModulplan(){
  const fehler=PPM.fehler?`<div class="empty"><strong>Der Modulplan konnte nicht geladen werden.</strong>${esc(PPM.fehler==="permission-denied"?"Firebase verweigert den Zugriff (permission-denied). Die Firestore-Regeln für den Modulplan sind noch nicht veröffentlicht.":"Fehler: "+PPM.fehler)}</div>`:"";
  const coBox=co?`${checkoutLiveBannerHTML(co)}<details class="ppm-box ppm-details"><summary>Check-outs (K-Prim-Tests)</summary><div style="margin-top:10px">${checkoutSektionHTML(co)}</div></details>`:"";
  return`<div class="kwp"><div class="kw-links"><button class="secondary" onclick="go('start')">← Lernlandkarte</button><button class="secondary" onclick="closeFach()">Lernwerkstatt</button></div>
- <header class="kw-kopf" style="--c:#1F5B3E;--t:#1F5B3E"><small>PÄDAGOGIK/PSYCHOLOGIE · PLANUNG</small><h1>Modulplanung</h1><p>${lehrer?"Plane Woche für Woche, welcher Baustein in welchem Lernbereich dran ist. Klicke bei einer Woche auf „＋ Modul“ oder wähle unten einen Bausteintyp.":"Dein Plan durchs Schuljahr: Klicke einen Baustein an, um loszulegen."}</p>${lehrer?`<div class="kw-aktionen"><button class="secondary" onclick="openProjektGesamtcheck()">Projekt-Gesamtcheck</button><button class="secondary" onclick="openFachaufsatzTrainingCheck()">APT-Gesamtcheck</button><button class="secondary" onclick="go('didaktik')">Didaktik-Kompass</button></div>`:""}</header>
+ <header class="kw-kopf" style="--c:#3A8FD4;--t:#1F6FB2"><small>PÄDAGOGIK/PSYCHOLOGIE · PLANUNG</small><h1>Modulplanung</h1><p>${lehrer?"Plane Woche für Woche, welcher Baustein in welchem Lernbereich dran ist. Klicke bei einer Woche auf „＋ Modul“ oder wähle unten einen Bausteintyp.":"Dein Plan durchs Schuljahr: Klicke einen Baustein an, um loszulegen."}</p>${lehrer?`<div class="kw-aktionen"><button class="secondary" onclick="openProjektGesamtcheck()">Projekt-Gesamtcheck</button><button class="secondary" onclick="openFachaufsatzTrainingCheck()">APT-Gesamtcheck</button><button class="secondary" onclick="go('didaktik')">Didaktik-Kompass</button></div>`:""}</header>
  ${PPM_CSS}${fehler}${coBox}${standBox}${legende}
  ${leer&&lehrer&&!PPM.fehler?`<div class="ppm-box"><h2>Noch kein Plan</h2><p>Du kannst von vorn beginnen oder den bisherigen Ablauf (je Lernbereich ein Projekt und ein Prüfungstraining, dazu das Experiment als Einheit im ersten Projekt) als Startpunkt übernehmen. Danach lässt sich jedes Modul ändern, verschieben oder löschen.</p><button type="button" class="ppm-btn primaer" data-ppm="standard">Bisherigen Ablauf als Plan übernehmen</button></div>`:""}
  ${leer&&!lehrer&&!PPM.fehler?`<div class="empty"><strong>Noch kein Plan.</strong>Deine Lehrkraft hat noch keine Module geplant.</div>`:""}
@@ -7073,7 +7073,7 @@ async function renderPaedagogikPhasenZeitstrahl(fach,fortschrittMap,heute){
  await ppmLaden();
  if(activePPModul){
   const pm=ppmById(activePPModul);
-  if(pm){const kf=KW_FARBEN[pm.lb]||{c:"#2E7D57",t:"#1F6B47"};return`<div class="kwp kwm" style="--lbc:${kf.c};--lbt:${kf.t}">`+await ppmModulSeite(pm)+`</div>`;}
+  if(pm){const kf=KW_FARBEN[pm.lb]||{c:"#3A8FD4",t:"#1F6FB2"};return`<div class="kwp kwm" style="--lbc:${kf.c};--lbt:${kf.t}">`+await ppmModulSeite(pm)+`</div>`;}
   activePPModul=null;
  }
  const meineTeams=await ladePPTeams();
@@ -21250,14 +21250,14 @@ function navVerfolgen(p){
 }
 function navZurueck(){
  const v=NAV_STACK.pop();
- if(!v){go("start");return;}
+ if(!v){go("news");return;}
  NAV_SKIP=true;
  activeBoardId=v.a;activeFach=v.b;activePhaseDetail=v.c;activePPModul=v.d;activeWhiteboardId=v.e;activeWordcloudId=v.f;activeKanbanId=v.g;activeTermPollId=v.h;activeChecklistId=v.i;activeAmpelId=v.j;activePollId=v.k;activeZuordnungId=v.l;activeDeckId=v.m;activeEssayCaseId=v.n;activeConversationUid=v.o;activeConversationName=v.q;activeKwThema=v.r;activeKwLb=v.t;
  if(location.hash!=="#"+v.p)location.hash=v.p;else render();
 }
 window.navZurueck=navZurueck;
 function navZurueckLeiste(content,p,html){
- if(p==="start"||p==="whiteboard-board")return;   // Startseite: nichts zurück; Board-Ansicht hat eigenen Zurück-Knopf
+ if(p==="start"||p==="news"||p==="whiteboard-board")return;   // Startseite: nichts zurück; Board-Ansicht hat eigenen Zurück-Knopf
  if(/<button[^>]*>\s*(?:\u2190|&larr;)/.test(String(html||"").slice(0,3500)))return;   // Seite hat schon einen eigenen Zurück-Knopf
  if(!document.getElementById("navBackCss")){const st=document.createElement("style");st.id="navBackCss";st.textContent=".nav-back-bar{margin:0 0 12px}.nav-back{font-size:13px;padding:6px 14px;border-radius:999px}";document.head.appendChild(st);}
  const hatVerlauf=NAV_STACK.length>0;
@@ -21272,7 +21272,7 @@ async function render(){
  if(liveUnsubHeimat){liveUnsubHeimat();liveUnsubHeimat=null;}
  if(liveUnsubMiniKalender){liveUnsubMiniKalender();liveUnsubMiniKalender=null;}
  const seq=++__campusRenderSeq;
- const p=location.hash.replace("#","")||"start";
+ const p=location.hash.replace("#","")||"news";
  navVerfolgen(p);
  if(["fach","faecher","kompass","start","klassenteam","lernwerkstatt","kw-thema","kw-projekt"].includes(p)&&typeof ppmLaden==="function")await ppmLaden().catch(()=>{});
  const pages={
@@ -22303,7 +22303,7 @@ async function renderKachelwand(){
  const fertig=lehrer?alle.filter(e=>(KW.mat[e.id]||[]).length||kwModuleThema(e.id).length).length:alle.filter(e=>kwErledigt(e.id)).length;
  const p=alle.length?Math.round(fertig/alle.length*100):0;
  const r=31,u=2*Math.PI*r,da=(u*p/100).toFixed(1);
- const ring=`<svg width="56" height="56" viewBox="0 0 78 78" role="img" aria-label="Gesamtstand ${p} Prozent"><circle cx="39" cy="39" r="${r}" fill="none" stroke="#E3EBDD" stroke-width="10"/><circle cx="39" cy="39" r="${r}" fill="none" stroke="#2E7D57" stroke-width="10" stroke-dasharray="${da} ${u.toFixed(1)}" transform="rotate(-90 39 39)" stroke-linecap="round"/></svg>`;
+ const ring=`<svg width="56" height="56" viewBox="0 0 78 78" role="img" aria-label="Gesamtstand ${p} Prozent"><circle cx="39" cy="39" r="${r}" fill="none" stroke="#DCE9F5" stroke-width="10"/><circle cx="39" cy="39" r="${r}" fill="none" stroke="#3A8FD4" stroke-width="10" stroke-dasharray="${da} ${u.toFixed(1)}" transform="rotate(-90 39 39)" stroke-linecap="round"/></svg>`;
  const links=lehrer
   ?`<button class="secondary" data-kw="fortschritt">Erledigt? Selbstlernkurse und Rallyes</button><button class="secondary" data-kw="checkouts">Check-outs verwalten</button><button class="secondary" onclick="go('lernstand')">Lernstandsmessung</button><button class="secondary" onclick="go('news')">Campus-News und Termine</button><button class="secondary" onclick="openUserManagement()">Benutzer verwalten</button>`
   :`<button class="secondary" data-kw="checkouts">Meine Check-outs und KPrim-Tests</button><button class="secondary" onclick="go('lernstand')">Meine Lernstandsmessung</button><button class="secondary" onclick="go('news')">Campus-News und Termine</button>`;
@@ -22389,7 +22389,7 @@ async function renderKwThema(){
 async function renderKwCheckouts(){
  await kwLaden();
  const co=KW.co,lehrer=isTeacher();
- return`<div class="kw kw-seite" style="--c:#2E7D57;--bg:#E0F2E8;--t:#1F6B47">
+ return`<div class="kw kw-seite" style="--c:#3A8FD4;--bg:#E3F0FA;--t:#1F6FB2">
   <button class="secondary" data-kw="wand">← Lernlandkarte</button>
   <header class="kw-kopf"><small>CHECK-OUTS</small><h1>${lehrer?"Check-outs und KPrim-Tests":"Meine Check-outs"}</h1><p>Hier sammeln sich alle Check-outs und KPrim-Tests, die deine Lehrkraft angelegt hat – mit deinem Ergebnis.</p></header>
   ${co?`${checkoutLiveBannerHTML(co)}<div class="kw-card">${checkoutSektionHTML(co)}</div>`:`<div class="empty"><strong>Check-outs konnten nicht geladen werden.</strong>Bitte später erneut versuchen.</div>`}
@@ -22426,7 +22426,7 @@ async function renderKwFortschritt(){
  };
  const kopf=mods.map(m=>{const T=KW_BAUSTEINE[m.modul]||["",""];return`<th><span class="chip ${T[1]}">${esc(T[0])}</span><br><small>LB ${esc(m.lb)} · ${esc(m.titel||"")}</small></th>`}).join("");
  const zeilen=schueler.map(u=>`<tr><th scope="row">${esc(anzeigeName(u))}</th>${mods.map(m=>{const z=zelle(m,u);return`<td class="kw-z ${z.k}">${esc(z.t)}</td>`}).join("")}</tr>`).join("");
- return`<div class="kw kw-seite" style="--c:#2E7D57;--bg:#E0F2E8;--t:#1F6B47">
+ return`<div class="kw kw-seite" style="--c:#3A8FD4;--bg:#E3F0FA;--t:#1F6FB2">
   <button class="secondary" data-kw="wand">← Lernlandkarte</button>
   <header class="kw-kopf"><small>FÜR LEHRKRÄFTE</small><h1>Erledigt? Selbstlernkurse und Lernrallyes</h1><p>Grün: ordentlich abgeschlossen. Orange: begonnen oder nur flüchtig bearbeitet (fertig, aber weniger als 60 % richtig). Grau: noch offen. Lehrkräfte-Konten erscheinen hier nicht.</p></header>
   <div class="kw-card"><div class="kw-tabwrap">${mods.length&&schueler.length?`<table class="kw-tab"><thead><tr><th>Pseudonym</th>${kopf}</tr></thead><tbody>${zeilen}</tbody></table>`:`<div class="kw-leer">Noch keine passenden Bausteine oder freigeschaltete Schüler:innen.</div>`}</div></div>
