@@ -5718,9 +5718,9 @@ async function ppmDialog(id,typ,woche,opt){
    const l=faAlle.filter(u=>u.lb===n),kern=l.filter(u=>!u.zusatz),mehr=l.filter(u=>u.zusatz);
    const nachThema=[...new Set(l.map(u=>u.thema))];
    const zeile=th=>{const eu=l.filter(u=>u.thema===th),k=eu.filter(u=>!u.zusatz);const t0=kwThemaById(th);
-    return`<div class="fa-th"><b>${t0?`Nr. ${esc(t0.nr)} · ${esc(kwKurz(t0))}`:`Weiteres Thema: ${esc(eu[0].zusatz||th)}`}</b><small>${k.length?k.length+" Übung"+(k.length===1?"":"en")+" · "+k.reduce((x,u)=>x+(u.minuten||0),0)+" Min.":""}${k.length&&eu.length>k.length?" + ":""}${eu.length>k.length?(eu.length-k.length)+" zusätzlich":""}</small><span>${eu.map(u=>esc(u.titel)+(u.zusatz?" ("+esc(u.zusatz)+")":"")).join(" · ")}</span></div>`};
-   return`<details class="fa-lbgr" data-lb="${n}"${n===lb0?" open":""}><summary><b>Lernbereich ${n}</b> ${esc(lbTitel(n))}<small>${kern.length} Kernübungen · ${kern.reduce((x,u)=>x+(u.minuten||0),0)} Min.${mehr.length?" · "+mehr.length+" zusätzlich":""}</small></summary>${nachThema.map(zeile).join("")}</details>`};
-  extra=`<div class="fa-uebers"><b>Übungen nach Lernbereich</b><p>Mit dem gewählten Lernbereich stehen die Kernübungen (zusammen etwa 35 Minuten) automatisch bereit. Vertiefungen und weitere Themen erscheinen für die Klasse unter „Mehr üben“. Willst du nur bestimmte Themen einplanen, kreuze sie unten bei den Lehrplan-Themen an.</p>${[1,2,3,4].map(grp).join("")}</div>`;
+    return`<div class="fa-th"><b>${t0?`Nr. ${esc(t0.nr)} · ${esc(kwKurz(t0))}`:`Weiteres Thema: ${esc(eu[0].zusatz||th)}`}</b><small>${k.length?k.length+" Übung"+(k.length===1?"":"en"):""}${k.length&&eu.length>k.length?" + ":""}${eu.length>k.length?(eu.length-k.length)+" zusätzlich":""}</small><span>${eu.map(u=>esc(u.titel)+(u.zusatz?" ("+esc(u.zusatz)+")":"")).join(" · ")}</span></div>`};
+   return`<details class="fa-lbgr" data-lb="${n}"${n===lb0?" open":""}><summary><b>Lernbereich ${n}</b> ${esc(lbTitel(n))}<small>${kern.length} Kernübungen${mehr.length?" · "+mehr.length+" zusätzlich":""}</small></summary>${nachThema.map(zeile).join("")}</details>`};
+  extra=`<div class="fa-uebers"><b>Übungen nach Lernbereich</b><p>Mit dem gewählten Lernbereich stehen die Kernübungen automatisch bereit. Vertiefungen und weitere Themen erscheinen für die Klasse unter „Mehr üben“. Willst du nur bestimmte Themen einplanen, kreuze sie unten bei den Lehrplan-Themen an.</p>${[1,2,3,4].map(grp).join("")}</div>`;
  }
  if(t==="apt")extra=`<p style="font-size:13px;color:var(--muted);margin:0">Die Frage aus der Abschlussprüfung, den relevanten Inhalt und die Lösung gestaltest du danach direkt auf der Modulseite.</p>`;
  if(t==="stunde")extra=`<label>Phase im Deeper-Learning-Konzept<select id="ppmPhase">${[1,2,3].map(n=>`<option value="${n}"${(bearb?bearb.phase:2)===n?" selected":""}>${PP12_PHASEN[n].kurz} · ${esc(PP12_PHASEN[n].name)}</option>`).join("")}</select></label>
@@ -5994,7 +5994,7 @@ async function ppmFachaufsatzSeite(m,opt){
   const s=faLies(u.id),th=kwThemaById(u.thema);
   const loesBtn=lehrer?"":`<button type="button" class="ppm-btn" onclick="faLoesung('${u.id}')">Lösung ein-/ausblenden</button>`;
   return`<details class="fa-ue${s.d?" fa-ok":""}" id="fa_${u.id}"${istKern?" data-kern=\"1\"":""}${i===0&&istKern?" open":""}>
-   <summary><span class="fa-nr" data-n="${i+1}">${s.d?"✓":(istKern?i+1:"+")}</span><span><b>${esc(u.titel)}</b><small>${esc(th?th.thema:(u.zusatz||u.thema))}${u.zusatz?" · "+esc(u.zusatz):""} · ${u.minuten} Min. · ${esc(u.format)}</small></span></summary>
+   <summary><span class="fa-nr" data-n="${i+1}">${s.d?"✓":(istKern?i+1:"+")}</span><span><b>${esc(u.titel)}</b><small>${esc(th?th.thema:(u.zusatz||u.thema))}${u.zusatz?" · "+esc(u.zusatz):""} · ${esc(u.format)}</small></span></summary>
    <div class="fa-body">
     ${zeilenKopfHinweis(u)}
     ${faZeilenHTML(u)}
@@ -6023,7 +6023,7 @@ async function ppmFachaufsatzSeite(m,opt){
  .fa-aufg{margin:10px 0}.fa-aufg p{margin:4px 0}.fa-aufg small,.fa-hinweis{color:var(--muted);font-size:12px}.fa-label{display:block;font-weight:700;font-size:12px}.fa-label textarea{width:100%;font:inherit;font-weight:400;margin-top:4px}.fa-btns{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px}.fa-btns a{text-decoration:none;display:inline-block}
  .fa-loes{background:#eef7ee;border-left:4px solid #3fa66a;border-radius:10px;padding:10px 12px;margin:10px 0}.fa-loes p{margin:6px 0}.fa-b{font-weight:800;color:#2e7d4f}.fa-kk{display:block;margin-top:8px}.fa-fertig{margin-top:8px}</style>`;
  if(opt&&opt.karten)return css+liste.map((u,i)=>karte(u,i,true)).join("");
- return`${ppmKopf(m,`<p style="color:var(--muted)">${kern.length} Übung${kern.length===1?"":"en"} · zusammen etwa ${min} Minuten${sel.length?" (ausgewählte Themen)":""}</p>`)}
+ return`${ppmKopf(m,`<p style="color:var(--muted)">${kern.length} Übung${kern.length===1?"":"en"}${sel.length?" (ausgewählte Themen)":""}</p>`)}
  ${css}
  <div class="ppm-box"><h2>Fachaufsatz kurz geübt</h2>
   <p>Lies den ganzen Fall, schreibe nur den gefragten Teil und belege mit <b>Zeilenangaben</b> (zum Beispiel „Z. 12–14“). Danach kannst du die Musterlösung einblenden oder deinen Text von der KI korrigieren lassen.</p>
@@ -23274,7 +23274,7 @@ async function kwFaUebungOeffnen(uid){
  if(!u){toast("Diese Übung gibt es nicht mehr.");return}
  const h=await ppmFachaufsatzSeite({lb:u.lb,themen:[],uebIds:[uid]},{karten:true});
  const th=kwThemaById(u.thema);
- modal(`<button class="modal-close" onclick="closeModal()">×</button><div class="kicker">ÜBUNGSAUFGABE · LB ${u.lb}</div><h2>${esc(u.titel)}</h2><p style="color:var(--muted);margin:0 0 6px">${esc(th?kwKurz(th):(u.zusatz||""))} · ${u.minuten||""} Min.</p>${h.replace(/<details class="fa-ue/,'<details open class="fa-ue')}<div class="form-actions"><button class="secondary" onclick="closeModal()">Schließen</button></div>`);
+ modal(`<button class="modal-close" onclick="closeModal()">×</button><div class="kicker">ÜBUNGSAUFGABE · LB ${u.lb}</div><h2>${esc(u.titel)}</h2><p style="color:var(--muted);margin:0 0 6px">${esc(th?kwKurz(th):(u.zusatz||""))} </p>${h.replace(/<details class="fa-ue/,'<details open class="fa-ue')}<div class="form-actions"><button class="secondary" onclick="closeModal()">Schließen</button></div>`);
 }
 window.kwFaUebungOeffnen=kwFaUebungOeffnen;
 // Übungen (Fachaufsatz-Training) für ein Thema auswählen: nach Lernbereichen geordnet, ohne Termin und Dauer.
@@ -23284,7 +23284,7 @@ async function kwFaPicker(kat,themaId){
  const [alle,vorh]=await Promise.all([faLaden(),getDocs(query(collection(db,"lehrplanMaterialien"),where("wocheId","==",e.id))).then(sn=>sn.docs.map(d=>d.data())).catch(()=>[])]);
  const schon=new Set(vorh.filter(x=>String(x.url||"").startsWith("fa:")).map(x=>x.url.slice(3)));
  const kopf=g=>{const t=kwThemaById(g);return t?`Nr. ${t.nr} · ${kwKurz(t)}`:`Weiteres Thema: ${(alle.find(u=>u.thema===g)||{}).zusatz||g}`};
- const zeile=u=>`<label class="check"><input type="checkbox" class="kwFaCb" value="${esc(u.id)}"${schon.has(u.id)?" checked disabled":(u.thema===e.id&&!u.zusatz?" checked":"")}> <span><b>${esc(u.titel)}</b> <small>${u.minuten||""} Min.${u.zusatz?" · "+esc(u.zusatz):""}${schon.has(u.id)?" · schon hinzugefügt":""}</small></span></label>`;
+ const zeile=u=>`<label class="check"><input type="checkbox" class="kwFaCb" value="${esc(u.id)}"${schon.has(u.id)?" checked disabled":(u.thema===e.id&&!u.zusatz?" checked":"")}> <span><b>${esc(u.titel)}</b> <small>${[u.zusatz?esc(u.zusatz):"",schon.has(u.id)?"schon hinzugefügt":""].filter(Boolean).join(" · ")}</small></span></label>`;
  const lbGr=n=>{
   const l=alle.filter(u=>u.lb===n);if(!l.length)return"";
   const gr=[...new Set(l.map(u=>u.thema))].sort((a,b)=>(a===e.id?-1:b===e.id?1:0));
