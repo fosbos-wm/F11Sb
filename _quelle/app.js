@@ -4847,7 +4847,8 @@ const PPM_TYPEN={
  selbstlern:{icon:"",name:"Selbstlernkurs",kurz:"Selbstlernkurs",art:"Selbstlernkurs",text:"Schüler:innen bearbeiten den Kurs selbstständig von A bis Z."},
  experiment:{icon:"",name:"Experiment (interaktive Einheit)",kurz:"Experiment",art:"Experiment",text:"„Das Experiment“ als interaktive Einheit. Du wählst selbst, welche Teile dabei sind."},
  einfuehrung:{icon:"",name:"Einführung in den Lernbereich",kurz:"Einführung",art:"Einführung in den Lernbereich",text:"Thema wählen: Die Digitale Tafel mit Vorlagen und die passenden Selbstlernkurse sind sofort vorbereitet."},
- rallye:{icon:"",name:"Lernrallye",kurz:"Lernrallye",art:"Lernrallye",text:"Stationen mit Aufgaben, per QR-Code oder der Reihe nach, einzeln oder in Teams, mit Punkten und Rangliste."}
+ rallye:{icon:"",name:"Lernrallye",kurz:"Lernrallye",art:"Lernrallye",text:"Stationen mit Aufgaben, per QR-Code oder der Reihe nach, einzeln oder in Teams, mit Punkten und Rangliste."},
+ fachaufsatz:{icon:"",name:"Fachaufsatz-Übung",kurz:"Fachaufsatz",art:"Fachaufsatz-Übung",text:"Kurze Schreibübungen (je 5 bis 8 Minuten) mit Fall und Zeilenangaben, Lösung zum Einblenden und KI-Rückmeldung."}
 };
 // Themen für „Einführung in den Lernbereich“: Tafel-Vorlagen (Seiten in der Reihenfolge) und verknüpfte Selbstlernkurse (Einheiten-IDs aus einarbeitung/inhalte).
 // Weitere Themen lassen sich hier einfach ergänzen.
@@ -4876,7 +4877,7 @@ const PPM_DAUERN=[
 // Pro Schulwoche stehen 6,3 Unterrichtsstunden zu je 45 Minuten (285 Minuten) zur Verfügung. Wochen mit Praktikum (fpA-Blöcke)
 // und Ferien sind gesperrt. Eine ganze Woche (1 bis 3 Wochen) belegt die Woche vollständig.
 const PPM_STD_PRO_WOCHE="6,3",PPM_MIN_PRO_STUNDE=45,PPM_MIN_PRO_WOCHE=285; // 6 Stunden + 15 Minuten (z. B. K-Prim-Test) = 285 Minuten = 6,3 Stunden
-const PPM_DAUER_STANDARD={projekt:"w3",stunde:"90",experiment:"90",apt:"w1",kprim:"45",selbstlern:"w1",einfuehrung:"135",rallye:"90"};
+const PPM_DAUER_STANDARD={projekt:"w3",stunde:"90",experiment:"90",apt:"w1",kprim:"45",selbstlern:"w1",einfuehrung:"135",rallye:"90",fachaufsatz:"45"};
 function ppmDauerKey(m){
  if(m&&PPM_DAUERN.some(d=>d.k===m.dauer))return m.dauer;
  const n=Math.max(1,Number(m&&m.wochen)||1);
@@ -5184,7 +5185,7 @@ function ppmKarteHTML(m,fortsetzung){
  const proj=m.projektId?`<span class="ppm-chip">Einheit im Projekt</span>`:"";
  const fo=ppmFort(m);
  return`<div class="ppm-karte${isTeacher()?" ppm-ziehbar":""}${fo?(fo.done?" ppm-st-done":fo.frac>0?" ppm-st-teil":" ppm-st-offen"):""}" style="--c:${c};--sp:${ppmSpalten(m)}" data-ppm="oeffnen" data-id="${esc(m.id)}" tabindex="0" role="button">
-    <span class="ppm-txt"><b>${esc(ppmTitel(m)||T.name)}</b><span class="chip ${({projekt:"prj",experiment:"prj",selbstlern:"slk",einfuehrung:"slk",stunde:"std",rallye:"ral",kprim:"chk",apt:"ueb"})[m.modul]||"chk"}">${esc(T.kurz)}</span><small>LB ${m.lb} · ${esc(ppmDauerText(m))}</small>${ppmStatus(m)}${fo&&!fo.done?`<span class="ppm-mini" title="${Math.round(fo.frac*100)} % geschafft"><i style="width:${Math.round(fo.frac*100)}%"></i></span>`:""}${proj}${exp}${einh}${m.modul==="projekt"&&m.vorlage?bepKachelHTML(m):""}${lbModulPills(m)}</span>
+    <span class="ppm-txt"><b>${esc(ppmTitel(m)||T.name)}</b><span class="chip ${({projekt:"prj",experiment:"prj",selbstlern:"slk",einfuehrung:"slk",stunde:"std",rallye:"ral",kprim:"chk",apt:"ueb",fachaufsatz:"ueb"})[m.modul]||"chk"}">${esc(T.kurz)}</span><small>LB ${m.lb} · ${esc(ppmDauerText(m))}</small>${ppmStatus(m)}${fo&&!fo.done?`<span class="ppm-mini" title="${Math.round(fo.frac*100)} % geschafft"><i style="width:${Math.round(fo.frac*100)}%"></i></span>`:""}${proj}${exp}${einh}${m.modul==="projekt"&&m.vorlage?bepKachelHTML(m):""}${lbModulPills(m)}</span>
   ${fo&&fo.done?`<span class="ppm-haken-k" aria-label="geschafft">✓</span>`:""}${isTeacher()?`<button type="button" class="ppm-edit" data-ppm="bearbeiten" data-id="${esc(m.id)}" title="Modul bearbeiten">Ändern</button>`:""}
  </div>`;
 }
@@ -5556,6 +5557,7 @@ async function ppmDialog(id,typ,woche,opt){
    <p style="font-size:13px;color:var(--muted);margin:0">Mit Vorlage entsteht eine eigene Projektseite mit Teamwahl, Zeitplan, Fristen, Material und Teamübersicht. Empfohlen: Dauer 2 Wochen (Schulwoche, dann der Praktikumsblock, dann Schulwoche).</p>`:""}
    <p style="font-size:13px;color:var(--muted);margin:0">Team-Projekt mit Meilensteinen anlegen: Das Projekt nutzt die Meilensteine und die Teams des Lernbereichs.</p>`;
  }
+ if(t==="fachaufsatz")extra=`<p style="font-size:13px;color:var(--muted);margin:0">Die Übungen des gewählten Lernbereichs stehen automatisch bereit (je Thema 5 bis 8 Minuten, zusammen etwa 35 Minuten). Wenn du unten bestimmte Lehrplan-Themen ankreuzt, erscheinen nur deren Übungen.</p>`;
  if(t==="apt")extra=`<p style="font-size:13px;color:var(--muted);margin:0">Die Frage aus der Abschlussprüfung, den relevanten Inhalt und die Lösung gestaltest du danach direkt auf der Modulseite.</p>`;
  if(t==="stunde")extra=`<label>Phase im Deeper-Learning-Konzept<select id="ppmPhase">${[1,2,3].map(n=>`<option value="${n}"${(bearb?bearb.phase:2)===n?" selected":""}>${PP12_PHASEN[n].kurz} · ${esc(PP12_PHASEN[n].name)}</option>`).join("")}</select></label>
   ${bearb?"":`<p style="font-size:13px;color:var(--muted);margin:0">Zu jeder Stunde wird automatisch eine Digitale Tafel angelegt.</p>`}`;
@@ -5673,7 +5675,7 @@ async function ppmDialog(id,typ,woche,opt){
   if(!pr.ok){toast(pr.zeilen&&pr.zeilen[0]&&pr.zeilen[0].spur?"In dieser Zeit läuft schon ein anderes Projekt.":"In dieser Woche ist nicht genug Platz (6,3 Unterrichtsstunden pro Woche).");return;}
   const dk=$("ppmDauer").value,def=PPM_DAUERN.find(d=>d.k===dk);
   const daten={modul:t,lb,titel:ti.value.trim(),start:$("ppmStart").value,dauer:dk,wochen:def?def.wochen:(Number(dk.slice(1))||1),notiz:$("ppmNotiz").value.trim()};
-  if(!daten.titel){const x=PROJEKT_PHASEN.find(y=>y.lbNum===lb);daten.titel=t==="projekt"&&x?x.titel:(t==="apt"?"Prüfungstraining · LB"+lb:t==="kprim"?"K-Prim-Aufgabensatz · LB"+lb:t==="stunde"?"Deeper-Learning-Einheit · LB"+lb:t==="experiment"?"Das Experiment":t==="rallye"?"Lernrallye · LB"+lb:"Selbstlernkurs · LB"+lb);}
+  if(!daten.titel){const x=PROJEKT_PHASEN.find(y=>y.lbNum===lb);daten.titel=t==="projekt"&&x?x.titel:(t==="apt"?"Prüfungstraining · LB"+lb:t==="kprim"?"K-Prim-Aufgabensatz · LB"+lb:t==="stunde"?"Deeper-Learning-Einheit · LB"+lb:t==="experiment"?"Das Experiment":t==="rallye"?"Lernrallye · LB"+lb:t==="fachaufsatz"?"Fachaufsatz-Übung · LB"+lb:"Selbstlernkurs · LB"+lb);}
   if(t==="einfuehrung"){
    daten.thema=$("ppmThema").value;
    const th=PPM_EINF_THEMEN[daten.thema]||PPM_EINF_THEMEN.eigen;
@@ -5792,6 +5794,7 @@ async function ppmModulSeite(m){
  if(m.modul==="rallye")return await ppmRallyeSeite(m);
  if(m.modul==="kprim")return await ppmKprimSeite(m);
  if(m.modul==="apt")return await ppmAptSeite(m);
+ if(m.modul==="fachaufsatz")return await ppmFachaufsatzSeite(m);
  if(m.modul==="experiment")return await ppmExperimentSeite(m);
  if(m.modul==="selbstlern"){
   if(String(m.kursId||"").startsWith("ea:"))return await ppmEaSeite(m);
@@ -5799,6 +5802,93 @@ async function ppmModulSeite(m){
  }
  return"";
 }
+// ---- Fachaufsatz-Übung (kurze Schreibübungen nach Lernbereich; Daten in fachaufsatz/uebungen.json) ----
+let FA_DATEN=null,FA_HINWEIS="";
+async function faLaden(){
+ if(FA_DATEN)return FA_DATEN;
+ try{const r=await fetch("fachaufsatz/uebungen.json?v=1",{cache:"no-cache"});if(r.ok){const j=await r.json();const fl=j.faelle||{};FA_HINWEIS=j.hinweis||"";FA_DATEN=(Array.isArray(j.uebungen)?j.uebungen:[]).map(u=>{const f=fl[u.fallId]||{};let z=f.fall||u.fall||[];if(u.zeilenBis)z=z.filter(x=>!x[0]||Number(x[0])<=u.zeilenBis);return{...u,fall:z,fallkopf:f.kopf||u.fallkopf,fallHinweis:f.hinweis||""}})}else FA_DATEN=[]}catch(e){console.warn("Fachaufsatz-Übungen:",e);FA_DATEN=[]}
+ return FA_DATEN;
+}
+function faKey(id){return"fa:"+(currentUser?currentUser.uid:"x")+":"+id}
+function faLies(id){try{return JSON.parse(localStorage.getItem(faKey(id))||"{}")}catch(e){return{}}}
+function faSchreib(id,patch){try{localStorage.setItem(faKey(id),JSON.stringify({...faLies(id),...patch}))}catch(e){}}
+function faZeilenText(u){return(u.fall||[]).map(z=>z[0]?"Z. "+z[0]+": "+z[1]:z[1]).join("\n")}
+function faLoesungText(u){return(u.loesung||[]).map(s=>s.b+": "+s.t).join("\n")}
+function faZeilenHTML(u){return`<div class="fa-fall"><b>${esc(u.fallkopf||"Fallbeispiel")}</b>${u.fallHinweis?`<small class="fa-zh">${esc(u.fallHinweis)}</small>`:""}${(u.fall||[]).map(z=>z[0]?`<div class="fa-z${Number(z[0])%5===0?" fa-z5":""}"><span>${esc(z[0])}</span><p>${esc(z[1])}</p></div>`:`<p class="fa-zk">${esc(z[1])}</p>`).join("")}</div>`}
+async function ppmFachaufsatzSeite(m){
+ const lehrer=isTeacher(),alle=await faLaden();
+ const sel=(m.themen||[]);
+ const liste=sel.length?alle.filter(u=>sel.includes(u.thema)):alle.filter(u=>u.lb===Number(m.lb));
+ const kern=liste.filter(u=>!u.zusatz),extra=liste.filter(u=>u.zusatz);
+ const min=kern.reduce((a,u)=>a+(u.minuten||0),0);
+ const links=await ladeTaskcardLinks().catch(()=>({}));
+ const fobizz=((links||{}).fobizz_fachaufsatz||{}).url||"";
+ const erl=kern.filter(u=>faLies(u.id).d).length;
+ const karte=(u,i,istKern)=>{
+  const s=faLies(u.id),th=kwThemaById(u.thema);
+  const loesBtn=lehrer?"":`<button type="button" class="ppm-btn" onclick="faLoesung('${u.id}')">Lösung ein-/ausblenden</button>`;
+  return`<details class="fa-ue${s.d?" fa-ok":""}" id="fa_${u.id}"${istKern?" data-kern=\"1\"":""}${i===0&&istKern?" open":""}>
+   <summary><span class="fa-nr" data-n="${i+1}">${s.d?"✓":(istKern?i+1:"+")}</span><span><b>${esc(u.titel)}</b><small>${esc(th?th.thema:(u.zusatz||u.thema))}${u.zusatz?" · "+esc(u.zusatz):""} · ${u.minuten} Min. · ${esc(u.format)}</small></span></summary>
+   <div class="fa-body">
+    ${zeilenKopfHinweis(u)}
+    ${faZeilenHTML(u)}
+    <div class="fa-aufg"><b>Aufgabe</b><p>${esc(u.aufgabe)}</p>${u.hinweis?`<small>${esc(u.hinweis)}</small>`:""}</div>
+    ${lehrer?"":`<label class="fa-label">Dein Text<textarea id="fat_${u.id}" rows="8" oninput="faTipp('${u.id}',this)" placeholder="Schreibe hier deine Antwort. Nenne die Theorie, erkläre sie und verdeutliche am Fall mit Zeilenangaben …">${esc(s.t||"")}</textarea></label>
+    <small class="fa-hinweis">Dein Text bleibt nur auf diesem Gerät gespeichert.</small>`}
+    <div class="fa-btns">${loesBtn}
+     ${lehrer?"":`<button type="button" class="ppm-btn" onclick="faKopieren('${u.id}')">Text für die KI kopieren</button>`}
+     ${fobizz?`<a class="ppm-btn" href="${esc(fobizz)}" target="_blank" rel="noopener noreferrer">KI-Assistent öffnen ↗</a>`:""}</div>
+    ${lehrer||!fobizz?"":`<small class="fa-hinweis">Erst „Text für die KI kopieren“, dann den Assistenten öffnen und einfügen.</small>`}
+    ${lehrer&&!fobizz?`<small class="fa-hinweis">Link zum KI-Assistenten: in der Lernwerkstatt beim Prüfungstraining hinterlegen (Fobizz-Link).</small>`:""}
+    <div class="fa-loes" id="fal_${u.id}"${lehrer?"":" hidden"}>
+     <b>${lehrer?"Musterlösung (nur für Lehrkräfte sichtbar, Schüler:innen blenden sie selbst ein)":"Musterlösung"}</b>
+     ${(u.loesung||[]).map(x=>`<p><span class="fa-b">${esc(x.b)}</span> ${esc(x.t)}</p>`).join("")}
+     <b class="fa-kk">${lehrer?"Kriterien für die Rückmeldung":"Prüfe selbst:"}</b>
+     <ul>${(u.kriterien||[]).map(k=>`<li>${esc(k)}</li>`).join("")}</ul>
+    </div>
+    ${lehrer?"":`<label class="check fa-fertig"><input type="checkbox" ${s.d?"checked ":""}onchange="faErledigt('${u.id}',this.checked)"><span>Erledigt</span></label>`}
+   </div></details>`;
+ };
+ const karten=kern.map((u,i)=>karte(u,i,true)).join("");
+ const zus=extra.length?`<details class="fa-zus"><summary>Mehr üben: ${extra.length} zusätzliche Übung${extra.length===1?"":"en"} (Vertiefung und weitere Themen)</summary>${extra.map((u,i)=>karte(u,i,false)).join("")}</details>`:"";
+ const css=`<style>.fa-ue{background:#fff;border:1px solid var(--line);border-radius:14px;margin:10px 0;overflow:hidden}.fa-ue>summary{display:flex;gap:12px;align-items:center;padding:12px 14px;cursor:pointer;list-style:none}.fa-ue>summary::-webkit-details-marker{display:none}
+ .fa-ue>summary small{display:block;color:var(--muted);font-size:12px}.fa-nr{flex:none;width:30px;height:30px;border-radius:50%;border:2px solid var(--c,#3A8FD4);color:var(--c,#3A8FD4);display:grid;place-items:center;font-weight:800}.fa-ok .fa-nr{background:var(--c,#3A8FD4);color:#fff}
+ .fa-body{padding:2px 16px 16px}.fa-quelle{font-size:12px;color:var(--muted);margin:0 0 8px}.fa-fall{background:#f4f8fc;border-left:4px solid var(--c,#3A8FD4);border-radius:10px;padding:10px 12px;margin:8px 0}.fa-z{display:flex;gap:10px;margin-top:3px;line-height:1.4}.fa-z span{flex:none;min-width:26px;text-align:right;font-size:11px;color:var(--muted);padding-top:3px}.fa-z5 span{font-weight:800;color:var(--c,#3A8FD4)}.fa-zk{margin:8px 0 2px;font-weight:700}.fa-zh{display:block;color:var(--muted);font-size:12px;margin:2px 0 6px}.fa-zus{margin:14px 0}.fa-zus>summary{cursor:pointer;font-weight:700;padding:8px 2px}.fa-z p{margin:0}
+ .fa-aufg{margin:10px 0}.fa-aufg p{margin:4px 0}.fa-aufg small,.fa-hinweis{color:var(--muted);font-size:12px}.fa-label{display:block;font-weight:700;font-size:12px}.fa-label textarea{width:100%;font:inherit;font-weight:400;margin-top:4px}.fa-btns{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px}.fa-btns a{text-decoration:none;display:inline-block}
+ .fa-loes{background:#eef7ee;border-left:4px solid #3fa66a;border-radius:10px;padding:10px 12px;margin:10px 0}.fa-loes p{margin:6px 0}.fa-b{font-weight:800;color:#2e7d4f}.fa-kk{display:block;margin-top:8px}.fa-fertig{margin-top:8px}</style>`;
+ return`${ppmKopf(m,`<p style="color:var(--muted)">${kern.length} Übung${kern.length===1?"":"en"} · zusammen etwa ${min} Minuten${sel.length?" (ausgewählte Themen)":""}</p>`)}
+ ${css}
+ <div class="ppm-box"><h2>Fachaufsatz kurz geübt</h2>
+  <p>Lies den ganzen Fall, schreibe nur den gefragten Teil und belege mit <b>Zeilenangaben</b> (zum Beispiel „Z. 12–14“). Danach kannst du die Musterlösung einblenden oder deinen Text von der KI korrigieren lassen.</p>
+  ${lehrer?`<p class="ppm-leer">Lehrkräfte sehen die Musterlösungen sofort. Die Übungen gelten für den Lernbereich ${m.lb}${sel.length?" und die gewählten Themen":""}. Themen wählst du über „Modul bearbeiten“.</p>`:`<div class="ppm-balken"><b id="faStand">${erl} von ${kern.length} erledigt</b></div>`}
+ </div>
+ ${liste.length?karten+zus:`<div class="ppm-box"><p class="ppm-leer">Für diese Auswahl sind noch keine Übungen hinterlegt.</p></div>`}
+ ${lehrer&&FA_HINWEIS?`<p class="fa-quelle">${esc(FA_HINWEIS)}</p>`:""}
+ ${footer()}`;
+}
+function zeilenKopfHinweis(u){return u.herkunft?`<p class="fa-quelle">${esc(u.herkunft)}</p>`:""}
+function faTipp(id,el){faSchreib(id,{t:el.value})}
+function faLoesung(id){
+ const box=$("fal_"+id);if(!box)return;
+ const t=($("fat_"+id)||{}).value||"";
+ if(box.hidden&&t.trim().length<30){toast("Schreibe zuerst deine eigene Antwort. Dann kannst du die Lösung einblenden.");return}
+ box.hidden=!box.hidden;
+}
+async function faKopieren(id){
+ const alle=await faLaden(),u=alle.find(x=>x.id===id);if(!u)return;
+ const t=(($("fat_"+id)||{}).value||"").trim();
+ if(t.length<30){toast("Schreibe zuerst deine eigene Antwort.");return}
+ const p=`Du bist Lehrkraft für Pädagogik/Psychologie an der FOS/BOS in Bayern (Klasse 11) und gibst Rückmeldung zu einer kurzen Fachaufsatz-Übung. Bewerte nur die genannten Kriterien, gib keine Note. Antworte kurz und konkret: Was ist gelungen? Was fehlt? Gib einen Verbesserungsvorschlag.\n\nFALL\n${faZeilenText(u)}\n\nAUFGABE\n${u.aufgabe}\n\nKRITERIEN\n${(u.kriterien||[]).map(k=>"- "+k).join("\n")}\n\nTEXT DER SCHÜLERIN / DES SCHÜLERS\n${t}`;
+ try{await navigator.clipboard.writeText(p);toast("Kopiert. Jetzt den KI-Assistenten öffnen und einfügen.")}catch(e){
+  const ta=document.createElement("textarea");ta.value=p;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");toast("Kopiert. Jetzt den KI-Assistenten öffnen und einfügen.")}catch(_){toast("Kopieren nicht möglich. Bitte den Text selbst markieren.")}ta.remove()}
+}
+function faErledigt(id,an){
+ faSchreib(id,{d:!!an});
+ const d=$("fa_"+id);if(d){d.classList.toggle("fa-ok",!!an);const n=d.querySelector(".fa-nr");if(n)n.textContent=an?"✓":(n.dataset.n||n.textContent)}
+ const all=[...document.querySelectorAll(".fa-ue[data-kern]")],ok=all.filter(x=>x.classList.contains("fa-ok")).length,s=$("faStand");if(s)s.textContent=ok+" von "+all.length+" erledigt";
+}
+window.faLoesung=faLoesung;window.faKopieren=faKopieren;window.faTipp=faTipp;window.faErledigt=faErledigt;
+
 // ---- Experiment (interaktive Einheit mit wählbaren Teilen) ----
 async function ppmExperimentSeite(m){
  const lehrer=isTeacher(),teile=ppmExpTeile(m),min=ppmExpMinuten(teile);
@@ -22542,7 +22632,7 @@ const KW_KAT=[
  {key:"tafel",label:"Digitale Tafeln",hint:"Tafelbilder zur Stunde",board:true},
  {key:"lernuebersicht",label:"Lernübersichten",hint:"Das Wichtigste auf einen Blick",board:true}
 ];
-const KW_BAUSTEINE={selbstlern:["Selbstlernkurs","slk"],stunde:["Deeper-Learning-Einheit","std"],rallye:["Lernrallye","ral"],kprim:["KPrim-Test / Check-out","chk"],apt:["Prüfungstraining","ueb"],einfuehrung:["Einführung","slk"]};
+const KW_BAUSTEINE={selbstlern:["Selbstlernkurs","slk"],stunde:["Deeper-Learning-Einheit","std"],rallye:["Lernrallye","ral"],kprim:["KPrim-Test / Check-out","chk"],apt:["Prüfungstraining","ueb"],fachaufsatz:["Fachaufsatz-Übung","ueb"],einfuehrung:["Einführung","slk"]};
 function kwKurz(e){return String(e.thema||"").split(":")[0].replace(/\s*\(.*\)\s*$/,"")}
 function kwThemenVonPhase(ph){return PP_EINHEITEN.filter(e=>e.phase===ph.id)}
 function kwThemaById(id){return PP_EINHEITEN.find(e=>e.id===id)||null}
