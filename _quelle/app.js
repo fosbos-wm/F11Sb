@@ -23322,11 +23322,14 @@ async function kwFaPicker(kat,themaId){
   if(!n){toast("Bitte mindestens einen Eintrag ankreuzen.");return}
   const basis={wocheId:e.id,fach:"paedagogik",dateiName:"",createdBy:currentUser.uid};
   try{
-   for(const id of ids){const u=alle.find(x=>x.id===id);const k=kat||(u.zusatz==="Vertiefung"?"vertiefung1":"uebung");
-    await addDoc(collection(db,"lehrplanMaterialien"),{...basis,kategorie:k,titel:u.titel,url:"fa:"+id,createdAt:serverTimestamp()})}
-   for(const x of ubs){const kt=ub.find(y=>y.id===x.id);const k=kat||(x.st==="vertiefung"?"vertiefung1":"uebung");
-    await addDoc(collection(db,"lehrplanMaterialien"),{...basis,kategorie:k,titel:kt.titel,url:`uebungsbausteine/station.html?s=${x.id}`,createdAt:serverTimestamp()})}
-   for(const x of kks)await addDoc(collection(db,"lehrplanMaterialien"),{...basis,kategorie:kat||"uebung",titel:x.t,url:x.url,createdAt:serverTimestamp()});
+   // Vertiefungen landen immer bei den Vertiefungsaufgaben: Lückentext = Stufe 1, Theorievergleich = Stufe 2, Fachaufsatz-Vertiefung = Stufe 3
+   const katFa=u=>(kat&&/^vertiefung\d$/.test(kat))?kat:(u.zusatz?"vertiefung3":"uebung");
+   const katUb=kt=>(kat&&/^vertiefung\d$/.test(kat))?kat:(kt.stufe==="vertiefung"?(/Lückentext/.test((kt.pfad||[]).slice(-1)[0]||"")?"vertiefung1":"vertiefung2"):"uebung");
+   for(const id of ids){const u=alle.find(x=>x.id===id);
+    await addDoc(collection(db,"lehrplanMaterialien"),{...basis,kategorie:katFa(u),titel:u.titel+(u.zusatz==="Vertiefung"?" (Vertiefung)":""),url:"fa:"+id,createdAt:serverTimestamp()})}
+   for(const x of ubs){const kt=ub.find(y=>y.id===x.id);
+    await addDoc(collection(db,"lehrplanMaterialien"),{...basis,kategorie:katUb(kt),titel:kt.titel,url:`uebungsbausteine/station.html?s=${x.id}`,createdAt:serverTimestamp()})}
+   for(const x of kks)await addDoc(collection(db,"lehrplanMaterialien"),{...basis,kategorie:(kat&&/^vertiefung\d$/.test(kat))?kat:"uebung",titel:x.t,url:x.url,createdAt:serverTimestamp()});
    closeModal();toast(n===1?"Hinzugefügt.":n+" Einträge hinzugefügt.");render();
   }catch(err){console.error(err);toast("Konnte nicht gespeichert werden.")}
  };
