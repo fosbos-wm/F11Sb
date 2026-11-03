@@ -59,3 +59,39 @@
 .ci-fm{background:color-mix(in srgb,var(--c,#2E7D57) 10%,#fff);border-left:4px solid var(--c,#2E7D57)}
 .ci-fr{margin-top:14px}
 @media(max-width:560px){.ci-zr{grid-template-columns:1fr}.ci-re .ci-zr{grid-template-columns:minmax(0,1fr) 84px}.ci-art{margin-left:0}}
+/* Baustein einplanen: Auswahl und kurze Einplanung */
+.bw{display:grid;gap:8px;margin:8px 0 14px}
+.bw-h{margin:12px 0 0;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.bw-k{display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;width:100%;border:2px solid var(--line);border-radius:14px;padding:12px 14px;background:#fff;cursor:pointer;font:inherit;color:var(--t)}
+.bw-k:hover,.bw-k:focus-visible{border-color:#4a90d9;background:#f4f9fd}
+.bw-t{display:grid;gap:2px}.bw-t small{color:var(--muted);line-height:1.35}
+.bw-b{flex:none;font-weight:700;color:#fff;background:#2e7d57;border-radius:999px;padding:7px 14px;font-size:13px}
+.ppm-fuer{margin:0 0 6px;color:var(--muted)}
+.ppm-einfach .ppm-sek-1,.ppm-einfach .ppm-sek-4,.ppm-einfach .ppm-sek-5{display:none}
+.ppm-mehr{align-self:flex-start;font-size:13px}
+.ppm-einfach .ppm-sek-3:has(.fa-uebers){display:none}
+.kw-fa-gr{display:grid;gap:4px;margin-bottom:10px}.kw-fa-gr .check{align-items:flex-start}
+/* Farben je Aufgabentyp */
+.bw-k{--k:#4a90d9;border:1px solid color-mix(in srgb,var(--k) 28%,#fff);border-left:6px solid var(--k);background:color-mix(in srgb,var(--k) 8%,#fff);transition:transform .12s,box-shadow .12s}
+.bw-k:hover,.bw-k:focus-visible{border-color:var(--k);border-left-color:var(--k);background:color-mix(in srgb,var(--k) 15%,#fff);box-shadow:0 4px 12px color-mix(in srgb,var(--k) 25%,transparent);transform:translateY(-1px)}
+.bw-t b{color:color-mix(in srgb,var(--k) 60%,#10303f)}
+.bw-b{background:var(--k)}
+.bw-h{--k:#4a90d9;display:flex;align-items:center;gap:8px;color:color-mix(in srgb,var(--k) 70%,#10303f)}
+.bw-h::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--k)}
+.kw-fa-gr{--k:#4f9a35;border-left:4px solid var(--k);background:color-mix(in srgb,var(--k) 7%,#fff);border-radius:10px;padding:8px 12px}
+.kw-fa-gr .fa-lbkopf{color:color-mix(in srgb,var(--k) 70%,#10303f)}
+.kw-fa-gr input[type=checkbox]{accent-color:var(--k)}
+/* Check-In: jede Aufgabenart hat ihre Farbe */
+.ci-q{--ci:var(--c,var(--blue));border-left:6px solid var(--ci);background:linear-gradient(180deg,color-mix(in srgb,var(--ci) 7%,#fff),#fff 90px)}
+.ci-k-mc{--ci:#1f8ea3}.ci-k-kprim{--ci:#e08a2e}.ci-k-zuordnung{--ci:#8460b8}.ci-k-lueckentext{--ci:#4f9a35}.ci-k-reihenfolge{--ci:#d4577f}.ci-k-frei{--ci:#3a7fd0}.ci-k-offen{--ci:#3a7fd0}
+.ci-art{display:inline-block;margin:0 0 10px 42px;padding:3px 11px;border-radius:999px;background:color-mix(in srgb,var(--ci) 14%,#fff);color:color-mix(in srgb,var(--ci) 75%,#10303f);border:1px solid color-mix(in srgb,var(--ci) 35%,#fff);font-size:11px;font-weight:800;letter-spacing:.05em}
+.ci-q .ci-zr{border-color:color-mix(in srgb,var(--ci) 25%,#fff);background:#fff}
+.ci-q .ci-zr:has(select:not([value=""]):focus),.ci-q .ci-zr:focus-within{border-color:var(--ci)}
+.ci-q .ci-zl{color:color-mix(in srgb,var(--ci) 65%,#10303f)}
+.ci-q select{border-color:color-mix(in srgb,var(--ci) 40%,#fff)}
+.ci-q textarea{border:2px solid color-mix(in srgb,var(--ci) 30%,#fff);padding:10px}
+.ci-q textarea:focus{outline:none;border-color:var(--ci)}
+.ci-q .kp-tabelle th{color:color-mix(in srgb,var(--ci) 70%,#10303f)}
+.ci-q .kp-klick input{accent-color:var(--ci)}
+.ci-go{background:var(--ci,var(--blue))}
+.ci-kopf span:nth-child(1){background:#e3f3f6;border-color:#a9d9e2}.ci-kopf span:nth-child(2){background:#fdeeda;border-color:#f3cf9f}.ci-kopf span:nth-child(3){background:#e9f4e1;border-color:#bcdba8}
