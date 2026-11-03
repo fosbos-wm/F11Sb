@@ -7925,11 +7925,12 @@ async function openAptDetail(wocheId,tab){
  const ph=projektPhaseByWoche(wocheId);
  const c=ph?ppFarbe(ph):"#4a90d9";
  const lehrer=isTeacher();
- const [inhalt,materialien,fortschritt,links,ein,klasse,stundeKarte]=await Promise.all([
+ const [inhalt,materialien,fortschritt,links,ein,klasse,stundeKarte,ciFragen,ciMein]=await Promise.all([
   getAptInhalt(wocheId),getLehrplanMaterialien(wocheId),getLehrplanFortschritt(wocheId),
   ladeTaskcardLinks().catch(()=>({})),einarbeitungInfo(wocheId),
   lehrer?ladeStundeKlasse(wocheId).catch(()=>null):Promise.resolve(null),
-  e.interaktiv?stundeKarteHTML(await getLehrplanFortschritt(wocheId)):Promise.resolve("")
+  e.interaktiv?stundeKarteHTML(await getLehrplanFortschritt(wocheId)):Promise.resolve(""),
+  getBasischeckFragen(wocheId).catch(()=>[]),lehrer?Promise.resolve(null):getMyBasischeckVersuch(wocheId)
  ]);
  const schritte=aptSchritte(fortschritt),n=schritte.filter(Boolean).length;
  const offenIdx=schritte.findIndex(x=>!x);
@@ -7965,7 +7966,8 @@ async function openAptDetail(wocheId,tab){
    <input id="matUrl"type="url"placeholder="Link/URL"style="flex:1;min-width:160px">
    <button class="primary"onclick="addLehrplanMaterial('${fach}','${wocheId}')">＋ Material</button></div></div>`:"";
  const abgeschlossenAm=stDatum(fortschritt.einarbeitungAm);
- const s2=`${einKarte}
+ const ciKarte=(ciFragen.length||lehrer)?`<h3 class="apt-h3">Check-In: Was weißt du schon?</h3><p style="font-size:13px;color:var(--muted);margin:0 0 8px">Kein Test, keine Note. Du siehst danach, wo du stehst.</p>${basischeckPanelHTML("paedagogik",wocheId,ciFragen,ciMein)}`:"";
+ const s2=`${ciKarte}${einKarte}
   ${matListe||lehrer?`<h3 class="apt-h3">Material</h3><div class="list">${matListe||`<div class="empty">Noch kein Material eingestellt.</div>`}</div>`:""}${matForm}
   ${lehrer?"":schritte[1]?`<div class="st-fertig">✓ Einarbeitung abgeschlossen${abgeschlossenAm?` am ${abgeschlossenAm}`:""} <button class="text-button"style="font-size:11px"onclick="aptSetzen('${wocheId}',{einarbeitungAbgeschlossen:false,materialBearbeitet:false,basischeckErledigt:false},{tab:'einarbeitung'})">zurücknehmen</button></div>`
    :`<div class="form-actions"style="margin-top:12px"><button class="primary"onclick="stundeEinarbeitungAbschliessen('${wocheId}')">Ich habe die Einarbeitung abgeschlossen</button></div>`}`;
