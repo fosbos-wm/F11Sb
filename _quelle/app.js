@@ -2890,6 +2890,7 @@ async function saveBasischeckFragen(fach,wocheId){
  try{
  await setDoc(doc(db,"basischeckFragen",wocheId),{wocheId,fach,fragen,updatedAt:serverTimestamp(),updatedBy:currentUser.uid});
  toast("Basis-Check gespeichert.");
+ if($("ciAnsicht")){await openCheckIn(wocheId);return}
  await reopenDetail(fach,wocheId);
  }catch(e){console.error("Basis-Check speichern:",e);toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Konnte nicht gespeichert werden.");}
 }
@@ -2949,6 +2950,7 @@ async function submitBasischeck(fach,wocheId){
  name:anzeigeName(profile,currentUser),createdAt:serverTimestamp()
  });
  toast(`${richtig} von ${fragen.length} richtig.`);
+ if($("ciAnsicht")){await setDoc(doc(db,"lehrplanFortschritt",`${currentUser.uid}_${wocheId}`),{uid:currentUser.uid,wocheId,fach,basischeckErledigt:true,updatedAt:serverTimestamp()},{merge:true}).catch(e=>console.error(e));ppDirty=true;await openCheckIn(wocheId);if(ampel==="gruen")showMotivationsBild(false,"lernen","bc:"+wocheId);return}
  if(lehrplanWocheById(fach,wocheId)?.typ==="apt"){await aptSetzen(wocheId,{basischeckErledigt:true},{tab:"basischeck"});return}
  await setDoc(doc(db,"lehrplanFortschritt",`${currentUser.uid}_${wocheId}`),{uid:currentUser.uid,wocheId,fach,basischeckErledigt:true,updatedAt:serverTimestamp()},{merge:true}).catch(e=>console.error(e));
  await reopenDetail(fach,wocheId);
@@ -5557,7 +5559,17 @@ async function ppmDialog(id,typ,woche,opt){
    <p style="font-size:13px;color:var(--muted);margin:0">Mit Vorlage entsteht eine eigene Projektseite mit Teamwahl, Zeitplan, Fristen, Material und Teamübersicht. Empfohlen: Dauer 2 Wochen (Schulwoche, dann der Praktikumsblock, dann Schulwoche).</p>`:""}
    <p style="font-size:13px;color:var(--muted);margin:0">Team-Projekt mit Meilensteinen anlegen: Das Projekt nutzt die Meilensteine und die Teams des Lernbereichs.</p>`;
  }
- if(t==="fachaufsatz")extra=`<p style="font-size:13px;color:var(--muted);margin:0">Die Übungen des gewählten Lernbereichs stehen automatisch bereit (je Thema 5 bis 8 Minuten, zusammen etwa 35 Minuten). Wenn du unten bestimmte Lehrplan-Themen ankreuzt, erscheinen nur deren Übungen.</p>`;
+ if(t==="fachaufsatz"){
+  const faAlle=await faLaden();
+  const lbTitel=n=>(PROJEKT_PHASEN.find(p=>p.lbNum===n)||{}).lbTitel||"";
+  const grp=n=>{
+   const l=faAlle.filter(u=>u.lb===n),kern=l.filter(u=>!u.zusatz),mehr=l.filter(u=>u.zusatz);
+   const nachThema=[...new Set(l.map(u=>u.thema))];
+   const zeile=th=>{const eu=l.filter(u=>u.thema===th),k=eu.filter(u=>!u.zusatz);const t0=kwThemaById(th);
+    return`<div class="fa-th"><b>${t0?`Nr. ${esc(t0.nr)} · ${esc(kwKurz(t0))}`:`Weiteres Thema: ${esc(eu[0].zusatz||th)}`}</b><small>${k.length?k.length+" Übung"+(k.length===1?"":"en")+" · "+k.reduce((x,u)=>x+(u.minuten||0),0)+" Min.":""}${k.length&&eu.length>k.length?" + ":""}${eu.length>k.length?(eu.length-k.length)+" zusätzlich":""}</small><span>${eu.map(u=>esc(u.titel)+(u.zusatz?" ("+esc(u.zusatz)+")":"")).join(" · ")}</span></div>`};
+   return`<details class="fa-lbgr" data-lb="${n}"${n===lb0?" open":""}><summary><b>Lernbereich ${n}</b> ${esc(lbTitel(n))}<small>${kern.length} Kernübungen · ${kern.reduce((x,u)=>x+(u.minuten||0),0)} Min.${mehr.length?" · "+mehr.length+" zusätzlich":""}</small></summary>${nachThema.map(zeile).join("")}</details>`};
+  extra=`<div class="fa-uebers"><b>Übungen nach Lernbereich</b><p>Mit dem gewählten Lernbereich stehen die Kernübungen (zusammen etwa 35 Minuten) automatisch bereit. Vertiefungen und weitere Themen erscheinen für die Klasse unter „Mehr üben“. Willst du nur bestimmte Themen einplanen, kreuze sie unten bei den Lehrplan-Themen an.</p>${[1,2,3,4].map(grp).join("")}</div>`;
+ }
  if(t==="apt")extra=`<p style="font-size:13px;color:var(--muted);margin:0">Die Frage aus der Abschlussprüfung, den relevanten Inhalt und die Lösung gestaltest du danach direkt auf der Modulseite.</p>`;
  if(t==="stunde")extra=`<label>Phase im Deeper-Learning-Konzept<select id="ppmPhase">${[1,2,3].map(n=>`<option value="${n}"${(bearb?bearb.phase:2)===n?" selected":""}>${PP12_PHASEN[n].kurz} · ${esc(PP12_PHASEN[n].name)}</option>`).join("")}</select></label>
   ${bearb?"":`<p style="font-size:13px;color:var(--muted);margin:0">Zu jeder Stunde wird automatisch eine Digitale Tafel angelegt.</p>`}`;
@@ -5606,7 +5618,7 @@ async function ppmDialog(id,typ,woche,opt){
    </div>
    ${extra?`<div class="ppm-sek ppm-sek-3"><p class="ppm-sek-kopf">3 Inhalt</p>${extra}</div>`:""}
    <div class="ppm-sek ppm-sek-4"><p class="ppm-sek-kopf">4 Für die Klasse</p>
-    <details class="ppm-details"${(bearb&&(bearb.themen||[]).length)||window.__kwThemaNeu?" open":""}><summary>Zu welchen Lehrplan-Themen gehört der Baustein?</summary><div style="display:flex;flex-direction:column;gap:2px;margin:6px 0 10px">${PP_EINHEITEN.map(e=>`<label class="check"><input type="checkbox" class="ppmThemaCb" value="${e.id}"${((bearb&&bearb.themen)||[]).includes(e.id)||window.__kwThemaNeu===e.id?" checked":""}> ${esc(e.lb)} · Nr. ${esc(e.nr)} · ${esc(kwKurz(e))}</label>`).join("")}</div></details>
+    <details class="ppm-details"${(bearb&&(bearb.themen||[]).length)||window.__kwThemaNeu?" open":""}><summary>Zu welchen Lehrplan-Themen gehört der Baustein?</summary><div style="display:flex;flex-direction:column;gap:2px;margin:6px 0 10px">${(()=>{const fz=t==="fachaufsatz"?FA_DATEN||[]:[];let lastLb="";return PP_EINHEITEN.map(e=>{const nU=fz.filter(u=>u.thema===e.id&&!u.zusatz).length;const kopf=t==="fachaufsatz"&&e.lb!==lastLb?`<b class="fa-lbkopf">${esc(e.lb)}</b>`:"";lastLb=e.lb;return kopf+`<label class="check"><input type="checkbox" class="ppmThemaCb" value="${e.id}"${((bearb&&bearb.themen)||[]).includes(e.id)||window.__kwThemaNeu===e.id?" checked":""}> ${esc(e.lb)} · Nr. ${esc(e.nr)} · ${esc(kwKurz(e))}${t==="fachaufsatz"?(nU?` <small class="fa-anz">${nU} Übung${nU===1?"":"en"}</small>`:` <small class="fa-anz fa-keine">noch keine Übung</small>`):""}</label>`}).join("")})()}</div></details>
     <label>Hinweis an die Klasse (optional)<textarea id="ppmNotiz" rows="2" maxlength="400">${esc(bearb?bearb.notiz||"":"")}</textarea></label>
    </div>
    <div class="ppm-sek ppm-sek-5"><p class="ppm-sek-kopf">5 Material</p>
@@ -5615,6 +5627,7 @@ async function ppmDialog(id,typ,woche,opt){
    <div class="form-actions">${bearb?`<button class="secondary" type="button" id="ppmLoeschen">Modul löschen</button>`:""}<button class="secondary" type="button" onclick="closeModal()">Abbrechen</button><button class="primary" type="button" id="ppmSpeichern">Speichern</button></div>
   </div>`);
  const lbSel=$("ppmLb"),ti=$("ppmTitel"),btn=$("ppmSpeichern");
+ if(t==="fachaufsatz"&&lbSel)lbSel.addEventListener("change",()=>document.querySelectorAll(".fa-lbgr").forEach(d=>{d.open=d.dataset.lb===lbSel.value}));
   // ---- Material anhängen (Dateien und Links), wird beim Speichern übernommen ----
   const matBest=[...((bearb&&bearb.material)||[])];   // schon am Modul hängende Materialien
   const matNeu=[];                                     // neu hinzugefügt: {typ,titel,url} (Link) oder {typ,titel,file}
@@ -7968,23 +7981,40 @@ function basischeckPanelHTML(fach,wocheId,basischeckFragen,meinBasischeck,extraS
   <button class="primary"onclick="saveBasischeckFragen('${fach}','${wocheId}')">Basis-Check speichern</button>
  </div>`;
  if(!basischeckFragen.length)return`<div class="empty">Für diesen Inhalt wurde noch kein Basis-Check eingerichtet.</div>${extraSchueler}`;
- if(meinBasischeck)return`<div class="card"style="background:${ampelFarbe(meinBasischeck.ampel)}1a;border-left:4px solid ${ampelFarbe(meinBasischeck.ampel)}">
-  <strong>${meinBasischeck.richtig} von ${meinBasischeck.gesamt} richtig</strong>
-  <p style="margin:6px 0 0;color:var(--muted)">${esc(basischeckAmpelText(meinBasischeck.ampel))}</p>
- </div>`;
- return`<div class="form">
+ if(meinBasischeck){const af=ampelFarbe(meinBasischeck.ampel);return`<div class="ci-res"style="--a:${af}"><div class="ci-ring"><b>${meinBasischeck.richtig}</b><small>von ${meinBasischeck.gesamt}</small></div><div><strong>${meinBasischeck.richtig} von ${meinBasischeck.gesamt} richtig</strong><p>${esc(basischeckAmpelText(meinBasischeck.ampel))}</p></div></div>`}
+ return`<div class="ci">
+  <div class="ci-kopf"><span>${basischeckFragen.length} Fragen</span><span>etwa ${Math.max(2,basischeckFragen.length)} Minuten</span><span>keine Note</span></div>
   ${basischeckFragen.map((f,i)=>{
    const typ=f.typ||"mc";
-   return`<div class="card"style="margin-bottom:10px">
-    ${typ==="kprim"?kprimFrageKopfHTML(i+1,f.text,f.vignette):`<strong style="display:block;margin-bottom:8px">${i+1}. ${esc(f.text)}</strong>`}
-    ${typ==="mc"?f.optionen.map((o,j)=>`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:4px"><input type="radio"name="bcQ${i}"value="${j}"> <span>${esc(o)}</span></label>`).join(""):""}
+   return`<section class="ci-q">
+    ${typ==="kprim"?`<div class="ci-qk"><span class="ci-n">${i+1}</span><div class="ci-t">${kprimFrageKopfHTML("",f.text,f.vignette)}</div></div>`:`<div class="ci-qk"><span class="ci-n">${i+1}</span><b class="ci-t">${esc(f.text)}</b></div>`}
+    ${typ==="mc"?`<div class="ci-opts">${f.optionen.map((o,j)=>`<label class="ci-o"><input type="radio"name="bcQ${i}"value="${j}"><span class="ci-m"></span><span class="ci-ot">${esc(o)}</span></label>`).join("")}</div>`:""}
     ${typ==="kprim"?kprimTabelleHTML(`bcKp${i}`,f.statements.map(x=>x.text)):""}
     ${typ==="offen"?`<textarea id="bcOffenAntwort${i}"rows="3"placeholder="Deine Antwort …"></textarea>`:""}
-   </div>`;
+   </section>`;
   }).join("")}
-  <button class="primary"onclick="submitBasischeck('${fach}','${wocheId}')">Basis-Check abgeben</button>
+  <button class="primary ci-go"onclick="submitBasischeck('${fach}','${wocheId}')">Check-In abgeben</button>
  </div>`;
 }
+
+async function openCheckIn(wocheId){
+ const fach="paedagogik",lehrer=isTeacher();
+ const e=kwThemaById(wocheId)||lehrplanWocheById(fach,wocheId);
+ if(!e){toast("Dieses Thema wurde nicht gefunden.");return}
+ const ph=projektPhaseByWoche(wocheId);
+ const c=ph?ppFarbe(ph):"#4a90d9";
+ const [fragen,mein]=await Promise.all([getBasischeckFragen(wocheId).catch(()=>[]),lehrer?Promise.resolve(null):getMyBasischeckVersuch(wocheId)]);
+ const lb=ph?`LB ${ph.lbNum}`:(e.lb||"");
+ modal(`<button class="modal-close"onclick="closeModal()">×</button>
+  <div id="ciAnsicht"class="ci-seite"style="--c:${c}">
+   <div class="kicker"style="color:${c}">${esc(lb)} · Check-In</div>
+   <h2>${esc(e.thema)}</h2>
+   <p class="ci-intro">${lehrer?"Lehrkraft-Ansicht: Hier bearbeitest du die Fragen. Gespeicherte Fragen ersetzen den Standard-Check-In für alle.":mein?"Dein Ergebnis:":"Was weißt du schon? Kein Test, keine Note. Du siehst danach, wo du stehst."}</p>
+   ${basischeckPanelHTML(fach,wocheId,fragen,mein)}
+   <div class="ci-fuss"><button type="button"class="secondary"onclick="closeModal()">Schließen</button></div>
+  </div>`);
+}
+window.openCheckIn=openCheckIn;
 
 // ---- Einarbeitung: interaktive Seite je Stunde (einarbeitung/inhalte/<id>.json) ----
 const einarbeitungCache={};
@@ -8035,9 +8065,9 @@ async function openAptDetail(wocheId,tab){
    <label>Datei (optional, z. B. PDF/Bild, max. 15 MB)<input id="aptFrageDatei"type="file"></label>
    ${inhalt.frageDateiUrl?`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${dateiEmbedHTML(inhalt.frageDateiUrl,inhalt.frageDateiName)}<button class="secondary"onclick="aptFrageDateiEntfernen('${wocheId}')">Datei entfernen</button></div>`:""}
    <div class="form-actions"><button class="primary"onclick="saveAptFrage('${wocheId}')">Prüfungsfrage speichern</button></div></div>`
-  :!(inhalt.pruefungsfrage||inhalt.frageDateiUrl)?`<div class="empty">Deine Lehrkraft stellt die Prüfungsfrage hier bereit.</div>`
+  :!(frage||inhalt.frageDateiUrl)?`<div class="empty">Deine Lehrkraft stellt die Prüfungsfrage hier bereit.</div>`
   :`<div class="card apt-frage"style="border-left:4px solid ${c}">
-   ${inhalt.pruefungsfrage?`<p style="white-space:pre-wrap;font-size:15px;line-height:1.5;margin:6px 0">${esc(inhalt.pruefungsfrage)}</p>`:""}
+   ${frage?`<p style="white-space:pre-wrap;font-size:15px;line-height:1.5;margin:6px 0">${esc(frage)}</p>`:""}
    ${inhalt.frageDateiUrl?dateiEmbedHTML(inhalt.frageDateiUrl,inhalt.frageDateiName):""}</div>`;
  const s1b=lehrer?"":`<label class="apt-check"><input type="checkbox"${fortschritt.frageGelesen?" checked":""} onchange="aptSetzen('${wocheId}',{frageGelesen:this.checked,frageAm:serverTimestamp()},{tab:'frage'})"><span>Ich habe die Prüfungsfrage gelesen</span></label>`;
 
@@ -23134,7 +23164,7 @@ document.addEventListener("click",async ev=>{
   else if(a==="matadd")kwMatForm(b.dataset.kat);
   else if(a==="matweg"){if(!confirm("Diese Datei wirklich entfernen?"))return;await deleteDoc(doc(db,"lehrplanMaterialien",id));toast("Entfernt.");render()}
   else if(a==="board")openWhiteboard(id);
-  else if(a==="checkin"){const e=kwThemaById(id);const fr=await getBasischeckFragen(id);if(!fr.length){toast("Für dieses Thema ist noch kein Check-In hinterlegt.");return}window.__eaRueck=null;e.typ==="apt"?openAptDetail(id,"basischeck"):openWocheDetail("paedagogik",id,"basischeck")}
+  else if(a==="checkin"){const e=kwThemaById(id);const fr=await getBasischeckFragen(id);if(!fr.length){toast("Für dieses Thema ist noch kein Check-In hinterlegt.");return}window.__eaRueck=null;openCheckIn(id)}
   else if(a==="alt"){const e=kwThemaById(id);e.typ==="apt"?openAptDetail(id):openWocheDetail("paedagogik",id)}
   else if(a==="ea"){window.__eaRueck=async()=>{await render()};openEinarbeitung(id)}
   else if(a==="modul")ppmOeffnen(id);

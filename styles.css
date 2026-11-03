@@ -2,3 +2,43 @@
 .kw-kopf .kw-fertig{background:#fff;color:var(--t);border:1px solid color-mix(in srgb,var(--c) 40%,#fff)}
 .kw-kopf .kw-fertig.an{background:var(--c);color:#fff;border-color:var(--c)}
 .kw-kopf .kw-fertig.an .kw-bx{border-color:#fff}
+/* Check-In: übersichtliche Fragekarten */
+.ci{--ci:var(--c,var(--blue));display:flex;flex-direction:column;gap:14px;margin:8px 0}
+.ci-kopf{display:flex;flex-wrap:wrap;gap:8px}
+.ci-kopf span{background:color-mix(in srgb,var(--ci) 10%,#fff);color:var(--ink);border:1px solid color-mix(in srgb,var(--ci) 25%,#fff);border-radius:999px;padding:4px 12px;font-size:12.5px;font-weight:700}
+.ci-q{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 2px 8px rgba(24,67,96,.05)}
+.ci-qk{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px}
+.ci-n{flex:none;width:30px;height:30px;border-radius:50%;background:var(--ci);color:#fff;display:grid;place-items:center;font-weight:800;font-size:14px}
+.ci-t{font-size:16px;line-height:1.4;color:var(--ink);flex:1}
+.ci-t .kp-stamm{font-size:16px}
+.ci-opts{display:grid;gap:8px}
+.ci-o{display:flex;align-items:center;gap:12px;border:2px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer;background:#fff;transition:border-color .15s,background .15s;line-height:1.35}
+.ci-o:hover{border-color:color-mix(in srgb,var(--ci) 50%,#fff)}
+.ci-o input{position:absolute;opacity:0;pointer-events:none}
+.ci-m{flex:none;width:20px;height:20px;border-radius:50%;border:2px solid #9bb0bf;background:#fff;box-sizing:border-box}
+.ci-o:has(input:checked){border-color:var(--ci);background:color-mix(in srgb,var(--ci) 9%,#fff)}
+.ci-o:has(input:checked) .ci-m{border-color:var(--ci);background:radial-gradient(circle,var(--ci) 0 45%,#fff 50%)}
+.ci-o:has(input:focus-visible){outline:3px solid color-mix(in srgb,var(--ci) 40%,#fff)}
+.ci-ot{color:var(--ink);font-size:15px}
+.ci-q textarea{width:100%;font:inherit;border-radius:12px}
+.ci-q .kp-tabelle{width:100%}
+.ci-go{align-self:flex-start;padding:12px 26px;font-size:16px;border-radius:12px}
+.ci-res{display:flex;gap:18px;align-items:center;background:color-mix(in srgb,var(--a) 10%,#fff);border:1px solid color-mix(in srgb,var(--a) 35%,#fff);border-left:6px solid var(--a);border-radius:16px;padding:16px 18px}
+.ci-ring{flex:none;width:76px;height:76px;border-radius:50%;border:6px solid var(--a);display:grid;place-content:center;text-align:center;background:#fff;line-height:1}
+.ci-ring b{font-size:26px;color:var(--ink)}.ci-ring small{font-size:11px;color:var(--muted)}
+.ci-res p{margin:4px 0 0;color:var(--ink);opacity:.85}
+.ci-seite h2{margin:2px 0 6px;color:var(--ink)}
+.ci-intro{color:var(--muted);margin:0 0 12px}
+.ci-fuss{margin-top:16px;display:flex;justify-content:flex-end}
+/* Fachaufsatz-Baustein: Übersicht nach Lernbereich */
+.fa-uebers{display:grid;gap:8px}.fa-uebers>p{margin:0;font-size:13px;color:var(--muted)}
+.fa-lbgr{border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden}
+.fa-lbgr>summary{cursor:pointer;padding:10px 12px;list-style:none;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;background:color-mix(in srgb,var(--blue) 7%,#fff)}
+.fa-lbgr>summary::-webkit-details-marker{display:none}
+.fa-lbgr[open]>summary{border-bottom:1px solid var(--line)}
+.fa-lbgr>summary small{color:var(--muted);font-size:12px;margin-left:auto}
+.fa-th{padding:8px 12px;border-top:1px solid var(--line);display:grid;gap:2px}.fa-th:first-of-type{border-top:0}
+.fa-th small{color:var(--blue-dark);font-weight:700;font-size:12px}.fa-th span{color:var(--muted);font-size:12.5px;line-height:1.4}
+.fa-lbkopf{display:block;margin:8px 0 2px;color:var(--blue-dark);font-size:13px}
+.fa-anz{margin-left:6px;background:var(--soft-blue);color:var(--blue-dark);border-radius:999px;padding:1px 8px;font-weight:700;font-size:11.5px}
+.fa-anz.fa-keine{background:#eef1f4;color:var(--muted);font-weight:400}
