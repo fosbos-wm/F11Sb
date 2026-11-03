@@ -2514,11 +2514,160 @@ window.toggleAuftragGelesen=toggleAuftragGelesen;
 
 // ---- Basis-Check: 2-3 kurze Fragen direkt nach dem Material, damit früh
 // sichtbar wird, ob die Grundidee verstanden wurde (nicht nur "gelesen"). ----
+// Check-In-Fragen 11. Klasse. Format: ["Frage","richtig","falsch","falsch"] | ["K","Frage/Fall",["+wahr","-falsch",...]]
+const CHECKIN_11={
+pp01:[
+["Was gehört zum Erleben einer Person?","Gedanken und Gefühle, die nur die Person selbst wahrnimmt","Die Körperhaltung, die man von außen sieht","Die Antworten in einem Fragebogen, die man zählen kann"],
+["Welches Beispiel beschreibt Verhalten?","Ein Kind schlägt mit der Faust auf den Tisch.","Ein Kind ärgert sich innerlich.","Ein Kind denkt an den Ausflug."],
+["Wie kommt man an das Erleben einer anderen Person heran?","Man kann es nur erfragen","Man kann es direkt beobachten","Man kann es messen, indem man zuschaut"],
+["Psychologie ist die Wissenschaft vom …","Erleben und Verhalten","Verhalten allein","Erleben allein"],
+["K","Lena sitzt in der Pause allein, schaut zu Boden und sagt: „Mir geht es gut.“",["+Dass sie allein sitzt und zu Boden schaut, ist beobachtbares Verhalten.","-Ihre Traurigkeit lässt sich direkt von außen beobachten.","+Wie sie sich fühlt, lässt sich nur erfragen oder erschließen."]]],
+pp02:[
+["Welches Merkmal gehört zu wissenschaftlichen Aussagen?","Sie sind überprüfbar.","Sie beruhen auf zufälligen Einzelerfahrungen.","Sie gelten nur für eine einzelne Person."],
+["Welche Aussage ist alltagspsychologisch?","„Mein Bruder war schon immer so, das ist bei uns in der Familie so.“","„In einer Studie mit 200 Personen zeigte sich ein Zusammenhang.“","„Die Hypothese wurde mit einem Experiment überprüft.“"],
+["Was bedeutet „Objektivität“ bei wissenschaftlichen Aussagen?","Das Ergebnis hängt nicht davon ab, wer untersucht.","Das Ergebnis passt zur eigenen Meinung.","Das Ergebnis wird von möglichst vielen Menschen geglaubt."],
+["Wie gewinnt man Erkenntnisse in der Wissenschaft?","Systematisch, nach festen Regeln","Zufällig im Alltag","Durch das Weitererzählen von Erfahrungen"],
+["K","„Jungen sind in Mathe eben besser.“",["+Das ist eine alltagspsychologische Aussage, wenn sie nicht überprüft wurde.","-Die Aussage ist wissenschaftlich, weil viele Menschen sie glauben.","+Eine wissenschaftliche Aussage müsste überprüfbar und allgemeingültig sein."]]],
+pp03:[
+["Was ist eine Hypothese?","Eine überprüfbare Vermutung über einen Zusammenhang","Das Ergebnis eines Experiments","Eine Frage im Fragebogen"],
+["Was ist die unabhängige Variable (UV)?","Die Bedingung, die der Versuchsleiter gezielt verändert","Das Merkmal, das gemessen wird","Die Anzahl der Versuchspersonen"],
+["Wozu braucht man eine Kontrollgruppe?","Zum Vergleich mit der Gruppe, die die Veränderung erhält","Damit mehr Personen teilnehmen","Damit alle dieselbe Bedingung erleben"],
+["Was ist die abhängige Variable (AV)?","Das Merkmal, das gemessen wird","Die Bedingung, die verändert wird","Die Gruppe ohne Behandlung"],
+["K","Ein Lehrer lässt eine Klasse mit Musik und eine ohne Musik lernen und vergleicht die Testergebnisse.",["+Die Musik ist die unabhängige Variable.","+Das Testergebnis ist die abhängige Variable.","-Die Klasse ohne Musik ist die Versuchsgruppe."]]],
+pp1a1:[
+["Wofür steht der Begriff „Erziehungspraxis“?","Das tatsächliche erzieherische Handeln im Alltag","Die wissenschaftliche Untersuchung von Erziehung","Die Gesetze zur Schulpflicht"],
+["Was macht die Erziehungswissenschaft?","Sie untersucht und beschreibt Erziehung systematisch.","Sie erzieht Kinder direkt.","Sie verwaltet Kindertageseinrichtungen."],
+["Welches Beispiel gehört zur Erziehungspraxis?","Eine Erzieherin übt mit einem Kind das Teilen.","Eine Forscherin wertet eine Studie zu Erziehungsstilen aus.","Ein Professor schreibt ein Fachbuch zur Pädagogik."],
+["Was gehört zur Erziehungswirklichkeit?","Erziehende und Zu-Erziehende in ihrem Zusammenwirken","Nur die Eltern","Nur die Schule"],
+["K","Eine Studentin vergleicht in einer Studie verschiedene Erziehungsmaßnahmen im Kindergarten.",["+Das gehört zur Erziehungswissenschaft.","-Das gehört zur Erziehungspraxis.","+Praxis und Wissenschaft beziehen sich aufeinander."]]],
+pp1a2:[
+["Was ist ein Erziehungsziel?","Ein angestrebtes Ergebnis der Erziehung","Eine Maßnahme im Alltag","Eine Strafe"],
+["Was ist eine Erziehungshandlung bzw. Erziehungsmaßnahme?","Ein Mittel, mit dem man ein Erziehungsziel erreichen will","Ein langfristiges Wertesystem","Ein Gesetz"],
+["Woher stammen Erziehungsziele?","Aus Werten und Normen der Gesellschaft und der Erziehenden","Aus der Vererbung","Aus dem Zufall"],
+["Welche Funktion haben Erziehungsziele?","Sie geben dem Erziehen Orientierung.","Sie ersetzen Erziehungsmaßnahmen.","Sie bestimmen die Note."],
+["K","Eine Mutter will, dass ihr Kind selbstständig wird, und lässt es allein die Schuhe anziehen.",["+Selbstständigkeit ist das Erziehungsziel.","-Selbstständigkeit ist die Erziehungshandlung.","+Das Schuhe-selbst-Anziehen ist die Erziehungshandlung."]]],
+pp1a3:[
+["Was zeichnet eine förderliche pädagogische Beziehung aus?","Wertschätzung und Verlässlichkeit","Strenge ohne Zuwendung","Gleichgültigkeit"],
+["Wozu dient die pädagogische Beziehung?","Sie ist die Grundlage, damit Erziehung wirken kann.","Sie ersetzt jede Erziehungsmaßnahme.","Sie macht Erziehungsziele überflüssig."],
+["Wer steht in der pädagogischen Beziehung zueinander?","Erziehende und Zu-Erziehende","Nur Eltern und Großeltern","Nur Lehrkräfte und Schulleitung"],
+["Welches Verhalten stärkt die Beziehung?","Dem Kind aufmerksam zuhören","Das Kind vor anderen bloßstellen","Versprechen nicht einhalten"],
+["K","Eine Erzieherin begrüßt jedes Kind mit Namen, hält Absprachen ein und nimmt Sorgen ernst.",["+Das fördert Vertrauen.","-Das hat keinen Einfluss auf die Erziehung.","+Eine gute Beziehung macht Erziehung wirksamer."]]],
+pp1a4:[
+["Was ist eine familienergänzende Einrichtung?","Eine Kindertagesstätte","Ein Kinderheim","Eine Pflegefamilie"],
+["Was ist eine familienersetzende Einrichtung?","Ein Kinderheim, in dem Kinder dauerhaft leben","Ein Hort am Nachmittag","Eine Krippe am Vormittag"],
+["Nach welchen Merkmalen kann man Einrichtungen ordnen?","Zielgruppe, Auftrag und Funktion","Größe und Farbe","Alter der Erzieherinnen"],
+["Welche Einrichtung betreut Schulkinder nach dem Unterricht?","Der Hort","Die Krippe","Die Kinderklinik"],
+["K","Eine Kita betreut Kinder, während die Eltern arbeiten.",["+Sie ergänzt die Familie.","-Sie ersetzt die Familie vollständig.","+Sie hat einen eigenen Auftrag, zum Beispiel Bildung und Betreuung."]]],
+pp04:[
+["Was kennzeichnet Erziehung?","Sie ist eine beabsichtigte Lernhilfe.","Sie geschieht rein zufällig.","Sie bedeutet nur Versorgung."],
+["Erziehung ist auch …","soziales Handeln zwischen Menschen","ein reiner Naturvorgang","ein Vorgang ohne Kommunikation"],
+["Was unterscheidet Erziehung von Betreuung?","Bei Erziehung steht die gezielte Entwicklungsförderung im Vordergrund.","Bei Betreuung wird gezielt erzogen.","Es gibt keinen Unterschied."],
+["Welches Beispiel ist Versorgung?","Ein Kind wird gewickelt und gefüttert.","Ein Kind lernt, Konflikte ohne Schlagen zu lösen.","Ein Kind übt, Danke zu sagen."],
+["K","Eine Erzieherin zeigt einem Kind, wie man sich bei einem Streit entschuldigt.",["+Sie hilft dem Kind beabsichtigt beim Lernen.","+Das ist soziale Interaktion.","-Das ist reine Betreuung."]]],
+pp05:[
+["Welche Erziehung hat hohe Lenkung und hohe Zuwendung?","Autoritativ","Autoritär","Permissiv"],
+["Welcher Stil hat hohe Lenkung, aber wenig Zuwendung?","Autoritär","Autoritativ","Vernachlässigend"],
+["Welcher Stil hat wenig Lenkung, aber viel Zuwendung?","Permissiv","Autoritär","Autoritativ"],
+["Welcher Stil hat wenig Lenkung und wenig Zuwendung?","Vernachlässigend","Permissiv","Autoritativ"],
+["K","Vater: „Du machst das so, wie ich es sage! Fragen gibt es nicht.“",["+Das zeigt einen autoritären Stil.","-Das zeigt einen autoritativen Stil.","+Der Vater lenkt stark und wendet sich kaum zu."]]],
+pp06:[
+["Welche drei Kompetenzen gehören zur Mündigkeit nach Roth?","Selbst-, Sach- und Sozialkompetenz","Lese-, Schreib- und Rechenkompetenz","Fach-, Methoden- und Medienkompetenz"],
+["Was bedeutet Selbstkompetenz?","Für sich selbst Verantwortung übernehmen","Sachverhalte fachlich beurteilen","Für andere sorgen"],
+["Was bedeutet Sozialkompetenz?","Verantwortlich gegenüber anderen handeln","Allein Entscheidungen treffen","Sachwissen auswendig lernen"],
+["Was bedeutet Sachkompetenz?","Sachverhalte verstehen und sachgerecht urteilen","Gefühle zeigen","Regeln immer befolgen"],
+["K","Ein Kind soll lernen, den Wetterbericht zu lesen und zu entscheiden, was es anzieht.",["+Das fördert die Sachkompetenz.","+Das fördert auch die Selbstkompetenz.","-Das hat nichts mit Mündigkeit zu tun."]]],
+pp07:[
+["Wofür steht BayBEP?","Bayerischer Bildungs- und Erziehungsplan","Bayerischer Betreuungs- und Elternplan","Bayerisches Berufs- und Entwicklungsprogramm"],
+["Für welche Kinder gilt der BayBEP vor allem?","Für Kinder in Kindertageseinrichtungen bis zur Einschulung","Für Schüler der Oberstufe","Für Studierende"],
+["Welcher Bereich gehört zu den Bildungs- und Erziehungsbereichen?","Gesundheit","Steuerrecht","Fahrzeugtechnik"],
+["Was ist ein Beispiel für den Bereich Umwelt?","Gemeinsam Müll trennen und Pflanzen pflegen","Ein Tablet bedienen","Ein Lied einüben"],
+["K","In der Kita dürfen die Kinder unter Anleitung eine Lern-App nutzen.",["+Das gehört zum Bereich digitale Medien.","-Das ist laut BayBEP grundsätzlich verboten.","+Pädagogische Begleitung ist dabei wichtig."]]],
+pp09:[
+["Wie lautet die richtige Reihenfolge des Wahrnehmungsprozesses?","Reizaufnahme, Weiterleitung und Verarbeitung, Bewertung, Reaktion","Reaktion, Reizaufnahme, Bewertung","Bewertung, Reizaufnahme, Reaktion"],
+["Welcher Faktor beeinflusst Wahrnehmung individuell?","Eigene Erfahrungen und Erwartungen","Das Wetter","Die Lautstärke im Raum"],
+["Was ist ein sozialer Einflussfaktor der Wahrnehmung?","Die Meinung der Gruppe","Die Müdigkeit","Die Brille"],
+["Was ist ein Reiz?","Ein Signal, das ein Sinnesorgan erregt","Eine Reaktion des Körpers","Ein Gedanke"],
+["K","Zwei Personen sehen dasselbe Foto und beschreiben es verschieden.",["+Das kann an unterschiedlichen Erfahrungen liegen.","-Das zeigt, dass Wahrnehmung objektiv ist.","+Wahrnehmung wird von Erwartungen und Stimmung beeinflusst."]]],
+pp2p2:[
+["Welche Speicher gehören zum Mehrspeichermodell?","Ultrakurzzeit-, Kurzzeit- und Langzeitgedächtnis","Nur Kurzzeit- und Langzeitgedächtnis","Arbeits- und Bildgedächtnis"],
+["Was ist eine Wiederholung als Kontrollprozess?","Informationen immer wieder aufsagen, um sie zu behalten","Informationen in Gruppen ordnen","Informationen mit Vorwissen verknüpfen"],
+["Was bedeutet Elaboration?","Neue Informationen mit Vorwissen verknüpfen","Informationen nur aufsagen","Informationen aufschreiben"],
+["Was bedeutet Organisation?","Informationen sinnvoll ordnen und gliedern","Informationen wegwerfen","Informationen schnell vergessen"],
+["K","Du lernst Vokabeln und bildest dazu Eselsbrücken.",["+Das ist Elaboration.","-Das ist reine Wiederholung.","+Die Kontrollprozesse sollen Informationen ins Langzeitgedächtnis bringen."]]],
+pp12:[
+["Welche Strategie gehört zur Organisation?","Mindmap","Karteikarten abfragen","Text mehrfach durchlesen"],
+["Welche Strategie gehört zur Wiederholung?","Karteikarten durchgehen","Mindmap zeichnen","Eine Eselsbrücke erfinden"],
+["Welche Strategie gehört zur Elaboration?","Einen Begriff mit einem eigenen Beispiel verknüpfen","Alles wörtlich auswendig lernen","Den Text unterstreichen und nicht weiterlesen"],
+["Warum sind Lernstrategien sinnvoll?","Sie helfen, Wissen im Langzeitgedächtnis zu verankern.","Sie ersetzen das Lernen.","Sie machen Üben überflüssig."],
+["K","Du schreibst die wichtigsten Begriffe auf und ordnest sie in einer Mindmap.",["+Das ist ein Organisationsprozess.","-Das ist eine Wiederholungsstrategie.","+Die Ordnung erleichtert das Behalten."]]],
+pp2a1:[
+["Was gehört zu den deklarativen Gedächtnissystemen?","Episodisch-autobiographisches Gedächtnis und Wissenssystem","Prozedurales Gedächtnis und Priming","Perzeptuelles Gedächtnis und Priming"],
+["Fahrrad fahren können ist ein Beispiel für …","das prozedurale Gedächtnis","das Wissenssystem","das episodische Gedächtnis"],
+["Die Erinnerung an die eigene Einschulung gehört zum …","episodisch-autobiographischen Gedächtnis","prozeduralen Gedächtnis","Priming"],
+["Das Wissen „Berlin ist die Hauptstadt von Deutschland“ gehört zum …","Wissenssystem","prozeduralen Gedächtnis","perzeptuellen Gedächtnis"],
+["K","Ein Pianist spielt ein Stück auswendig, ohne über die Fingerbewegungen nachzudenken.",["+Das ist prozedurales Gedächtnis.","-Das ist deklaratives Gedächtnis.","+Prozedurales Gedächtnis gehört zu den nicht-deklarativen Systemen."]]],
+pp10:[
+["Was ist eine Emotion?","Ein Zustand mit Erleben, körperlichen Reaktionen und Ausdruck","Ein reiner Gedanke","Eine Gewohnheit"],
+["Welche Komponente beschreibt „Herzklopfen“?","Die körperlich-physiologische Komponente","Die kognitive Komponente","Die expressive Komponente"],
+["Welche Komponente beschreibt Lachen oder Weinen?","Die Ausdruckskomponente","Die physiologische Komponente","Die Wahrnehmungskomponente"],
+["Welche Strategie ist reaktionsfokussiert?","Den Ausdruck unterdrücken","Eine Situation meiden","Die Lage neu bewerten"],
+["K","Vor einer Prüfung denkst du dir: „Die Prüfung ist eine Chance, nicht eine Bedrohung.“",["+Das ist eine antezedenzfokussierte Strategie.","-Das ist eine reaktionsfokussierte Strategie.","+Die Situation wird neu bewertet, bevor die Emotion voll entsteht."]]],
+pp11:[
+["Was ist Motivation?","Der Antrieb, ein Ziel zu erreichen","Eine angeborene Fähigkeit","Ein Ergebnis von Prüfungen"],
+["Welche Ursachendimensionen unterscheidet Weiner?","Lokation (internal/external) und Stabilität (stabil/variabel)","Alter und Geschlecht","Intelligenz und Fleiß"],
+["„Ich habe Pech gehabt“ ist eine Ursache, die …","external und variabel ist","internal und stabil ist","internal und variabel ist"],
+["Was folgt oft, wenn man Misserfolg internal und stabil erklärt?","Niedrige Erfolgserwartung","Hohe Motivation","Keine Emotion"],
+["K","Anna führt ihre gute Note auf ihre eigene Anstrengung zurück.",["+Das ist eine internale Ursache.","+Das kann Stolz auslösen.","-Das ist eine externale Ursache."]]],
+pp4p1:[
+["Was gehört zum Begriff Lernen?","Relativ dauerhafte Änderung des Verhaltens durch Erfahrung","Eine Veränderung durch Müdigkeit","Eine Veränderung durch Reifung"],
+["Welches Beispiel ist Lernen?","Ein Kind lernt, bei Rot stehen zu bleiben.","Ein Kind wird größer.","Ein Kind hat Hunger."],
+["Welches Beispiel ist Reifung?","Ein Baby lernt laufen, weil die Muskeln stark genug sind.","Ein Kind lernt Vokabeln.","Ein Kind übt Radfahren."],
+["Warum nennt man Lernen „nicht direkt beobachtbar“?","Man sieht nur das Verhalten, nicht den Lernvorgang selbst.","Weil Lernen nicht wirklich stattfindet.","Weil man Lernen messen kann."],
+["K","Nach einem Unfall meidet Tim die Straße.",["+Das kann Lernen aus Erfahrung sein.","-Das ist immer Reifung.","+Lernen führt zu einer dauerhaften Verhaltensänderung."]]],
+pp13:[
+["Was löst beim Hund von Pawlow vor der Konditionierung Speichelfluss aus?","Das Futter (unkonditionierter Reiz)","Die Glocke","Der Versuchsleiter"],
+["Was ist der neutrale Reiz vor der Konditionierung?","Der Ton, der noch keine Reaktion auslöst","Das Futter","Der Speichelfluss"],
+["Was ist die konditionierte Reaktion?","Speichelfluss auf den Ton allein","Speichelfluss auf das Futter","Das Bellen"],
+["Was bedeutet Reizgeneralisierung?","Auch ähnliche Reize lösen die konditionierte Reaktion aus.","Die Reaktion verschwindet.","Ein neuer Reiz wird nie gelernt."],
+["K","Mia zuckt zusammen, sobald sie das Bohrgeräusch beim Zahnarzt hört.",["+Das Bohrgeräusch ist ein konditionierter Reiz.","-Das Bohrgeräusch ist ein unkonditionierter Reiz.","+Das Zusammenzucken ist eine konditionierte Reaktion."]]],
+pp14:[
+["Was besagt das Effektgesetz nach Thorndike?","Verhalten mit angenehmen Folgen wird häufiger gezeigt.","Verhalten ohne Folgen wird häufiger gezeigt.","Verhalten wird durch Reifung gelernt."],
+["Was ist positive Verstärkung?","Ein angenehmer Reiz folgt auf das Verhalten.","Ein unangenehmer Reiz folgt auf das Verhalten.","Ein Reiz bleibt aus."],
+["Was ist negative Verstärkung?","Ein unangenehmer Reiz entfällt nach dem Verhalten.","Ein angenehmer Reiz entfällt.","Ein unangenehmer Reiz tritt auf."],
+["Was versteht man unter Relativität von Verstärkern?","Was verstärkt, hängt von der Person ab.","Verstärker wirken bei allen gleich.","Verstärker wirken nie."],
+["K","Ein Kind räumt auf und bekommt dafür ein Lob. Danach räumt es häufiger auf.",["+Das Lob ist ein Verstärker.","+Das ist positive Verstärkung.","-Das ist klassisches Konditionieren."]]],
+pp15:[
+["Wie lernt man nach Bandura?","Durch Beobachtung eines Modells","Nur durch eigenes Ausprobieren","Nur durch Strafe"],
+["Welcher Prozess kommt zuerst beim Modelllernen?","Der Aufmerksamkeitsprozess","Der Motivationsprozess","Der motorische Prozess"],
+["Was passiert im Gedächtnisprozess?","Das beobachtete Verhalten wird behalten.","Das Verhalten wird bestraft.","Das Modell wird ignoriert."],
+["Was ist ein Motivationsprozess?","Man führt das Verhalten aus, weil man Bekräftigung erwartet.","Man vergisst das Verhalten.","Man beobachtet das Modell nicht."],
+["K","Ein Kind sieht, wie die große Schwester gelobt wird, und ahmt ihr Verhalten nach.",["+Das ist Lernen am Modell.","+Das ist stellvertretende Bekräftigung.","-Das ist klassisches Konditionieren."]]],
+pp16:[
+["Wie können Medien nach Bandura Lernprozesse beeinflussen?","Medien bieten Modelle zur Nachahmung.","Medien haben nie Wirkung.","Medien wirken nur durch Reifung."],
+["Was ist ein Beispiel für operantes Konditionieren in Medien?","Likes verstärken das Posten.","Ein Kind sieht ein Video ohne Folgen.","Ein Buch wird gelesen."],
+["Welche pädagogische Konsequenz ist sinnvoll?","Medieninhalte gemeinsam besprechen und einordnen","Medien grundsätzlich verbieten","Medien unbegleitet nutzen lassen"],
+["Warum können Vorbilder in Videos wirken?","Weil Kinder Verhalten durch Beobachtung lernen.","Weil Kinder Videos nicht beachten.","Weil Videos keine Modelle sind."],
+["K","Ein Jugendlicher ahmt eine Challenge aus einem Video nach.",["+Das kann Lernen am Modell sein.","+Likes können das Verhalten verstärken.","-Das ist ausschließlich Reifung."]]]
+};
+
+// Standard-Check-Ins (5 Fragen je Thema). Eine in Firebase gespeicherte Fassung hat Vorrang.
+function checkinHash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function checkinAusBank(id){
+ const b=CHECKIN_11[id];if(!b)return[];
+ return b.map(q=>{
+  if(q[0]==="K")return{typ:"kprim",text:q[1],statements:q[2].map(s=>({text:s.slice(1),correct:s[0]==="+"}))};
+  const opts=q.slice(1).map((t,i)=>({t,r:i===0}));
+  const k=checkinHash(q[0])%opts.length;
+  const o=opts.slice(k).concat(opts.slice(0,k));
+  return{typ:"mc",text:q[0],optionen:o.map(x=>x.t),richtig:o.findIndex(x=>x.r)};
+ });
+}
 async function getBasischeckFragen(wocheId){
  try{
  const snap=await getDoc(doc(db,"basischeckFragen",wocheId));
- return snap.exists()?(snap.data().fragen||[]):[];
- }catch(e){console.error("Basis-Check-Fragen laden:",e);return[]}
+ if(snap.exists()&&(snap.data().fragen||[]).length)return snap.data().fragen;
+ return checkinAusBank(wocheId);
+ }catch(e){console.error("Basis-Check-Fragen laden:",e);return checkinAusBank(wocheId)}
 }
 function basischeckTypToggle(i){
  const typ=$(`bcTyp${i}`)?.value;
@@ -2531,7 +2680,7 @@ window.basischeckTypToggle=basischeckTypToggle;
 async function saveBasischeckFragen(fach,wocheId){
  if(!isTeacher()){toast("Nur Lehrkräfte können Basis-Check-Fragen anlegen.");return}
  const fragen=[];
- for(let i=0;i<3;i++){
+ for(let i=0;i<5;i++){
  const text=$(`bcFrage${i}`)?.value.trim();
  if(!text)continue;
  const typ=$(`bcTyp${i}`)?.value||"mc";
@@ -2570,14 +2719,15 @@ async function getMyBasischeckVersuch(wocheId){
 }
 function basischeckAmpel(richtig,gesamt){
  if(gesamt<=0)return null;
- if(richtig===gesamt)return"gruen";
- if(richtig>0)return"orange";
+ const q=richtig/gesamt;
+ if(q>=0.8)return"gruen";
+ if(q>=0.4)return"orange";
  return"rot";
 }
 function basischeckAmpelText(ampel){
- if(ampel==="gruen")return"Alles richtig – Basis sitzt";
- if(ampel==="orange")return"Teilweise richtig – nochmal reinschauen";
- if(ampel==="rot")return"Noch nicht verstanden";
+ if(ampel==="gruen")return"Grün – die Basis sitzt schon";
+ if(ampel==="orange")return"Gelb – ein Teil sitzt schon, lies den Lehrtext gezielt";
+ if(ampel==="rot")return"Rot – das Thema ist neu, der Lehrtext hilft dir";
  return"Noch nicht bearbeitet";
 }
 // Wertet eine einzelne Basis-Check-Frage aus, je nach Typ. Alte Fragen ohne
@@ -7513,7 +7663,7 @@ function kprimFrageKopfHTML(nr,stamm,vignette){
 }
 function basischeckPanelHTML(fach,wocheId,basischeckFragen,meinBasischeck,extraSchueler=""){
  if(isTeacher())return`<div class="form">
-  ${[0,1,2].map(i=>{
+  ${[0,1,2,3,4].map(i=>{
    const f=basischeckFragen[i]||{};
    const typ=f.typ||"mc";
    return`<div class="card"style="margin-bottom:10px;background:#f7fafc">
@@ -11566,9 +11716,9 @@ async function openWocheDetail(fach,wocheId,startTabOverride){
  </div>
 
  <div class="wd-panel"id="wdPanel_basischeck">
- <p style="color:var(--muted);margin-top:0;font-size:12px">Kurzer Check direkt nach dem Material: bis zu 3 Fragen, die zeigen, ob die Grundidee angekommen ist.</p>
+ <p style="color:var(--muted);margin-top:0;font-size:12px">Kurzer Check vor dem Lehrtext: bis zu 5 Fragen, die zeigen, ob die Grundidee angekommen ist.</p>
  ${isTeacher()?`<div class="form">
- ${[0,1,2].map(i=>{
+ ${[0,1,2,3,4].map(i=>{
  const f=basischeckFragen[i]||{};
  const typ=f.typ||"mc";
  return`<div class="card"style="margin-bottom:10px;background:#f7fafc">
@@ -22199,8 +22349,8 @@ const KW={mat:{},fort:{},co:null,geladen:0};
 let activeKwThema=null,activeKwLb=null;
 // Reihenfolge der Dateien auf jeder Themenseite (immer gleich)
 const KW_KAT=[
- {key:"lehrtext",label:"Lehrtexte",hint:"Texte zum Nachlesen und Erarbeiten"},
- {key:"checkin",label:"Check-In",hint:"Einstiegstest: Was weißt du schon?"},
+ {key:"checkin",label:"Check-In",hint:"Zuerst: Was weißt du schon? Kein Test, keine Note."},
+ {key:"lehrtext",label:"Lehrtexte",hint:"Danach: Texte zum Nachlesen und Erarbeiten"},
  {key:"arbeitsblatt",label:"Arbeitsblätter",hint:"Zum Bearbeiten im Unterricht"},
  {key:"uebung",label:"Übungsaufgaben",hint:"Zum Üben und Festigen"},
  {key:"vertiefung",label:"Vertiefungsaufgaben",hint:"In drei Schwierigkeitsgraden",stufen:[["vertiefung1","Stufe 1 · grundlegend"],["vertiefung2","Stufe 2 · erweitert"],["vertiefung3","Stufe 3 · anspruchsvoll"]]},
