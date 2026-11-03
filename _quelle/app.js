@@ -67,7 +67,7 @@ function authError(err){
 }
 function modal(html){$("modal").innerHTML=html;$("modalBackdrop").hidden=false}
 function closeModal(){$("modalBackdrop").hidden=true;if(window.__coUnsub){try{window.__coUnsub()}catch(e){}window.__coUnsub=null;}if(ppDirty){ppDirty=false;if(activeFach==="paedagogik")render();}}
-function pageHead(k,h,p,actions=""){return`<header class="kw-kopf page-head" style="--c:#4B5563;--t:#1F2937"><div><div class="kicker">${k}</div><h1>${h}</h1><p>${p}</p>
+function pageHead(k,h,p,actions=""){return`<header class="kw-kopf page-head" style="--c:#3A8FD4;--t:#1F6FB2"><div><div class="kicker">${k}</div><h1>${h}</h1><p>${p}</p>
 </div><div class="actions">${actions}</div></header>`}
 function footer(){return`<div class="footer"><span>F11Sb 26/27 · FOSBOS Weilheim</span><span>Gemeinsam · offen ·
 respektvoll</span><span><button type="button"onclick="showImpressum()"style="background:none;border:none;padding:0;font:inherit;color:inherit;text-decoration:underline;cursor:pointer">Impressum</button> · <button type="button"onclick="showDatenschutz()"style="background:none;border:none;padding:0;font:inherit;color:inherit;text-decoration:underline;cursor:pointer">Datenschutz</button></span></div>`}
@@ -3736,7 +3736,7 @@ async function renderStart(){
  return`${coBanner}<section class="hero"><div><span class="badge"> F11Sb 26/27</span><h1>Willkommen auf dem Campus.</h1><p>Hier
 verbinden wir Lernen, Projekte, Praxis und Gemeinschaft. Alle angemeldeten Mitglieder arbeiten am selben digitalen Campus.</p>
 </div></section>
- ${isTeacher()?`<div class="card"style="margin-bottom:16px;border-left:4px solid #4B5563"><div class="kicker">VERWALTUNG</div><h3 style="margin:2px 0 10px">Für Lehrkräfte</h3><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="primary"onclick="openNewsForm()">＋ News veröffentlichen</button><button class="secondary"onclick="openUserManagement()">Benutzer verwalten</button></div></div>`:""}
+ ${isTeacher()?`<div class="card"style="margin-bottom:16px;border-left:4px solid #3A8FD4"><div class="kicker">VERWALTUNG</div><h3 style="margin:2px 0 10px">Für Lehrkräfte</h3><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="primary"onclick="openNewsForm()">＋ News veröffentlichen</button><button class="secondary"onclick="openUserManagement()">Benutzer verwalten</button></div></div>`:""}
  ${anstehend}
  ${offenBox}
  <div class="grid grid-3"style="gap:20px;margin-bottom:20px">
@@ -5115,7 +5115,7 @@ async function renderPPModulplan(){
  const fehler=PPM.fehler?`<div class="empty"><strong>Der Modulplan konnte nicht geladen werden.</strong>${esc(PPM.fehler==="permission-denied"?"Firebase verweigert den Zugriff (permission-denied). Die Firestore-Regeln für den Modulplan sind noch nicht veröffentlicht.":"Fehler: "+PPM.fehler)}</div>`:"";
  const coBox=co?`${checkoutLiveBannerHTML(co)}<details class="ppm-box ppm-details"><summary>Check-outs (K-Prim-Tests)</summary><div style="margin-top:10px">${checkoutSektionHTML(co)}</div></details>`:"";
  return`<div class="kwp"><div class="kw-links"><button class="secondary" onclick="go('start')">← Lernlandkarte</button><button class="secondary" onclick="closeFach()">Lernwerkstatt</button></div>
- <header class="kw-kopf" style="--c:#4B5563;--t:#1F2937"><small>PÄDAGOGIK/PSYCHOLOGIE · PLANUNG</small><h1>Modulplanung</h1><p>${lehrer?"Plane Woche für Woche, welcher Baustein in welchem Lernbereich dran ist. Klicke bei einer Woche auf „＋ Modul“ oder wähle unten einen Bausteintyp.":"Dein Plan durchs Schuljahr: Klicke einen Baustein an, um loszulegen."}</p>${lehrer?`<div class="kw-aktionen"><button class="secondary" onclick="openProjektGesamtcheck()">Projekt-Gesamtcheck</button><button class="secondary" onclick="openFachaufsatzTrainingCheck()">APT-Gesamtcheck</button><button class="secondary" onclick="go('didaktik')">Didaktik-Kompass</button></div>`:""}</header>
+ <header class="kw-kopf" style="--c:#3A8FD4;--t:#1F6FB2"><small>PÄDAGOGIK/PSYCHOLOGIE · PLANUNG</small><h1>Modulplanung</h1><p>${lehrer?"Plane Woche für Woche, welcher Baustein in welchem Lernbereich dran ist. Klicke bei einer Woche auf „＋ Modul“ oder wähle unten einen Bausteintyp.":"Dein Plan durchs Schuljahr: Klicke einen Baustein an, um loszulegen."}</p>${lehrer?`<div class="kw-aktionen"><button class="secondary" onclick="openProjektGesamtcheck()">Projekt-Gesamtcheck</button><button class="secondary" onclick="openFachaufsatzTrainingCheck()">APT-Gesamtcheck</button><button class="secondary" onclick="go('didaktik')">Didaktik-Kompass</button></div>`:""}</header>
  ${PPM_CSS}${fehler}${coBox}${standBox}${legende}
  ${leer&&lehrer&&!PPM.fehler?`<div class="ppm-box"><h2>Noch kein Plan</h2><p>Du kannst von vorn beginnen oder den bisherigen Ablauf (je Lernbereich ein Projekt und ein Prüfungstraining, dazu das Experiment als Einheit im ersten Projekt) als Startpunkt übernehmen. Danach lässt sich jedes Modul ändern, verschieben oder löschen.</p><button type="button" class="ppm-btn primaer" data-ppm="standard">Bisherigen Ablauf als Plan übernehmen</button></div>`:""}
  ${leer&&!lehrer&&!PPM.fehler?`<div class="empty"><strong>Noch kein Plan.</strong>Deine Lehrkraft hat noch keine Module geplant.</div>`:""}
@@ -7058,7 +7058,7 @@ async function renderPaedagogikPhasenZeitstrahl(fach,fortschrittMap,heute){
  await ppmLaden();
  if(activePPModul){
   const pm=ppmById(activePPModul);
-  if(pm){const kf=KW_FARBEN[pm.lb]||{c:"#4B5563",t:"#1F2937"};return`<div class="kwp kwm" style="--lbc:${kf.c};--lbt:${kf.t}">`+await ppmModulSeite(pm)+`</div>`;}
+  if(pm){const kf=KW_FARBEN[pm.lb]||{c:"#3A8FD4",t:"#1F6FB2"};return`<div class="kwp kwm" style="--lbc:${kf.c};--lbt:${kf.t}">`+await ppmModulSeite(pm)+`</div>`;}
   activePPModul=null;
  }
  const meineTeams=await ladePPTeams();
@@ -22288,7 +22288,7 @@ async function renderKachelwand(){
  const fertig=lehrer?alle.filter(e=>(KW.mat[e.id]||[]).length||kwModuleThema(e.id).length).length:alle.filter(e=>kwErledigt(e.id)).length;
  const p=alle.length?Math.round(fertig/alle.length*100):0;
  const r=31,u=2*Math.PI*r,da=(u*p/100).toFixed(1);
- const ring=`<svg width="56" height="56" viewBox="0 0 78 78" role="img" aria-label="Gesamtstand ${p} Prozent"><circle cx="39" cy="39" r="${r}" fill="none" stroke="#E5E7EB" stroke-width="10"/><circle cx="39" cy="39" r="${r}" fill="none" stroke="#4B5563" stroke-width="10" stroke-dasharray="${da} ${u.toFixed(1)}" transform="rotate(-90 39 39)" stroke-linecap="round"/></svg>`;
+ const ring=`<svg width="56" height="56" viewBox="0 0 78 78" role="img" aria-label="Gesamtstand ${p} Prozent"><circle cx="39" cy="39" r="${r}" fill="none" stroke="#DCE9F5" stroke-width="10"/><circle cx="39" cy="39" r="${r}" fill="none" stroke="#3A8FD4" stroke-width="10" stroke-dasharray="${da} ${u.toFixed(1)}" transform="rotate(-90 39 39)" stroke-linecap="round"/></svg>`;
  const links=lehrer
   ?`<button class="secondary" data-kw="fortschritt">Erledigt? Selbstlernkurse und Rallyes</button><button class="secondary" onclick="go('lernstaende')">Lernstände</button><button class="secondary" onclick="go('news')">Campus-News und Termine</button><button class="secondary" onclick="openUserManagement()">Benutzer verwalten</button>`
   :`<button class="secondary" onclick="go('lernstaende')">Meine Lernstände</button><button class="secondary" onclick="go('news')">Campus-News und Termine</button>`;
@@ -22438,7 +22438,7 @@ async function renderKwCheckouts(){
    ?`<div class="kw-aktionen"><button class="primary" data-ls="erg" data-id="${esc(t.id)}">Ergebnisse</button><button class="secondary" data-ls="testedit" data-id="${esc(t.id)}">Bearbeiten</button><button class="secondary" data-ls="toggle" data-id="${esc(t.id)}">${t.status==="geschlossen"?"Wieder öffnen":"Schließen"}</button><button class="secondary" data-ls="testweg" data-id="${esc(t.id)}">Löschen</button></div>`
    :`<button class="primary" data-ls="open" data-id="${esc(t.id)}">${a&&a.abgegeben?"Ansehen":(t.status==="geschlossen"?"Ansehen":"Test starten")}</button>`}</div>`}).join("");
  const testHTML=`<div class="kw-card"><h3>Digitale Tests mit KI-Vorkorrektur</h3><small>Offene Fragen am Bildschirm beantworten. Auf Wunsch gibt es vor der Abgabe eine KI-Vorkorrektur über den Assistenten der Schule.</small>${tl?`<div class="kw-baustliste" style="margin-top:10px">${tl}</div>`:`<div class="kw-leer" style="margin-top:10px">Noch kein Test angelegt.</div>`}${lehrer?`<div class="kw-aktionen" style="margin-top:10px"><button class="primary" data-ls="testneu">Neuen Test anlegen</button><button class="secondary" data-ls="kilink">KI-Assistent-Link festlegen</button></div>`:""}</div>`;
- return`<div class="kw kw-seite" style="--c:#4B5563;--bg:#F3F4F6;--t:#1F2937">
+ return`<div class="kw kw-seite" style="--c:#3A8FD4;--bg:#E3F0FA;--t:#1F6FB2">
   <button class="secondary" data-kw="wand">← Lernlandkarte</button>
   <header class="kw-kopf"><small>LERNSTÄNDE</small><h1>${lehrer?"Lernstände der Klasse":"Meine Lernstände"}</h1><p>Alle Check-Ins, Check-outs und KPrim-Tests, digitale Tests und die Lernstandsmessung an einem Ort. Hier liegt auch der Alternative Leistungsnachweis (Kurzarbeit-Ersatz).</p><div class="kw-aktionen"><button class="secondary" onclick="go('lernstand')">Lernstandsmessung</button>${lehrer?`<button class="secondary" data-kw="fortschritt">Erledigt? Selbstlernkurse und Rallyes</button>`:""}</div></header>
   ${lehrer?lsUebersichtHTML(ci,co,abgaben):""}
@@ -22566,7 +22566,7 @@ async function renderKwFortschritt(){
  };
  const kopf=mods.map(m=>{const T=KW_BAUSTEINE[m.modul]||["",""];return`<th><span class="chip ${T[1]}">${esc(T[0])}</span><br><small>LB ${esc(m.lb)} · ${esc(m.titel||"")}</small></th>`}).join("");
  const zeilen=schueler.map(u=>`<tr><th scope="row">${esc(anzeigeName(u))}</th>${mods.map(m=>{const z=zelle(m,u);return`<td class="kw-z ${z.k}">${esc(z.t)}</td>`}).join("")}</tr>`).join("");
- return`<div class="kw kw-seite" style="--c:#4B5563;--bg:#F3F4F6;--t:#1F2937">
+ return`<div class="kw kw-seite" style="--c:#3A8FD4;--bg:#E3F0FA;--t:#1F6FB2">
   <button class="secondary" data-kw="wand">← Lernlandkarte</button>
   <header class="kw-kopf"><small>FÜR LEHRKRÄFTE</small><h1>Erledigt? Selbstlernkurse und Lernrallyes</h1><p>Grün: ordentlich abgeschlossen. Orange: begonnen oder nur flüchtig bearbeitet (fertig, aber weniger als 60 % richtig). Grau: noch offen. Lehrkräfte-Konten erscheinen hier nicht.</p></header>
   <div class="kw-card"><div class="kw-tabwrap">${mods.length&&schueler.length?`<table class="kw-tab"><thead><tr><th>Pseudonym</th>${kopf}</tr></thead><tbody>${zeilen}</tbody></table>`:`<div class="kw-leer">Noch keine passenden Bausteine oder freigeschaltete Schüler:innen.</div>`}</div></div>
