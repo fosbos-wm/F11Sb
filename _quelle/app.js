@@ -2832,13 +2832,91 @@ pp14:["Effektgesetz","Positive Verstärkung","Negative Verstärkung","Relativit�
 pp15:["Modelllernen","Aufmerksamkeitsprozess","Gedächtnisprozess","Motivationsprozess","Bandura im Fall"],
 pp16:["Medien als Modell","Operantes Konditionieren in Medien","Pädagogische Konsequenz","Vorbilder in Videos","Medien im Fall"]
 };
-// Standard-Check-Ins (5 Fragen je Thema). Eine in Firebase gespeicherte Fassung hat Vorrang.
+// Zusätzliche Check-In-Aufgaben: z = Zuordnung/Lückentext/Reihenfolge (Position 3), f = Freitext (letzte Position)
+const CHECKIN_NEU={
+pp01:{tz:"Begriffe Erleben und Verhalten",tf:"Erleben und Verhalten unterscheiden",
+ z:["Z","Ordne jedem Begriff die passende Beschreibung zu.",["Erleben=Innere Vorgänge wie Gedanken und Gefühle","Verhalten=Von außen beobachtbare Handlungen","Psychologie=Wissenschaft vom Erleben und Verhalten"]],
+ f:["F","Erkläre in ein bis zwei Sätzen den Unterschied zwischen Erleben und Verhalten an einem Beispiel.","Verhalten kann man von außen beobachten, zum Beispiel wenn ein Kind weint. Erleben sind innere Vorgänge wie die Traurigkeit, die nur das Kind selbst wahrnimmt."]},
+pp02:{tz:"Merkmale wissenschaftlicher Aussagen",tf:"Wissenschaftliche Aussage begründen",
+ z:["L","Ergänze die Sätze: Wissenschaftliche Aussagen sind ___ und beruhen auf ___ Methoden. Alltagspsychologische Aussagen stützen sich oft auf ___ Einzelerfahrungen.",["überprüfbar","systematischen","zufällige"],["unüberprüfbar","beliebigen"]],
+ f:["F","Nenne ein Merkmal wissenschaftlicher Aussagen und erkläre es kurz an einem Beispiel.","Wissenschaftliche Aussagen sind überprüfbar. Die Aussage „Musik beim Lernen verschlechtert die Leistung“ lässt sich zum Beispiel in einem Experiment testen."]},
+pp03:{tz:"Ablauf eines Experiments",tf:"UV und AV an einem Beispiel",
+ z:["R","Bringe die Schritte eines Experiments in die richtige Reihenfolge.",["Hypothese aufstellen","Gruppen bilden und die Bedingung gezielt verändern (UV)","Das Merkmal messen (AV)","Ergebnisse auswerten und die Hypothese prüfen"]],
+ f:["F","Beschreibe knapp ein Experiment: Was ist die unabhängige, was die abhängige Variable?","Beispiel: Lernen mit und ohne Handy auf dem Tisch. Unabhängige Variable ist die Anwesenheit des Handys, abhängige Variable das Ergebnis im Konzentrationstest."]},
+pp1a1:{tz:"Praxis, Wissenschaft, Wirklichkeit",tf:"Praxis und Wissenschaft verknüpfen",
+ z:["Z","Ordne jedem Begriff die passende Beschreibung zu.",["Erziehungspraxis=Erzieherisches Handeln im Alltag","Erziehungswissenschaft=Systematische Untersuchung von Erziehung","Erziehungswirklichkeit=Zusammenwirken von Erziehenden und Zu-Erziehenden"]],
+ f:["F","Erkläre mit einem eigenen Beispiel, wie Erziehungspraxis und Erziehungswissenschaft zusammenhängen.","Eine Studie zur Wirkung von Lob liefert Erkenntnisse (Wissenschaft), die eine Erzieherin im Alltag nutzt (Praxis). Erfahrungen aus der Praxis geben der Forschung wieder neue Fragen."]},
+pp1a2:{tz:"Ziel und Maßnahme einordnen",tf:"Ziel und Maßnahme unterscheiden",
+ z:["R","Ordne vom Allgemeinen zum Konkreten.",["Werte und Normen der Gesellschaft","Erziehungsziel, zum Beispiel Selbstständigkeit","Erziehungsmaßnahme, zum Beispiel Schuhe allein anziehen lassen","Beobachtbares Verhalten des Kindes"]],
+ f:["F","Nenne ein Erziehungsziel und eine dazu passende Erziehungsmaßnahme.","Ziel: Das Kind soll selbstständig werden. Maßnahme: Die Erzieherin lässt das Kind die Jacke selbst anziehen und hilft nur bei Bedarf."]},
+pp1a3:{tz:"Merkmale der Beziehung zuordnen",tf:"Förderliche Beziehung im Alltag",
+ z:["Z","Ordne jedem Merkmal die passende Wirkung zu.",["Wertschätzung=Das Kind fühlt sich angenommen","Verlässlichkeit=Das Kind kann sich auf Absprachen verlassen","Aufmerksames Zuhören=Das Kind erlebt: Meine Anliegen zählen"]],
+ f:["F","Beschreibe, woran man im Alltag eine förderliche Beziehung zwischen Erzieherin und Kind erkennt.","Die Erzieherin begrüßt das Kind mit Namen, hört aufmerksam zu, hält Absprachen ein und nimmt Sorgen ernst. Dadurch entsteht Vertrauen."]},
+pp1a4:{tz:"Einrichtungen zuordnen",tf:"Ergänzend und ersetzend unterscheiden",
+ z:["Z","Ordne jeder Einrichtung die passende Aufgabe zu.",["Krippe=Betreuung der Jüngsten bis etwa drei Jahre","Kindergarten=Bildung und Betreuung bis zur Einschulung","Hort=Betreuung von Schulkindern nach dem Unterricht","Kinderheim=Dauerhaftes Leben außerhalb der Familie"]],
+ f:["F","Erkläre den Unterschied zwischen familienergänzender und familienersetzender Einrichtung mit je einem Beispiel.","Familienergänzend ist zum Beispiel die Kita: Die Kinder leben weiter in der Familie. Familienersetzend ist zum Beispiel das Kinderheim: Dort leben die Kinder dauerhaft."]},
+pp04:{tz:"Erziehung als beabsichtigte Lernhilfe",tf:"Erziehung als soziales Handeln",
+ z:["L","Ergänze: Erziehung ist eine ___ Lernhilfe. Erziehende handeln ___, um Kinder in ihrer Entwicklung zu ___.",["beabsichtigte","zielgerichtet","fördern"],["zufällige","ersetzen"]],
+ f:["F","Begründe an einem Beispiel, dass Erziehung soziales Handeln ist.","Eine Erzieherin zeigt einem Kind, wie man sich nach einem Streit entschuldigt. Dabei handeln beide aufeinander bezogen: Sie spricht, das Kind reagiert und lernt."]},
+pp05:{tz:"Erziehungsstile zuordnen",tf:"Erziehungsstil begründen",
+ z:["Z","Ordne jedem Erziehungsstil sein Merkmal zu.",["Autoritativ=Hohe Lenkung, hohe Zuwendung","Autoritär=Hohe Lenkung, wenig Zuwendung","Permissiv=Wenig Lenkung, viel Zuwendung","Vernachlässigend=Wenig Lenkung, wenig Zuwendung"]],
+ f:["F","Ein Vater sagt: „Wir besprechen die Regeln gemeinsam, aber ich achte darauf, dass sie eingehalten werden.“ Ordne den Erziehungsstil zu und begründe.","Das ist ein autoritativer Stil: Der Vater lenkt, denn die Regeln werden eingehalten. Zugleich wendet er sich dem Kind zu und lässt es mitsprechen."]},
+pp06:{tz:"Kompetenzen nach Roth zuordnen",tf:"Sozialkompetenz fördern",
+ z:["Z","Ordne jeder Kompetenz ihre Bedeutung zu.",["Selbstkompetenz=Für sich selbst Verantwortung übernehmen","Sachkompetenz=Sachverhalte verstehen und sachgerecht urteilen","Sozialkompetenz=Verantwortlich gegenüber anderen handeln"]],
+ f:["F","Nenne ein Beispiel aus der Kita, mit dem man die Sozialkompetenz eines Kindes fördert.","Die Kinder bauen gemeinsam eine Burg und sprechen ab, wer welche Aufgabe übernimmt. So üben sie, Rücksicht zu nehmen und Verantwortung für die Gruppe zu übernehmen."]},
+pp07:{tz:"Bildungsbereiche und Angebote",tf:"Angebot zu einem Bildungsbereich",
+ z:["Z","Ordne jedem Bildungsbereich ein passendes Angebot zu.",["Gesundheit=Gemeinsam ein gesundes Frühstück zubereiten","Umwelt=Pflanzen im Garten pflegen","Digitale Medien=Mit einem Tablet gemeinsam ein Fotobuch gestalten"]],
+ f:["F","Beschreibe ein Angebot in einer Kita, das einen Bildungsbereich des BayBEP umsetzt.","Im Bereich Umwelt pflegen die Kinder ein Hochbeet. Sie beobachten, wie Pflanzen wachsen, und übernehmen Verantwortung für die Pflege."]},
+pp09:{tz:"Ablauf der Wahrnehmung",tf:"Unterschiedliche Wahrnehmung erklären",
+ z:["R","Bringe den Wahrnehmungsprozess in die richtige Reihenfolge.",["Reizaufnahme durch ein Sinnesorgan","Weiterleitung und Verarbeitung im Gehirn","Bewertung und Deutung","Reaktion"]],
+ f:["F","Erkläre mit einem Beispiel, warum zwei Personen dieselbe Situation unterschiedlich wahrnehmen.","Zwei Schüler sehen einen Hund. Wer schon einmal gebissen wurde, nimmt ihn als bedrohlich wahr, wer Hunde mag, als freundlich. Erfahrungen und Gefühle beeinflussen die Wahrnehmung."]},
+pp2p2:{tz:"Weg ins Langzeitgedächtnis",tf:"Kontrollprozess beim Lernen",
+ z:["R","Wie gelangt eine Information nach dem Mehrspeichermodell ins Langzeitgedächtnis? Bringe die Schritte in die richtige Reihenfolge.",["Der Reiz gelangt ins Ultrakurzzeitgedächtnis","Aufmerksamkeit wählt Informationen aus","Das Kurzzeitgedächtnis hält sie kurz fest","Kontrollprozesse wie Wiederholung bringen sie ins Langzeitgedächtnis"]],
+ f:["F","Nenne einen Kontrollprozess und erkläre, wie du ihn beim Lernen anwenden kannst.","Elaboration: Ich verknüpfe einen neuen Begriff mit einem eigenen Beispiel aus dem Praktikum. So wird er mit Vorwissen verbunden und bleibt besser im Langzeitgedächtnis."]},
+pp12:{tz:"Lernstrategien zuordnen",tf:"Eigene Lernstrategie einordnen",
+ z:["Z","Ordne jede Lerntechnik der passenden Strategie zu.",["Mindmap zeichnen=Organisation","Karteikarten abfragen=Wiederholung","Eigenes Beispiel bilden=Elaboration"]],
+ f:["F","Welche Lernstrategie nutzt du am häufigsten? Ordne sie ein und beurteile kurz, ob sie für dich sinnvoll ist.","Ich fertige Karteikarten an und frage mich ab. Das ist Wiederholung. Sie hilft beim Behalten, ich sollte sie aber mit Beispielen (Elaboration) ergänzen."]},
+pp2a1:{tz:"Gedächtnissysteme zuordnen",tf:"Deklarativ und nicht-deklarativ",
+ z:["Z","Ordne jedem Beispiel das passende Gedächtnissystem zu.",["Fahrrad fahren können=Prozedurales Gedächtnis","Erinnerung an die eigene Einschulung=Episodisch-autobiographisches Gedächtnis","Wissen, dass Berlin die Hauptstadt ist=Wissenssystem"]],
+ f:["F","Erkläre den Unterschied zwischen deklarativem und nicht-deklarativem Gedächtnis mit je einem Beispiel.","Deklarativ kann man bewusst abrufen und aussprechen, zum Beispiel das Wissen über die Hauptstadt. Nicht-deklarativ zeigt sich im Tun, zum Beispiel beim Fahrradfahren."]},
+pp10:{tz:"Komponenten von Emotion zuordnen",tf:"Angst mit Komponenten erklären",
+ z:["Z","Ordne jede Reaktion der passenden Komponente einer Emotion zu.",["Herzklopfen=Physiologische Komponente","Der Gedanke „Das schaffe ich nie“=Kognitive Komponente","Weinen oder Lachen=Ausdruckskomponente"]],
+ f:["F","Erkläre die Emotion Angst vor einer Prüfung mit zwei Komponenten.","Physiologisch: Das Herz klopft schneller, die Hände schwitzen. Kognitiv: Ich denke „Ich falle durch“ und bewerte die Prüfung als Bedrohung."]},
+pp11:{tz:"Ursachen nach Weiner einordnen",tf:"Folgen stabiler Ursachen",
+ z:["Z","Ordne jede Erklärung nach Weiner richtig ein.",["„Ich habe Pech gehabt.“=external und variabel","„Ich bin einfach unbegabt.“=internal und stabil","„Ich habe zu wenig gelernt.“=internal und variabel","„Der Lehrer mag mich nicht.“=external und stabil"]],
+ f:["F","Erkläre, wie sich eine internal-stabile Erklärung eines Misserfolgs auf die Erfolgserwartung auswirkt.","Wer Misserfolg auf eine feste eigene Eigenschaft zurückführt („ich bin unbegabt“), glaubt nicht an Veränderung. Die Erfolgserwartung sinkt und die Motivation lässt nach."]},
+pp4p1:{tz:"Lernen und Reifung unterscheiden",tf:"Lernen und Reifung an Beispielen",
+ z:["L","Ergänze: Lernen ist eine relativ ___ Änderung des ___ durch ___. Reifung entsteht dagegen durch körperliche Entwicklung.",["dauerhafte","Verhaltens","Erfahrung"],["kurzzeitige","Gefühls","Müdigkeit"]],
+ f:["F","Nenne ein Beispiel für Lernen und eines für Reifung und begründe kurz.","Lernen: Ein Kind merkt sich, bei Rot stehen zu bleiben (Erfahrung). Reifung: Ein Baby beginnt zu laufen, sobald Muskeln und Gleichgewicht ausgereift sind."]},
+pp13:{tz:"NS, UCS, UCR, CS zuordnen",tf:"Konditionierte Angst erklären",
+ z:["Z","Ordne die Fachbegriffe den Beispielen aus Pawlows Versuch zu.",["Futter=Unkonditionierter Reiz (UCS)","Speichelfluss auf das Futter=Unkonditionierte Reaktion (UCR)","Ton vor der Kopplung=Neutraler Reiz (NS)","Ton nach der Kopplung=Konditionierter Reiz (CS)"]],
+ f:["F","Erkläre an einem Alltagsbeispiel (zum Beispiel Zahnarzt), wie eine Angst klassisch konditioniert werden kann.","Das Bohrgeräusch ist zuerst neutral. Der Schmerz beim Bohren ist der UCS und löst Angst (UCR) aus. Wird das Geräusch oft zusammen mit dem Schmerz erlebt, löst es später allein Angst aus (CS und CR)."]},
+pp14:{tz:"Verstärkung und Bestrafung zuordnen",tf:"Relativität von Verstärkern",
+ z:["Z","Ordne jedem Beispiel den richtigen Begriff zu.",["Ein Kind bekommt einen Stern fürs Aufräumen=Positive Verstärkung","Der Lärm hört auf, nachdem das Kind leise ist=Negative Verstärkung","Ein Kind muss nachsitzen=Bestrafung"]],
+ f:["F","Erkläre in eigenen Worten, warum ein Verstärker für jede Person unterschiedlich wirken kann.","Ob etwas verstärkt, hängt von der Person ab: Süßigkeiten sind für ein Kind ein Verstärker, für ein anderes nicht. Entscheidend ist, ob das Verhalten danach häufiger auftritt."]},
+pp15:{tz:"Prozesse des Modelllernens ordnen",tf:"Prozesse nach Bandura anwenden",
+ z:["R","Bringe die Prozesse des Modelllernens nach Bandura in eine sinnvolle Reihenfolge.",["Aufmerksamkeitsprozess","Gedächtnisprozess (Behalten)","Motorischer Prozess (Nachahmen)","Motivationsprozess"]],
+ f:["F","Ein Kind ahmt eine Szene aus einem Video nach. Erkläre am Beispiel zwei Prozesse nach Bandura.","Aufmerksamkeit: Das Kind beachtet das attraktive Modell im Video. Motivation: Es ahmt das Verhalten nach, weil es erwartet, dafür Anerkennung zu bekommen."]},
+pp16:{tz:"Mediale Einflüsse zuordnen",tf:"Chance und Risiko von Medien",
+ z:["Z","Ordne jedem Beispiel den passenden Einfluss zu.",["Influencerin als Vorbild=Lernen am Modell","Likes für einen Beitrag=Operante Verstärkung","Eltern sehen mit dem Kind Videos und sprechen darüber=Pädagogische Begleitung"]],
+ f:["F","Nenne eine Chance und ein Risiko von Medien als Einflussfaktor für das Lernen.","Chance: Medien bieten Modelle und Wissen, zum Beispiel Lernvideos. Risiko: Kinder können problematisches Verhalten nachahmen, wenn Likes es verstärken."]}
+};
+
+// Standard-Check-Ins (5 Fragen je Thema): 2 Multiple-Choice, 1 Aufgabe mit anderem Typ (Zuordnung/Lückentext/Reihenfolge), 1 K-Prim-Fall, 1 Freitext. Eine in Firebase gespeicherte Fassung hat Vorrang.
 function checkinHash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function checkinMischen(arr,key){return arr.map((x,i)=>({x,h:checkinHash(key+"|"+i+"|"+String(x))})).sort((p,q)=>p.h-q.h).map(o=>o.x)}
 function checkinAusBank(id){
  const b=CHECKIN_11[id];if(!b)return[];
- return b.map((q,qi)=>{
-  const tag=(CHECKIN_TAGS_11[id]||[])[qi]||"";
+ const n=CHECKIN_NEU[id],t=CHECKIN_TAGS_11[id]||[];
+ const items=n?[b[0],b[1],n.z,b[4],n.f]:b;
+ const tags=n?[t[0],t[1],n.tz,t[4],n.tf]:t;
+ return items.map((q,qi)=>{
+  const tag=tags[qi]||"";
   if(q[0]==="K")return{typ:"kprim",text:q[1],tag,statements:q[2].map(s=>({text:s.slice(1),correct:s[0]==="+"}))};
+  if(q[0]==="Z")return{typ:"zuordnung",text:q[1],tag,paare:q[2].map(p=>{const k=p.indexOf("=");return{l:p.slice(0,k),r:p.slice(k+1)}})};
+  if(q[0]==="L")return{typ:"lueckentext",text:q[1],tag,loesung:q[2],woerter:checkinMischen(q[2].concat(q[3]||[]),q[1])};
+  if(q[0]==="R")return{typ:"reihenfolge",text:q[1],tag,schritte:q[2]};
+  if(q[0]==="F")return{typ:"frei",text:q[1],tag,musterantwort:q[2]};
   const opts=q.slice(1).map((t,i)=>({t,r:i===0}));
   const k=checkinHash(q[0])%opts.length;
   const o=opts.slice(k).concat(opts.slice(0,k));
@@ -2854,10 +2932,8 @@ async function getBasischeckFragen(wocheId){
 }
 function basischeckTypToggle(i){
  const typ=$(`bcTyp${i}`)?.value;
- const mc=$(`bcMcBereich${i}`),kp=$(`bcKprimBereich${i}`),of=$(`bcOffenBereich${i}`);
- if(mc)mc.style.display=typ==="mc"?"block":"none";
- if(kp)kp.style.display=typ==="kprim"?"block":"none";
- if(of)of.style.display=typ==="offen"?"block":"none";
+ const m={mc:"bcMcBereich",kprim:"bcKprimBereich",offen:"bcOffenBereich",zuordnung:"bcZBereich",lueckentext:"bcLBereich",reihenfolge:"bcRBereich",frei:"bcFBereich"};
+ Object.keys(m).forEach(k=>{const el=$(`${m[k]}${i}`);if(el)el.style.display=typ===k?"block":"none"});
 }
 window.basischeckTypToggle=basischeckTypToggle;
 async function saveBasischeckFragen(fach,wocheId){
@@ -2884,6 +2960,22 @@ async function saveBasischeckFragen(fach,wocheId){
  const stichworte=($(`bcStichworte${i}`)?.value||"").split(",").map(s=>s.trim()).filter(Boolean);
  if(!stichworte.length)continue;
  fragen.push({typ,text,stichworte});
+ }else if(typ==="zuordnung"){
+ const paare=($(`bcPaare${i}`)?.value||"").split("\n").map(z=>{const k=z.indexOf("=");return k>0?{l:z.slice(0,k).trim(),r:z.slice(k+1).trim()}:null}).filter(p=>p&&p.l&&p.r).slice(0,5);
+ if(paare.length<2){toast(`Frage ${i+1}: Zuordnung braucht mindestens 2 Zeilen der Form „Begriff = Beschreibung“.`);continue}
+ fragen.push({typ,text,paare});
+ }else if(typ==="lueckentext"){
+ const loesung=($(`bcLoesung${i}`)?.value||"").split(",").map(x=>x.trim()).filter(Boolean);
+ const extra=($(`bcExtra${i}`)?.value||"").split(",").map(x=>x.trim()).filter(Boolean);
+ const luecken=(text.match(/___/g)||[]).length;
+ if(!luecken||luecken!==loesung.length){toast(`Frage ${i+1}: Der Text braucht genau so viele ___ wie gesuchte Wörter (${loesung.length}).`);continue}
+ fragen.push({typ,text,loesung,woerter:checkinMischen(loesung.concat(extra),text)});
+ }else if(typ==="reihenfolge"){
+ const schritte=($(`bcSchritte${i}`)?.value||"").split("\n").map(x=>x.trim()).filter(Boolean).slice(0,6);
+ if(schritte.length<3){toast(`Frage ${i+1}: Reihenfolge braucht mindestens 3 Schritte (je eine Zeile, in richtiger Reihenfolge).`);continue}
+ fragen.push({typ,text,schritte});
+ }else if(typ==="frei"){
+ fragen.push({typ,text,musterantwort:($(`bcMuster${i}`)?.value||"").trim()});
  }
  }
  if(!fragen.length){toast("Bitte mindestens eine vollständige Frage eingeben.");return}
@@ -2904,7 +2996,7 @@ async function getMyBasischeckVersuch(wocheId){
 function basischeckAmpel(richtig,gesamt){
  if(gesamt<=0)return null;
  const q=richtig/gesamt;
- if(q>=0.8)return"gruen";
+ if(q>=0.75)return"gruen";
  if(q>=0.4)return"orange";
  return"rot";
 }
@@ -2935,21 +3027,43 @@ function basischeckGradeFrage(f,i){
  const treffer=f.stichworte.every(w=>text.toLowerCase().includes(w.toLowerCase()));
  return {beantwortet:true,richtig:treffer,antwort:text};
  }
+ if(typ==="zuordnung"){
+ const w=f.paare.map((p,j)=>document.querySelector(`#bcZ${i}_${j}`)?.value||"");
+ const ok=w.every(Boolean);
+ return {beantwortet:ok,richtig:ok&&w.every((v,j)=>v===String(j)),antwort:w.map(v=>v===""?"-":v).join(",")};
+ }
+ if(typ==="lueckentext"){
+ const w=f.loesung.map((l,j)=>document.querySelector(`#bcL${i}_${j}`)?.value||"");
+ const ok=w.every(Boolean);
+ return {beantwortet:ok,richtig:ok&&w.every((v,j)=>v===f.loesung[j]),antwort:w.map(v=>v||"-").join("|")};
+ }
+ if(typ==="reihenfolge"){
+ const w=f.schritte.map((x,j)=>document.querySelector(`#bcR${i}_${j}`)?.value||"");
+ const ok=w.every(Boolean)&&new Set(w).size===w.length;
+ return {beantwortet:ok,richtig:ok&&w.every((v,j)=>v===String(j+1)),antwort:w.map(v=>v||"-").join(",")};
+ }
+ if(typ==="frei"){
+ const text=($(`bcFrei${i}`)?.value||"").trim();
+ return {beantwortet:text.length>=10,richtig:false,antwort:text,frei:true};
+ }
  return {beantwortet:false,richtig:false,antwort:null};
 }
 async function submitBasischeck(fach,wocheId){
  const fragen=await getBasischeckFragen(wocheId);
  if(!fragen.length){toast("Keine Fragen vorhanden.");return}
  const ergebnisse=fragen.map((f,i)=>basischeckGradeFrage(f,i));
- if(ergebnisse.some(e=>!e.beantwortet)){toast("Bitte alle Fragen beantworten.");return}
- const richtig=ergebnisse.filter(e=>e.richtig).length;
- const ampel=basischeckAmpel(richtig,fragen.length);
+ const fehlt=ergebnisse.findIndex(e=>!e.beantwortet);
+ if(fehlt>=0){toast(fragen[fehlt].typ==="frei"?"Bitte schreibe bei der Freitext-Aufgabe mindestens einen Satz.":"Bitte alle Fragen beantworten.");return}
+ const gewertet=ergebnisse.filter(e=>!e.frei);
+ const richtig=gewertet.filter(e=>e.richtig).length;
+ const gesamt=gewertet.length;
+ const ampel=basischeckAmpel(richtig,gesamt);
  try{
  await setDoc(doc(db,"basischeckVersuche",`${currentUser.uid}_${wocheId}`),{
- uid:currentUser.uid,wocheId,fach,antworten:ergebnisse.map(e=>e.antwort),richtig,gesamt:fragen.length,ampel,
+ uid:currentUser.uid,wocheId,fach,antworten:ergebnisse.map(e=>e.antwort),richtig,gesamt,ampel,
  name:anzeigeName(profile,currentUser),createdAt:serverTimestamp()
  });
- toast(`${richtig} von ${fragen.length} richtig.`);
+ toast(`${richtig} von ${gesamt} richtig.`);
  if($("ciAnsicht")){await setDoc(doc(db,"lehrplanFortschritt",`${currentUser.uid}_${wocheId}`),{uid:currentUser.uid,wocheId,fach,basischeckErledigt:true,updatedAt:serverTimestamp()},{merge:true}).catch(e=>console.error(e));ppDirty=true;await openCheckIn(wocheId);if(ampel==="gruen")showMotivationsBild(false,"lernen","bc:"+wocheId);return}
  if(lehrplanWocheById(fach,wocheId)?.typ==="apt"){await aptSetzen(wocheId,{basischeckErledigt:true},{tab:"basischeck"});return}
  await setDoc(doc(db,"lehrplanFortschritt",`${currentUser.uid}_${wocheId}`),{uid:currentUser.uid,wocheId,fach,basischeckErledigt:true,updatedAt:serverTimestamp()},{merge:true}).catch(e=>console.error(e));
@@ -7947,50 +8061,105 @@ function kprimFrageKopfHTML(nr,stamm,vignette){
   ${vignette?`<div class="kp-vignette">${esc(vignette)}</div>`:""}
   <p class="kp-anleitung">${/beurteilen sie/i.test(stamm||"")?"":"Beurteilen Sie die folgenden Aussagen. "}${KPRIM_ANLEITUNG}</p>`;
 }
-function basischeckPanelHTML(fach,wocheId,basischeckFragen,meinBasischeck,extraSchueler=""){
- if(isTeacher())return`<div class="form">
+function basischeckReihenfolgeAnzeige(f){
+ const idx=f.schritte.map((_,k)=>k);
+ let o=idx.slice().sort((p,q)=>checkinHash(f.text+"#"+f.schritte[p])-checkinHash(f.text+"#"+f.schritte[q]));
+ if(o.every((v,k)=>v===k))o=o.slice(1).concat(o.slice(0,1));
+ return o;
+}
+function basischeckEingabeHTML(f,i,typ){
+ if(typ==="mc")return`<div class="ci-opts">${f.optionen.map((o,j)=>`<label class="ci-o"><input type="radio"name="bcQ${i}"value="${j}"><span class="ci-m"></span><span class="ci-ot">${esc(o)}</span></label>`).join("")}</div>`;
+ if(typ==="kprim")return kprimTabelleHTML(`bcKp${i}`,f.statements.map(x=>x.text));
+ if(typ==="offen")return`<textarea id="bcOffenAntwort${i}"rows="3"placeholder="Deine Antwort …"></textarea>`;
+ if(typ==="frei")return`<textarea id="bcFrei${i}"class="ci-frei"rows="4"placeholder="Schreibe ein bis zwei Sätze in deinen eigenen Worten …"></textarea><p class="ci-hinw">Diese Aufgabe wird nicht bewertet. Danach siehst du eine Musterantwort zum Vergleichen.</p>`;
+ if(typ==="zuordnung"){
+  const rs=checkinMischen(f.paare.map((p,j)=>j),f.text);
+  return`<div class="ci-zu">${f.paare.map((p,j)=>`<div class="ci-zr"><span class="ci-zl">${esc(p.l)}</span><select id="bcZ${i}_${j}"aria-label="${esc(p.l)}"><option value="">– wählen –</option>${rs.map(k=>`<option value="${k}">${esc(f.paare[k].r)}</option>`).join("")}</select></div>`).join("")}</div>`;
+ }
+ if(typ==="lueckentext"){
+  const teile=String(f.text).split("___");
+  const sel=j=>`<select class="ci-lue"id="bcL${i}_${j}"aria-label="Lücke ${j+1}"><option value="">…</option>${(f.woerter||f.loesung).map(w=>`<option value="${esc(w)}">${esc(w)}</option>`).join("")}</select>`;
+  return`<p class="ci-lt">${teile.map((t,j)=>esc(t)+(j<teile.length-1?sel(j):"")).join("")}</p>`;
+ }
+ if(typ==="reihenfolge"){
+  const o=basischeckReihenfolgeAnzeige(f),n=f.schritte.length;
+  return`<div class="ci-re"><p class="ci-hinw">Wähle bei jedem Schritt, an welcher Stelle er steht (1 = zuerst).</p>${o.map(k=>`<div class="ci-zr"><span class="ci-zl">${esc(f.schritte[k])}</span><select id="bcR${i}_${k}"aria-label="Position"><option value="">Platz …</option>${f.schritte.map((_,p)=>`<option value="${p+1}">${p+1}</option>`).join("")}</select></div>`).join("")}</div>`;
+ }
+ return"";
+}
+function basischeckFreiErgebnisHTML(fragen,mein){
+ const l=[];
+ fragen.forEach((f,i)=>{
+  if(f.typ!=="frei")return;
+  const a=(mein.antworten||[])[i];
+  l.push(`<section class="ci-q ci-fr"><div class="ci-qk"><span class="ci-n">${i+1}</span><b class="ci-t">${esc(f.text)}</b></div>
+   <div class="ci-fa"><small>Deine Antwort</small><p>${esc(a||"–")}</p></div>
+   ${f.musterantwort?`<div class="ci-fa ci-fm"><small>Musterantwort zum Vergleichen</small><p>${esc(f.musterantwort)}</p></div>`:""}</section>`);
+ });
+ return l.join("");
+}
+function basischeckEditorHTML(fach,wocheId,fragen){
+ const T=[["mc","Multiple Choice"],["kprim","K-Prim (richtig/falsch je Aussage)"],["offen","Offene Frage (Stichworte)"],["zuordnung","Zuordnung"],["lueckentext","Lückentext"],["reihenfolge","Reihenfolge"],["frei","Freitext (nicht bewertet)"]];
+ return`<div class="form">
   ${[0,1,2,3,4].map(i=>{
-   const f=basischeckFragen[i]||{};
+   const f=fragen[i]||{};
    const typ=f.typ||"mc";
+   const dis=t=>`display:${typ===t?"block":"none"};margin-top:8px`;
    return`<div class="card"style="margin-bottom:10px;background:#f7fafc">
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
-     <label style="flex:1;min-width:200px">Frage ${i+1}${i>0?" (optional)":""}<input id="bcFrage${i}"type="text"value="${esc(f.text||"")}"placeholder="z. B. Was versteht man unter …?"></label>
-     <label style="width:190px">Fragetyp<select id="bcTyp${i}"onchange="basischeckTypToggle(${i})">
-      <option value="mc"${typ==="mc"?" selected":""}>Multiple Choice</option>
-      <option value="kprim"${typ==="kprim"?" selected":""}>K-Prim (richtig/falsch je Aussage)</option>
-      <option value="offen"${typ==="offen"?" selected":""}>Offene Frage</option>
+     <label style="flex:1;min-width:200px">Frage / Aufgabe ${i+1}${i>0?" (optional)":""}<input id="bcFrage${i}"type="text"value="${esc(f.text||"")}"placeholder="z. B. Was versteht man unter …?"></label>
+     <label style="width:210px">Aufgabentyp<select id="bcTyp${i}"onchange="basischeckTypToggle(${i})">
+      ${T.map(([v,t])=>`<option value="${v}"${typ===v?" selected":""}>${t}</option>`).join("")}
      </select></label>
     </div>
-    <div id="bcMcBereich${i}"style="display:${typ==="mc"?"block":"none"};margin-top:8px">
+    <div id="bcMcBereich${i}"style="${dis("mc")}">
      <div class="grid grid-2">${[0,1,2].map(j=>`<label>Antwort ${j+1}${j>1?" (optional)":""}<input id="bcOpt${i}_${j}"type="text"value="${esc(f.optionen?.[j]||"")}"></label>`).join("")}</div>
      <label style="margin-top:6px">Richtige Antwort<select id="bcRichtig${i}">${[0,1,2].map(j=>`<option value="${j}"${f.richtig===j?" selected":""}>Antwort ${j+1}</option>`).join("")}</select></label>
     </div>
-    <div id="bcKprimBereich${i}"style="display:${typ==="kprim"?"block":"none"};margin-top:8px">
+    <div id="bcKprimBereich${i}"style="${dis("kprim")}">
      <label style="margin-bottom:8px">Fallvignette / Einleitungstext (optional – steht über der Tabelle)<textarea id="bcVignette${i}"rows="3"placeholder="z. B. kurze Fallbeschreibung, auf die sich die Aussagen beziehen">${esc(f.vignette||"")}</textarea></label>
-<p style="font-size:11px;color:var(--muted);margin:0 0 6px">Bis zu 4 Aussagen, jeweils als richtig oder falsch markieren. Nur „alles richtig" zählt als bestanden.</p>
+     <p style="font-size:11px;color:var(--muted);margin:0 0 6px">Bis zu 4 Aussagen, jeweils als richtig oder falsch markieren. Nur „alles richtig" zählt als bestanden.</p>
      ${[0,1,2,3].map(j=>{const s=f.statements?.[j]||{};return`<div style="display:flex;gap:8px;align-items:center;margin-bottom:4px">
       <input id="bcStatement${i}_${j}"type="text"value="${esc(s.text||"")}"placeholder="Aussage ${j+1}${j>1?" (optional)":""}"style="flex:1">
       <select id="bcStatementRichtig${i}_${j}"style="width:90px"><option value="true"${s.correct?" selected":""}>richtig</option><option value="false"${s.correct===false?" selected":""}>falsch</option></select>
      </div>`;}).join("")}
     </div>
-    <div id="bcOffenBereich${i}"style="display:${typ==="offen"?"block":"none"};margin-top:8px">
+    <div id="bcOffenBereich${i}"style="${dis("offen")}">
      <label>Erwartete Stichworte (kommagetrennt – ALLE müssen in der Antwort vorkommen)<input id="bcStichworte${i}"type="text"value="${esc((f.stichworte||[]).join(", "))}"placeholder="z. B. Sozialisation, Erziehung, Werte"></label>
+    </div>
+    <div id="bcZBereich${i}"style="${dis("zuordnung")}">
+     <label>2 bis 5 Zeilen, jeweils „Begriff = passende Beschreibung“<textarea id="bcPaare${i}"rows="4"placeholder="Erleben = Innere Vorgänge&#10;Verhalten = Beobachtbare Handlungen">${esc((f.paare||[]).map(p=>p.l+" = "+p.r).join("\n"))}</textarea></label>
+    </div>
+    <div id="bcLBereich${i}"style="${dis("lueckentext")}">
+     <p style="font-size:11px;color:var(--muted);margin:0 0 6px">Im Feld „Frage“ den ganzen Satz schreiben und jede Lücke als ___ (3 Unterstriche) markieren.</p>
+     <label>Gesuchte Wörter in der Reihenfolge der Lücken (kommagetrennt)<input id="bcLoesung${i}"type="text"value="${esc((f.loesung||[]).join(", "))}"placeholder="z. B. überprüfbar, systematischen"></label>
+     <label style="margin-top:6px">Falsche Zusatzwörter (optional, kommagetrennt)<input id="bcExtra${i}"type="text"value="${esc((f.woerter||[]).filter(w=>!(f.loesung||[]).includes(w)).join(", "))}"></label>
+    </div>
+    <div id="bcRBereich${i}"style="${dis("reihenfolge")}">
+     <label>3 bis 6 Schritte, eine Zeile pro Schritt, in der RICHTIGEN Reihenfolge (die Schüler:innen sehen sie gemischt)<textarea id="bcSchritte${i}"rows="5">${esc((f.schritte||[]).join("\n"))}</textarea></label>
+    </div>
+    <div id="bcFBereich${i}"style="${dis("frei")}">
+     <label>Musterantwort (sehen die Schüler:innen nach dem Abgeben zum Vergleichen)<textarea id="bcMuster${i}"rows="3">${esc(f.musterantwort||"")}</textarea></label>
     </div>
    </div>`;
   }).join("")}
   <button class="primary"onclick="saveBasischeckFragen('${fach}','${wocheId}')">Basis-Check speichern</button>
  </div>`;
+}
+function basischeckPanelHTML(fach,wocheId,basischeckFragen,meinBasischeck,extraSchueler=""){
+ if(isTeacher())return basischeckEditorHTML(fach,wocheId,basischeckFragen);
  if(!basischeckFragen.length)return`<div class="empty">Für diesen Inhalt wurde noch kein Basis-Check eingerichtet.</div>${extraSchueler}`;
- if(meinBasischeck){const af=ampelFarbe(meinBasischeck.ampel);return`<div class="ci-res"style="--a:${af}"><div class="ci-ring"><b>${meinBasischeck.richtig}</b><small>von ${meinBasischeck.gesamt}</small></div><div><strong>${meinBasischeck.richtig} von ${meinBasischeck.gesamt} richtig</strong><p>${esc(basischeckAmpelText(meinBasischeck.ampel))}</p></div></div>`}
+ if(meinBasischeck){const af=ampelFarbe(meinBasischeck.ampel);return`<div class="ci-res"style="--a:${af}"><div class="ci-ring"><b>${meinBasischeck.richtig}</b><small>von ${meinBasischeck.gesamt}</small></div><div><strong>${meinBasischeck.richtig} von ${meinBasischeck.gesamt} richtig</strong><p>${esc(basischeckAmpelText(meinBasischeck.ampel))}</p></div></div>${basischeckFreiErgebnisHTML(basischeckFragen,meinBasischeck)}`}
+ const anz=basischeckFragen.length,min=Math.max(3,Math.round(anz*1.2));
+ const ART={mc:"Auswahl",kprim:"Richtig oder falsch",offen:"Kurzantwort",zuordnung:"Zuordnen",lueckentext:"Lückentext",reihenfolge:"Reihenfolge",frei:"Freitext"};
  return`<div class="ci">
-  <div class="ci-kopf"><span>${basischeckFragen.length} Fragen</span><span>etwa ${Math.max(2,basischeckFragen.length)} Minuten</span><span>keine Note</span></div>
+  <div class="ci-kopf"><span>${anz} Aufgaben</span><span>etwa ${min} Minuten</span><span>keine Note</span></div>
   ${basischeckFragen.map((f,i)=>{
    const typ=f.typ||"mc";
    return`<section class="ci-q">
-    ${typ==="kprim"?`<div class="ci-qk"><span class="ci-n">${i+1}</span><div class="ci-t">${kprimFrageKopfHTML("",f.text,f.vignette)}</div></div>`:`<div class="ci-qk"><span class="ci-n">${i+1}</span><b class="ci-t">${esc(f.text)}</b></div>`}
-    ${typ==="mc"?`<div class="ci-opts">${f.optionen.map((o,j)=>`<label class="ci-o"><input type="radio"name="bcQ${i}"value="${j}"><span class="ci-m"></span><span class="ci-ot">${esc(o)}</span></label>`).join("")}</div>`:""}
-    ${typ==="kprim"?kprimTabelleHTML(`bcKp${i}`,f.statements.map(x=>x.text)):""}
-    ${typ==="offen"?`<textarea id="bcOffenAntwort${i}"rows="3"placeholder="Deine Antwort …"></textarea>`:""}
+    ${typ==="kprim"?`<div class="ci-qk"><span class="ci-n">${i+1}</span><div class="ci-t">${kprimFrageKopfHTML("",f.text,f.vignette)}</div></div>`:`<div class="ci-qk"><span class="ci-n">${i+1}</span>${typ==="lueckentext"?`<b class="ci-t">Ergänze den Text.</b>`:`<b class="ci-t">${esc(f.text)}</b>`}</div>`}
+    <span class="ci-art">${ART[typ]||""}</span>
+    ${basischeckEingabeHTML(f,i,typ)}
    </section>`;
   }).join("")}
   <button class="primary ci-go"onclick="submitBasischeck('${fach}','${wocheId}')">Check-In abgeben</button>
@@ -12022,65 +12191,7 @@ async function openWocheDetail(fach,wocheId,startTabOverride){
 
  <div class="wd-panel"id="wdPanel_basischeck">
  <p style="color:var(--muted);margin-top:0;font-size:12px">Kurzer Check vor dem Lehrtext: bis zu 5 Fragen, die zeigen, ob die Grundidee angekommen ist.</p>
- ${isTeacher()?`<div class="form">
- ${[0,1,2,3,4].map(i=>{
- const f=basischeckFragen[i]||{};
- const typ=f.typ||"mc";
- return`<div class="card"style="margin-bottom:10px;background:#f7fafc">
- <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
- <label style="flex:1;min-width:200px">Frage ${i+1}${i>0?" (optional)":""}<input id="bcFrage${i}"type="text"value="${esc(f.text||"")}"placeholder="z. B. Was versteht man unter …?"></label>
- <label style="width:190px">Fragetyp<select id="bcTyp${i}"onchange="basischeckTypToggle(${i})">
- <option value="mc"${typ==="mc"?" selected":""}>Multiple Choice</option>
- <option value="kprim"${typ==="kprim"?" selected":""}>K-Prim (richtig/falsch je Aussage)</option>
- <option value="offen"${typ==="offen"?" selected":""}>Offene Frage</option>
- </select></label>
- </div>
-
- <div id="bcMcBereich${i}"style="display:${typ==="mc"?"block":"none"};margin-top:8px">
- <div class="grid grid-2">
- ${[0,1,2].map(j=>`<label>Antwort ${j+1}${j>1?" (optional)":""}<input id="bcOpt${i}_${j}"type="text"value="${esc(f.optionen?.[j]||"")}"></label>`).join("")}
- </div>
- <label style="margin-top:6px">Richtige Antwort<select id="bcRichtig${i}">
- ${[0,1,2].map(j=>`<option value="${j}"${f.richtig===j?" selected":""}>Antwort ${j+1}</option>`).join("")}
- </select></label>
- </div>
-
- <div id="bcKprimBereich${i}"style="display:${typ==="kprim"?"block":"none"};margin-top:8px">
- <label style="margin-bottom:8px">Fallvignette / Einleitungstext (optional – steht über der Tabelle)<textarea id="bcVignette${i}"rows="3"placeholder="z. B. kurze Fallbeschreibung, auf die sich die Aussagen beziehen">${esc(f.vignette||"")}</textarea></label>
-<p style="font-size:11px;color:var(--muted);margin:0 0 6px">Bis zu 4 Aussagen, jeweils als richtig oder falsch markieren. Nur „alles richtig" zählt als bestanden.</p>
- ${[0,1,2,3].map(j=>{const s=f.statements?.[j]||{};return`<div style="display:flex;gap:8px;align-items:center;margin-bottom:4px">
- <input id="bcStatement${i}_${j}"type="text"value="${esc(s.text||"")}"placeholder="Aussage ${j+1}${j>1?" (optional)":""}"style="flex:1">
- <select id="bcStatementRichtig${i}_${j}"style="width:90px">
- <option value="true"${s.correct?" selected":""}>richtig</option>
- <option value="false"${s.correct===false?" selected":""}>falsch</option>
- </select>
- </div>`;}).join("")}
- </div>
-
- <div id="bcOffenBereich${i}"style="display:${typ==="offen"?"block":"none"};margin-top:8px">
- <label>Erwartete Stichworte (kommagetrennt – beliebig viele, ALLE müssen in der Antwort vorkommen, damit sie als richtig gilt)<input id="bcStichworte${i}"type="text"value="${esc((f.stichworte||[]).join(", "))}"placeholder="z. B. Sozialisation, Erziehung, Werte"></label>
- </div>
- </div>`;
- }).join("")}
- <button class="primary"onclick="saveBasischeckFragen('${fach}','${wocheId}')">Basis-Check speichern</button>
- </div>`
- :!basischeckFragen.length?`<div class="empty">Für diese Woche wurde noch kein Basis-Check eingerichtet.</div>`
- :meinBasischeck?`<div class="card"style="background:${ampelFarbe(meinBasischeck.ampel)}1a;border-left:4px solid ${ampelFarbe(meinBasischeck.ampel)}">
- <strong>${meinBasischeck.richtig} von ${meinBasischeck.gesamt} richtig</strong>
- <p style="margin:6px 0 0;color:var(--muted)">${esc(basischeckAmpelText(meinBasischeck.ampel))}</p>
- </div>`
- :`<div class="form">
- ${basischeckFragen.map((f,i)=>{
- const typ=f.typ||"mc";
- return`<div class="card"style="margin-bottom:10px">
- ${typ==="kprim"?kprimFrageKopfHTML(i+1,f.text,f.vignette):`<strong style="display:block;margin-bottom:8px">${i+1}. ${esc(f.text)}</strong>`}
- ${typ==="mc"?f.optionen.map((o,j)=>`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:4px"><input type="radio"name="bcQ${i}"value="${j}"> <span>${esc(o)}</span></label>`).join(""):""}
- ${typ==="kprim"?kprimTabelleHTML(`bcKp${i}`,f.statements.map(x=>x.text)):""}
- ${typ==="offen"?`<textarea id="bcOffenAntwort${i}"rows="3"placeholder="Deine Antwort …"></textarea>`:""}
- </div>`;
- }).join("")}
- <button class="primary"onclick="submitBasischeck('${fach}','${wocheId}')">Basis-Check abgeben</button>
- </div>`}
+ ${basischeckPanelHTML(fach,wocheId,basischeckFragen,meinBasischeck)}
  </div>
 
  <div class="wd-panel"id="wdPanel_team">
@@ -22861,6 +22972,9 @@ function lsUnsicher(x){
   const an=(x.antworten||[])[i],typ=f.typ||"mc";let ok;
   if(typ==="mc")ok=an===f.richtig;
   else if(typ==="kprim"){const s=String(an||"");ok=f.statements.every((st,k)=>(s[k]==="r")===st.correct)}
+  else if(typ==="zuordnung"){const p=String(an||"").split(",");ok=(f.paare||[]).every((_,k)=>p[k]===String(k))}
+  else if(typ==="lueckentext"){const p=String(an||"").split("|");ok=(f.loesung||[]).every((w,k)=>p[k]===w)}
+  else if(typ==="reihenfolge"){const p=String(an||"").split(",");ok=(f.schritte||[]).every((_,k)=>p[k]===String(k+1))}
   else return;
   if(!ok)out.push(f.tag||(String(f.text).slice(0,45)+"…"));
  });
