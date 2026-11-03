@@ -958,5 +958,285 @@ window.KK_KARTEN=[
 "b": "Selbstwirksamkeit",
 "z": "Bandura; auch wichtig: Quellen der Selbstwirksamkeit",
 "d": "Selbstwirksamkeit meint die subjektive Überzeugung einer Person, in der Zukunft liegende, anspruchsvolle Situationen bewältigen zu können. Damit beinhaltet Selbstwirksamkeit den persönlichen Glauben eines Menschen etwas bewirken und sein Leben kontrollieren zu können."
+},
+{
+"id": "3-25",
+"lb": 3,
+"g": "Merkmale von Erziehung (und Bildung)",
+"b": "Erzieher",
+"z": "Beteiligter der Erziehung",
+"d": "Der Erzieher will Lernprozesse herbeiführen und unterstützen."
+},
+{
+"id": "3-26",
+"lb": 3,
+"g": "Merkmale von Erziehung (und Bildung)",
+"b": "Zu Erziehender",
+"z": "Beteiligter der Erziehung",
+"d": "Der zu Erziehende soll die Lernprozesse bewältigen bzw. vollbringen."
+},
+{
+"id": "3-27",
+"lb": 3,
+"g": "Merkmale von Erziehung (und Bildung)",
+"b": "Wechselspiel von Aktion und Reaktion",
+"z": "Erziehung als soziale Beziehung",
+"d": "Der Erzieher stimmt sein Handeln auf das Verhalten des zu Erziehenden ab. Der Prozess der Erziehung verändert dadurch sowohl den zu Erziehenden als auch den Erzieher selbst."
+},
+{
+"id": "3-28",
+"lb": 3,
+"g": "Merkmale von Erziehung (und Bildung)",
+"b": "Positive emotionale Beziehung",
+"z": "Erziehung als soziale Beziehung",
+"d": "Der zu Erziehende braucht von Anfang an eine positive emotionale Beziehung zum Erzieher. Davon hängt der Erfolg der Erziehung in hohem Maße ab."
+},
+{
+"id": "3-29",
+"lb": 3,
+"g": "Merkmale von Erziehung (und Bildung)",
+"b": "Symbol",
+"z": "Erziehung als soziale Kommunikation",
+"d": "Ein Symbol ist ein Zeichen (z. B. Wort, Mimik, Gestik, Körperkontakt, Musik), das für alle Beteiligten die gleiche Bedeutung hat."
+},
+{
+"id": "3-30",
+"lb": 3,
+"g": "Merkmale von Erziehung (und Bildung)",
+"b": "Symbolischer Interaktionismus",
+"z": "Erziehung als soziale Kommunikation",
+"d": "Menschen kommunizieren über Symbole, die für alle Beteiligten die gleiche Bedeutung haben. Erziehung wird so als symbolisch vermitteltes kommunikatives Handeln verstanden (Mollenhauer)."
+},
+{
+"id": "3-31",
+"lb": 3,
+"g": "Merkmale von Erziehung (und Bildung)",
+"b": "Interpretationsprozess",
+"z": "Erziehung als soziale Kommunikation (Mead)",
+"d": "Zwischen Erzieher und zu Erziehendem entsteht ein ständiger wechselseitiger Interpretationsprozess: Jede Handlung muss vom anderen gedeutet und verstanden werden."
+},
+{
+"id": "3-32",
+"lb": 3,
+"g": "Merkmale von Erziehung (und Bildung)",
+"b": "Erziehungsziel",
+"z": "Erziehung als beabsichtigte Lernhilfe",
+"d": "Das Erziehungsziel ist eine relativ dauerhafte Änderung des Verhaltens und Erlebens des zu Erziehenden. Ohne Ziel würde der Erzieher nicht mehr einwirken."
+},
+{
+"id": "3-33",
+"lb": 3,
+"g": "Merkmale von Erziehung (und Bildung)",
+"b": "Wertorientiertes Handeln",
+"z": "Erziehung als beabsichtigte Lernhilfe",
+"d": "Erzieherische Handlungen sind immer bestimmten Werten und Normen verpflichtet."
+},
+{
+"id": "3-34",
+"lb": 3,
+"g": "Merkmale von Erziehung (und Bildung)",
+"b": "Handeln",
+"z": "Erziehung als soziales Handeln",
+"d": "Handeln meint jede menschliche Aktivität, mit welcher bewusst und überlegt eine bestimmte Absicht, ein bestimmtes Ziel verfolgt wird."
+},
+{
+"id": "3-35",
+"lb": 3,
+"g": "Merkmale von Erziehung (und Bildung)",
+"b": "Soziales Handeln",
+"z": "Erziehung als soziales Handeln",
+"d": "Soziales Handeln ist bewusst und willentlich auf andere Menschen bezogen und sinnhaft am Verhalten anderer orientiert (Brezinka)."
+},
+{
+"id": "3-36",
+"lb": 3,
+"g": "Merkmale von Erziehung (und Bildung)",
+"b": "Pädagogisches Handeln",
+"z": "Erziehung als soziales Handeln",
+"d": "Pädagogisches Handeln ist eine beabsichtigte Aktivität in einer Erziehungssituation, welche ein bestimmtes Ziel erreichen will. Sein Ergebnis ist „offen“ und lässt sich nicht vorhersehen (Versuchshandeln)."
+},
+{
+"id": "3-37",
+"lb": 3,
+"g": "Merkmale von Erziehung (und Bildung)",
+"b": "Pädagogische Verantwortung",
+"z": "Erziehung als soziales Handeln",
+"d": "Meist ist das Verhältnis zwischen Erzieher und zu Erziehendem ungleich. Deshalb trägt der Erzieher die pädagogische Verantwortung und muss sich fragen, welche Folgen sein Handeln hat."
+},
+{
+"id": "3-38",
+"lb": 3,
+"g": "Erziehungsstile nach Baumrind",
+"b": "Dimensionen nach Baumrind",
+"z": "Diana Baumrind, 1960er-Jahre",
+"d": "Baumrind unterscheidet Erziehungsstile anhand der elterlichen Wärme und Responsivität sowie der elterlichen Anforderung und Kontrolle."
+},
+{
+"id": "3-39",
+"lb": 3,
+"g": "Erziehungsstile nach Baumrind",
+"b": "Responsivität (Wärme)",
+"z": "Dimension nach Baumrind",
+"d": "Wie viel emotionale Unterstützung und Zuwendung Eltern geben."
+},
+{
+"id": "3-40",
+"lb": 3,
+"g": "Erziehungsstile nach Baumrind",
+"b": "Anforderung (Kontrolle)",
+"z": "Dimension nach Baumrind",
+"d": "Wie viele Regeln und Erwartungen Eltern stellen und wie konsequent sie diese durchsetzen."
+},
+{
+"id": "3-41",
+"lb": 3,
+"g": "Erziehungsstile nach Baumrind",
+"b": "Autoritativer Erziehungsstil",
+"z": "hohe Wärme, hohe Anforderung",
+"d": "Hohe emotionale Wärme verbunden mit klaren, konsequent durchgesetzten Regeln. Eltern erklären ihre Erwartungen und beziehen das Kind in Entscheidungen ein. Gilt als besonders günstig."
+},
+{
+"id": "3-42",
+"lb": 3,
+"g": "Erziehungsstile nach Baumrind",
+"b": "Autoritärer Erziehungsstil",
+"z": "niedrige Wärme, hohe Anforderung",
+"d": "Strenge Regeln und hohe Anforderungen bei geringer emotionaler Wärme. Gehorsam wird eingefordert, ohne dass Entscheidungen erklärt werden."
+},
+{
+"id": "3-43",
+"lb": 3,
+"g": "Erziehungsstile nach Baumrind",
+"b": "Permissiver Erziehungsstil",
+"z": "hohe Wärme, niedrige Anforderung",
+"d": "Hohe Wärme, aber wenige Regeln und geringe Anforderungen. Eltern vermeiden Konflikte und setzen Grenzen selten konsequent durch."
+},
+{
+"id": "3-44",
+"lb": 3,
+"g": "Erziehungsstile nach Baumrind",
+"b": "Vernachlässigender Erziehungsstil",
+"z": "niedrige Wärme, niedrige Anforderung; ergänzt von Maccoby und Martin",
+"d": "Geringe Wärme und geringe Anforderungen: Eltern nehmen am Leben ihres Kindes kaum Anteil. Gilt als am ungünstigsten für die Entwicklung."
+},
+{
+"id": "3-45",
+"lb": 3,
+"g": "Erziehungs- und Bildungseinrichtungen",
+"b": "Familienergänzende Einrichtung",
+"z": "",
+"d": "Eine familienergänzende Einrichtung ersetzt die Familie nicht, sondern ergänzt und unterstützt die Erziehung zu Hause (z. B. Kita)."
+},
+{
+"id": "3-46",
+"lb": 3,
+"g": "Erziehungs- und Bildungseinrichtungen",
+"b": "Kinderkrippe, Kindergarten, Kinderhort",
+"z": "Kita",
+"d": "Die drei Einrichtungen einer Kita: Krippe für Kinder unter 3 Jahren, Kindergarten für etwa 3 bis 6 Jahre, Hort für Schulkinder nach dem Unterricht."
+},
+{
+"id": "3-47",
+"lb": 3,
+"g": "Erziehungs- und Bildungseinrichtungen",
+"b": "Träger",
+"z": "",
+"d": "Der Träger ist die Organisation, die einen Kindergarten betreibt und verantwortet. Es gibt freie, öffentliche und sonstige Träger."
+},
+{
+"id": "3-48",
+"lb": 3,
+"g": "Erziehungs- und Bildungseinrichtungen",
+"b": "Freie und öffentliche Träger",
+"z": "Träger",
+"d": "Freie Träger (vor allem Caritas und Diakonie) stellen die meisten Kindergärten, öffentliche Träger (z. B. Kommunen) etwa 30 %."
+},
+{
+"id": "3-49",
+"lb": 3,
+"g": "Erziehungs- und Bildungseinrichtungen",
+"b": "Subsidiaritätsprinzip",
+"z": "Träger",
+"d": "Öffentliche Träger gründen erst dann selbst einen Kindergarten, wenn kein freier Träger bereitsteht."
+},
+{
+"id": "3-50",
+"lb": 3,
+"g": "Erziehungs- und Bildungseinrichtungen",
+"b": "Kinder- und Jugendhilfegesetz (KJHG)",
+"z": "Rechtsgrundlage",
+"d": "Gilt seit 1990/91 und wurde als Sozialgesetzbuch VIII in das Sozialrecht eingefügt."
+},
+{
+"id": "3-51",
+"lb": 3,
+"g": "Der Bayerische Bildungs- und Erziehungsplan (BayBEP)",
+"b": "BayBEP",
+"z": "",
+"d": "Der Bayerische Bildungs- und Erziehungsplan ist ein Orientierungsrahmen für Bildung in bayerischen Kitas von der Geburt bis zur Einschulung (kein Stundenplan)."
+},
+{
+"id": "3-52",
+"lb": 3,
+"g": "Der Bayerische Bildungs- und Erziehungsplan (BayBEP)",
+"b": "Ko-Konstruktion",
+"z": "Bildungsverständnis im BayBEP",
+"d": "Das Kind ist aktiver Gestalter seiner Bildung und lernt von Geburt an mit anderen."
+},
+{
+"id": "3-53",
+"lb": 3,
+"g": "Der Bayerische Bildungs- und Erziehungsplan (BayBEP)",
+"b": "Aufbau eines Bildungsbereichs",
+"z": "",
+"d": "Leitgedanken (Warum wichtig?) → Bildungs- und Erziehungsziele (Was soll das Kind können?) → Anregungen und Beispiele zur Umsetzung (Wie gelingt das im Alltag?)."
+},
+{
+"id": "3-54",
+"lb": 3,
+"g": "Der Bayerische Bildungs- und Erziehungsplan (BayBEP)",
+"b": "Digitale Kompetenz",
+"z": "BayBEP Kap. 7.4",
+"d": "Die „vierte Kulturtechnik“ neben Lesen, Schreiben und Rechnen. Leitziel ist ein kreativer, kritischer und sicherer, also mündiger Umgang mit digitalen Medien."
+},
+{
+"id": "3-55",
+"lb": 3,
+"g": "Der Bayerische Bildungs- und Erziehungsplan (BayBEP)",
+"b": "Primat der Pädagogik",
+"z": "Digitale Medien",
+"d": "Nicht die Technik bestimmt die Pädagogik, sondern die Technik wird in den Dienst der Pädagogik gestellt."
+},
+{
+"id": "3-56",
+"lb": 3,
+"g": "Der Bayerische Bildungs- und Erziehungsplan (BayBEP)",
+"b": "Bildung für nachhaltige Entwicklung (BNE)",
+"z": "BayBEP Kap. 7.7 Umwelt",
+"d": "Umweltbildung denkt nach vorne und verbindet Ökologie, Ökonomie und Soziales, damit auch künftige Generationen gut leben können."
+},
+{
+"id": "3-57",
+"lb": 3,
+"g": "Der Bayerische Bildungs- und Erziehungsplan (BayBEP)",
+"b": "Gesundheit (WHO)",
+"z": "BayBEP Kap. 7.11",
+"d": "Gesundheit ist ein Zustand von körperlichem, seelischem, geistigem und sozialem Wohlbefinden, mehr als das Fehlen von Krankheit."
+},
+{
+"id": "3-58",
+"lb": 3,
+"g": "Der Bayerische Bildungs- und Erziehungsplan (BayBEP)",
+"b": "Lebenskompetenzen",
+"z": "Suchtprävention",
+"d": "Selbstwahrnehmung, Einfühlungsvermögen, Umgang mit Stress und Gefühlen, Kommunikation und Problemlösen. Sie stärken Kinder und schützen sucht(mittel)unspezifisch vor Sucht."
+},
+{
+"id": "3-59",
+"lb": 3,
+"g": "Der Bayerische Bildungs- und Erziehungsplan (BayBEP)",
+"b": "Querschnittsbereich",
+"z": "BayBEP Kap. 7.7",
+"d": "Umweltbildung überschneidet sich mit anderen Bereichen wie Werteorientierung, Naturwissenschaften, Ästhetik, Bewegung und Gesundheit."
 }
 ];

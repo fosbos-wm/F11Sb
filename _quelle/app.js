@@ -5598,7 +5598,7 @@ async function kwBausteinWahl(themaId){
  const FARBE={selbstlern:"#1f8ea3",kprim:"#e08a2e",rallye:"#8460b8",fachaufsatz:"#4f9a35",apt:"#3a7fd0",stunde:"#d4577f",einfuehrung:"#16907a",projekt:"#6b7a8c"};
  const karte=(typ,titel,text,btn,extra)=>`<button type="button" class="bw-k" data-typ="${typ}" style="--k:${FARBE[typ]||"#4a90d9"}"${extra||""}><span class="bw-t"><b>${esc(titel)}</b><small>${esc(text)}</small></span><span class="bw-b">${esc(btn||"Einplanen")}</span></button>`;
  const kursKarte=(ein&&!ein.entwurf)?karte("selbstlern",ein.titel||"Selbstlernkurs",`Selbstlernkurs zu diesem Thema${ein.aufgaben?" · "+ein.aufgaben+" Aufgaben":""}`,"Einplanen",` data-kurs="ea:${esc(themaId)}"`):"";
- const faKarte=karte("fachaufsatz","Fachaufsatz-Training",`${(fa||[]).length} Übungen, nach Lernbereich und Thema geordnet. ${mine.length?kern.length+" passen zu diesem Thema.":"Wähle die passenden aus."}`,"Auswählen");
+ const faKarte=karte("fachaufsatz","Übungen, Spiele und Fachaufsatz-Training",`Fachaufsatz-Übungen, Zuordnung (Ziehen), Memory, Blockfall, Lückentext, Karteikarten – nach Lernbereich geordnet.`,"Auswählen");
  const T=k=>PPM_TYPEN[k];
  const einfach=(k,txt)=>karte(k,T(k).name,txt||T(k).text);
  modal(`<button class="modal-close" onclick="closeModal()">×</button>
@@ -22933,7 +22933,8 @@ async function renderKwProjekt(){
 function kwDateiHTML(titel,url,id,wid){
  const del=isTeacher()&&id?`<button type="button" class="kw-del" data-kw="matweg" data-id="${esc(id)}" data-w="${esc(wid)}" aria-label="Löschen">×</button>`:"";
  let a;
- if(String(url||"").startsWith("fa:"))a=`<button type="button" class="kw-datei" data-kw="faueb" data-id="${esc(url.slice(3))}"><span>${esc(titel)}</span><small>Übung öffnen</small></button>`;
+ if(/^(uebungsbausteine|karteikarten)\//.test(String(url||"")))a=`<a class="kw-datei" href="${esc(url)}" target="_blank" rel="noopener"><span>${esc(titel)}</span><small>${/^karteikarten/.test(url)?"Karteikarten öffnen":"Übung starten"}</small></a>`;
+ else if(String(url||"").startsWith("fa:"))a=`<button type="button" class="kw-datei" data-kw="faueb" data-id="${esc(url.slice(3))}"><span>${esc(titel)}</span><small>Übung öffnen</small></button>`;
  else if(String(url||"").startsWith("board:"))a=`<button type="button" class="kw-datei" data-kw="board" data-id="${esc(url.slice(6))}"><span>${esc(titel)}</span><small>Tafel öffnen</small></button>`;
  else a=`<a class="kw-datei" href="${esc(url||"#")}" target="_blank" rel="noopener"><span>${esc(titel)}</span><small>${/^https?:\/\/[^/]*firebasestorage/.test(url||"")?"Datei":"Link"} öffnen</small></a>`;
  return`<div class="kw-dz">${a}${del}</div>`;
@@ -23278,32 +23279,55 @@ async function kwFaUebungOeffnen(uid){
 }
 window.kwFaUebungOeffnen=kwFaUebungOeffnen;
 // Übungen (Fachaufsatz-Training) für ein Thema auswählen: nach Lernbereichen geordnet, ohne Termin und Dauer.
+const KW_KK={pp04:"Merkmale von Erziehung (und Bildung)",pp05:"Erziehungsstile nach Baumrind",pp07:"Der Bayerische Bildungs- und Erziehungsplan (BayBEP)"};
+async function kwUbKatalog(){try{const r=await fetch("uebungsbausteine/stationen/katalog.json",{cache:"no-cache"});return r.ok?await r.json():[]}catch(e){return[]}}
+function kwWorte(t){return String(t||"").toLowerCase().replace(/[^a-zäöüß ]/g," ").split(/\s+/).filter(w=>w.length>=5)}
+// Übungen, Spiele und Karteikarten für ein Thema auswählen: nach Lernbereichen geordnet, ohne Termin und Dauer.
 async function kwFaPicker(kat,themaId){
  const e=kwThemaById(themaId||activeKwThema);if(!e||!isTeacher())return;
  const ph=PROJEKT_PHASEN.find(p=>p.id===e.phase);
- const [alle,vorh]=await Promise.all([faLaden(),getDocs(query(collection(db,"lehrplanMaterialien"),where("wocheId","==",e.id))).then(sn=>sn.docs.map(d=>d.data())).catch(()=>[])]);
+ const [alle,vorh,ub]=await Promise.all([faLaden(),getDocs(query(collection(db,"lehrplanMaterialien"),where("wocheId","==",e.id))).then(sn=>sn.docs.map(d=>d.data())).catch(()=>[]),kwUbKatalog()]);
  const schon=new Set(vorh.filter(x=>String(x.url||"").startsWith("fa:")).map(x=>x.url.slice(3)));
+ const schonUrl=new Set(vorh.map(x=>x.url));
  const kopf=g=>{const t=kwThemaById(g);return t?`Nr. ${t.nr} · ${kwKurz(t)}`:`Weiteres Thema: ${(alle.find(u=>u.thema===g)||{}).zusatz||g}`};
  const zeile=u=>`<label class="check"><input type="checkbox" class="kwFaCb" value="${esc(u.id)}"${schon.has(u.id)?" checked disabled":(u.thema===e.id&&!u.zusatz?" checked":"")}> <span><b>${esc(u.titel)}</b> <small>${[u.zusatz?esc(u.zusatz):"",schon.has(u.id)?"schon hinzugefügt":""].filter(Boolean).join(" · ")}</small></span></label>`;
+ // Spiele und Übungsbausteine (uebungsbausteine/stationen/katalog.json), Zuordnung zum Thema über gemeinsame Wörter
+ const ew=new Set(kwWorte(e.thema));
+ const ubThemen=n=>[...new Set(ub.filter(x=>(x.pfad||[])[0]==="LB "+n).map(x=>x.thema))];
+ const passt=t=>kwWorte(t).some(w=>ew.has(w));
+ const ubZeile=x=>{const url=`uebungsbausteine/station.html?s=${x.id}`,da=schonUrl.has(url);return`<label class="check"><input type="checkbox" class="kwUbCb" value="${esc(x.id)}" data-st="${esc(x.stufe||"uebung")}"${da?" checked disabled":""}> <span><b>${esc(x.titel)}</b> <small>${[(x.pfad||[]).slice(-1)[0]||"",x.stufe==="vertiefung"?"Vertiefung":"",da?"schon hinzugefügt":""].filter(Boolean).map(esc).join(" · ")}</small></span></label>`};
+ const kkGr=KW_KK[e.id];
  const lbGr=n=>{
-  const l=alle.filter(u=>u.lb===n);if(!l.length)return"";
+  const l=alle.filter(u=>u.lb===n),ut=ubThemen(n);if(!l.length&&!ut.length)return"";
   const gr=[...new Set(l.map(u=>u.thema))].sort((a,b)=>(a===e.id?-1:b===e.id?1:0));
   const lt=(PROJEKT_PHASEN.find(p=>p.lbNum===n)||{}).lbTitel||"";
-  return`<details class="fa-lbgr kw-fa-lb" data-lb="${n}"${n===ph.lbNum?" open":""}><summary><b>Lernbereich ${n}</b> ${esc(lt)}<small>${l.length} Übungen</small></summary>${gr.map(g=>`<div class="kw-fa-gr" style="--k:#4f9a35"><b class="fa-lbkopf">${esc(kopf(g))}</b>${l.filter(u=>u.thema===g).map(zeile).join("")}</div>`).join("")}</details>`;
+  const kk=n===ph.lbNum||true?(()=>{const url=`karteikarten/index.html?lb=${n}`+(n===ph.lbNum&&kkGr?`&thema=${encodeURIComponent(kkGr)}`:"");const da=schonUrl.has(url);return`<label class="check"><input type="checkbox" class="kwKkCb" value="${esc(url)}" data-t="${esc(`LB ${n} · ${n===ph.lbNum&&kkGr?kkGr:"Alle Themen"} · Karteikarten`)}"${da?" checked disabled":""}> <span><b>${esc(`LB ${n} · ${n===ph.lbNum&&kkGr?kkGr:"Alle Themen"} · Karteikarten`)}</b> <small>${da?"schon hinzugefügt":"Begriffe und Definitionen zum Üben"}</small></span></label>`})():"";
+  const ubHtml=ut.sort((a,b)=>(n===ph.lbNum?(passt(b)-passt(a)):0)).map(t=>`<div class="kw-fa-gr" style="--k:#8460b8"><b class="fa-lbkopf">Spiele und Übungen: ${esc(t)}</b>${ub.filter(x=>(x.pfad||[])[0]==="LB "+n&&x.thema===t).map(ubZeile).join("")}</div>`).join("");
+  return`<details class="fa-lbgr kw-fa-lb" data-lb="${n}"${n===ph.lbNum?" open":""}><summary><b>Lernbereich ${n}</b> ${esc(lt)}<small>${l.length} Übungen · ${ub.filter(x=>(x.pfad||[])[0]==="LB "+n).length} Spiele</small></summary>
+   ${gr.length?`<h4 class="kw-fa-h">Fachaufsatz-Training</h4>`:""}${gr.map(g=>`<div class="kw-fa-gr" style="--k:#4f9a35"><b class="fa-lbkopf">${esc(kopf(g))}</b>${l.filter(u=>u.thema===g).map(zeile).join("")}</div>`).join("")}
+   ${ut.length?`<h4 class="kw-fa-h">Spiele, Zuordnungen und Vertiefungen</h4>${ubHtml}`:""}
+   <h4 class="kw-fa-h">Lernen mit Karteikarten</h4><div class="kw-fa-gr" style="--k:#e08a2e">${kk}</div></details>`;
  };
- modal(`<button class="modal-close" onclick="closeModal()">×</button><div class="kicker">${esc(kwKurz(e)).toUpperCase()}</div><h2>Fachaufsatz-Training auswählen</h2>
-  <p style="color:var(--muted);margin:0 0 8px">Kreuze die Übungen an, die bei diesem Thema erscheinen sollen. Sortiert nach Lernbereich und Thema.</p>
+ modal(`<button class="modal-close" onclick="closeModal()">×</button><div class="kicker">${esc(kwKurz(e)).toUpperCase()}</div><h2>Übungen und Vertiefungen auswählen</h2>
+  <p style="color:var(--muted);margin:0 0 8px">Kreuze an, was bei diesem Thema erscheinen soll: Fachaufsatz-Übungen, Spiele (Zuordnung, Memory, Blockfall, Lückentext, Theorievergleich) und Karteikarten. Sortiert nach Lernbereich.</p>
   <div class="form kw-fa-pick">${[1,2,3,4].map(lbGr).join("")||`<div class="kw-leer">Noch keine Übungen vorhanden.</div>`}
   ${kat?`<button type="button" class="text-button" id="kwFaDatei">Stattdessen eine eigene Datei oder einen Link hinzufügen</button>`:""}
   <div class="form-actions"><button class="secondary" onclick="closeModal()">Abbrechen</button><button class="primary" id="kwFaSave">Hinzufügen</button></div></div>`);
  if(kat)$("kwFaDatei").onclick=()=>kwMatFormDatei(kat);
  $("kwFaSave").onclick=async()=>{
   const ids=[...document.querySelectorAll(".kwFaCb:checked:not(:disabled)")].map(c=>c.value);
-  if(!ids.length){toast("Bitte mindestens eine Übung ankreuzen.");return}
+  const ubs=[...document.querySelectorAll(".kwUbCb:checked:not(:disabled)")].map(c=>({id:c.value,st:c.dataset.st}));
+  const kks=[...document.querySelectorAll(".kwKkCb:checked:not(:disabled)")].map(c=>({url:c.value,t:c.dataset.t}));
+  const n=ids.length+ubs.length+kks.length;
+  if(!n){toast("Bitte mindestens einen Eintrag ankreuzen.");return}
+  const basis={wocheId:e.id,fach:"paedagogik",dateiName:"",createdBy:currentUser.uid};
   try{
    for(const id of ids){const u=alle.find(x=>x.id===id);const k=kat||(u.zusatz==="Vertiefung"?"vertiefung1":"uebung");
-    await addDoc(collection(db,"lehrplanMaterialien"),{wocheId:e.id,fach:"paedagogik",kategorie:k,titel:u.titel,url:"fa:"+id,dateiName:"",createdBy:currentUser.uid,createdAt:serverTimestamp()})}
-   closeModal();toast(ids.length===1?"Übung hinzugefügt.":ids.length+" Übungen hinzugefügt.");render();
+    await addDoc(collection(db,"lehrplanMaterialien"),{...basis,kategorie:k,titel:u.titel,url:"fa:"+id,createdAt:serverTimestamp()})}
+   for(const x of ubs){const kt=ub.find(y=>y.id===x.id);const k=kat||(x.st==="vertiefung"?"vertiefung1":"uebung");
+    await addDoc(collection(db,"lehrplanMaterialien"),{...basis,kategorie:k,titel:kt.titel,url:`uebungsbausteine/station.html?s=${x.id}`,createdAt:serverTimestamp()})}
+   for(const x of kks)await addDoc(collection(db,"lehrplanMaterialien"),{...basis,kategorie:kat||"uebung",titel:x.t,url:x.url,createdAt:serverTimestamp()});
+   closeModal();toast(n===1?"Hinzugefügt.":n+" Einträge hinzugefügt.");render();
   }catch(err){console.error(err);toast("Konnte nicht gespeichert werden.")}
  };
 }
