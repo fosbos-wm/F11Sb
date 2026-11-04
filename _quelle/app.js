@@ -4582,7 +4582,7 @@ const PP12_PHASEN={
   was:"Ergebnisse werden (schul-)öffentlich gezeigt. Danach reflektieren alle über Arbeitsprozess, Ergebnis, Zusammenarbeit und entdeckte Stärken.",
   rolle:"Einschätzer:in und Feedbackgeber:in.",ziel:"Ergebnisse zeigen, Zuwachs sichtbar machen und über das eigene Lernen nachdenken.",
   fuerSchueler:"Du zeigst, was du kannst, und denkst über dein Lernen nach.",
-  tools:[["Fachaufsatz-Training","fachaufsatz"],["Lernimpulse","impulse"]]}
+  tools:[["Fachaufsatztraining","fachaufsatz"],["Lernimpulse","impulse"]]}
 };
 const PP12_UDL={
  W:{name:"Warum und Wollen",col:"#2e7d4f",leit:"Engagement (UDL 7–9)",frage:"Können Lernende wählen, und sehen sie, warum das für sie zählt?",bsp:"Fallvignette aus Kita oder Wohngruppe; Wahl zwischen Check-out, Whiteboard und Fachaufsatz."},
@@ -4958,7 +4958,7 @@ function ppNaechsterSchrittHTML(fortschrittMap,heute){
 const PPM_TYPEN={
  projekt:{icon:"",name:"Ein Projekt durchführen",kurz:"Projekt",art:"Projekt",text:"Team-Projekt mit Meilensteinen anlegen."},
  stunde:{icon:"",name:"Unterrichtsstunde nach dem Deeper-Learning-Konzept",kurz:"Stunde",art:"Deeper-Learning-Einheit",text:"Mit Digitaler Tafel, Material (PDF, Film, Audio, Bilder, Links) und einem Check-out mit offener Frage."},
- apt:{icon:"",name:"Abschlussprüfungstraining",kurz:"Prüfungstraining",art:"Abschlussprüfungstraining",text:"Prüfungsfrage, relevanter Inhalt, Bearbeitung durch die Schüler:innen und Vergleich mit der Lösung."},
+ apt:{icon:"",name:"Fachaufsatztraining",kurz:"Fachaufsatztraining",art:"Fachaufsatztraining",text:"Prüfungsfrage, relevanter Inhalt, Bearbeitung durch die Schüler:innen und Vergleich mit der Lösung."},
  kprim:{icon:"",name:"K-Prim-Aufgabentest",kurz:"K-Prim-Test",art:"K-Prim-Aufgabensatz",text:"Check-out mit K-Prim-Aufgaben, automatisch ausgewertet."},
  selbstlern:{icon:"",name:"Selbstlernkurs",kurz:"Selbstlernkurs",art:"Selbstlernkurs",text:"Schüler:innen bearbeiten den Kurs selbstständig von A bis Z."},
  experiment:{icon:"",name:"Experiment (interaktive Einheit)",kurz:"Experiment",art:"Experiment",text:"„Das Experiment“ als interaktive Einheit. Du wählst selbst, welche Teile dabei sind."},
@@ -5595,10 +5595,10 @@ async function kwBausteinWahl(themaId){
  const kern=mine.filter(u=>!u.zusatz),mehr=mine.filter(u=>u.zusatz);
  const lbAlle=(fa||[]).filter(u=>u.lb===ph.lbNum&&!u.zusatz);
  const min=l=>l.reduce((x,u)=>x+(u.minuten||0),0);
- const FARBE={selbstlern:"#1f8ea3",kprim:"#e08a2e",rallye:"#8460b8",fachaufsatz:"#4f9a35",apt:"#3a7fd0",stunde:"#d4577f",einfuehrung:"#16907a",projekt:"#6b7a8c"};
+ const FARBE={selbstlern:"#1f8ea3",kprim:"#e08a2e",rallye:"#8460b8",uebung:"#4f9a35",fachaufsatz:"#2f7d32",apt:"#3a7fd0",stunde:"#d4577f",einfuehrung:"#16907a",projekt:"#6b7a8c"};
  const karte=(typ,titel,text,btn,extra)=>`<button type="button" class="bw-k" data-typ="${typ}" style="--k:${FARBE[typ]||"#4a90d9"}"${extra||""}><span class="bw-t"><b>${esc(titel)}</b><small>${esc(text)}</small></span><span class="bw-b">${esc(btn||"Einplanen")}</span></button>`;
  const kursKarte=(ein&&!ein.entwurf)?karte("selbstlern",ein.titel||"Selbstlernkurs",`Selbstlernkurs zu diesem Thema${ein.aufgaben?" · "+ein.aufgaben+" Aufgaben":""}`,"Einplanen",` data-kurs="ea:${esc(themaId)}"`):"";
- const faKarte=karte("fachaufsatz","Übungen, Spiele und Fachaufsatz-Training",`Fachaufsatz-Übungen, Zuordnung (Ziehen), Memory, Blockfall, Lückentext, Karteikarten – nach Lernbereich geordnet.`,"Auswählen");
+ const faKarte=karte("fachaufsatz","Fachaufsatztraining",`Alle Fachaufsätze aus Abschlussprüfungen (Lernbereich 1 bis 4) mit ganzem Fall, Zeilennummern, Themafrage und Lösung zum Einblenden.`,"Auswählen");
  const T=k=>PPM_TYPEN[k];
  const einfach=(k,txt)=>karte(k,T(k).name,txt||T(k).text);
  modal(`<button class="modal-close" onclick="closeModal()">×</button>
@@ -5607,16 +5607,17 @@ async function kwBausteinWahl(themaId){
   <div class="bw">
    <h3 class="bw-h" style="--k:#1f8ea3">Üben und Vertiefen</h3>
    ${kursKarte}${einfach("kprim","Kurzer Test mit K-Prim-Aufgaben, automatisch ausgewertet.")}${einfach("rallye","Stationen mit Aufgaben, einzeln oder im Team, mit Punkten.")}
+   ${karte("uebung","Übungen und Spiele","Zuordnung (Ziehen), Memory, Blockfall, Lückentext, Karteikarten – nach Lernbereich geordnet.","Auswählen")}
    <h3 class="bw-h" style="--k:#4f9a35">Fachaufsatz</h3>
    ${faKarte}
-   ${einfach("apt","Prüfungsfrage, Bearbeitung und Vergleich mit der Lösung.")}
    <h3 class="bw-h" style="--k:#d4577f">Weitere Bausteine</h3>
-   ${einfach("stunde","Digitale Tafel, Material und Check-out.")}${einfach("einfuehrung")}${einfach("selbstlern","Beliebigen Selbstlernkurs auswählen.")}${einfach("projekt","Team-Projekt mit Meilensteinen.")}
+   ${einfach("selbstlern","Beliebigen Selbstlernkurs auswählen.")}${einfach("projekt","Team-Projekt mit Meilensteinen.")}
   </div>
   <div class="form-actions"><button class="secondary" type="button" onclick="closeModal()">Abbrechen</button></div>`);
  document.querySelectorAll(".bw-k").forEach(b=>b.onclick=async()=>{
   const typ=b.dataset.typ;
-  if(typ==="fachaufsatz"){await kwFaPicker(null,themaId);return}
+  if(typ==="uebung"){await kwFaPicker(null,themaId,"spiele");return}
+  if(typ==="fachaufsatz"){await kwFaPicker(null,themaId,"fa");return}
   window.__kwThemaNeu=b.dataset.ohnethema?null:themaId;
   await ppmDialog(null,typ,woche,{einfach:true,lb:ph.lbNum,themaTitel:kwKurz(e),kurs:b.dataset.kurs||""});
  });
@@ -12254,7 +12255,7 @@ async function openWocheDetail(fach,wocheId,startTabOverride){
  ${p.dateiUrl?dateiEmbedHTML(p.dateiUrl,p.dateiName):""}
  </div>`).join("")||`<div class="empty">Noch keine Lernprodukte hochgeladen.</div>`}</div>
  <p style="font-size:11px;color:var(--muted);margin-top:12px">Zum Erstellen deines Produkts:</p>
- ${miniToolRow([["🔗","Lernressourcen","ressourcen"],["🤖","KI zum Lernen","ki-lernen"],["✍️","Fachaufsatz-Training","fachaufsatz"]])}
+ ${miniToolRow([["🔗","Lernressourcen","ressourcen"],["🤖","KI zum Lernen","ki-lernen"],["✍️","Fachaufsatztraining","fachaufsatz"]])}
  <div class="form-actions"style="margin-top:10px;flex-wrap:wrap">
  <input id="produktTitel"type="text"placeholder="Titel des Lernprodukts"style="flex:1;min-width:140px">
  <input id="produktInhalt"type="text"placeholder="Link oder kurze Beschreibung (optional)"style="flex:1;min-width:160px">
@@ -12419,7 +12420,7 @@ async function renderLernwerkstatt(){
    [" ","Lernstandsmessung","Kurz prüfen: Wo stehe ich und was ist mein nächster Schritt?","lernstand"]
   ]},
   {title:"Üben und festigen",sub:"Ich will üben und mich auf Prüfungen vorbereiten.",color:"#3fa66a",items:[
-   [" ","Fachaufsatz-Training","Fachaufsatz Pädagogik/Psychologie an echten Prüfungsaufgaben üben.","fachaufsatz"],
+   [" ","Fachaufsatztraining","Fachaufsatz Pädagogik/Psychologie an echten Prüfungsaufgaben üben.","fachaufsatz"],
    [" ","Zuordnungsübungen","Begriff und Erklärung zuordnen, per Knopfdruck selbst überprüfen.","zuordnung"],
    [" ","Lern-Werkzeuge","Karteikarten, Fokus-Timer und Glossar zum selbstständigen Lernen.","lernwerkzeuge"],
    [" ","Lernmethoden","Planung, Lernen, Zusammenarbeit und Reflexion.","methoden"],
@@ -17099,7 +17100,7 @@ function essayCaseTileHTML(c){
  const farbe=LERNBEREICH_FARBEN[essayLernbereichNummer(c.lernbereich)]?.border||"#b8c4cc";
  return`<div class="card tile"style="cursor:pointer;text-align:left;border-left:4px solid ${farbe}"onclick="openEssayCase('${c.id}')">
  <strong>${esc(c.title||"Aufgabe")}</strong>
- <small>${esc(c.quelle||"")||"Fachaufsatz-Training"}</small>
+ <small>${esc(c.quelle||"")||"Fachaufsatztraining"}</small>
  </div>`;
 }
 
@@ -17107,7 +17108,7 @@ async function renderFachaufsatzUebersicht(){
  const cases=await getEssayCases();
  const grouped=essayLernbereiche.map(([code,label])=>({code,label,cases:cases.filter(c=>c.lernbereich===code)})).filter(g=>g.cases.length);
  const ungrouped=cases.filter(c=>!c.lernbereich||!essayLernbereiche.some(l=>l[0]===c.lernbereich));
- return`${pageHead("SELBSTSTÄNDIG LERNEN","Fachaufsatz-Training","Fachaufsatz in Pädagogik/Psychologie an echten Prüfungsaufgaben üben.",`<button class="secondary"onclick="go('lernwerkstatt')">← Lernwerkstatt</button>
+ return`${pageHead("SELBSTSTÄNDIG LERNEN","Fachaufsatztraining","Fachaufsatz in Pädagogik/Psychologie an echten Prüfungsaufgaben üben.",`<button class="secondary"onclick="go('lernwerkstatt')">← Lernwerkstatt</button>
  ${isTeacher()?`<button class="primary"onclick="openEssayCaseForm()">＋ Neue Aufgabe</button>`:""}`)}
  <div class="notice"><strong>So funktioniert's:</strong><p style="margin-bottom:0">Jede Aufgabe basiert auf einer echten alten Prüfungs- oder Schulaufgabe: 1. Aufgabenstellung lesen, 2. Theorie zur Beantwortung lesen, 3. im Antwortraum deinen Fachaufsatz schreiben, danach die Erfolgskriterien nach dem echten Bewertungsbogen selbst ankreuzen, optional per fobizz-Assistent eine schnelle KI-Vorkorrektur holen und bei Bedarf zur Lehrkraft zur Korrektur einreichen. Deine Übungstexte sind privat – nur du selbst und Lehrkräfte sehen sie, nicht deine Mitschüler:innen.</p></div>
  <div style="display:flex;gap:8px;flex-wrap:wrap;margin:16px 0">
@@ -17431,13 +17432,13 @@ async function downloadEssayPDF(caseId){
  </div>`;
  openToolPrintWindow(
  "Fachaufsatz – "+(c.title||"Aufgabe"),
- body,"F11Sb · Fachaufsatz-Training"+(c.quelle?" · "+c.quelle:"")
+ body,"F11Sb · Fachaufsatztraining"+(c.quelle?" · "+c.quelle:"")
  );
  }catch(e){console.error("Fachaufsatz PDF:",e);toast("Der Aufsatz konnte nicht als PDF geöffnet werden.")}
 }
 
 // ---- Kleine, generische TaskCard-Link-Ablage (aktuell nur für den
-// fobizz-Assistenten im Fachaufsatz-Training genutzt) ----------------------
+// fobizz-Assistenten im Fachaufsatztraining genutzt) ----------------------
 async function ladeTaskcardLinks(){
  try{
   const s=await getDocs(collection(db,"taskcardLinks"));
@@ -22813,7 +22814,7 @@ const KW_KAT=[
  {key:"tafel",label:"Digitale Tafeln",hint:"Tafelbilder zur Stunde",board:true},
  {key:"lernuebersicht",label:"Lernübersichten",hint:"Das Wichtigste auf einen Blick",board:true}
 ];
-const KW_BAUSTEINE={selbstlern:["Selbstlernkurs","slk"],stunde:["Deeper-Learning-Einheit","std"],rallye:["Lernrallye","ral"],kprim:["KPrim-Test / Check-out","chk"],apt:["Prüfungstraining","ueb"],fachaufsatz:["Fachaufsatz-Übung","ueb"],einfuehrung:["Einführung","slk"]};
+const KW_BAUSTEINE={selbstlern:["Selbstlernkurs","slk"],stunde:["Deeper-Learning-Einheit","std"],rallye:["Lernrallye","ral"],kprim:["KPrim-Test / Check-out","chk"],apt:["Fachaufsatztraining","ueb"],fachaufsatz:["Fachaufsatz-Übung","ueb"],einfuehrung:["Einführung","slk"]};
 function kwKurz(e){return String(e.thema||"").split(":")[0].replace(/\s*\(.*\)\s*$/,"")}
 function kwThemenVonPhase(ph){return PP_EINHEITEN.filter(e=>e.phase===ph.id)}
 function kwThemaById(id){return PP_EINHEITEN.find(e=>e.id===id)||null}
@@ -23278,12 +23279,13 @@ async function kwFaUebungOeffnen(uid){
  modal(`<button class="modal-close" onclick="closeModal()">×</button><div class="kicker">ÜBUNGSAUFGABE · LB ${u.lb}</div><h2>${esc(u.titel)}</h2><p style="color:var(--muted);margin:0 0 6px">${esc(th?kwKurz(th):(u.zusatz||""))} </p>${h.replace(/<details class="fa-ue/,'<details open class="fa-ue')}<div class="form-actions"><button class="secondary" onclick="closeModal()">Schließen</button></div>`);
 }
 window.kwFaUebungOeffnen=kwFaUebungOeffnen;
-// Übungen (Fachaufsatz-Training) für ein Thema auswählen: nach Lernbereichen geordnet, ohne Termin und Dauer.
+// Übungen (Fachaufsatztraining) für ein Thema auswählen: nach Lernbereichen geordnet, ohne Termin und Dauer.
 const KW_KK={pp04:"Merkmale von Erziehung (und Bildung)",pp05:"Erziehungsstile nach Baumrind",pp07:"Der Bayerische Bildungs- und Erziehungsplan (BayBEP)"};
 async function kwUbKatalog(){try{const r=await fetch("uebungsbausteine/stationen/katalog.json",{cache:"no-cache"});return r.ok?await r.json():[]}catch(e){return[]}}
 function kwWorte(t){return String(t||"").toLowerCase().replace(/[^a-zäöüß ]/g," ").split(/\s+/).filter(w=>w.length>=5)}
 // Übungen, Spiele und Karteikarten für ein Thema auswählen: nach Lernbereichen geordnet, ohne Termin und Dauer.
-async function kwFaPicker(kat,themaId){
+async function kwFaPicker(kat,themaId,modus){
+ const nurFa=modus==="fa",nurSp=modus==="spiele";
  const e=kwThemaById(themaId||activeKwThema);if(!e||!isTeacher())return;
  const ph=PROJEKT_PHASEN.find(p=>p.id===e.phase);
  const [alle,vorh,ub]=await Promise.all([faLaden(),getDocs(query(collection(db,"lehrplanMaterialien"),where("wocheId","==",e.id))).then(sn=>sn.docs.map(d=>d.data())).catch(()=>[]),kwUbKatalog()]);
@@ -23298,18 +23300,18 @@ async function kwFaPicker(kat,themaId){
  const ubZeile=x=>{const url=`uebungsbausteine/station.html?s=${x.id}`,da=schonUrl.has(url);return`<label class="check"><input type="checkbox" class="kwUbCb" value="${esc(x.id)}" data-st="${esc(x.stufe||"uebung")}"${da?" checked disabled":""}> <span><b>${esc(x.titel)}</b> <small>${[(x.pfad||[]).slice(-1)[0]||"",x.stufe==="vertiefung"?"Vertiefung":"",da?"schon hinzugefügt":""].filter(Boolean).map(esc).join(" · ")}</small></span></label>`};
  const kkGr=KW_KK[e.id];
  const lbGr=n=>{
-  const l=alle.filter(u=>u.lb===n),ut=ubThemen(n);if(!l.length&&!ut.length)return"";
+  const l=alle.filter(u=>u.lb===n),ut=ubThemen(n);if(nurFa?!l.length:nurSp?!ut.length:(!l.length&&!ut.length))return"";
   const gr=[...new Set(l.map(u=>u.thema))].sort((a,b)=>(a===e.id?-1:b===e.id?1:0));
   const lt=(PROJEKT_PHASEN.find(p=>p.lbNum===n)||{}).lbTitel||"";
   const kk=n===ph.lbNum||true?(()=>{const url=`karteikarten/index.html?lb=${n}`+(n===ph.lbNum&&kkGr?`&thema=${encodeURIComponent(kkGr)}`:"");const da=schonUrl.has(url);return`<label class="check"><input type="checkbox" class="kwKkCb" value="${esc(url)}" data-t="${esc(`LB ${n} · ${n===ph.lbNum&&kkGr?kkGr:"Alle Themen"} · Karteikarten`)}"${da?" checked disabled":""}> <span><b>${esc(`LB ${n} · ${n===ph.lbNum&&kkGr?kkGr:"Alle Themen"} · Karteikarten`)}</b> <small>${da?"schon hinzugefügt":"Begriffe und Definitionen zum Üben"}</small></span></label>`})():"";
   const ubHtml=ut.sort((a,b)=>(n===ph.lbNum?(passt(b)-passt(a)):0)).map(t=>`<div class="kw-fa-gr" style="--k:#8460b8"><b class="fa-lbkopf">Spiele und Übungen: ${esc(t)}</b>${ub.filter(x=>(x.pfad||[])[0]==="LB "+n&&x.thema===t).map(ubZeile).join("")}</div>`).join("");
-  return`<details class="fa-lbgr kw-fa-lb" data-lb="${n}"${n===ph.lbNum?" open":""}><summary><b>Lernbereich ${n}</b> ${esc(lt)}<small>${l.length} Übungen · ${ub.filter(x=>(x.pfad||[])[0]==="LB "+n).length} Spiele</small></summary>
-   ${gr.length?`<h4 class="kw-fa-h">Fachaufsatz-Training</h4>`:""}${gr.map(g=>`<div class="kw-fa-gr" style="--k:#4f9a35"><b class="fa-lbkopf">${esc(kopf(g))}</b>${l.filter(u=>u.thema===g).map(zeile).join("")}</div>`).join("")}
-   ${ut.length?`<h4 class="kw-fa-h">Spiele, Zuordnungen und Vertiefungen</h4>${ubHtml}`:""}
-   <h4 class="kw-fa-h">Lernen mit Karteikarten</h4><div class="kw-fa-gr" style="--k:#e08a2e">${kk}</div></details>`;
+  return`<details class="fa-lbgr kw-fa-lb" data-lb="${n}"${n===ph.lbNum||nurFa?" open":""}><summary><b>Lernbereich ${n}</b> ${esc(lt)}<small>${[nurSp?"":l.length+" Übungen",nurFa?"":ub.filter(x=>(x.pfad||[])[0]==="LB "+n).length+" Spiele"].filter(Boolean).join(" · ")}</small></summary>
+   ${gr.length&&!nurSp?`<h4 class="kw-fa-h">Fachaufsatztraining</h4>`:""}${nurSp?"":gr.map(g=>`<div class="kw-fa-gr" style="--k:#4f9a35"><b class="fa-lbkopf">${esc(kopf(g))}</b>${l.filter(u=>u.thema===g).map(zeile).join("")}</div>`).join("")}
+   ${ut.length&&!nurFa?`<h4 class="kw-fa-h">Spiele, Zuordnungen und Vertiefungen</h4>${ubHtml}`:""}
+   ${nurFa?"":`<h4 class="kw-fa-h">Lernen mit Karteikarten</h4><div class="kw-fa-gr" style="--k:#e08a2e">${kk}</div>`}</details>`;
  };
- modal(`<button class="modal-close" onclick="closeModal()">×</button><div class="kicker">${esc(kwKurz(e)).toUpperCase()}</div><h2>Übungen und Vertiefungen auswählen</h2>
-  <p style="color:var(--muted);margin:0 0 8px">Kreuze an, was bei diesem Thema erscheinen soll: Fachaufsatz-Übungen, Spiele (Zuordnung, Memory, Blockfall, Lückentext, Theorievergleich) und Karteikarten. Sortiert nach Lernbereich.</p>
+ modal(`<button class="modal-close" onclick="closeModal()">×</button><div class="kicker">${esc(kwKurz(e)).toUpperCase()}</div><h2>${nurFa?"Fachaufsatztraining auswählen":nurSp?"Übungen und Spiele auswählen":"Übungen und Vertiefungen auswählen"}</h2>
+  <p style="color:var(--muted);margin:0 0 8px">${nurFa?"Kreuze die Fachaufsätze aus Abschlussprüfungen an, die bei diesem Thema erscheinen sollen. Alle Lernbereiche sind aufgeklappt, jeder Fall hat Zeilennummern.":"Kreuze an, was bei diesem Thema erscheinen soll: "+(nurSp?"":"Fachaufsatz-Übungen, ")+"Spiele (Zuordnung, Memory, Blockfall, Lückentext, Theorievergleich) und Karteikarten."} Sortiert nach Lernbereich.</p>
   <div class="form kw-fa-pick">${[1,2,3,4].map(lbGr).join("")||`<div class="kw-leer">Noch keine Übungen vorhanden.</div>`}
   ${kat?`<button type="button" class="text-button" id="kwFaDatei">Stattdessen eine eigene Datei oder einen Link hinzufügen</button>`:""}
   <div class="form-actions"><button class="secondary" onclick="closeModal()">Abbrechen</button><button class="primary" id="kwFaSave">Hinzufügen</button></div></div>`);
