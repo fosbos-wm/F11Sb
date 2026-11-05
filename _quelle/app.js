@@ -12791,8 +12791,9 @@ async function renderWhiteboardUebersicht(modus){
  ${boards.length?"":(istTafel?`<div class="empty"><strong>Noch keine Tafel.</strong>${isTeacher()?"Lege die erste Tafel für eine Unterrichtsstunde an.":"Sobald deine Lehrkraft eine Tafel anlegt, erscheint sie hier."}</div>`:`<div class="empty"><strong>Noch kein Whiteboard.</strong>Lege das erste Whiteboard für dein Team oder ein Thema an.</div>`)}
  ${footer()}`;
 }
+let wbVonKw=false;
 function openWhiteboard(id){activeWhiteboardId=id;go("whiteboard-board")}
-function closeWhiteboard(){const art=wb&&wb.board&&wb.board.art;activeWhiteboardId=null;go(art==="tafel"?"tafel":"whiteboard")}
+function closeWhiteboard(){const art=wb&&wb.board&&wb.board.art;activeWhiteboardId=null;if(wbVonKw){wbVonKw=false;go("start");return}go(art==="tafel"?"tafel":"whiteboard")}
 let wbFormArt="",wbFormEinstieg=false;
 function openWhiteboardForm(artVorgabe){
  if(!isApproved()){toast("Nur freigeschaltete Nutzer können ein Whiteboard anlegen.");return}
@@ -12879,7 +12880,7 @@ async function renderWhiteboardBoard(){
  return`${WB_CSS}
  <div class="wb-seite">
   <div class="wb-kopf">
-   <button class="secondary"type="button"id="wbZurueck">← ${board.art==="tafel"?"Tafeln":"Whiteboards"}</button>
+   <button class="secondary"type="button"id="wbZurueck">← ${wbVonKw?"Lernlandkarte":(board.art==="tafel"?"Tafeln":"Whiteboards")}</button>${wbVonKw&&activeKwThema?`<button class="secondary"type="button"id="wbZurueckThema">← Thema</button>`:""}
    <div><h1>${esc(board.title||"Whiteboard")}${board.art==="tafel"?(board.einstieg?'<span class="wb-art-chip"style="background:#e08a1e">Einstieg</span>':'<span class="wb-art-chip">Tafel</span>'):""}</h1><small>${esc(board.description||"")||(board.art==="tafel"?"Tafel für den Unterricht":"Gemeinsame Arbeitsfläche")}</small></div>
    ${kann?`<button class="secondary"type="button"id="wbUmbenennen">Umbenennen</button>`:""}
    <button class="secondary"type="button"id="wbSchutz"hidden></button>
@@ -13976,6 +13977,7 @@ function initWhiteboardBoard(id){
  on($("wbTpl"),"click",()=>{const m=$("wbTplMenu");if(m.hidden)wbTplMenuAuf();else m.hidden=true;});
  on($("wbExport"),"click",wbExport);on($("wbExportPdf"),"click",wbExportPdf);on($("wbVoll"),"click",()=>wbVollbild());on($("wbHilfe"),"click",wbHilfe);
  on($("wbZurueck"),"click",closeWhiteboard);
+ if($("wbZurueckThema"))on($("wbZurueckThema"),"click",()=>{wbVonKw=false;activeWhiteboardId=null;go("kw-thema")});
  const un=$("wbUmbenennen");if(un)on(un,"click",async()=>{
   const n=prompt("Neuer Titel für das Whiteboard:",wb.board.title||"");if(n===null||!n.trim())return;
   try{await updateDoc(doc(db,"whiteboards",id),{title:n.trim().slice(0,120)});toast("Umbenannt.");await render();}catch(e){wbFehler(e);}
@@ -21896,6 +21898,7 @@ async function render(){
  kompetenzprofil:()=>modulePlaceholder("Kompetenzprofil"),methoden:renderLernmethoden,lernstrategien:renderLernstrategienTest,metakognition:renderMetakognition,
  lerncoaching:renderLerncoaching
  };
+ if(p!=="whiteboard-board")wbVonKw=false;
  const fn=pages[p]||renderKachelwand;
  document.querySelectorAll(".nav-link").forEach(a=>a.classList.toggle("active",
  a.dataset.page===p || (a.dataset.page==="forum" && p.startsWith("forum-")) || (a.dataset.page==="lernwerkstatt" && ["whiteboard","whiteboard-board","didaktik","tafel","fach","faecher"].includes(p))));
@@ -23350,7 +23353,7 @@ async function kwMatFormDatei(kat){
  const def=KW_KAT.find(k=>k.key===kat||(k.stufen||[]).some(s=>s[0]===kat));
  const stufe=def&&def.stufen?def.stufen.find(s=>s[0]===kat):null;
  const istBoard=!!(def&&def.board);
- let boards=[];if(istBoard){try{boards=await getCollection("whiteboards","createdAt",true,200)}catch(x){}}
+ let boards=[];if(istBoard){try{boards=await getCollection("whiteboards","createdAt",true,200);boards=def.key==="lernuebersicht"?boards.filter(b=>b.lernVorlage===true):boards.filter(b=>b.art==="tafel"&&!b.lernVorlage&&!b.lernKey)}catch(x){}}
  modal(`<button class="modal-close" onclick="closeModal()">×</button><div class="kicker">${esc(kwKurz(e)).toUpperCase()}</div><h2>${esc(def?def.label:"Datei")}${stufe?" · "+esc(stufe[1]):""} hinzufügen</h2>
   <div class="form"><label>Titel<input id="kwTitel" maxlength="120"></label>
   ${istBoard?`<label>Vorhandene Tafel wählen<select id="kwBoard"><option value="">– keine –</option>${boards.map(b=>`<option value="${esc(b.id)}">${esc(b.title||"Tafel")}</option>`).join("")}</select></label>`:""}
@@ -23395,7 +23398,7 @@ document.addEventListener("click",async ev=>{
   else if(a==="matadd")kwMatForm(b.dataset.kat);
   else if(a==="faueb")kwFaUebungOeffnen(id);
   else if(a==="matweg"){if(!confirm("Diese Datei wirklich entfernen?"))return;await deleteDoc(doc(db,"lehrplanMaterialien",id));toast("Entfernt.");render()}
-  else if(a==="board"){if(isTeacher())openWhiteboard(id);else{const s=await getDoc(doc(db,"whiteboards",id));if(s.exists()&&s.data().lernVorlage)await lbMeineKopie(id,String(s.data().title||"").replace(/\s*–\s*Lernübersicht$/,""));else openWhiteboard(id)}}
+  else if(a==="board"){wbVonKw=true;if(isTeacher())openWhiteboard(id);else{const s=await getDoc(doc(db,"whiteboards",id));if(s.exists()&&s.data().lernVorlage)await lbMeineKopie(id,String(s.data().title||"").replace(/\s*–\s*Lernübersicht$/,""));else openWhiteboard(id)}}
   else if(a==="checkin"){const e=kwThemaById(id);const fr=await getBasischeckFragen(id);if(!fr.length){toast("Für dieses Thema ist noch kein Check-In hinterlegt.");return}window.__eaRueck=null;openCheckIn(id)}
   else if(a==="alt"){const e=kwThemaById(id);e.typ==="apt"?openAptDetail(id):openWocheDetail("paedagogik",id)}
   else if(a==="ea"){window.__eaRueck=async()=>{await render()};openEinarbeitung(id)}
