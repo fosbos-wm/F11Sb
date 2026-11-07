@@ -97,3 +97,5 @@
 .ci-kopf span:nth-child(1){background:#e3f3f6;border-color:#a9d9e2}.ci-kopf span:nth-child(2){background:#fdeeda;border-color:#f3cf9f}.ci-kopf span:nth-child(3){background:#e9f4e1;border-color:#bcdba8}
 .kw-fa-h{margin:10px 12px 2px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .fa-lbgr .kw-fa-gr{margin:6px 12px}
+
+.kw-baust-btn{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
