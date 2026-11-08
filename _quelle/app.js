@@ -139,7 +139,7 @@ const DS_DATEN=[
  ["essayEntries","uid",1],["essayCases","createdBy",1],
  ["ppStundenAntworten","uid",1],["ppLernuebersicht","uid",1],["ppKursFortschritt","uid",1],
  ["ppRallyeStand","uid",1],["ppRallyeRang","uid",1],
- ["lehrplanFortschritt","uid",1],["lehrplanProdukte","uid",1],["lehrplanTeams","createdBy",1],
+ ["lehrplanFortschritt","uid",1],["ubErgebnisse","uid",1],["lehrplanProdukte","uid",1],["lehrplanTeams","createdBy",1],
  ["messages","fromUid",1],["posts","authorUid",1],["boardPosts","authorUid",1],
  ["tasks","createdBy",1],["projects","createdBy",1],["wordcloudEntries","authorUid",1],
  ["kanbanCards","createdBy",1],["checklistItems","createdBy",1],["termVotes","uid",1],
@@ -3072,10 +3072,15 @@ async function submitBasischeck(fach,wocheId){
  const gesamt=gewertet.length;
  const ampel=basischeckAmpel(richtig,gesamt);
  try{
+ const alt=await getMyBasischeckVersuch(wocheId);
+ const sicher=parseInt(document.querySelector('input[name="ciSich"]:checked')?.value,10)||0;
+ const altMs=alt&&alt.createdAt&&alt.createdAt.toMillis?alt.createdAt.toMillis():0;
+ const verlauf=[...(alt?(alt.verlauf||[{r:alt.richtig,g:alt.gesamt,s:alt.sicher||0,t:altMs}]):[]),{r:richtig,g:gesamt,s:sicher,t:Date.now()}].slice(-10);
  await setDoc(doc(db,"basischeckVersuche",`${currentUser.uid}_${wocheId}`),{
- uid:currentUser.uid,wocheId,fach,antworten:ergebnisse.map(e=>e.antwort),richtig,gesamt,ampel,
+ uid:currentUser.uid,wocheId,fach,antworten:ergebnisse.map(e=>e.antwort),richtig,gesamt,ampel,sicher,verlauf,
  name:anzeigeName(profile,currentUser),createdAt:serverTimestamp()
  });
+ delete CI_NEU[wocheId];
  toast(`${richtig} von ${gesamt} richtig.`);
  if($("ciAnsicht")){await setDoc(doc(db,"lehrplanFortschritt",`${currentUser.uid}_${wocheId}`),{uid:currentUser.uid,wocheId,fach,basischeckErledigt:true,updatedAt:serverTimestamp()},{merge:true}).catch(e=>console.error(e));ppDirty=true;await openCheckIn(wocheId);if(ampel==="gruen")showMotivationsBild(false,"lernen","bc:"+wocheId);return}
  if(lehrplanWocheById(fach,wocheId)?.typ==="apt"){await aptSetzen(wocheId,{basischeckErledigt:true},{tab:"basischeck"});return}
@@ -8206,10 +8211,14 @@ function basischeckEditorHTML(fach,wocheId,fragen){
   <button class="primary"onclick="saveBasischeckFragen('${fach}','${wocheId}')">Basis-Check speichern</button>
  </div>`;
 }
+function ciVerlaufText(x){const v=x&&x.verlauf;return v&&v.length>1?`<small>Verlauf: ${v.map(e=>e.r+"/"+e.g).join(" → ")}</small>`:""}
+const CI_NEU={};
+function ciWiederholen(wocheId){CI_NEU[wocheId]=true;openCheckIn(wocheId)}
+window.ciWiederholen=ciWiederholen;
 function basischeckPanelHTML(fach,wocheId,basischeckFragen,meinBasischeck,extraSchueler=""){
  if(isTeacher())return basischeckEditorHTML(fach,wocheId,basischeckFragen);
  if(!basischeckFragen.length)return`<div class="empty">Für diesen Inhalt wurde noch kein Basis-Check eingerichtet.</div>${extraSchueler}`;
- if(meinBasischeck){const af=ampelFarbe(meinBasischeck.ampel);return`<div class="ci-res"style="--a:${af}"><div class="ci-ring"><b>${meinBasischeck.richtig}</b><small>von ${meinBasischeck.gesamt}</small></div><div><strong>${meinBasischeck.richtig} von ${meinBasischeck.gesamt} richtig</strong><p>${esc(basischeckAmpelText(meinBasischeck.ampel))}</p></div></div>${basischeckFreiErgebnisHTML(basischeckFragen,meinBasischeck)}`}
+ if(meinBasischeck){const af=ampelFarbe(meinBasischeck.ampel);return`<div class="ci-res"style="--a:${af}"><div class="ci-ring"><b>${meinBasischeck.richtig}</b><small>von ${meinBasischeck.gesamt}</small></div><div><strong>${meinBasischeck.richtig} von ${meinBasischeck.gesamt} richtig</strong><p>${esc(basischeckAmpelText(meinBasischeck.ampel))}</p>${ciVerlaufText(meinBasischeck)}</div></div>${basischeckFreiErgebnisHTML(basischeckFragen,meinBasischeck)}<button type="button"class="secondary"onclick="ciWiederholen('${wocheId}')">Wissen erneut prüfen</button>`}
  const anz=basischeckFragen.length,min=Math.max(3,Math.round(anz*1.2));
  const ART={mc:"Auswahl",kprim:"Richtig oder falsch",offen:"Kurzantwort",zuordnung:"Zuordnen",lueckentext:"Lückentext",reihenfolge:"Reihenfolge",frei:"Freitext"};
  return`<div class="ci">
@@ -8222,6 +8231,7 @@ function basischeckPanelHTML(fach,wocheId,basischeckFragen,meinBasischeck,extraS
     ${basischeckEingabeHTML(f,i,typ)}
    </section>`;
   }).join("")}
+  <div class="ci-sich"><b>Wie sicher fühlst du dich bei diesem Thema?</b><label><input type="radio"name="ciSich"value="1"> eher unsicher</label><label><input type="radio"name="ciSich"value="2"> teils, teils</label><label><input type="radio"name="ciSich"value="3"> ziemlich sicher</label></div>
   <button class="primary ci-go"onclick="submitBasischeck('${fach}','${wocheId}')">Check-In abgeben</button>
  </div>`;
 }
@@ -8232,7 +8242,8 @@ async function openCheckIn(wocheId){
  if(!e){toast("Dieses Thema wurde nicht gefunden.");return}
  const ph=projektPhaseByWoche(wocheId);
  const c=ph?ppFarbe(ph):"#4a90d9";
- const [fragen,mein]=await Promise.all([getBasischeckFragen(wocheId).catch(()=>[]),lehrer?Promise.resolve(null):getMyBasischeckVersuch(wocheId)]);
+ const [fragen,mein0]=await Promise.all([getBasischeckFragen(wocheId).catch(()=>[]),lehrer?Promise.resolve(null):getMyBasischeckVersuch(wocheId)]);
+ const mein=CI_NEU[wocheId]?null:mein0;
  const lb=ph?`LB ${ph.lbNum}`:(e.lb||"");
  modal(`<button class="modal-close"onclick="closeModal()">×</button>
   <div id="ciAnsicht"class="ci-seite"style="--c:${c}">
@@ -23073,7 +23084,8 @@ async function renderKwProjekt(){
 function kwDateiHTML(titel,url,id,wid){
  const del=kwLehrer()&&id?`<button type="button" class="kw-del" data-kw="matweg" data-id="${esc(id)}" data-w="${esc(wid)}" aria-label="Löschen">×</button>`:"";
  let a;
- if(/^(uebungsbausteine|karteikarten)\//.test(String(url||"")))a=`<a class="kw-datei" href="${esc(url)}" target="_blank" rel="noopener"><span>${esc(titel)}</span><small>${/^karteikarten/.test(url)?"Karteikarten öffnen":"Übung starten"}</small></a>`;
+ if(/^uebungsbausteine\/station\.html\?s=/.test(String(url||""))&&!kwLehrer())a=`<button type="button" class="kw-datei" data-kw="ubopen" data-url="${esc(url)}" data-w="${esc(wid||"")}" data-t="${esc(titel)}"><span>${esc(titel)}</span><small>Übung starten (Ergebnis wird gespeichert)</small></button>`;
+ else if(/^(uebungsbausteine|karteikarten)\//.test(String(url||"")))a=`<a class="kw-datei" href="${esc(url)}" target="_blank" rel="noopener"><span>${esc(titel)}</span><small>${/^karteikarten/.test(url)?"Karteikarten öffnen":"Übung starten"}</small></a>`;
  else if(String(url||"").startsWith("fa:"))a=`<button type="button" class="kw-datei" data-kw="faueb" data-id="${esc(url.slice(3))}"><span>${esc(titel)}</span><small>Übung öffnen</small></button>`;
  else if(String(url||"").startsWith("board:"))a=`<button type="button" class="kw-datei" data-kw="board" data-id="${esc(url.slice(6))}"><span>${esc(titel)}</span><small>Tafel öffnen</small></button>`;
  else a=`<a class="kw-datei" href="${esc(url||"#")}" target="_blank" rel="noopener"><span>${esc(titel)}</span><small>${/^https?:\/\/[^/]*firebasestorage/.test(url||"")?"Datei":"Link"} öffnen</small></a>`;
@@ -23191,6 +23203,53 @@ function lsThemaDetail(id){
  ${top.length?`<div class="ls-unsbox"><b>Hier ist die Klasse noch unsicher</b><ul>${top.map(([t,n])=>`<li>${esc(t)} <small>${n} von ${cs.length}</small></li>`).join("")}</ul></div>`:(cs.length?`<div class="ls-unsbox ok"><b>Keine auffälligen Lücken</b></div>`:"")}
  <div class="kw-tabwrap"><table class="kw-tab"><thead><tr><th>Pseudonym</th><th>Ergebnis</th><th>Noch unsicher bei</th></tr></thead><tbody>${zeilen||`<tr><td>Noch keine Schüler:innen.</td></tr>`}</tbody></table></div>`);
 }
+// ---- Übungsergebnisse (Stationen) speichern ----
+let UB_CTX=null;
+function ubOeffnen(url,wid,titel){
+ UB_CTX={wid:wid||"",titel:titel||""};
+ const u=String(url||"");if(!/^uebungsbausteine\/station\.html\?s=[A-Za-z0-9_-]+/.test(u))return;
+ modal(`<button class="modal-close"onclick="closeModal()">×</button><div class="kicker">ÜBUNG</div><h2>${esc(titel||"Übung")}</h2><iframe class="ub-frame"src="${esc(u+"&app=1")}"title="Übung"allow="fullscreen"></iframe><small>Dein Ergebnis wird gespeichert und hilft deiner Lehrkraft einzuschätzen, wo du stehst. Keine Note.</small>`);
+}
+window.addEventListener("message",async e=>{
+ if(e.origin!==location.origin)return;
+ const r=e.data&&e.data.ubErgebnis;if(!r||!UB_CTX||!currentUser||kwLehrer())return;
+ const sid=String(r.sid||"").replace(/[^A-Za-z0-9_-]/g,"").slice(0,80);if(!sid)return;
+ const max=Math.max(1,Math.round(+r.max||1)),punkte=Math.max(0,Math.min(max,Math.round(+r.punkte||0)));
+ try{await addDoc(collection(db,"ubErgebnisse"),{uid:currentUser.uid,wocheId:UB_CTX.wid,stationId:sid,punkte,max,zuege:Math.max(0,Math.round(+r.zuege||0)),sekunden:Math.max(0,Math.round(+r.sekunden||0)),createdAt:serverTimestamp()});toast("Ergebnis gespeichert.")}catch(err){console.warn("Übungsergebnis:",err)}
+});
+// ---- Evidenz-Lernstand je Person × Thema ----
+const EV_ALT_TAGE=28;
+function evMs(x){const c=x&&x.createdAt;return c&&c.toMillis?c.toMillis():(x&&x.t)||0}
+function evStand(uid,wocheId,ci,ub,fort){
+ const now=Date.now(),qu=[];
+ const c=ci.find(x=>x.uid===uid&&x.wocheId===wocheId);
+ const alter=ms=>ms&&(now-ms)/864e5>EV_ALT_TAGE?0.5:1;
+ if(c&&c.gesamt>0)qu.push({q:c.richtig/c.gesamt,w:2*alter(evMs(c))});
+ const letzte={};
+ ub.filter(x=>x.uid===uid&&x.wocheId===wocheId).sort((a,b)=>evMs(a)-evMs(b)).forEach(x=>{letzte[x.stationId]=x});
+ const ul=Object.values(letzte);
+ ul.forEach(x=>qu.push({q:x.punkte/x.max,w:1*alter(evMs(x))}));
+ const f=(fort||[]).find(x=>x.uid===uid&&x.wocheId===wocheId);
+ const selbst=!!(f&&f.abgeschlossen);
+ if(!qu.length)return{ampel:null,n:0,selbst,hinweis:selbst?"nur selbst abgehakt":""};
+ const sw=qu.reduce((a,b)=>a+b.w,0),q=qu.reduce((a,b)=>a+b.q*b.w,0)/sw;
+ const ampel=q>=0.75?"gruen":q>=0.4?"orange":"rot";
+ const hin=[];
+ if(selbst&&ampel!=="gruen")hin.push("selbst „erledigt“, Messung "+(ampel==="rot"?"rot":"gelb"));
+ if(c&&c.sicher===3&&c.gesamt&&c.richtig/c.gesamt<0.5)hin.push("sehr sicher, aber viele Fehler");
+ if(c&&c.sicher===1&&c.gesamt&&c.richtig/c.gesamt>=0.75)hin.push("unterschätzt sich");
+ return{ampel,q,n:qu.length,vorlaeufig:qu.length<2,selbst,hinweis:hin.join(" · "),ub:ul.length};
+}
+function evHeatmapHTML(ci,ub,fort){
+ const themen=[1,2,3,4].flatMap(n=>lsThemenLb(n));
+ if(!themen.length||!LT.schueler.length)return"";
+ const st=LT.schueler.map(u=>({u,z:themen.map(e=>evStand(u.uid,e.id,ci,ub,fort))}));
+ const hilfe=st.map(({u,z})=>({u,rot:z.filter(x=>x.ampel==="rot").length,hin:z.filter(x=>x.hinweis&&x.ampel).length})).filter(x=>x.rot>=2||x.hin>=2).sort((a,b)=>(b.rot+b.hin)-(a.rot+a.hin)).slice(0,8);
+ const kopf=themen.map(e=>`<th title="${esc(kwKurz(e))}"><span>${esc(e.nr)}</span></th>`).join("");
+ const zeilen=st.map(({u,z})=>`<tr><th scope="row">${esc(anzeigeName(u))}</th>${z.map((x,i)=>`<td><button type="button"class="ev-z${x.vorlaeufig?" vl":""}"style="background:${x.ampel?LS_AMP[x.ampel][0]:"#E3E8EC"}"data-ls="detail"data-uid="${esc(u.uid)}"title="${esc(kwKurz(themen[i]))}: ${x.ampel?(x.n+" Messung(en)"+(x.vorlaeufig?", vorläufig":"")):"noch keine Messung"}${x.hinweis?" · "+esc(x.hinweis):""}">${x.hinweis&&x.ampel?"!":""}</button></td>`).join("")}</tr>`).join("");
+ const hb=hilfe.length?`<div class="ls-unsbox"><b>Braucht Aufmerksamkeit</b><ul>${hilfe.map(h=>`<li>${esc(anzeigeName(h.u))} <small>${h.rot} Themen rot${h.hin?`, ${h.hin} Abweichungen Selbstbild/Messung`:""}</small></li>`).join("")}</ul></div>`:`<div class="ls-unsbox ok"><b>Aktuell keine auffälligen Personen</b></div>`;
+ return`<details class="kw-card ls-lern"open><summary><b>Lernstand-Übersicht (gemessen)</b> <small>Personen × Themen, aus Check-In und Übungen</small></summary>${hb}<div class="kw-tabwrap"><table class="kw-tab ev-tab"><thead><tr><th>Pseudonym</th>${kopf}</tr></thead><tbody>${zeilen}</tbody></table></div><small>Grün ab 75 %, gelb ab 40 %, sonst rot; grau = noch keine Messung; blass = erst eine Messung (vorläufig); „!“ = Selbstbild und Messung passen nicht zusammen. Messungen älter als ${EV_ALT_TAGE} Tage zählen halb. Zelle anklicken für Details.</small></details>`;
+}
 function lsUebersichtHTML(ci,co,abgaben){
  const rows=LT.schueler.map(u=>{
   const c=ci.filter(x=>x.uid===u.uid);
@@ -23273,6 +23332,8 @@ async function renderKwCheckouts(){
  let abgaben=[];
  if(lehrer){try{abgaben=(await getDocs(collection(db,"checkoutAbgaben"))).docs.map(d=>d.data())}catch(e){}}
  LT.abgaben=abgaben;
+ let ub=[],fortAll=[];
+ if(lehrer){try{ub=(await getDocs(collection(db,"ubErgebnisse"))).docs.map(d=>d.data())}catch(e){}try{fortAll=(await getDocs(collection(db,"lehrplanFortschritt"))).docs.map(d=>d.data())}catch(e){}}
  LT.fr={};
  if(lehrer){const ids=[1,2,3,4].flatMap(n=>lsThemenLb(n).map(e=>e.id));await Promise.all(ids.map(async id=>{LT.fr[id]=await getBasischeckFragen(id)}))}
  const nav=[1,2,3,4].map(n=>{const ph=kwPhase(n),F=kwFarbe(n);return ph?`<a class="ls-nav" href="#" data-ls="sprung" data-lb="${n}" style="--c:${F.c};--bg:${F.bg};--t:${F.t}"><small>LB ${n}</small><b>${esc(ph.lbTitel)}</b></a>`:""}).join("");
@@ -23285,6 +23346,7 @@ async function renderKwCheckouts(){
   ${co?checkoutLiveBannerHTML(co):""}
   <div class="ls-navwrap">${nav}</div>
   <div class="kw-aktionen" style="margin:0 0 10px"><button class="secondary" data-ls="alle" data-auf="1">Alle aufklappen</button><button class="secondary" data-ls="alle" data-auf="0">Alle zuklappen</button></div>
+  ${lehrer?evHeatmapHTML(ci,ub,fortAll):""}
   ${bloecke}
   ${lehrer?lsUebersichtHTML(ci,co,abgaben):""}
   ${verw}
@@ -23555,6 +23617,7 @@ document.addEventListener("click",async ev=>{
   else if(a==="fortschritt")go("kw-fortschritt");
   else if(a==="matadd")kwMatForm(b.dataset.kat);
   else if(a==="faueb")kwFaUebungOeffnen(id);
+  else if(a==="ubopen")ubOeffnen(b.dataset.url,b.dataset.w,b.dataset.t);
   else if(a==="matweg"){if(!confirm("Diese Datei wirklich entfernen?"))return;await deleteDoc(doc(db,"lehrplanMaterialien",id));toast("Entfernt.");render()}
   else if(a==="board"){wbVonKw=true;if(kwLehrer())openWhiteboard(id);else{const s=await getDoc(doc(db,"whiteboards",id));if(s.exists()&&s.data().lernVorlage)await lbMeineKopie(id,String(s.data().title||"").replace(/\s*–\s*Lernübersicht$/,""));else openWhiteboard(id)}}
   else if(a==="checkin"){const e=kwThemaById(id);const fr=await getBasischeckFragen(id);if(!fr.length){toast("Für dieses Thema ist noch kein Check-In hinterlegt.");return}window.__eaRueck=null;openCheckIn(id)}
