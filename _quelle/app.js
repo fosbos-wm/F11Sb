@@ -1211,7 +1211,7 @@ async function zkBauHtml(codes,namen,basis){
  const {qrcode}=await import("./qr-local.js?v=1");
  const karten=codes.map(c=>{
   const q=qrcode(0,"M");q.addData(basis+"?code="+encodeURIComponent(c));q.make();
-  return`<div class="k"><div class="kt">F11Sb 26/27 · Zugangskarte</div><div class="kc">${zkSchuetze(c)}</div><div class="kq">${q.createSvgTag(3,0)}</div>
+  return`<div class="k"><div class="kt">F11Sb · Zugangskarte</div><div class="kc">${zkSchuetze(c)}</div><div class="kq">${q.createSvgTag(3,0)}</div>
   <ol><li>QR-Code scannen oder Seite öffnen und „Erstmals einrichten“ wählen.</li><li>Code eingeben, ein <b>Pseudonym</b> und eine <b>PIN</b> (mind. 6 Zeichen) festlegen.</li><li>Merke dir beides. Die Karte gilt nur <b>einmal</b>.</li></ol>
   <div class="kn">Kein echter Name, keine E-Mail-Adresse als Pseudonym.</div></div>`}).join("");
  const hatNamen=namen.some(Boolean);
@@ -12024,7 +12024,7 @@ function coRespizienzHTML(name,tests,abgaben,einst){
  const summe=`<tr style="border-top:2px solid #999"><td colspan="${4+nA}"><b>Gesamt (${zeilen.length} Tests)</b></td><td style="text-align:center"><b>${e.be}</b></td><td style="text-align:center"><b>${e.maxBE}</b></td><td style="text-align:center"><b>${coProz(gesamtProz)}</b></td><td style="text-align:center"><b>Ø ${e.schnitt.toFixed(2).replace(".",",")}</b></td><td></td></tr>`;
  const schl=FOSBOS_SCHLUESSEL.map(([np,min])=>`${np}: ab ${min} %`).join(" · ");
  return`<div class="item"style="background:#f5f7f8"><strong style="font-size:15px">${escPDF(name)}</strong>
-  <div>F11Sb · FOSBOS Weilheim · Pädagogik/Psychologie · Schuljahr 2026/27</div>
+  <div>F11Sb · FOSBOS Weilheim · Pädagogik/Psychologie</div>
   <div>Kurzarbeit-Ersatz: ${zeilen.length} von der Schülerin / dem Schüler gewählte Check-outs (jeweils ${nA} K-Prim-Aufgaben)</div></div>
  <table style="font-size:11.5px"><thead><tr><th>Nr.</th><th>Datum</th><th>Check-out</th><th>LB</th>${kopfA}<th>BE</th><th>max.</th><th>%</th><th>NP</th><th>Verteilung</th></tr></thead><tbody>${zl}${summe}</tbody></table>
  <div class="item"style="margin-top:12px"><div><b>Ergebnis:</b> Durchschnitt der Notenpunkte ${e.schnitt.toFixed(2).replace(".",",")}, gerundet (ab ,5 wird aufgerundet): <b style="font-size:15px">${escPDF(npText(e.np))}</b></div>
@@ -19557,7 +19557,7 @@ async function renderFragenHilfe(){
  ["Was ist Deeper Learning?","Deeper Learning bedeutet, dass du Wissen nicht nur aufnimmst, sondern es verstehst, anwendest, auf neue Situationen überträgst, Probleme löst, gemeinsam arbeitest und deine Ergebnisse reflektierst."],
  ["Was ist ein Lernjournal?","Im Lernjournal hältst du deinen Lernweg fest: Was habe ich gelernt? Was hat funktioniert? Wo gab es Schwierigkeiten? Was ist mein nächster Schritt?"],
  ["Was sind Lernstandsmessungen?","Sie helfen dir zu erkennen, wo du bei deinen Kompetenzen stehst und woran du als Nächstes arbeiten solltest. Die Ergebnisse können deine Kompetenzentwicklung sichtbar machen."],
- ["Wo finde ich Termine?","Im Campus-Kalender findest du die wichtigen Termine der F11Sb. Dort sind auch die Schulferien von Bayern für das Schuljahr 2026/27 markiert."],
+ ["Wo finde ich Termine?","Im Campus-Kalender findest du die wichtigen Termine der F11Sb. Dort sind auch die Schulferien von Bayern für das Schuljahr markiert."],
  ["Was mache ich bei Fragen zur F11Sb?","Wenn deine Frage hier nicht beantwortet wird, wende dich an deine Lehrkraft bzw. das Klassenteam. Die Seite soll dir zunächst schnelle Orientierung zu F11Sb und Lernen geben."]
  ];
 
@@ -19646,7 +19646,7 @@ async function renderPraktikum(){
  .pk-body small{display:block;color:var(--muted);font-size:11px;line-height:1.6}
  </style>
 
- <div class="kicker">PRAKTIKUMSPHASEN & BLOCKBERICHTE 2026/27</div>
+ <div class="kicker">PRAKTIKUMSPHASEN & BLOCKBERICHTE</div>
  <div class="pk-split">
  <div class="pk-zeitstrahl">${PRAKTIKUMSPHASEN.map(p=>{
  const heute=new Date().toISOString().slice(0,10);
@@ -20049,7 +20049,7 @@ async function exportCampusCalendarICS(){
  const ferienZeitraeume=[
  ["2026-08-03","2026-09-14","Sommerferien 2026"],
  ["2026-11-02","2026-11-06","Herbstferien / unterrichtsfreie Tage um Allerheiligen"],
- ["2026-12-24","2027-01-08","Weihnachtsferien 2026/27"],
+ ["2026-12-24","2027-01-08","Weihnachtsferien"],
  ["2027-02-08","2027-02-12","Frühjahrsferien 2027"],
  ["2027-03-22","2027-04-02","Osterferien 2027"],
  ["2027-05-18","2027-05-28","Pfingstferien 2027"],
@@ -20168,7 +20168,7 @@ async function renderKalender(){
  const ferienZeitraeume=[
  ["2026-08-03","2026-09-14","Sommerferien 2026"],
  ["2026-11-02","2026-11-06","Herbstferien / unterrichtsfreie Tage um Allerheiligen"],
- ["2026-12-24","2027-01-08","Weihnachtsferien 2026/27"],
+ ["2026-12-24","2027-01-08","Weihnachtsferien"],
  ["2027-02-08","2027-02-12","Frühjahrsferien 2027"],
  ["2027-03-22","2027-04-02","Osterferien 2027"],
  ["2027-05-18","2027-05-28","Pfingstferien 2027"],
@@ -20255,7 +20255,7 @@ async function renderKalender(){
  `<span class="cal-legend-item"><i class="cal-legend-dot ${v.className}"></i>${esc(v.label)}</span>`
  ).join("");
 
- const html=`${pageHead("ORGANISATION","Campus-Kalender","Das Schuljahr 26/27 auf einen Blick. Termine sind je nach Terminart farblich gekennzeichnet.",`${addButton}${birthdayButton}${exportButton}`)}
+ const html=`${pageHead("ORGANISATION","Campus-Kalender","Das Schuljahr auf einen Blick. Termine sind je nach Terminart farblich gekennzeichnet.",`${addButton}${birthdayButton}${exportButton}`)}
  <style>
  .cal-months{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
  .cal-month{padding:18px}.cal-month-head{margin-bottom:10px}
