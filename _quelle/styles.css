@@ -969,3 +969,6 @@ details.ls-lb:not([open])>summary.ls-lbk{border-radius:0 0 0 0}
 .kw-vorschau .primary{padding:7px 14px}
 
 .ci-sich{margin:14px 0 4px;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font-size:13px}.ci-sich b{flex:1 0 100%}.ub-frame{width:100%;height:68vh;border:1px solid var(--line);border-radius:10px;background:#fff}.ev-tab th,.ev-tab td{padding:3px 4px;text-align:center}.ev-tab th:first-child{text-align:left;white-space:nowrap}.ev-z{width:26px;height:22px;border:0;border-radius:5px;color:#fff;font-weight:900;font-size:13px;line-height:1;padding:0}.ev-z.vl{opacity:.55}.ev-tab thead span{font-size:10px}
+/* Check-In-Verlauf */
+.ci-verlauf{margin:14px 0 8px}.ci-verlauf svg{max-width:440px;display:block;margin-top:6px}
+.ls-verlauf{margin:2px 0 10px 34px;font-size:13px}.ls-verlauf summary{cursor:pointer;color:var(--muted)}.ls-verlauf svg{max-width:420px;display:block;margin-top:6px}
