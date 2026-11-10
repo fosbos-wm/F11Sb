@@ -116,3 +116,6 @@
 .ci-ed select.ci-ed-typ{font-weight:800;color:color-mix(in srgb,var(--ci,#1f8ea3) 75%,#10303f);background:color-mix(in srgb,var(--ci,#1f8ea3) 12%,#fff);border:2px solid var(--ci,#1f8ea3)}
 .ci-ed-nr{display:inline-block;margin-right:6px;padding:1px 9px;border-radius:999px;background:var(--ci,#1f8ea3);color:#fff;font-weight:800;font-size:11px;letter-spacing:.04em}
 .ci-ed small{color:var(--muted)}
+
+/* Lernstände: Ampel und Verlauf je Übung */
+.ls-ub{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;margin:3px 0 1px 34px;font-size:13px}.ls-ub small{color:var(--muted)}

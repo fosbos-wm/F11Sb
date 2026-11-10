@@ -139,7 +139,7 @@ const DS_DATEN=[
  ["essayEntries","uid",1],["essayCases","createdBy",1],
  ["ppStundenAntworten","uid",1],["ppLernuebersicht","uid",1],["ppKursFortschritt","uid",1],
  ["ppRallyeStand","uid",1],["ppRallyeRang","uid",1],
- ["lehrplanFortschritt","uid",1],["ubErgebnisse","uid",1],["lehrplanProdukte","uid",1],["lehrplanTeams","createdBy",1],
+ ["lehrplanFortschritt","uid",1],["ubErgebnisse","uid",1],["faErgebnisse","uid",1],["lehrplanProdukte","uid",1],["lehrplanTeams","createdBy",1],
  ["messages","fromUid",1],["posts","authorUid",1],["boardPosts","authorUid",1],
  ["tasks","createdBy",1],["projects","createdBy",1],["wordcloudEntries","authorUid",1],
  ["kanbanCards","createdBy",1],["checklistItems","createdBy",1],["termVotes","uid",1],
@@ -243,7 +243,7 @@ function showDatenschutz(){
  <p><strong>4. Welche Daten werden verarbeitet?</strong></p>
  <ul style="margin:0 0 0 18px">
  <li>Konto: selbst gewähltes Pseudonym (kein Klarname, keine E-Mail-Adresse), Rolle und Freigabestatus, Anmeldezeitpunkt</li>
- <li>Lern- und Arbeitsdaten: Lernjournal, Lernpfad, Kompetenzen, Wochenplanung, Übungs- und Aufsatztexte, Antworten in Check-outs und Lernstandsmessungen, Fortschritte, abgegebene Dateien</li>
+ <li>Lern- und Arbeitsdaten: Lernjournal, Lernpfad, Kompetenzen, Wochenplanung, Übungs- und Aufsatztexte, Antworten in Check-outs und Lernstandsmessungen, Selbsteinschätzungen bei Fachaufsatz-Übungen (nur Punktzahlen, ohne deinen Text), Fortschritte, abgegebene Dateien</li>
  <li>Zusammenarbeit: Beiträge, Nachrichten, Pinnwand, Whiteboards, Umfragen und Abstimmungen</li>
  <li>Freiwillig: Steckbrief, Geburtstag (Tag und Monat), Herkunftsort</li>
  <li>Technisch: IP-Adresse und Geräteinformationen bei jedem Aufruf (siehe Punkt 5)</li>
@@ -2945,6 +2945,7 @@ async function getBasischeckFragen(wocheId){
 }
 function basischeckTypToggle(i){
  const typ=$(`bcTyp${i}`)?.value;
+ const card=$(`bcCard${i}`);if(card)card.className=`card ci-ed ci-k-${typ}`;
  const m={mc:"bcMcBereich",kprim:"bcKprimBereich",offen:"bcOffenBereich",zuordnung:"bcZBereich",lueckentext:"bcLBereich",reihenfolge:"bcRBereich",frei:"bcFBereich"};
  Object.keys(m).forEach(k=>{const el=$(`${m[k]}${i}`);if(el)el.style.display=typ===k?"block":"none"});
 }
@@ -6034,8 +6035,8 @@ async function ppmFachaufsatzSeite(m,opt){
     <div class="fa-loes" id="fal_${u.id}"${lehrer?"":" hidden"}>
      <b>${lehrer?"Musterlösung (nur für Lehrkräfte sichtbar, Schüler:innen blenden sie selbst ein)":"Musterlösung"}</b>
      ${(u.loesung||[]).map(x=>`<p><span class="fa-b">${esc(x.b)}</span> ${esc(x.t)}</p>`).join("")}
-     <b class="fa-kk">${lehrer?"Kriterien für die Rückmeldung":"Prüfe selbst:"}</b>
-     <ul>${(u.kriterien||[]).map(k=>`<li>${esc(k)}</li>`).join("")}</ul>
+     ${lehrer?`<b class="fa-kk">Kriterien für die Rückmeldung</b>
+     <ul>${(u.kriterien||[]).map(k=>`<li>${esc(k)}</li>`).join("")}</ul>`:faSelbstHTML(u,s)}
     </div>
     ${lehrer?"":`<label class="check fa-fertig"><input type="checkbox" ${s.d?"checked ":""}onchange="faErledigt('${u.id}',this.checked)"><span>Erledigt</span></label>`}
    </div></details>`;
@@ -6046,6 +6047,7 @@ async function ppmFachaufsatzSeite(m,opt){
  .fa-ue>summary small{display:block;color:var(--muted);font-size:12px}.fa-nr{flex:none;width:30px;height:30px;border-radius:50%;border:2px solid var(--c,#3A8FD4);color:var(--c,#3A8FD4);display:grid;place-items:center;font-weight:800}.fa-ok .fa-nr{background:var(--c,#3A8FD4);color:#fff}
  .fa-body{padding:2px 16px 16px}.fa-quelle{font-size:12px;color:var(--muted);margin:0 0 8px}.fa-fall{background:#f4f8fc;border-left:4px solid var(--c,#3A8FD4);border-radius:10px;padding:10px 12px;margin:8px 0}.fa-z{display:flex;gap:10px;margin-top:3px;line-height:1.4}.fa-z span{flex:none;min-width:26px;text-align:right;font-size:11px;color:var(--muted);padding-top:3px}.fa-z5 span{font-weight:800;color:var(--c,#3A8FD4)}.fa-zk{margin:8px 0 2px;font-weight:700}.fa-zh{display:block;color:var(--muted);font-size:12px;margin:2px 0 6px}.fa-zus{margin:14px 0}.fa-zus>summary{cursor:pointer;font-weight:700;padding:8px 2px}.fa-z p{margin:0}
  .fa-aufg{margin:10px 0}.fa-aufg p{margin:4px 0}.fa-aufg small,.fa-hinweis{color:var(--muted);font-size:12px}.fa-label{display:block;font-weight:700;font-size:12px}.fa-label textarea{width:100%;font:inherit;font-weight:400;margin-top:4px}.fa-btns{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px}.fa-btns a{text-decoration:none;display:inline-block}
+ .fa-self{margin:6px 0 2px}.fa-kr{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;justify-content:space-between;padding:6px 0;border-top:1px solid #d6e8d6}.fa-kr:first-child{border-top:0}.fa-kr>span:first-child{flex:1 1 220px;line-height:1.35}.fa-kw{display:flex;gap:6px}.fa-kw label{cursor:pointer}.fa-kw input{position:absolute;opacity:0;pointer-events:none}.fa-kw span{display:inline-block;border:2px solid #b9d6b9;border-radius:999px;padding:4px 12px;font-size:13px;font-weight:700;background:#fff;color:#35553a}.fa-kw input:checked+span{background:#2e7d4f;border-color:#2e7d4f;color:#fff}.fa-kw input:focus-visible+span{outline:2px solid #2e7d4f;outline-offset:2px}.fa-sestand{font-size:13px;font-weight:700;color:#2e7d4f}
  .fa-loes{background:#eef7ee;border-left:4px solid #3fa66a;border-radius:10px;padding:10px 12px;margin:10px 0}.fa-loes p{margin:6px 0}.fa-b{font-weight:800;color:#2e7d4f}.fa-kk{display:block;margin-top:8px}.fa-fertig{margin-top:8px}</style>`;
  if(opt&&opt.karten)return css+liste.map((u,i)=>karte(u,i,true)).join("");
  return`${ppmKopf(m,`<p style="color:var(--muted)">${kern.length} Übung${kern.length===1?"":"en"}${sel.length?" (ausgewählte Themen)":""}</p>`)}
@@ -6060,6 +6062,29 @@ async function ppmFachaufsatzSeite(m,opt){
 }
 function zeilenKopfHinweis(u){return u.herkunft?`<p class="fa-quelle">${esc(u.herkunft)}</p>`:""}
 function faTipp(id,el){faSchreib(id,{t:el.value})}
+// Selbsteinschätzung: je Kriterium drin (2) / teilweise (1) / fehlt (0). Gespeichert werden nur Punktzahlen, nie der Text.
+function faSelbstHTML(u,s){
+ const ks=u.kriterien||[],se=Array.isArray(s.se)?s.se:[];
+ if(!ks.length)return"";
+ return`<b class="fa-kk">Prüfe selbst: Was hattest du in deinem Text?</b>
+ <div class="fa-self"id="fas_${u.id}">${ks.map((k,i)=>`<div class="fa-kr"><span>${esc(k)}</span><span class="fa-kw"role="radiogroup"aria-label="${esc(k)}">${[[2,"drin"],[1,"teilweise"],[0,"fehlt"]].map(([v,t])=>`<label><input type="radio"name="fak_${u.id}_${i}"value="${v}"${se[i]===v?" checked":""}><span>${t}</span></label>`).join("")}</span></div>`).join("")}
+ <div class="fa-btns"><button type="button"class="ppm-btn"onclick="faSelbstSpeichern('${u.id}')">Selbsteinschätzung speichern</button><span class="fa-sestand"id="fase_${u.id}">${s.sq!=null?`Zuletzt: ${s.sp} von ${s.sm} (${s.sq} %)`:""}</span></div>
+ <small class="fa-hinweis">Gespeichert wird nur die Punktzahl, nicht dein Text. Sie zeigt dir deinen Lernstand und erscheint in deinen Lernständen.</small></div>`;
+}
+async function faSelbstSpeichern(id){
+ if(isTeacher()||!currentUser)return;
+ const alle=await faLaden(),u=alle.find(x=>x.id===id);if(!u)return;
+ const ks=u.kriterien||[],se=[];
+ for(let i=0;i<ks.length;i++){const r=document.querySelector(`input[name="fak_${id}_${i}"]:checked`);if(!r){toast("Bitte bei jedem Kriterium etwas auswählen.");return}se.push(Number(r.value))}
+ const punkte=se.reduce((a,b)=>a+b,0),max=ks.length*2;
+ try{await addDoc(collection(db,"faErgebnisse"),{uid:currentUser.uid,wocheId:String(u.thema||""),uebId:String(u.id),lb:Number(u.lb)||0,punkte,max,createdAt:serverTimestamp()})}
+ catch(e){console.warn("Fachaufsatz-Selbsteinschätzung:",e);toast("Konnte nicht gespeichert werden. Bitte später noch einmal versuchen.");return}
+ const q=Math.round(punkte/max*100);
+ faSchreib(id,{se,sp:punkte,sm:max,sq:q});
+ const el=$("fase_"+id);if(el)el.textContent=`Gespeichert: ${punkte} von ${max} (${q} %)`;
+ const cb=document.querySelector(`#fa_${id} .fa-fertig input`);if(cb){cb.checked=true;faErledigt(id,true)}
+ toast("Selbsteinschätzung gespeichert.");
+}
 function faLoesung(id){
  const box=$("fal_"+id);if(!box)return;
  const t=($("fat_"+id)||{}).value||"";
@@ -6079,7 +6104,7 @@ function faErledigt(id,an){
  const d=$("fa_"+id);if(d){d.classList.toggle("fa-ok",!!an);const n=d.querySelector(".fa-nr");if(n)n.textContent=an?"✓":(n.dataset.n||n.textContent)}
  const all=[...document.querySelectorAll(".fa-ue[data-kern]")],ok=all.filter(x=>x.classList.contains("fa-ok")).length,s=$("faStand");if(s)s.textContent=ok+" von "+all.length+" erledigt";
 }
-window.faLoesung=faLoesung;window.faKopieren=faKopieren;window.faTipp=faTipp;window.faErledigt=faErledigt;
+window.faSelbstSpeichern=faSelbstSpeichern;window.faLoesung=faLoesung;window.faKopieren=faKopieren;window.faTipp=faTipp;window.faErledigt=faErledigt;
 
 // ---- Experiment (interaktive Einheit mit wählbaren Teilen) ----
 async function ppmExperimentSeite(m){
@@ -8157,7 +8182,7 @@ function basischeckFreiErgebnisHTML(fragen,mein){
  fragen.forEach((f,i)=>{
   if(f.typ!=="frei")return;
   const a=(mein.antworten||[])[i];
-  l.push(`<section class="ci-q ci-fr"><div class="ci-qk"><span class="ci-n">${i+1}</span><b class="ci-t">${esc(f.text)}</b></div>
+  l.push(`<section class="ci-q ci-k-frei ci-fr"><div class="ci-qk"><span class="ci-n">${i+1}</span><b class="ci-t">${esc(f.text)}</b></div>
    <div class="ci-fa"><small>Deine Antwort</small><p>${esc(a||"–")}</p></div>
    ${f.musterantwort?`<div class="ci-fa ci-fm"><small>Musterantwort zum Vergleichen</small><p>${esc(f.musterantwort)}</p></div>`:""}</section>`);
  });
@@ -8170,10 +8195,10 @@ function basischeckEditorHTML(fach,wocheId,fragen){
    const f=fragen[i]||{};
    const typ=f.typ||"mc";
    const dis=t=>`display:${typ===t?"block":"none"};margin-top:8px`;
-   return`<div class="card"style="margin-bottom:10px;background:#f7fafc">
+   return`<div class="card ci-ed ci-k-${typ}"id="bcCard${i}">
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
      <label style="flex:1;min-width:200px">Frage / Aufgabe ${i+1}${i>0?" (optional)":""}<input id="bcFrage${i}"type="text"value="${esc(f.text||"")}"placeholder="z. B. Was versteht man unter …?"></label>
-     <label style="width:210px">Aufgabentyp<select id="bcTyp${i}"onchange="basischeckTypToggle(${i})">
+     <label style="width:210px">Aufgabentyp<select id="bcTyp${i}"class="ci-ed-typ"onchange="basischeckTypToggle(${i})">
       ${T.map(([v,t])=>`<option value="${v}"${typ===v?" selected":""}>${t}</option>`).join("")}
      </select></label>
     </div>
@@ -23182,6 +23207,34 @@ function ltStatus(t,a){
  if(a&&Object.values(a.antworten||{}).some(x=>String(x).trim()))return"in Arbeit";
  return t.status==="geschlossen"?"geschlossen":"noch offen";
 }
+function ubAmpel(q){return q>=0.75?"gruen":q>=0.4?"orange":"rot"}
+async function ubLaden(){
+ const lehrer=kwLehrer();
+ const hole=async n=>{try{const snap=lehrer?await getDocs(collection(db,n)):await getDocs(query(collection(db,n),where("uid","==",currentUser.uid)));return snap.docs.map(d=>d.data())}catch(e){return[]}};
+ const[ub,fa,kat,faU]=await Promise.all([hole("ubErgebnisse"),hole("faErgebnisse"),kwUbKatalog().catch(()=>[]),faLaden().catch(()=>[])]);
+ LT.ubTitel={};(kat||[]).forEach(k=>{LT.ubTitel[k.id]=k.titel});
+ LT.faTitel={};(faU||[]).forEach(u=>{LT.faTitel[u.id]=u.titel});
+ return ub.concat(fa.map(x=>({...x,stationId:"fa_"+x.uebId,quelle:"fa"})));
+}
+function ubTitel(sid){return String(sid).startsWith("fa_")?"Fachaufsatz: "+((LT.faTitel||{})[String(sid).slice(3)]||String(sid).slice(3)):((LT.ubTitel||{})[sid]||sid)}
+// Ampel und Verlauf je Übung für eine Person und ein Thema
+function ubZeilenHTML(uid,wid){
+ const mine=(LT.ub||[]).filter(x=>x.uid===uid&&x.wocheId===wid&&x.max>0).sort((a,b)=>evMs(a)-evMs(b)),g={};
+ mine.forEach(x=>{(g[x.stationId]=g[x.stationId]||[]).push(x)});
+ return Object.entries(g).map(([sid,l])=>{
+  const last=l[l.length-1],amp=ubAmpel(last.punkte/last.max),v={verlauf:l.map(e=>({r:e.punkte,g:e.max,t:evMs(e)}))};
+  return`<div class="ls-ub">${lsAmpelPunkt(amp,LS_AMP[amp][1])}<span>${esc(ubTitel(sid))}</span><small>${last.punkte} von ${last.max}${l.length>1?" · "+l.length+" Versuche":""}</small></div>${ciVerlaufSVG(v)?`<details class="ls-verlauf"><summary>Verlauf: ${ciVerlaufTxt(v)}</summary>${ciVerlaufSVG(v)}</details>`:""}`;
+ }).join("");
+}
+// Übersicht je Übung für die ganze Klasse (letzter Stand je Person)
+function lsThemaUebungenHTML(id){
+ const ub=(LT.ub||[]).filter(x=>x.wocheId===id&&x.max>0).sort((a,b)=>evMs(a)-evMs(b)),nach={};
+ ub.forEach(x=>{(nach[x.stationId]=nach[x.stationId]||{})[x.uid]=x});
+ const z=Object.entries(nach).map(([sid,pro])=>{
+  const l=Object.values(pro),g=k=>l.filter(x=>ubAmpel(x.punkte/x.max)===k).length,avg=Math.round(l.reduce((s,x)=>s+x.punkte/x.max,0)/l.length*100);
+  return`<tr><th scope="row">${esc(ubTitel(sid))}</th><td>${l.length} von ${LT.schueler.length}</td><td><b style="color:#2E7D57">${g("gruen")}</b> · <b style="color:#B38600">${g("orange")}</b> · <b style="color:#C0392B">${g("rot")}</b></td><td>Ø ${avg} %</td></tr>`}).join("");
+ return z?`<h3 style="margin:16px 0 6px;font-size:14px">Übungen und Fachaufsatz zu diesem Thema</h3><div class="kw-tabwrap"><table class="kw-tab"><thead><tr><th>Übung</th><th>Gemacht</th><th>grün · gelb · rot</th><th>Stand</th></tr></thead><tbody>${z}</tbody></table></div>`:"";
+}
 async function lsCheckInsLaden(){
  try{
   const snap=kwLehrer()?await getDocs(collection(db,"basischeckVersuche")):await getDocs(query(collection(db,"basischeckVersuche"),where("uid","==",currentUser.uid)));
@@ -23227,7 +23280,7 @@ function lsThemaDetail(id){
  <p style="margin:2px 0 12px;font-size:13px;color:var(--muted)">${cs.length} von ${N} haben den Wissens-Check gemacht · <b style="color:#2E7D57">${g("gruen")} grün</b> · <b style="color:#B38600">${g("orange")} gelb</b> · <b style="color:#C0392B">${g("rot")} rot</b></p>
  ${wdh}
  ${top.length?`<div class="ls-unsbox"><b>Hier ist die Klasse noch unsicher</b><ul>${top.map(([t,n])=>`<li>${esc(t)} <small>${n} von ${cs.length}</small></li>`).join("")}</ul></div>`:(cs.length?`<div class="ls-unsbox ok"><b>Keine auffälligen Lücken</b></div>`:"")}
- <div class="kw-tabwrap"><table class="kw-tab"><thead><tr><th>Pseudonym</th><th>Ergebnis</th><th>Noch unsicher bei</th></tr></thead><tbody>${zeilen||`<tr><td>Noch keine Schüler:innen.</td></tr>`}</tbody></table></div>`);
+ <div class="kw-tabwrap"><table class="kw-tab"><thead><tr><th>Pseudonym</th><th>Ergebnis</th><th>Noch unsicher bei</th></tr></thead><tbody>${zeilen||`<tr><td>Noch keine Schüler:innen.</td></tr>`}</tbody></table></div>${lsThemaUebungenHTML(id)}`);
 }
 // ---- Übungsergebnisse (Stationen) speichern ----
 let UB_CTX=null;
@@ -23254,7 +23307,7 @@ function evStand(uid,wocheId,ci,ub,fort){
  const letzte={};
  ub.filter(x=>x.uid===uid&&x.wocheId===wocheId).sort((a,b)=>evMs(a)-evMs(b)).forEach(x=>{letzte[x.stationId]=x});
  const ul=Object.values(letzte);
- ul.forEach(x=>qu.push({q:x.punkte/x.max,w:1*alter(evMs(x))}));
+ ul.forEach(x=>qu.push({q:x.punkte/x.max,w:(x.quelle==="fa"?0.5:1)*alter(evMs(x))}));
  const f=(fort||[]).find(x=>x.uid===uid&&x.wocheId===wocheId);
  const selbst=!!(f&&f.abgeschlossen);
  if(!qu.length)return{ampel:null,n:0,selbst,hinweis:selbst?"nur selbst abgehakt":""};
@@ -23274,7 +23327,7 @@ function evHeatmapHTML(ci,ub,fort){
  const kopf=themen.map(e=>`<th title="${esc(kwKurz(e))}"><span>${esc(e.nr)}</span></th>`).join("");
  const zeilen=st.map(({u,z})=>`<tr><th scope="row">${esc(anzeigeName(u))}</th>${z.map((x,i)=>`<td><button type="button"class="ev-z${x.vorlaeufig?" vl":""}"style="background:${x.ampel?LS_AMP[x.ampel][0]:"#E3E8EC"}"data-ls="detail"data-uid="${esc(u.uid)}"title="${esc(kwKurz(themen[i]))}: ${x.ampel?(x.n+" Messung(en)"+(x.vorlaeufig?", vorläufig":"")):"noch keine Messung"}${x.hinweis?" · "+esc(x.hinweis):""}">${x.hinweis&&x.ampel?"!":""}</button></td>`).join("")}</tr>`).join("");
  const hb=hilfe.length?`<div class="ls-unsbox"><b>Braucht Aufmerksamkeit</b><ul>${hilfe.map(h=>`<li>${esc(anzeigeName(h.u))} <small>${h.rot} Themen rot${h.hin?`, ${h.hin} Abweichungen Selbstbild/Messung`:""}</small></li>`).join("")}</ul></div>`:`<div class="ls-unsbox ok"><b>Aktuell keine auffälligen Personen</b></div>`;
- return`<details class="kw-card ls-lern"open><summary><b>Lernstand-Übersicht (gemessen)</b> <small>Personen × Themen, aus Wissens-Check und Übungen</small></summary>${hb}<div class="kw-tabwrap"><table class="kw-tab ev-tab"><thead><tr><th>Pseudonym</th>${kopf}</tr></thead><tbody>${zeilen}</tbody></table></div><small>Grün ab 75 %, gelb ab 40 %, sonst rot; grau = noch keine Messung; blass = erst eine Messung (vorläufig); „!“ = Selbstbild und Messung passen nicht zusammen. Messungen älter als ${EV_ALT_TAGE} Tage zählen halb. Zelle anklicken für Details.</small></details>`;
+ return`<details class="kw-card ls-lern"open><summary><b>Lernstand-Übersicht (gemessen)</b> <small>Personen × Themen, aus Wissens-Check, Übungen und Fachaufsatz-Selbsteinschätzung</small></summary>${hb}<div class="kw-tabwrap"><table class="kw-tab ev-tab"><thead><tr><th>Pseudonym</th>${kopf}</tr></thead><tbody>${zeilen}</tbody></table></div><small>Grün ab 75 %, gelb ab 40 %, sonst rot; grau = noch keine Messung; blass = erst eine Messung (vorläufig); „!“ = Selbstbild und Messung passen nicht zusammen. Messungen älter als ${EV_ALT_TAGE} Tage zählen halb. Zelle anklicken für Details.</small></details>`;
 }
 function lsUebersichtHTML(ci,co,abgaben){
  const rows=LT.schueler.map(u=>{
@@ -23292,7 +23345,7 @@ function lsDetail(uid){
  const ci=(LT.ci||[]).filter(x=>x.uid===uid),ab=(LT.abgaben||[]).filter(x=>x.uid===uid),co=(KW.co&&KW.co.checkouts)||[];
  const lb=[1,2,3,4].map(n=>{
   const ph=kwPhase(n),F=kwFarbe(n);
-  const th=lsThemenLb(n).map(e=>{const x=ci.find(y=>y.wocheId===e.id);return`<li>${x?lsAmpelPunkt(x.ampel):lsAmpelPunkt("")} ${esc(kwKurz(e))}: ${x?`${x.richtig} von ${x.gesamt} richtig${ciVerlaufTxt(x)?" · Verlauf: "+ciVerlaufTxt(x):""}${lsUnsicher(x).length?" · unsicher: "+esc(lsUnsicher(x).join(", ")):""}`:"Wissens-Check offen"}</li>`}).join("");
+  const th=lsThemenLb(n).map(e=>{const x=ci.find(y=>y.wocheId===e.id);return`<li>${x?lsAmpelPunkt(x.ampel):lsAmpelPunkt("")} ${esc(kwKurz(e))}: ${x?`${x.richtig} von ${x.gesamt} richtig${ciVerlaufTxt(x)?" · Verlauf: "+ciVerlaufTxt(x):""}${lsUnsicher(x).length?" · unsicher: "+esc(lsUnsicher(x).join(", ")):""}`:"Wissens-Check offen"}</li>${(()=>{const z=ubZeilenHTML(uid,e.id);return z?`<li style="list-style:none">${z}</li>`:""})()}`}).join("");
   const cs=co.filter(c=>Number(c.lbNum)===n).map(c=>{const a=ab.find(x=>x.checkoutId===c.id);return`<li>Check-out ${esc(coTitelAnzeige(c)||"")}: ${a?(a.ausgewertet?`${a.be} BE · ${a.notenpunkte} NP`:(a.abgegeben?"abgegeben, noch nicht ausgewertet":"begonnen")):"nicht teilgenommen"}</li>`}).join("");
   const ts=LT.tests.filter(t=>Number(t.lb)===n).map(t=>{const a=LT.alle.find(x=>x.testId===t.id&&x.uid===uid);return`<li>Test ${esc(t.titel)}: ${esc(ltStatus(t,a))}</li>`}).join("");
   return`<h3 style="color:${F.t};margin:14px 0 4px">LB ${n}${ph?" · "+esc(ph.lbTitel):""}</h3><ul>${th||"<li>keine Themen</li>"}${cs}${ts}</ul>`}).join("");
@@ -23344,7 +23397,7 @@ function lsLbBlock(n,ci,co,abgaben,lehrer){
    return`<div class="ls-th"><em>${esc(e.nr)}</em><span class="ls-tn">${esc(kwKurz(e))}${(()=>{const t=lsTopUnsicher(e.id,2);return t.length?`<small class="ls-uns">Unsicher: ${esc(t.map(x=>x[0]).join(" · "))}</small>`:""})()}</span>${bar}<small>${n3} von ${N}</small><button class="secondary kw-add" data-ls="thema" data-id="${esc(e.id)}">Wer?</button></div>`;
   }
   const x=mine[0];
-  return`<div class="ls-th"><em>${esc(e.nr)}</em><span class="ls-tn">${esc(kwKurz(e))}</span>${x?`${lsAmpelPunkt(x.ampel)}<small>${x.richtig} von ${x.gesamt} richtig</small>`:`<small class="ls-offen">Wissens-Check offen</small>`}<button class="secondary kw-add" data-kw="checkin" data-id="${esc(e.id)}">${x?"Ansehen":"Starten"}</button></div>${x&&ciVerlaufSVG(x)?`<details class="ls-verlauf"><summary>Verlauf: ${ciVerlaufTxt(x)}</summary>${ciVerlaufSVG(x)}</details>`:""}`;
+  return`<div class="ls-th"><em>${esc(e.nr)}</em><span class="ls-tn">${esc(kwKurz(e))}</span>${x?`${lsAmpelPunkt(x.ampel)}<small>${x.richtig} von ${x.gesamt} richtig</small>`:`<small class="ls-offen">Wissens-Check offen</small>`}<button class="secondary kw-add" data-kw="checkin" data-id="${esc(e.id)}">${x?"Ansehen":"Starten"}</button></div>${x&&ciVerlaufSVG(x)?`<details class="ls-verlauf"><summary>Verlauf: ${ciVerlaufTxt(x)}</summary>${ciVerlaufSVG(x)}</details>`:""}${ubZeilenHTML(currentUser.uid,e.id)}`;
  }).join("");
  const nachweise=cos.map(c=>lsCoZeile(c,co,lehrer,abgaben)).join("")+tests.map(t=>lsTestZeile(t,lehrer)).join("");
  return`<details class="ls-lb" id="ls-lb${n}" style="--c:${F.c};--bg:${F.bg};--t:${F.t}"><summary class="ls-lbk"><small>LB ${n}</small><b>${esc(ph.lbTitel)}</b><span>${chip}</span><i class="ls-pf" aria-hidden="true">▾</i></summary>
@@ -23358,8 +23411,9 @@ async function renderKwCheckouts(){
  let abgaben=[];
  if(lehrer){try{abgaben=(await getDocs(collection(db,"checkoutAbgaben"))).docs.map(d=>d.data())}catch(e){}}
  LT.abgaben=abgaben;
- let ub=[],fortAll=[];
- if(lehrer){try{ub=(await getDocs(collection(db,"ubErgebnisse"))).docs.map(d=>d.data())}catch(e){}try{fortAll=(await getDocs(collection(db,"lehrplanFortschritt"))).docs.map(d=>d.data())}catch(e){}}
+  let fortAll=[];
+ const ub=await ubLaden();LT.ub=ub;
+ if(lehrer){try{fortAll=(await getDocs(collection(db,"lehrplanFortschritt"))).docs.map(d=>d.data())}catch(e){}}
  LT.fr={};
  if(lehrer){const ids=[1,2,3,4].flatMap(n=>lsThemenLb(n).map(e=>e.id));await Promise.all(ids.map(async id=>{LT.fr[id]=await getBasischeckFragen(id)}))}
  const nav=[1,2,3,4].map(n=>{const ph=kwPhase(n),F=kwFarbe(n);return ph?`<a class="ls-nav" href="#" data-ls="sprung" data-lb="${n}" style="--c:${F.c};--bg:${F.bg};--t:${F.t}"><small>LB ${n}</small><b>${esc(ph.lbTitel)}</b></a>`:""}).join("");

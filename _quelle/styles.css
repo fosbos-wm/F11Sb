@@ -972,3 +972,30 @@ details.ls-lb:not([open])>summary.ls-lbk{border-radius:0 0 0 0}
 /* Check-In-Verlauf */
 .ci-verlauf{margin:14px 0 8px}.ci-verlauf svg{max-width:440px;display:block;margin-top:6px}
 .ls-verlauf{margin:2px 0 10px 34px;font-size:13px}.ls-verlauf summary{cursor:pointer;color:var(--muted)}.ls-verlauf svg{max-width:420px;display:block;margin-top:6px}
+
+/* Check-In: jede Aufgabenart hat ihre Farbe */
+.ci-q{--ci:var(--c,var(--blue));border-left:6px solid var(--ci);background:linear-gradient(180deg,color-mix(in srgb,var(--ci) 7%,#fff),#fff 90px)}
+
+.ci-art{display:inline-block;margin:0 0 10px 42px;padding:3px 11px;border-radius:999px;background:color-mix(in srgb,var(--ci) 14%,#fff);color:color-mix(in srgb,var(--ci) 75%,#10303f);border:1px solid color-mix(in srgb,var(--ci) 35%,#fff);font-size:11px;font-weight:800;letter-spacing:.05em}
+.ci-q .ci-zr{border-color:color-mix(in srgb,var(--ci) 25%,#fff);background:#fff}
+.ci-q .ci-zr:has(select:not([value=""]):focus),.ci-q .ci-zr:focus-within{border-color:var(--ci)}
+.ci-q .ci-zl{color:color-mix(in srgb,var(--ci) 65%,#10303f)}
+.ci-q select{border-color:color-mix(in srgb,var(--ci) 40%,#fff)}
+.ci-q textarea{border:2px solid color-mix(in srgb,var(--ci) 30%,#fff);padding:10px}
+.ci-q textarea:focus{outline:none;border-color:var(--ci)}
+.ci-q .kp-tabelle th{color:color-mix(in srgb,var(--ci) 70%,#10303f)}
+.ci-q .kp-klick input{accent-color:var(--ci)}
+.ci-go{background:var(--ci,var(--blue))}
+
+/* Wissens-Check: eine eigene Farbe je Aufgabentyp (Schüler:innen- UND Lehrkraft-Ansicht) */
+.ci-k-mc{--ci:#1f8ea3}.ci-k-kprim{--ci:#e08a2e}.ci-k-zuordnung{--ci:#8460b8}.ci-k-lueckentext{--ci:#4f9a35}.ci-k-reihenfolge{--ci:#d4577f}.ci-k-offen{--ci:#3a7fd0}.ci-k-frei{--ci:#a0592f}
+.ci-ed{margin-bottom:10px;border-left:6px solid var(--ci,#1f8ea3);border-color:color-mix(in srgb,var(--ci,#1f8ea3) 35%,#fff);border-left-color:var(--ci,#1f8ea3);background:linear-gradient(180deg,color-mix(in srgb,var(--ci,#1f8ea3) 9%,#fff),#fff 110px)}
+.ci-ed label{color:color-mix(in srgb,var(--ci,#1f8ea3) 65%,#10303f)}
+.ci-ed input[type=text],.ci-ed select,.ci-ed textarea{border-color:color-mix(in srgb,var(--ci,#1f8ea3) 35%,#fff);background:#fff}
+.ci-ed input:focus,.ci-ed select:focus,.ci-ed textarea:focus{outline:2px solid color-mix(in srgb,var(--ci,#1f8ea3) 55%,#fff);outline-offset:1px;border-color:var(--ci,#1f8ea3)}
+.ci-ed select.ci-ed-typ{font-weight:800;color:color-mix(in srgb,var(--ci,#1f8ea3) 75%,#10303f);background:color-mix(in srgb,var(--ci,#1f8ea3) 12%,#fff);border:2px solid var(--ci,#1f8ea3)}
+.ci-ed-nr{display:inline-block;margin-right:6px;padding:1px 9px;border-radius:999px;background:var(--ci,#1f8ea3);color:#fff;font-weight:800;font-size:11px;letter-spacing:.04em}
+.ci-ed small{color:var(--muted)}
+
+/* Lernstände: Ampel und Verlauf je Übung */
+.ls-ub{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;margin:3px 0 1px 34px;font-size:13px}.ls-ub small{color:var(--muted)}
