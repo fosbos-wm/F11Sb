@@ -23109,7 +23109,7 @@ async function renderKachelwand(){
   ${pageHead("PÄDAGOGIK/PSYCHOLOGIE","Lernlandkarte","Dein Weg durch das Schuljahr: vier Lernbereiche mit Projekt, Themen und Bausteinen.")}
   <div class="kw-top">${kwHeroHTML()}<div class="kw-gesamt">${ring}<div><b>${lehrer?"Vorbereitung":"Gesamtstand"} ${p} %</b><small>${fertig} von ${alle.length} Themen ${lehrer?"mit Material oder Baustein":"erledigt"}</small></div></div></div>
   <div class="kw-links">${links}</div>
-  <div class="kw-wand">${PROJEKT_PHASEN.map(ph=>kwKachelHTML(ph,lehrer)).join("")}</div>
+  <div class="kw-wand">${[...PROJEKT_PHASEN].sort((a,b)=>a.lbNum-b.lbNum).map(ph=>kwKachelHTML(ph,lehrer)).join("")}</div>
  </div>${footer()}`;
 }
 /* ------------------------------------------------ Projektseite */
@@ -23179,9 +23179,10 @@ async function renderKwThema(){
  const karten=[];
  if(ea&&!ea.entwurf)karten.push(`<div class="kw-baust"><span class="chip slk">Selbstlernkurs</span><b>${esc(ea.titel||kwKurz(e))}</b><small>${eaF.einarbeitungAbgeschlossen?"abgeschlossen":(ea.aufgaben?ea.aufgaben+" Aufgaben":"")}</small><button class="primary" data-kw="ea" data-id="${esc(e.id)}">${eaF.einarbeitungAbgeschlossen?"Nochmal ansehen":"Starten"}</button></div>`);
  mod.forEach(m=>{const T=KW_BAUSTEINE[m.modul]||["Baustein","chk"],f=ppmFort(m);
+  if(e.leistung){karten.push(`<div class="kw-dz"><button type="button" class="kw-datei" data-kw="modul" data-id="${esc(m.id)}"><span>${esc(m.titel||T[0])}</span><small>${f&&f.done?"abgeschlossen":(lehrer?"Öffnen":"Training starten")}</small></button>${lehrer?`<button type="button" class="kw-del kw-baust-weg" data-kw="modulweg" data-id="${esc(m.id)}" data-thema="${esc(e.id)}" aria-label="Training entfernen" title="Training von dieser Seite entfernen">×</button>`:""}</div>`);return}
   karten.push(`<div class="kw-baust"><span class="chip ${T[1]}">${esc(T[0])}</span><b>${esc(m.titel||T[0])}</b><small>${f?(f.done?"abgeschlossen":(f.frac>0?Math.round(f.frac*100)+" % bearbeitet":"noch offen")):(m.start&&swById(m.start)?"ab "+fmtKurz(swById(m.start).start):"")}</small><div class="kw-baust-btn"><button class="primary" data-kw="modul" data-id="${esc(m.id)}">${lehrer?"Öffnen":"Starten"}</button>${lehrer?`<button type="button" class="secondary kw-baust-weg" data-kw="modulweg" data-id="${esc(m.id)}" data-thema="${esc(e.id)}" title="Diesen Baustein von diesem Thema entfernen">Entfernen</button>`:""}</div></div>`)});
  const lerneinheit=(!lehrer&&!karten.length)?"":kwSekHTML(e.leistung?"Trainings":"Lerneinheit",e.leistung?"Selbstlernkurse zum Üben der eigenen Schwächen":"Selbstlernkurs, Deeper-Learning-Stunde, Lernrallye oder anderes",
-  karten.length?`<div class="kw-baustliste">${karten.join("")}</div>`:`<div class="kw-leer">${e.leistung?"Hier ist noch kein Training ausgewählt.":"Für dieses Thema ist noch keine Lerneinheit ausgewählt."}</div>`,null,lehrer,
+  karten.length?`<div class="${e.leistung?"kw-dateien":"kw-baustliste"}">${karten.join("")}</div>`:`<div class="kw-leer">${e.leistung?"Hier ist noch kein Training ausgewählt.":"Für dieses Thema ist noch keine Lerneinheit ausgewählt."}</div>`,null,lehrer,
   lehrer?`<div class="kw-aktionen"><button class="secondary" data-kw="modulneu" data-id="${esc(e.id)}">Baustein einplanen</button><button class="secondary" data-kw="modulwahl" data-id="${esc(e.id)}">Vorhandenes Modul zuordnen</button></div>`:"");
  // Check-out am Ende
  // Check-outs gehören zum Lernbereich, nicht zum Thema: Schüler sehen sie hier nur, solange einer läuft (alle anderen unter „Lernstände“)
