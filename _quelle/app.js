@@ -5608,9 +5608,32 @@ function ppmTypWahl(woche){
   <div class="form-actions"><button class="secondary" type="button" onclick="closeModal()">Abbrechen</button></div>`);
 }
 // Thema → „Baustein einplanen“: alle Bausteine sofort sichtbar, ein Klick öffnet die kurze Einplanung.
+// Trainings nach Kurzarbeit/Schulaufgabe: mehrere auf einmal ankreuzen, ohne Woche und Dauer. Die Module laufen ohne Schulwoche und belegen keinen Platz im Wochenplan.
+async function kwTrainingWahl(e){
+ const ph=PROJEKT_PHASEN.find(p=>p.id===e.phase)||PROJEKT_PHASEN[0];
+ const infos=await Promise.all(KW_TRAININGS.map(x=>einarbeitungInfo(x).catch(()=>null)));
+ const da=new Set(kwModuleThema(e.id).map(m=>m.kursId));
+ const zeilen=KW_TRAININGS.map((x,i)=>{const n=infos[i];if(!n||n.entwurf)return"";const schon=da.has("ea:"+x);
+  return`<label style="display:flex;gap:12px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:10px;margin-top:8px;cursor:${schon?"default":"pointer"}"><input type="checkbox" class="kwTrCb" value="${x}"${schon?" checked disabled":""}><span><b>${esc(n.titel)}</b>${schon?`<br><small style="color:var(--muted)">schon eingestellt</small>`:""}</span></label>`}).join("");
+ modal(`<button class="modal-close" onclick="closeModal()">×</button>
+  <div class="kicker">TRAININGS EINSTELLEN</div><h2>${esc(e.thema)}</h2>
+  <p style="color:var(--muted);margin:0 0 4px">Kreuze die Trainings an, die deine Schüler:innen nach der Rückgabe üben sollen.</p>
+  ${zeilen}
+  <div class="form-actions"><button class="secondary" type="button" onclick="closeModal()">Abbrechen</button><button class="primary" type="button" id="kwTrSave">Einstellen</button></div>`);
+ $("kwTrSave").onclick=async()=>{
+  const ids=[...document.querySelectorAll(".kwTrCb:checked:not(:disabled)")].map(c=>c.value);
+  if(!ids.length){toast("Bitte mindestens ein Training ankreuzen.");return}
+  try{
+   for(const id of ids){const n=infos[KW_TRAININGS.indexOf(id)];
+    await addDoc(collection(db,"ppModule"),{modul:"selbstlern",lb:ph.lbNum,titel:n.titel,start:"",dauer:"w1",wochen:1,notiz:"",kursId:"ea:"+id,themen:[e.id],training:true,ord:KW_TRAININGS.indexOf(id)+1,createdBy:currentUser.uid,createdAt:serverTimestamp()});}
+   closeModal();await ppmLaden(true);await render();toast(ids.length===1?"Training eingestellt.":ids.length+" Trainings eingestellt.");
+  }catch(err){ppmFehler(err,"Die Trainings konnten nicht eingestellt werden");}
+ };
+}
 async function kwBausteinWahl(themaId){
  if(!isTeacher())return;
  const e=kwThemaById(themaId);if(!e)return;
+ if(e.leistung)return await kwTrainingWahl(e);
  const ph=PROJEKT_PHASEN.find(p=>p.id===e.phase)||PROJEKT_PHASEN[0];
  const woche=(ph.aptSchulwochen||[])[0]||null;
  const [fa,ein]=await Promise.all([faLaden().catch(()=>[]),einarbeitungInfo(themaId).catch(()=>null)]);
