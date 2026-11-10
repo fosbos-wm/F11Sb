@@ -1,11 +1,10 @@
 {
- "titel": "Eine Theorie allgemein beschreiben: Alltagstheorie und Wissenschaftstheorie",
+ "titel": "Training: Theorie beschreiben",
  "modulart": "selbstlern",
- "lb": 1,
  "einleitung": "Du übst, eine Theorie **allgemein** zu beschreiben, also ohne Fallbezug: Definitionen, Merkmale, Nennen und Erklären. Der Fall Mira bleibt zunächst im Hintergrund. Plane etwa 45 Minuten ein.",
  "abschnitte": [
   {
-   "kicker": "Kurs 2 · Theorie allgemein beschreiben",
+   "kicker": "Training · Theorie beschreiben",
    "titel": "Allgemein heißt: ohne Mira",
    "bloecke": [
     {
@@ -305,7 +304,7 @@
    "bloecke": [
     {
      "typ": "text",
-     "text": "Jetzt schreibst du alle Teile des Aufsatzes, die **ohne Fall** auskommen. Den Transfer übst du im Kurs „Fallbezug üben“."
+     "text": "Jetzt schreibst du alle Teile des Aufsatzes, die **ohne Fall** auskommen. Den Transfer übst du im Training „Fallbezug üben“."
     },
     {
      "typ": "strukturstreifen",
@@ -353,7 +352,7 @@
     {
      "typ": "merke",
      "label": "Merke",
-     "text": "Wenn deine Sätze **allgemein** sind und die Fachbegriffe stimmen, hast du die Grundlage für den Transfer. Weiter geht es mit dem Kurs „Fallbezug üben“."
+     "text": "Wenn deine Sätze **allgemein** sind und die Fachbegriffe stimmen, hast du die Grundlage für den Transfer. Weiter geht es mit dem Training „Fallbezug üben“."
     }
    ]
   }

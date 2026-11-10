@@ -71,10 +71,10 @@ Bei allen anderen Aufgabentypen kann zusätzlich `erklaerung` stehen. Der Text e
 
 | Lernbereich | ID | Thema |
 | --- | --- | --- |
-| LB 1 | `fa04` | Fachaufsatz-Aufbau am Fall Mira (Selbstlernkurs nach der Kurzarbeit: Bausteine und Reihenfolge) |
-| LB 1 | `fa05` | Eine Theorie allgemein beschreiben: Alltagstheorie und Wissenschaftstheorie (ohne Fallbezug) |
-| LB 1 | `fa06` | Fallbezug üben: Theorie am Fall Mira belegen (Transfer mit Zeilenangaben) |
-| LB 1 | `fa07` | Schreibtraining am Fall Mira: Sätze, Argumente, roter Faden, nichts dazudichten |
+| LB 1 | `fa04` | Training: Struktur einhalten (Fall Mira, nach der Kurzarbeit: Bausteine und Reihenfolge) |
+| LB 1 | `fa05` | Training: Theorie beschreiben (Alltags- und Wissenschaftstheorie, ohne Fallbezug) |
+| LB 1 | `fa06` | Training: Fallbezug üben (Transfer am Fall Mira mit Zeilenangaben) |
+| LB 1 | `fa07` | Training: Schreiben üben (Sätze, Argumente, roter Faden, nichts dazudichten) |
 | LB 1 | `pp01` | Gegenstand der Psychologie: Erleben und Verhalten |
 | LB 1 | `pp02` | Wissenschaftliche und alltagspsychologische Aussagen |
 | LB 1 | `pp03` | Das Experiment als wissenschaftliche Methode |
@@ -98,3 +98,7 @@ Bei allen anderen Aufgabentypen kann zusätzlich `erklaerung` stehen. Der Text e
 | LB 4 | `pp16` | Medien als Einflussfaktor für Lernprozesse |
 
 `pp01`, `pp02` und `pp03` sind die Einstiegsinhalte, alle anderen gehören zum Abschlussprüfungs-Training.
+
+## Trainings nach Kurzarbeit und Schulaufgabe
+
+In der Lernlandkarte steht in jedem Lernbereich unter den Themen eine Zeile: LB 1 „1.Kurzarbeit“, LB 2 „1.Schulaufgabe“, LB 3 „2.Kurzarbeit“, LB 4 „2.Schulaufgabe“. Dort stellen Lehrkräfte über „Baustein einplanen“ die Trainings (`fa05`, `fa06`, `fa04`, `fa07`) ein. Die Zeilen sind keine Lehrplan-Themen und zählen nicht in den Fortschritt.

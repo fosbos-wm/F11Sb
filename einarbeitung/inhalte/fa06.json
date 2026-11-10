@@ -1,11 +1,10 @@
 {
- "titel": "Fallbezug üben: Theorie am Fall Mira belegen",
+ "titel": "Training: Fallbezug üben",
  "modulart": "selbstlern",
- "lb": 1,
  "einleitung": "Du übst das **Verdeutlichen (Transfer)**: passende Textstellen finden, Zeilen angeben, mit dem Fachbegriff deuten und Gegenbelege nutzen. Plane etwa 45 Minuten ein.",
  "abschnitte": [
   {
-   "kicker": "Kurs 3 · Fallbezug",
+   "kicker": "Training · Fallbezug üben",
    "titel": "Theorie am Fall belegen",
    "bloecke": [
     {

@@ -1,11 +1,10 @@
 {
- "titel": "Fachaufsatz-Aufbau am Fall Mira",
+ "titel": "Training: Struktur einhalten",
  "modulart": "selbstlern",
- "lb": 1,
  "einleitung": "Du übst den **Aufbau** eines Fachaufsatzes am Fall Mira aus der Kurzarbeit: Welche Bausteine gibt es, und in welcher Reihenfolge stehen sie? Am Ende schreibst du deinen Aufsatz mit Strukturstreifen. Plane etwa 45 Minuten ein.",
  "abschnitte": [
   {
-   "kicker": "Kurs 1 · Aufbau",
+   "kicker": "Training · Struktur einhalten",
    "titel": "Die Aufgabe aus der Kurzarbeit",
    "bloecke": [
     {
@@ -392,7 +391,7 @@
     {
      "typ": "merke",
      "label": "Merke",
-     "text": "Merke dir die Reihenfolge: **Einleitungssatz, Eingrenzung, Überleitung, Klärung der Theoriebegriffe, zwei Merkmale (Nennen, Erklären, Verdeutlichen (Transfer)), Schluss.**\n\nWenn dir die Inhalte der Merkmale noch unsicher sind, übe weiter mit dem Kurs „Eine Theorie allgemein beschreiben“. Fehlt dir der Fallbezug, nimm den Kurs „Fallbezug üben“."
+     "text": "Merke dir die Reihenfolge: **Einleitungssatz, Eingrenzung, Überleitung, Klärung der Theoriebegriffe, zwei Merkmale (Nennen, Erklären, Verdeutlichen (Transfer)), Schluss.**\n\nWenn dir die Inhalte der Merkmale noch unsicher sind, übe weiter mit dem Training „Theorie beschreiben“. Fehlt dir der Fallbezug, nimm das Training „Fallbezug üben“."
     }
    ]
   }
