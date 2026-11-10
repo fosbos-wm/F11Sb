@@ -5036,7 +5036,7 @@ const PPM_EXP_TEILE=[
 function ppmExpMinuten(teile){return PPM_EXP_TEILE.filter(t=>(teile||[]).includes(t.k)).reduce((n,t)=>n+t.min,0);}
 function ppmExpTeile(m){return Array.isArray(m&&m.teile)&&m.teile.length?m.teile:PPM_EXP_TEILE.map(t=>t.k);}
 // Fertige Einarbeitungs-Inhalte (einarbeitung/inhalte/<id>.json); wählbar im Selbstlernkurs.
-const PPM_EA_IDS=["fa01","fa02","fa03","pp01","pp02","pp03","pp1a1","pp1a2","pp1a3","pp1a4","pp04a","pp04b","pp04c","pp04d","pp05","pp06","pp07","pp21a","pp21b","pp2a1","pp10","pp11","pp15","pp16"];
+const PPM_EA_IDS=["fa01","fa02","fa03","fa04","fa05","fa06","fa07","pp01","pp02","pp03","pp1a1","pp1a2","pp1a3","pp1a4","pp04a","pp04b","pp04c","pp04d","pp05","pp06","pp07","pp21a","pp21b","pp2a1","pp10","pp11","pp15","pp16"];
 // Einheitliche Bezeichnung: Inhalt · Modulart · LB1 (LB nur, wenn bekannt)
 function ppmBez(inhalt,modul,lb){const T=PPM_TYPEN[modul];return[inhalt,T?T.art:"",lb?"LB"+lb:""].filter(Boolean).join(" · ");}
 // Modulart und Lernbereich einer Einarbeitung: zuerst die Angaben in der JSON-Datei ("modulart", "lb"),

@@ -71,6 +71,10 @@ Bei allen anderen Aufgabentypen kann zusätzlich `erklaerung` stehen. Der Text e
 
 | Lernbereich | ID | Thema |
 | --- | --- | --- |
+| LB 1 | `fa04` | Fachaufsatz-Aufbau am Fall Mira (Selbstlernkurs nach der Kurzarbeit: Bausteine und Reihenfolge) |
+| LB 1 | `fa05` | Eine Theorie allgemein beschreiben: Alltagstheorie und Wissenschaftstheorie (ohne Fallbezug) |
+| LB 1 | `fa06` | Fallbezug üben: Theorie am Fall Mira belegen (Transfer mit Zeilenangaben) |
+| LB 1 | `fa07` | Schreibtraining am Fall Mira: Sätze, Argumente, roter Faden, nichts dazudichten |
 | LB 1 | `pp01` | Gegenstand der Psychologie: Erleben und Verhalten |
 | LB 1 | `pp02` | Wissenschaftliche und alltagspsychologische Aussagen |
 | LB 1 | `pp03` | Das Experiment als wissenschaftliche Methode |
