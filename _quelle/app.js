@@ -4160,7 +4160,7 @@ async function anstehendBoxHTML(wochenplan){
    const alt=!(inWoche&&x.i===jIdx),sw=swById(x.m.start),T=PPM_TYPEN[x.m.modul]||{};
    zeilen.push({ord:alt?1:2,html:`<div class="an-zeile${alt?" spaet":""}"><span class="an-icon">${T.icon||"📘"}</span><div><b>${esc(ppmTitel(x.m)||T.name||"Modul")}</b><small>Pädagogik/Psychologie · ${alt?`noch offen aus KW ${sw?ppmKW(sw):""}`:"diese Woche"}${x.p.frac>0?` · ${Math.round(x.p.frac*100)} % geschafft`:""}</small></div><button type="button"class="secondary"data-ppm="oeffnen"data-id="${esc(x.m.id)}">Öffnen</button></div>`});
   });
-  if(offen.length>4)zeilen.push({ord:3,html:`<div class="an-zeile"><span class="an-icon">➕</span><div><b>${offen.length-4} weitere Module offen</b><small>Pädagogik/Psychologie</small></div><button type="button"class="secondary"onclick="openFach('paedagogik')">Zum Modulplan</button></div>`});
+  if(offen.length>4)zeilen.push({ord:3,html:`<div class="an-zeile"><span class="an-icon">➕</span><div><b>${offen.length-4} weitere Module offen</b><small>Pädagogik/Psychologie</small></div><button type="button"class="secondary"onclick="go('start')">Zur Lernlandkarte</button></div>`});
  }catch(e){console.error("Anstehend (Module):",e);}
  // 2) Blockberichte: laufender Block und Block, der in den letzten 14 Tagen endete
  try{
@@ -4280,8 +4280,8 @@ async function offeneModuleBoxHTML(){
    return`<div class="ofm-zeile"style="--c:${ppmFarbe(x.m)}"><span class="ofm-balken"aria-hidden="true"></span><div><b>${esc(ppmTitel(x.m)||T.name||"Modul")}</b><small>${esc(T.art||T.kurz||"Modul")}${x.m.lb?` · LB${esc(x.m.lb)}`:""} · ${esc(ppmDauerText(x.m))}${x.m.projektId?" · Einheit im Projekt":""}${laeuft?` · läuft bis KW ${ppmKW(letzte)}`:""}</small><span class="ofm-st">${proz>0?`${proz} % geschafft`:"noch nicht begonnen"}</span>${proz>0?`<span class="ofm-bar"role="progressbar"aria-valuenow="${proz}"aria-valuemin="0"aria-valuemax="100"><i style="width:${proz}%"></i></span>`:""}</div><button type="button"class="secondary"data-ppm="oeffnen"data-id="${esc(x.m.id)}">Öffnen</button></div>`;
   };
   let zu=false;try{zu=localStorage.getItem("f11sb_offen_modulplan_zu")==="1";}catch(e){}
-  const inhalt=gruppen.length?gruppen.map(g=>`<div class="ofm-woche">${kopf(g)}${g.offen.map(zeile).join("")}</div>`).join(""):`<p class="an-leer">Du bist im Modulplan auf dem aktuellen Stand.</p>`;
-  return`<details class="card ofm-box"${zu?"":" open"} ontoggle="try{localStorage.setItem('f11sb_offen_modulplan_zu',this.open?'0':'1')}catch(e){}"><summary><span><span class="kicker">NACH SCHULWOCHEN</span><h2>Noch offen im Modulplan</h2></span><span class="pill${n?"":" green"}">${n?`${n} offen`:"alles erledigt ✓"}</span><span class="an-pfeil"aria-hidden="true">▾</span></summary>${inhalt}<div style="margin-top:12px"><button type="button"class="secondary"onclick="openFach('paedagogik')">Zum Modulplan →</button></div></details>`;
+  const inhalt=gruppen.length?gruppen.map(g=>`<div class="ofm-woche">${kopf(g)}${g.offen.map(zeile).join("")}</div>`).join(""):`<p class="an-leer">Du bist auf dem aktuellen Stand.</p>`;
+  return`<details class="card ofm-box"${zu?"":" open"} ontoggle="try{localStorage.setItem('f11sb_offen_modulplan_zu',this.open?'0':'1')}catch(e){}"><summary><span><span class="kicker">NACH SCHULWOCHEN</span><h2>Noch offen</h2></span><span class="pill${n?"":" green"}">${n?`${n} offen`:"alles erledigt ✓"}</span><span class="an-pfeil"aria-hidden="true">▾</span></summary>${inhalt}<div style="margin-top:12px"><button type="button"class="secondary"onclick="go('start')">Zur Lernlandkarte →</button></div></details>`;
  }catch(e){console.error("Offene Module:",e);return"";}
 }
 async function getRecentForumActivityCount(days){
@@ -4628,7 +4628,7 @@ async function renderDidaktikKompass(){
  const phasen=[1,2,3].map(n=>{const p=PP12_PHASEN[n];return`<article class="dk-karte"><span class="pp12-phase pp12-ph${n}">${p.kurz}</span><h3>${esc(p.name)}</h3><p>${esc(p.was)}</p><p class="dk-rolle"><b>Deine Rolle:</b> ${esc(p.rolle)}</p><p><b>Ziel der Schüler:innen:</b> ${esc(p.ziel)}</p><p class="dk-app"><b>Das hilft in der App:</b> ${p.tools.map(t=>esc(t[0])).join(", ")}.</p></article>`;}).join("");
  const udl=DK_UDL.map(([zeile,felder])=>`<div class="dk-zeile"><div class="dk-label">${zeile}</div>${felder.map(([nr,k,t,f,b])=>`<div class="dk-feld"style="--c:${PP12_UDL[k].col}"><div class="dk-fkopf"><span>${nr}</span><b>${esc(t)}</b></div><p>${esc(f)}</p><p class="dk-bsp"><b>In der F11Sb:</b> ${esc(b)}</p></div>`).join("")}</div>`).join("");
  const kopfzeile=`<div class="dk-zeile dk-kopf"><div></div>${Object.values(PP12_UDL).map(v=>`<div class="dk-spalte"style="background:${v.col}"><b>${esc(v.name)}</b><small>${esc(v.leit)}</small></div>`).join("")}</div>`;
- return`<button class="secondary"onclick="openFach('paedagogik')">← Zurück zum Modulplan</button>
+ return`<button class="secondary"onclick="go('start')">← Lernlandkarte</button>
  ${pageHead("UNTERRICHT · ORIENTIERUNG FÜR LEHRKRÄFTE","Didaktik-Kompass","Zwei Modelle, ein Ziel: Alle Schüler:innen bekommen Zugang, Wahl und Tiefe im Lernen. Alles ist freiwillig und kann angepasst werden.",`<button class="secondary"onclick="pp12KompassDrucken()">Als A4 drucken</button>`)}
  <style>
   .dk-saetze{display:grid;gap:10px;margin:0 0 6px}.dk-satz{display:grid;grid-template-columns:42px 1fr;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;line-height:1.45}
@@ -5532,69 +5532,6 @@ body.ppm-dnd-an{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .bep-leg{color:var(--muted);font-size:11px}
 </style>`;
 
-async function renderPPModulplan(){
- await ppmLaden();await ppmMeineLaden();
- await Promise.all(PPM.liste.filter(m=>m.modul==="projekt"&&m.vorlage).map(m=>bepVorlage(m.vorlage)));
- await bepAlleLaden();
- const co=await ladeCheckoutDaten().catch(()=>null);
- PPM.co=co;
- const heute=new Date().toISOString().slice(0,10),lehrer=isTeacher();
- const last=ppmLast();
- const proWoche={},fort={},legacy={};
- PPM.liste.forEach(m=>{
-  (proWoche[m.start]=proWoche[m.start]||[]).push(m);
-  ppmWochen(m).slice(1).forEach(w=>{(fort[w.id]=fort[w.id]||[]).push(m);});
-  (m.einheiten||[]).forEach(e=>{if(e.woche&&e.woche!==m.start)(legacy[e.woche]=legacy[e.woche]||[]).push({m,e});});
- });
- const gesamt=SCHULWOCHEN_PP.length*PPM_MIN_PRO_WOCHE;
- const belegt=SCHULWOCHEN_PP.reduce((n,w)=>n+Math.min(PPM_MIN_PRO_WOCHE,last[w.id].min),0);
- const proz=gesamt?Math.round(belegt/gesamt*100):0;
- const vergangen=SCHULWOCHEN_PP.filter(w=>w.end<heute).length,jahrProz=Math.round(vergangen/SCHULWOCHEN_PP.length*100);
- const blockWochen=ppmZeitleiste().filter(z=>z.art==="block").reduce((n,z)=>n+z.n,0);
- const zeitBox=`<div class="ppm-box ppm-zeitbox"><h2>Zeitstruktur</h2>
-  <p>Pro Schulwoche stehen <b>${PPM_STD_PRO_WOCHE} Unterrichtsstunden</b> (je ${PPM_MIN_PRO_STUNDE} Minuten) zur Verfügung. In den <b>Praktikumsblöcken (fpA)</b> und in den Ferien ist kein Unterricht, dort lässt sich nichts planen. Projekte über ganze Wochen laufen auf einer eigenen <b>Projektspur</b> (oberste Zeile der Woche): Sie belegen keine der 6,3 Stunden, daneben lassen sich in jeder Woche normal Selbstlernkurse und andere Module planen. Das Schuljahr hat <b>${SCHULWOCHEN_PP.length} Schulwochen</b> (${blockWochen} Wochen Praktikum und Ferien dazwischen).</p>
-  <div class="ppm-balken"><span><b>Verplant:</b> ${ppmStd(belegt)} von ${ppmStd(gesamt)} Unterrichtsstunden (${proz} %)</span><div class="ppm-bar" role="progressbar" aria-valuenow="${proz}" aria-valuemin="0" aria-valuemax="100"><i style="width:${proz}%"></i></div></div>
-  <div class="ppm-balken"><span><b>Schuljahr:</b> ${vergangen} von ${SCHULWOCHEN_PP.length} Schulwochen vorbei (${jahrProz} %)</span><div class="ppm-bar ppm-bar-jahr" role="progressbar" aria-valuenow="${jahrProz}" aria-valuemin="0" aria-valuemax="100"><i style="width:${jahrProz}%"></i></div></div>
-  <div class="ppm-leg"><span><i style="background:#3d8fd0"></i>Woche teilweise belegt</span><span><i style="background:#3fa66a"></i>Woche voll (6,3 Stunden)</span><span><i style="background:#d9534f"></i>Woche überbucht</span><span>  Praktikum (gesperrt)</span><span> Ferien (gesperrt)</span></div></div>`;
- const legende=lehrer?`<div class="ppm-legende">${Object.entries(PPM_TYPEN).filter(([k])=>k!=="experiment").map(([k,T])=>`<button type="button" class="ppm-typ" data-ppm="neu" data-typ="${k}"><b>${T.icon} ${esc(T.name)}</b><small>${esc(T.text)}</small></button>`).join("")}</div>`:"";
- const zeilen=ppmZeitleiste().map(z=>{
-  if(z.art==="block"){
-   const darin=z.kind==="praktikum"?FERIEN_2026_27.filter(f=>f.start<=z.bis&&f.end>=z.von).map(f=>f.titel):[];
-   return`<div class="ppm-block ${z.kind}"><span style="font-size:22px">${z.icon}</span><div><b>${esc(z.titel)}</b><br><small>${fmtKurz(z.von)}–${fmtKurz(z.bis)} · ${z.n} Woche${z.n===1?"":"n"} · gesperrt, kein Unterricht${darin.length?` · darin: ${esc(darin.join(", "))}`:""}</small></div></div>`;
-  }
-  const w=z.w,mm=proWoche[w.id]||[],ff=fort[w.id]||[],ee=legacy[w.id]||[];
-  if(!lehrer&&!mm.length&&!ff.length&&!ee.length)return"";
-  const jetzt=heute>=w.start&&heute<=w.end,min=last[w.id].min,pct=Math.min(100,Math.round(min/PPM_MIN_PRO_WOCHE*100)),cls=min>PPM_MIN_PRO_WOCHE?"ueber":(min===PPM_MIN_PRO_WOCHE?"voll":"");
-  const kw=ppmKW(w);
-  const spurM=mm.filter(ppmIstSpur),normM=mm.filter(m=>!ppmIstSpur(m)),ffS=ff.filter(ppmIstSpur),ffN=ff.filter(m=>!ppmIstSpur(m));
-  const spurZeile=(spurM.length||ffS.length)?`<div class="ppm-spurreihe">${spurM.map(m=>ppmKarteHTML(m,false)).join("")}${ffS.map(m=>ppmKarteHTML(m,true)).join("")}</div>`:"";
-  const stW=lehrer?[]:mm.map(ppmFort).filter(Boolean),nOkW=stW.filter(x=>x.done).length,pzW=stW.length?Math.round(nOkW/stW.length*100):0;
-  const wochenFort=stW.length?`<div class="ppm-kap voll" title="${nOkW} von ${stW.length} Modulen geschafft"><i style="width:${pzW}%"></i></div><small class="kapa">${nOkW===stW.length?"alles geschafft ✓":nOkW+" von "+stW.length+" geschafft"}</small>${w.end<heute&&nOkW<stW.length?`<small class="ppm-nach">${stW.length-nOkW} noch offen</small>`:""}`:"";
-  return`<div class="ppm-woche${jetzt?" jetzt":""}" data-w="${w.id}"><div class="ppm-wl"><b>KW ${kw}</b><span>${fmtKurz(w.start)}–${fmtKurz(w.end)}</span>${jetzt?`<em style="font-style:normal;font-weight:700;color:#075a9d">diese Woche</em>`:""}
-    ${lehrer?`<div class="ppm-kap ${cls}" title="${ppmStd(min)} von ${PPM_STD_PRO_WOCHE} Unterrichtsstunden belegt"><i style="width:${pct}%"></i></div><small class="kapa">${ppmStd(min)} von ${PPM_STD_PRO_WOCHE} Stunden${min>PPM_MIN_PRO_WOCHE?" · überbucht":(min===PPM_MIN_PRO_WOCHE?" · voll":"")}</small>`:wochenFort}</div>
-   <div class="ppm-wi">${spurZeile}<div class="ppm-reihe">${normM.map(m=>ppmKarteHTML(m,false)).join("")}${ffN.map(m=>ppmKarteHTML(m,true)).join("")}${ee.map(x=>`<span class="ppm-fort" style="--c:${ppmFarbe(x.m)}" data-ppm="oeffnen" data-id="${esc(x.m.id)}">${(PPM_EINHEITEN[x.e.typ]||{}).icon||""} Einheit: ${esc((PPM_EINHEITEN[x.e.typ]||{}).name||x.e.typ)}</span>`).join("")}
-   ${lehrer?(min<PPM_MIN_PRO_WOCHE?`<button type="button" class="ppm-neu" data-ppm="neu" data-woche="${w.id}">＋ Modul</button>`:`<span class="ppm-leer"${min>PPM_MIN_PRO_WOCHE?' style="color:#b3261e;font-weight:700"':""}>${min>PPM_MIN_PRO_WOCHE?`Woche überbucht: ${ppmStd(min)} von ${PPM_STD_PRO_WOCHE} Stunden, bitte ein Modul verschieben oder kürzen`:"Woche voll"}</span>`):(normM.length||ffN.length||ee.length||spurM.length||ffS.length?"":`<span class="ppm-leer">–</span>`)}</div></div></div>`;
- }).join("");
- const alleSt=lehrer?[]:PPM.liste.map(m=>({m,p:ppmFort(m)})).filter(x=>x.p);
- const nGes=alleSt.length,nOk=alleSt.filter(x=>x.p.done).length,pzGes=nGes?Math.round(nOk/nGes*100):0;
- const jw=SCHULWOCHEN_PP.find(w=>heute>=w.start&&heute<=w.end)||SCHULWOCHEN_PP.find(w=>w.start>heute),jIdx=jw?ppmSwIndex(jw.id):SCHULWOCHEN_PP.length;
- const offen=alleSt.filter(x=>!x.p.done);
- const jetztX=offen.find(x=>ppmSwIndex(x.m.start)<=jIdx),naechstX=jetztX||offen[0];
- const nxLabel=jetztX?(ppmSwIndex(jetztX.m.start)<jIdx?"Noch offen aus einer früheren Woche":"Jetzt dran"):"Als Nächstes";
- const standBox=nGes?`<div class="ppm-box ppm-stand"><h2>Dein Stand</h2>
-  <div class="ppm-balken"><span><b>${nOk} von ${nGes}</b> Modulen geschafft (${pzGes} %)</span><div class="ppm-bar" role="progressbar" aria-valuenow="${pzGes}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pzGes}%"></i></div></div>
-  ${naechstX?`<div class="ppm-next"><span>${nxLabel}: <b>${esc(naechstX.m.titel||(PPM_TYPEN[naechstX.m.modul]||{}).name||"")}</b> <small style="color:var(--muted)">(KW ${ppmKW(swById(naechstX.m.start)||{start:heute})})</small></span><button type="button" class="ppm-btn klein primaer" data-ppm="oeffnen" data-id="${esc(naechstX.m.id)}">Öffnen</button></div>`:`<p style="margin:6px 0 0"><b>Alles geschafft ✓</b></p>`}</div>`:"";
- const leer=!PPM.liste.length;
- const fehler=PPM.fehler?`<div class="empty"><strong>Der Modulplan konnte nicht geladen werden.</strong>${esc(PPM.fehler==="permission-denied"?"Firebase verweigert den Zugriff (permission-denied). Die Firestore-Regeln für den Modulplan sind noch nicht veröffentlicht.":"Fehler: "+PPM.fehler)}</div>`:"";
- const coBox=co?`${checkoutLiveBannerHTML(co)}<details class="ppm-box ppm-details"><summary>Check-outs (K-Prim-Tests)</summary><div style="margin-top:10px">${checkoutSektionHTML(co)}</div></details>`:"";
- return`<div class="kwp"><div class="kw-links"><button class="secondary" onclick="go('start')">← Lernlandkarte</button><button class="secondary" onclick="closeFach()">Lernwerkstatt</button></div>
- <header class="kw-kopf" style="--c:#3A8FD4;--t:#1F6FB2"><small>PÄDAGOGIK/PSYCHOLOGIE · PLANUNG</small><h1>Modulplanung</h1><p>${lehrer?"Plane Woche für Woche, welcher Baustein in welchem Lernbereich dran ist. Klicke bei einer Woche auf „＋ Modul“ oder wähle unten einen Bausteintyp.":"Dein Plan durchs Schuljahr: Klicke einen Baustein an, um loszulegen."}</p>${lehrer?`<div class="kw-aktionen"><button class="secondary" onclick="openProjektGesamtcheck()">Projekt-Gesamtcheck</button><button class="secondary" onclick="openFachaufsatzTrainingCheck()">APT-Gesamtcheck</button><button class="secondary" onclick="go('didaktik')">Didaktik-Kompass</button></div>`:""}</header>
- ${PPM_CSS}${fehler}${coBox}${standBox}${legende}
- ${leer&&lehrer&&!PPM.fehler?`<div class="ppm-box"><h2>Noch kein Plan</h2><p>Du kannst von vorn beginnen oder den bisherigen Ablauf (je Lernbereich ein Projekt und ein Prüfungstraining, dazu das Experiment als Einheit im ersten Projekt) als Startpunkt übernehmen. Danach lässt sich jedes Modul ändern, verschieben oder löschen.</p><button type="button" class="ppm-btn primaer" data-ppm="standard">Bisherigen Ablauf als Plan übernehmen</button></div>`:""}
- ${leer&&!lehrer&&!PPM.fehler?`<div class="empty"><strong>Noch kein Plan.</strong>Deine Lehrkraft hat noch keine Module geplant.</div>`:""}
- <div class="ppm-plan z${ppmZoomLesen()}">${ppmZoomLeisteHTML()}${zeilen}</div>
- </div>${footer()}`;
-}
 // ------------------------------------------------------------ Modul anlegen/ändern
 // „＋ Modul“ in einer Woche: erst eines der fünf Module wählen, dann öffnet sich der Dialog.
 function ppmTypWahl(woche){
@@ -6172,7 +6109,7 @@ function ppmMaterialBox(m){
 function ppmKopf(m,unter,extraBtn){
  const T=PPM_TYPEN[m.modul],c=ppmFarbe(m),w=ppmWochen(m);
  const zeit=w.length?`${fmtKurz(w[0].start)}–${fmtKurz(w[w.length-1].end)}`:"";
- return`<div class="kw-links"><button class="secondary" onclick="go('start')">← Lernlandkarte</button><button class="secondary" data-ppm="plan">← Modulplan</button></div>
+ return`<div class="kw-links"><button class="secondary" onclick="go('start')">← Lernlandkarte</button></div>
  ${PPM_CSS}
  <div class="ppm-box ppm-kopf kw-kopf" style="--c:${c};--t:${c}"><div class="kicker">${T.icon} ${esc((T.art||T.kurz).toUpperCase())} · LB${m.lb} · ${zeit} · ${esc(ppmDauerDef(m).lang.toUpperCase())}</div>
   <h1>${esc(ppmTitel(m)||T.name)}</h1>${m.notiz?`<p>${esc(m.notiz)}</p>`:""}${unter||""}
@@ -7734,7 +7671,7 @@ async function renderPaedagogikPhasenZeitstrahl(fach,fortschrittMap,heute){
   }
   activePhaseDetail=null;
  }
- return await renderPPModulplan();
+ return await renderKachelwand();
 }
 
 // Kurznamen der Inhalte für die kompakte Lernweg-Ansicht.
@@ -12636,11 +12573,6 @@ async function renderLernwerkstatt(){
   ]}
  ];
  return`${pageHead("SELBSTSTÄNDIG LERNEN","Lernwerkstatt","Der offene Lernraum für Lernaufträge, Methoden, Tools und KI.",`<button class="primary"onclick="openPostForm('idea')">＋ Lernimpuls</button>`)}
- ${isTeacher()?`<div class="kicker"style="margin-bottom:10px">PLANUNG FÜR LEHRKRÄFTE</div>
- <a class="card tile"href="#fach"onclick="event.preventDefault();openFach('paedagogik')"style="background:#fff;border-left:4px solid #4a90d9;min-height:110px;margin-bottom:22px">
- <strong style="font-size:16px">Modulplanung Pädagogik und Psychologie</strong>
- <small>Bausteine Woche für Woche einplanen, Projekt- und Prüfungstraining-Gesamtcheck, Didaktik-Kompass. Die Lernlandkarte zeigt das Ergebnis für die Klasse.</small>
- </a>`:""}
  ${groups.map(g=>`<div class="kicker"style="margin:26px 0 2px">${g.title}</div><p style="margin:0 0 10px;color:var(--muted)">${g.sub}</p><div class="grid grid-4">${g.items.map(x=>`<a class="card tile"style="background:#fff;border-left:4px solid ${g.color}"href="#${x[3]}"><span class="emoji">${x[0]}</span>
 <strong>${x[1]}</strong><small>${x[2]}</small></a>`).join("")}</div>`).join("")}
  ${footer()}`;
