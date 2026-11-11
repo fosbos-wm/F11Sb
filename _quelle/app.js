@@ -5551,7 +5551,7 @@ async function kwTrainingWahl(e){
  const infos=await Promise.all(KW_TRAININGS.map(x=>einarbeitungInfo(x).catch(()=>null)));
  const da=new Set(kwModuleThema(e.id).map(m=>m.kursId));
  const zeilen=KW_TRAININGS.map((x,i)=>{const n=infos[i];if(!n||n.entwurf)return"";const schon=da.has("ea:"+x);
-  return`<label style="display:flex;gap:12px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:10px;margin-top:8px;cursor:${schon?"default":"pointer"}"><input type="checkbox" class="kwTrCb" value="${x}"${schon?" checked disabled":""}><span><b>${esc(n.titel)}</b>${schon?`<br><small style="color:var(--muted)">schon eingestellt</small>`:""}</span></label>`}).join("");
+  return`<label style="display:flex;gap:12px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:10px;margin-top:8px;cursor:${schon?"default":"pointer"}"><input type="checkbox" class="kwTrCb" value="${x}"${schon?" checked disabled":""}><span><b>${esc(n.titel)}</b>${((/^fa0/.test(x)&&KW_TR_HINT[x])||schon)?`<br><small style="color:var(--muted)">${[/^fa0/.test(x)?KW_TR_HINT[x]:"",schon?"schon eingestellt":""].filter(Boolean).join(" · ")}</small>`:""}</span></label>`}).join("");
  modal(`<button class="modal-close" onclick="closeModal()">×</button>
   <div class="kicker">TRAININGS EINSTELLEN</div><h2>${esc(e.thema)}</h2>
   <p style="color:var(--muted);margin:0 0 4px">Kreuze die Trainings an, die deine Schüler:innen nach der Rückgabe üben sollen.</p>
@@ -23124,16 +23124,14 @@ async function renderKwThema(){
  const uvStufen=[["uebung","Übungsaufgaben"],...KW_KAT.find(k=>k.key==="vertiefung").stufen];
  const uvInner=uvStufen.filter(([key])=>lehrer||mats.some(m=>m.kategorie===key)).map(([key,l])=>`<div class="kw-stufe"><b>${esc(l)}</b>${liste(key)}${lehrer?`<button type="button" class="secondary kw-add" data-kw="matadd" data-kat="${key}">+ hinzufügen</button>`:""}</div>`).join("");
  const uvSek=uvInner?kwSekHTML("Übungs- und Vertiefungsaufgaben","Zum Üben und Festigen, die Vertiefung in drei Schwierigkeitsgraden",uvInner,null,lehrer,""):"";
- // Kachel „Fachaufsatz-Training“: nur die eingestellten Fachaufsätze
+ // Kachel „Fachaufsatz-Training“: eingestellte Fachaufsätze (Prüfungstraining) und alle Selbstlernkurse zum Üben
  const modZeile=m=>{const T=KW_BAUSTEINE[m.modul]||["Baustein","chk"],f=ppmFort(m);return`<div class="kw-dz"><button type="button" class="kw-datei" data-kw="modul" data-id="${esc(m.id)}"><span>${esc(m.titel||T[0])}</span><small>${f&&f.done?"abgeschlossen":(f&&f.frac>0?Math.round(f.frac*100)+" % bearbeitet":(lehrer?"Öffnen":"Starten"))}</small></button>${lehrer?`<button type="button" class="kw-del kw-baust-weg" data-kw="modulweg" data-id="${esc(m.id)}" data-thema="${esc(e.id)}" aria-label="Entfernen" title="Von dieser Seite entfernen">×</button>`:""}</div>`};
- const faSek=(!lehrer&&!faMod.length)?"":kwSekHTML("Fachaufsatz-Training","Fachaufsätze aus Prüfungen zu diesem Thema",faMod.length?`<div class="kw-dateien">${faMod.map(modZeile).join("")}</div>`:`<div class="kw-leer">Noch kein Fachaufsatz eingestellt.</div>`,null,lehrer,
-  lehrer?`<div class="kw-aktionen"><button class="secondary" data-kw="modulneu" data-id="${esc(e.id)}">Baustein einplanen</button><button class="secondary" data-kw="modulwahl" data-id="${esc(e.id)}">Vorhandenes Modul zuordnen</button></div>`:"");
- // Kachel „Trainings (Fachaufsatz)“: immer alle Trainings
  const trListe=KW_TRAININGS_ALLE.map((x,i)=>{const n=trInfos[i];if(!n||n.entwurf)return"";const h=KW_TR_HINT[x];return`<div class="kw-dz"><button type="button" class="kw-datei" data-kw="ea" data-id="${esc(x)}"><span>${esc(n.titel)}</span><small>${h?esc(h)+" · ":""}${n.aufgaben?n.aufgaben+" Aufgaben":"Selbstlernkurs"}</small></button></div>`}).join("");
- const trSek=trListe?kwSekHTML("Trainings (Fachaufsatz)","Selbstlernkurse zum Üben von Struktur, Theorie, Fallbezug und Schreiben",`<div class="kw-dateien">${trListe}</div>`,null,lehrer,""):"";
+ const faSek=(!lehrer&&!faMod.length&&!trListe)?"":kwSekHTML("Fachaufsatz-Training","Fachaufsätze aus Prüfungen und Selbstlernkurse zum Üben von Struktur, Theorie, Fallbezug und Schreiben",(faMod.length||trListe)?`<div class="kw-dateien">${faMod.map(modZeile).join("")}${trListe}</div>`:`<div class="kw-leer">Noch kein Fachaufsatz eingestellt.</div>`,null,lehrer,
+  lehrer?`<div class="kw-aktionen"><button class="secondary" data-kw="modulneu" data-id="${esc(e.id)}">Baustein einplanen</button><button class="secondary" data-kw="modulwahl" data-id="${esc(e.id)}">Vorhandenes Modul zuordnen</button></div>`:"");
  const secs=e.leistung?"":KW_KAT.map(k=>{
   if(k.key==="vertiefung")return"";
-  if(k.key==="uebung")return uvSek+faSek+trSek;
+  if(k.key==="uebung")return uvSek+faSek;
   if(!lehrer){
    const hat=k.stufen?k.stufen.some(([key])=>mats.some(m=>m.kategorie===key)):mats.some(m=>m.kategorie===k.key);
    if(!hat&&!(k.key==="checkin"&&ciFr.length))return"";
