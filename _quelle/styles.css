@@ -813,9 +813,9 @@ body.exp-offen{overflow:hidden}
 .an-leer{margin:0;color:var(--muted)}
 @media(max-width:560px){.an-zeile{flex-wrap:wrap}.an-zeile>button{margin-left:40px}}
 
-.hero-qr{position:absolute;top:14px;right:14px;display:block;width:108px;height:108px;padding:5px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 2px 8px rgba(24,67,96,.12)}.hero-qr img{display:block;width:100%;height:100%;object-fit:contain}.hero-qr:hover{box-shadow:0 4px 14px rgba(24,67,96,.22)}
-.hero:has(.hero-qr){padding-right:150px}
-@media(max-width:800px){.hero-qr{position:static;order:-1;align-self:flex-end;width:84px;height:84px}.hero:has(.hero-qr){padding-right:28px}}
+.hero-qr{position:absolute;top:14px;left:14px;display:block;width:108px;height:108px;padding:5px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 2px 8px rgba(24,67,96,.12)}.hero-qr img{display:block;width:100%;height:100%;object-fit:contain}.hero-qr:hover{box-shadow:0 4px 14px rgba(24,67,96,.22)}
+.hero:has(.hero-qr){padding-left:150px}
+@media(max-width:800px){.hero-qr{position:static;order:-1;align-self:flex-start;width:84px;height:84px}.hero:has(.hero-qr){padding-left:28px}}
 @media print{.hero-qr{display:none}}
 
 /* Startseite: „Noch offen im Modulplan“ (nach Schulwochen) */
@@ -999,3 +999,17 @@ details.ls-lb:not([open])>summary.ls-lbk{border-radius:0 0 0 0}
 
 /* Lernstände: Ampel und Verlauf je Übung */
 .ls-ub{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;margin:3px 0 1px 34px;font-size:13px}.ls-ub small{color:var(--muted)}
+
+
+/* ===== Lernlandkarte: Vollansicht ===== */
+.kw-voll-exit{display:none}
+body.kw-voll .topbar,body.kw-voll .sidebar,body.kw-voll .footer,body.kw-voll #kwRoot>.page-head,body.kw-voll #kwRoot>header{display:none!important}
+body.kw-voll .app-shell{min-height:100vh}
+body.kw-voll main#content{max-width:none;width:100%;padding:14px 18px 24px}
+body.kw-voll .kw-voll-exit{display:block;position:fixed;right:14px;bottom:14px;z-index:60;box-shadow:0 4px 14px rgba(24,67,96,.3)}
+body.kw-voll .kw-wand{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+body.kw-voll .kw-row{font-size:14px;padding:7px 8px}
+body.kw-voll .kw-th b{font-size:18px}
+@media(max-width:900px){body.kw-voll .kw-wand{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){body.kw-voll .kw-wand{grid-template-columns:1fr}}
+@media print{.kw-voll-btn,.kw-voll-exit{display:none!important}}

@@ -4201,7 +4201,7 @@ async function renderStart(){
  const upcomingDateText=upcomingDate?.seconds?new Date(upcomingDate.seconds*1000).toLocaleDateString("de-DE"):String(upcomingDate||"").slice(0,10);
  const upcomingTime=nextCalendar?.time?` · ${esc(nextCalendar.time)} Uhr`:"";
  
- return`${coBanner}<section class="hero"><div><span class="badge"> F11Sb</span><h1>Willkommen auf dem Campus.</h1><p>Hier
+ return`${coBanner}<section class="hero"><a class="hero-qr"href="https://fosbos-wm.github.io/F11Sb/"target="_blank"rel="noopener"title="F11Sb im Browser öffnen oder mit dem Handy scannen"aria-label="QR-Code: Link zur F11Sb-App"><img src="qr-f11sb.png"alt="QR-Code zur F11Sb-App"width="108"height="108"></a><div><span class="badge"> F11Sb</span><h1>Willkommen auf dem Campus.</h1><p>Hier
 verbinden wir Lernen, Projekte, Praxis und Gemeinschaft. Alle angemeldeten Mitglieder arbeiten am selben digitalen Campus.</p>
 </div></section>
  ${isTeacher()?`<div class="card"style="margin-bottom:16px;border-left:4px solid #3A8FD4"><div class="kicker">VERWALTUNG</div><h3 style="margin:2px 0 10px">Für Lehrkräfte</h3><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="primary"onclick="openNewsForm()">＋ News veröffentlichen</button><button class="secondary"onclick="openUserManagement()">Benutzer verwalten</button></div></div>`:""}
@@ -24384,3 +24384,47 @@ function fsLeseMitWiederholung(fn){
 }
 
 window.__booted=1;if(window.__bootOk)window.__bootOk();
+
+
+/* ===== Lernlandkarte: Vollansicht =====
+   Knopf „Vollansicht“ auf der Lernlandkarte: blendet Kopfzeile und Seitenleiste aus und zeigt
+   alle Lernbereiche nebeneinander über die ganze Breite (am Beamer/Bildschirm vollständig lesbar).
+   Beenden: Knopf „Vollansicht beenden“, Esc oder Seitenwechsel. */
+(function(){
+ if(window.__kwVoll)return;window.__kwVoll=1;
+ const B=document.body;
+ function an(){return B.classList.contains("kw-voll")}
+ function knoepfe(){document.querySelectorAll(".kw-voll-btn").forEach(b=>{b.textContent=an()?"✕ Vollansicht beenden":"⛶ Vollansicht"})}
+ function ende(){
+  B.classList.remove("kw-voll");
+  try{if(document.fullscreenElement)document.exitFullscreen()}catch(e){}
+  knoepfe();
+ }
+ function start(){
+  B.classList.add("kw-voll");
+  try{const r=document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();if(r&&r.catch)r.catch(()=>{})}catch(e){}
+  knoepfe();window.scrollTo(0,0);
+ }
+ function umschalten(){an()?ende():start()}
+ window.kwVollansicht=umschalten;
+ function einbauen(){
+  const root=document.getElementById("kwRoot");
+  if(!root){if(an())ende();return}
+  if(!root.querySelector(".kw-wand"))return; // nur die Lernlandkarte selbst
+  if(root.querySelector(".kw-voll-btn"))return;
+  let links=root.querySelector(".kw-links");
+  if(!links){links=document.createElement("div");links.className="kw-links";const w=root.querySelector(".kw-wand");w.parentNode.insertBefore(links,w)}
+  const b=document.createElement("button");
+  b.type="button";b.className="secondary kw-voll-btn";b.title="Alle Lernbereiche auf einen Blick, ganze Bildschirmbreite";
+  b.addEventListener("click",umschalten);
+  links.insertBefore(b,links.firstChild);knoepfe();
+ }
+ const ex=document.createElement("button");
+ ex.type="button";ex.className="primary kw-voll-exit";ex.textContent="✕ Vollansicht beenden";ex.addEventListener("click",ende);
+ B.appendChild(ex);
+ document.addEventListener("fullscreenchange",()=>{if(!document.fullscreenElement&&an())ende()});
+ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&an())ende()});
+ let t=0;
+ new MutationObserver(()=>{if(t)return;t=setTimeout(()=>{t=0;einbauen()},60)}).observe(document.getElementById("content")||B,{childList:true,subtree:true});
+ einbauen();
+})();
