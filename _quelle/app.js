@@ -5133,7 +5133,7 @@ async function ppmLaden(erzwingen){
  if(!erzwingen&&Date.now()-PPM.geladen<30000)return;
  try{
   const s=await getDocs(collection(db,"ppModule"));
-  PPM.liste=s.docs.map(d=>({id:d.id,...d.data()}));PPM.fehler="";
+  PPM.liste=s.docs.map(d=>({id:d.id,...d.data()}));PPM.aus=PPM.liste.filter(m=>m.modul==="trainingaus");PPM.liste=PPM.liste.filter(m=>m.modul!=="trainingaus");PPM.fehler="";
  }catch(e){console.error("Module laden:",e);PPM.fehler=(e&&(e.code||e.name))||"unbekannt";PPM.liste=[];}
  try{await Promise.all([...new Set(PPM.liste.filter(m=>m.modul==="selbstlern"&&String(m.kursId||"").startsWith("ea:")).map(m=>m.kursId.slice(3)))].map(id=>einarbeitungInfo(id)));}catch(e){console.error("Kursinfos laden:",e);}
  PPM.geladen=Date.now();
@@ -23126,9 +23126,10 @@ async function renderKwThema(){
  const uvSek=uvInner?kwSekHTML("Übungs- und Vertiefungsaufgaben","Zum Üben und Festigen, die Vertiefung in drei Schwierigkeitsgraden",uvInner,null,lehrer,""):"";
  // Kachel „Fachaufsatz-Training“: eingestellte Fachaufsätze (Prüfungstraining) und alle Selbstlernkurse zum Üben
  const modZeile=m=>{const T=KW_BAUSTEINE[m.modul]||["Baustein","chk"],f=ppmFort(m);return`<div class="kw-dz"><button type="button" class="kw-datei" data-kw="modul" data-id="${esc(m.id)}"><span>${esc(m.titel||T[0])}</span><small>${f&&f.done?"abgeschlossen":(f&&f.frac>0?Math.round(f.frac*100)+" % bearbeitet":(lehrer?"Öffnen":"Starten"))}</small></button>${lehrer?`<button type="button" class="kw-del kw-baust-weg" data-kw="modulweg" data-id="${esc(m.id)}" data-thema="${esc(e.id)}" aria-label="Entfernen" title="Von dieser Seite entfernen">×</button>`:""}</div>`};
- const trListe=KW_TRAININGS_ALLE.map((x,i)=>{const n=trInfos[i];if(!n||n.entwurf)return"";const h=KW_TR_HINT[x];return`<div class="kw-dz"><button type="button" class="kw-datei" data-kw="ea" data-id="${esc(x)}"><span>${esc(n.titel)}</span><small>${h?esc(h)+" · ":""}${n.aufgaben?n.aufgaben+" Aufgaben":"Selbstlernkurs"}</small></button></div>`}).join("");
+ const aus=new Set((PPM.aus||[]).filter(a=>(a.themen||[]).includes(e.id)).map(a=>a.kursId));
+ const trListe=KW_TRAININGS_ALLE.map((x,i)=>{const n=trInfos[i];if(!n||n.entwurf||aus.has(x))return"";const h=KW_TR_HINT[x];return`<div class="kw-dz"><button type="button" class="kw-datei" data-kw="ea" data-id="${esc(x)}"><span>${esc(n.titel)}</span><small>${h?esc(h)+" · ":""}${n.aufgaben?n.aufgaben+" Aufgaben":"Selbstlernkurs"}</small></button>${lehrer?`<button type="button" class="kw-del kw-baust-weg" data-kw="trweg" data-id="${esc(x)}" data-thema="${esc(e.id)}" aria-label="Ausblenden" title="Auf dieser Themenseite ausblenden">×</button>`:""}</div>`}).join("");
  const faSek=(!lehrer&&!faMod.length&&!trListe)?"":kwSekHTML("Fachaufsatz-Training","Fachaufsätze aus Prüfungen und Selbstlernkurse zum Üben von Struktur, Theorie, Fallbezug und Schreiben",(faMod.length||trListe)?`<div class="kw-dateien">${faMod.map(modZeile).join("")}${trListe}</div>`:`<div class="kw-leer">Noch kein Fachaufsatz eingestellt.</div>`,null,lehrer,
-  lehrer?`<div class="kw-aktionen"><button class="secondary" data-kw="modulneu" data-id="${esc(e.id)}">Baustein einplanen</button><button class="secondary" data-kw="modulwahl" data-id="${esc(e.id)}">Vorhandenes Modul zuordnen</button></div>`:"");
+  lehrer?`<div class="kw-aktionen"><button class="secondary" data-kw="modulneu" data-id="${esc(e.id)}">Baustein einplanen</button><button class="secondary" data-kw="modulwahl" data-id="${esc(e.id)}">Vorhandenes Modul zuordnen</button>${aus.size?`<button class="secondary" data-kw="trzurueck" data-id="${esc(e.id)}">Ausgeblendete Kurse wieder einblenden</button>`:""}</div>`:"");
  const secs=e.leistung?"":KW_KAT.map(k=>{
   if(k.key==="vertiefung")return"";
   if(k.key==="uebung")return uvSek+faSek;
@@ -23653,6 +23654,7 @@ async function kwModulWaehlen(themaId){
    closeModal();await ppmLaden(true);toast("Zugeordnet.");render()}catch(err){console.error(err);toast("Konnte nicht gespeichert werden.")}
  };
 }
+async function kwTrAus(id,themaId,zurueck){if(!He())return;await Ke(!0);try{if(zurueck){for(const a of (oe.aus||[]).filter(a=>(a.themen||[]).includes(themaId)))await he(z(b,"ppModule",a.id))}else{if(!confirm("Diesen Kurs auf dieser Themenseite ausblenden?\n\nEr bleibt in der App erhalten und kann hier wieder eingeblendet werden."))return;await be(N(b,"ppModule"),{modul:"trainingaus",kursId:id,themen:[themaId],lb:0,createdBy:$.uid,createdAt:I()})}await Ke(!0);h(zurueck?"Eingeblendet.":"Ausgeblendet.");R()}catch(err){console.error(err);h("Das hat nicht geklappt.")}}
 async function kwModulEntfernen(modulId,themaId){
  if(!kwLehrer())return;
  await ppmLaden(true);
@@ -23687,7 +23689,7 @@ document.addEventListener("click",async ev=>{
   else if(a==="modul")ppmOeffnen(id);
   else if(a==="modulneu"){const e=kwThemaById(id),ph=PROJEKT_PHASEN.find(p=>p.id===e.phase);window.__kwThemaNeu=id;kwBausteinWahl(id)}
   else if(a==="modulwahl")kwModulWaehlen(id);
-  else if(a==="modulweg")await kwModulEntfernen(id,b.dataset.thema);
+  else if(a==="modulweg")await kwModulEntfernen(id,b.dataset.thema);else if(a==="trweg")await kwTrAus(id,b.dataset.thema,false);else if(a==="trzurueck")await kwTrAus(null,id,true);
   else if(a==="projektstart"){const ph=kwPhase(b.dataset.lb);const pm=PPM.liste.find(m=>m.modul==="projekt"&&Number(m.lb)===ph.lbNum&&!m.projektId);if(pm)ppmOeffnen(pm.id);else{activePPModul=null;activeFach="paedagogik";activePhaseDetail=ph.id+":projekt";go("fach")}}
   else if(a==="exp"){activeFach="paedagogik";openExperimentStunde(null)}
   else if(a==="fertig"){
