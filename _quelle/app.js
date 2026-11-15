@@ -1,4 +1,4 @@
-let initializeApp, getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, updateProfile, deleteUser; let getFirestore, collection, doc, addDoc, setDoc, updateDoc, deleteDoc, getDoc, getDocs, query, orderBy, limit, where, onSnapshot, serverTimestamp, arrayUnion, arrayRemove, increment, writeBatch; let getStorage, storageRef, uploadBytes, getDownloadURL, deleteObject; let storage=null; let firebaseReadyPromise = null; async function loadFirebase(){ if(firebaseReadyPromise) return firebaseReadyPromise; firebaseReadyPromise = fbImportMitWiederholung("./firebase-local.js?v=20261016a").then((fbMod)=>{ const appMod=fbMod, authMod=fbMod, fsMod=fbMod, storageMod={getStorage:fbMod.getStorage,ref:fbMod.ref,uploadBytes:fbMod.uploadBytes,getDownloadURL:fbMod.getDownloadURL,deleteObject:fbMod.deleteObject}; ({initializeApp}=appMod); ({getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,sendPasswordResetEmail,updateProfile,deleteUser}=authMod); ({getFirestore,collection,doc,addDoc,setDoc,updateDoc,deleteDoc,getDoc,getDocs,query,orderBy,limit,where,onSnapshot,serverTimestamp,arrayUnion,arrayRemove,increment,writeBatch}=fsMod); getDoc=fsLeseMitWiederholung(getDoc); getDocs=fsLeseMitWiederholung(getDocs); {const dirty=()=>{window.__fsDirty=Date.now()};const w=f=>(...a)=>{dirty();const x=f(...a);Promise.resolve(x).then(dirty,dirty);return x};addDoc=w(addDoc);setDoc=w(setDoc);updateDoc=w(updateDoc);deleteDoc=w(deleteDoc);const wb=writeBatch;writeBatch=(...a)=>{const b=wb(...a),c=b.commit.bind(b);b.commit=()=>{dirty();const x=c();Promise.resolve(x).then(dirty,dirty);return x};return b};const gleich=(f,typ)=>{const m=new Map();return(r,...rest)=>{const k=(r&&r.type===typ&&!rest.length&&r.path)||null;if(!k)return f(r,...rest);if(m.has(k))return m.get(k);const p=Promise.resolve(f(r)).finally(()=>m.delete(k));m.set(k,p);return p}};getDoc=gleich(getDoc,"document");getDocs=gleich(getDocs,"collection");} ({getStorage,ref:storageRef,uploadBytes,getDownloadURL,deleteObject}=storageMod); if(!app) app=initializeApp(firebaseConfig); if(!auth) auth=getAuth(app); if(!db){ try{ db=fbMod.initializeFirestore(app,{experimentalAutoDetectLongPolling:true}); }catch(e){ console.warn("Firestore-Start mit Verbindungsfallback nicht möglich, Standard wird genutzt:",e); db=getFirestore(app); } } if(!storage) storage=getStorage(app); window.CampusFirebase={ get db(){return db}, get currentUser(){return currentUser}, collection,doc,addDoc,setDoc,updateDoc,deleteDoc,getDoc,getDocs, query,orderBy,limit,where,onSnapshot,serverTimestamp,arrayUnion,increment, modal,toast,pageHead,footer,render }; return true; }).catch(e=>{firebaseReadyPromise=null;throw e}); return firebaseReadyPromise; } /*
+let initializeApp, getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, updateProfile, deleteUser; let getFirestore, collection, doc, addDoc, setDoc, updateDoc, deleteDoc, getDoc, getDocs, query, orderBy, limit, where, onSnapshot, serverTimestamp, arrayUnion, arrayRemove, increment, writeBatch; let getStorage, storageRef, uploadBytes, getDownloadURL, deleteObject; let storage=null; let firebaseReadyPromise = null; async function loadFirebase(){return firebaseReadyPromise||(firebaseReadyPromise=fbImportMitWiederholung("./firebase-local.js?v=20261016a").then(e=>{const t=e,n=e,i=e,r={getStorage:e.getStorage,ref:e.ref,uploadBytes:e.uploadBytes,getDownloadURL:e.getDownloadURL,deleteObject:e.deleteObject};({initializeApp:initializeApp}=t),{getAuth:getAuth,onAuthStateChanged:onAuthStateChanged,createUserWithEmailAndPassword:createUserWithEmailAndPassword,signInWithEmailAndPassword:signInWithEmailAndPassword,signOut:signOut,sendPasswordResetEmail:sendPasswordResetEmail,updateProfile:updateProfile,deleteUser:deleteUser}=n,{getFirestore:getFirestore,collection:collection,doc:doc,addDoc:addDoc,setDoc:setDoc,updateDoc:updateDoc,deleteDoc:deleteDoc,getDoc:getDoc,getDocs:getDocs,query:query,orderBy:orderBy,limit:limit,where:where,onSnapshot:onSnapshot,serverTimestamp:serverTimestamp,arrayUnion:arrayUnion,arrayRemove:arrayRemove,increment:increment,writeBatch:writeBatch}=i,getDoc=fsLeseMitWiederholung(getDoc),getDocs=fsLeseMitWiederholung(getDocs);{const a=()=>{window.__fsDirty=Date.now()},s=d=>(...u)=>{a();const p=d(...u);return Promise.resolve(p).then(a,a),p};addDoc=s(addDoc),setDoc=s(setDoc),updateDoc=s(updateDoc),deleteDoc=s(deleteDoc);const l=writeBatch;writeBatch=(...d)=>{const u=l(...d),p=u.commit.bind(u);return u.commit=()=>{a();const m=p();return Promise.resolve(m).then(a,a),m},u};const c=(d,u)=>{const p=new Map;return(m,...f)=>{const y=m&&m.type===u&&!f.length&&m.path||null;if(!y)return d(m,...f);if(p.has(y))return p.get(y);const v=Promise.resolve(d(m)).finally(()=>p.delete(y));return p.set(y,v),v}};getDoc=c(getDoc,"document"),getDocs=c(getDocs,"collection")}if({getStorage:getStorage,ref:storageRef,uploadBytes:uploadBytes,getDownloadURL:getDownloadURL,deleteObject:deleteObject}=r,app||(app=initializeApp(firebaseConfig)),auth||(auth=getAuth(app)),!db)try{db=e.initializeFirestore(app,{experimentalAutoDetectLongPolling:!0})}catch(a){console.warn("Firestore-Start mit Verbindungsfallback nicht m\xF6glich, Standard wird genutzt:",a),db=getFirestore(app)}return storage||(storage=getStorage(app)),window.CampusFirebase={get db(){return db},get currentUser(){return currentUser},collection:collection,doc:doc,addDoc:addDoc,setDoc:setDoc,updateDoc:updateDoc,deleteDoc:deleteDoc,getDoc:getDoc,getDocs:getDocs,query:query,orderBy:orderBy,limit:limit,where:where,onSnapshot:onSnapshot,serverTimestamp:serverTimestamp,arrayUnion:arrayUnion,increment:increment,modal:modal,toast:toast,pageHead:pageHead,footer:footer,render:render},!0}).catch(e=>{throw firebaseReadyPromise=null,e}),firebaseReadyPromise)} /*
  WICHTIG:
  Diese Werte werden nach dem Anlegen deiner Firebase-Web-App aus
  der Firebase Console hier eingesetzt.
@@ -48,16 +48,7 @@ function pseudonymWaehlenModal(){
  <div id="pseudoFehler" class="auth-error"></div>
  <div class="form-actions"><button class="primary" onclick="pseudonymSpeichern()">Speichern</button></div></div>`);
 }
-async function pseudonymSpeichern(){
- const v=$("pseudoNeu").value.trim();
- if(!pseudoGueltig(v)){$("pseudoFehler").textContent="3 bis 20 Zeichen: Buchstaben, Ziffern, Leerzeichen, - _ .";return}
- try{
-  await updateDoc(doc(db,"users",currentUser.uid),{pseudonym:v,displayName:v,firstName:"",lastName:"",email:""});
-  profile={...profile,pseudonym:v,displayName:v,firstName:"",lastName:"",email:""};
-  await syncProfilPublic();
-  $("userName").textContent=v;closeModal();toast("Pseudonym gespeichert.");render();
- }catch(e){console.error(e);$("pseudoFehler").textContent="Speichern nicht möglich. Bitte erneut versuchen."}
-}
+async function pseudonymSpeichern(){const e=$("pseudoNeu").value.trim();if(!pseudoGueltig(e)){$("pseudoFehler").textContent="3 bis 20 Zeichen: Buchstaben, Ziffern, Leerzeichen, - _ .";return}try{await updateDoc(doc(db,"users",currentUser.uid),{pseudonym:e,displayName:e,firstName:"",lastName:"",email:""}),profile={...profile,pseudonym:e,displayName:e,firstName:"",lastName:"",email:""},await syncProfilPublic(),$("userName").textContent=e,closeModal(),toast("Pseudonym gespeichert."),render()}catch(t){console.error(t),$("pseudoFehler").textContent="Speichern nicht m\xF6glich. Bitte erneut versuchen."}}
 window.pseudonymSpeichern=pseudonymSpeichern;
 function authError(err){
  if(authModus!=="teacher"){
@@ -549,116 +540,25 @@ async function updateLernressource(){
  }
 }
 
-async function renderRessourcenRoute(){
- /*
- Lernressourcen bewusst direkt in app.js rendern.
- Dadurch ist der Bereich unabhängig davon, ob das optionale
- Modul modules/lernressourcen.js auf GitHub Pages geladen werden kann.
- Es werden beide bisher verwendeten Collections unterstützt:
- - lernressourcen (aktuelle Struktur)
- - resources (ältere Bestände)
- */
- try{
- await loadFirebase();
- const fb=window.CampusFirebase;
- if(!fb?.db) throw new Error("Firebase ist noch nicht bereit.");
-
- const collections=["lernressourcen","resources"];
- const all=[];
- for(const collectionName of collections){
- try{
- const ref=fb.collection(fb.db,collectionName);
- let snap;
- try{
- snap=await fb.getDocs(fb.query(ref,fb.orderBy("createdAt","desc"),fb.limit(200)));
- }catch(orderError){
- snap=await fb.getDocs(ref);
- }
- snap.docs.forEach(d=>all.push({id:d.id,collection:collectionName,...d.data()}));
- }catch(error){
- console.warn("Lernressourcen-Collection nicht lesbar:",collectionName,error);
- }
- }
-
- // Doppelte Datensätze vermeiden, falls derselbe Inhalt in beiden
- // Collections liegt. Die ID allein reicht nicht, weil sie je Collection
- // vergeben wird; deshalb wird zusätzlich die normalisierte URL verwendet.
- const seen=new Set();
- const resources=all.filter(r=>{
- const key=[String(r.title??r.name??"").trim().toLowerCase(),String(r.url??r.link??"").trim().toLowerCase()].join("|");
- if(!key.replace(/\|/g,"")) return false;
- if(seen.has(key)) return false;
- seen.add(key);
- return true;
- });
-
- const types={
- taskcard:{icon:"",label:"TaskCard"},
- ki:{icon:"",label:"KI-Lernressource"},
- external:{icon:"",label:"Externer Link"},
- video:{icon:"",label:"Video-Link"},
- bycs:{icon:"",label:"ByCS / mebis"},
- canva:{icon:"",label:"Canva"},
- learningapps:{icon:"",label:"LearningApps"},
- website:{icon:"",label:"Webseite"}
- };
- const typeOf=r=>{
- const raw=String(r.type??r.category??"external").toLowerCase();
- if(types[raw]) return raw;
- if(raw.includes("task")) return"taskcard";
- if(raw.includes("video")) return"video";
- if(raw.includes("bycs")||raw.includes("mebis")) return"bycs";
- if(raw.includes("canva")) return"canva";
- if(raw.includes("learningapps")||raw.includes("learning apps")) return"learningapps";
- if(raw.includes("ki")) return"ki";
- if(raw.includes("web")) return"website";
- return"external";
- };
- const urlOf=r=>String(r.url??r.link??"").trim();
- const titleOf=r=>String(r.title??r.name??"Lernressource");
- const descOf=r=>String(r.description??r.text??"");
- const subjectOf=r=>String(r.subject??r.fach??r.lernbereich??"");
- const tagsOf=r=>Array.isArray(r.tags)?r.tags:(typeof r.tags==="string"?r.tags.split(",").map(x=>x.trim()).filter(Boolean):[]);
-
- const grouped={taskcard:[],ki:[],external:[],video:[],bycs:[],canva:[],learningapps:[],website:[]};
- resources.forEach(r=>grouped[typeOf(r)].push(r));
-
- const canEdit=typeof isTeacher==="function" && isTeacher();
- const addButton=canEdit?`<button class="primary"onclick="window.openLernressourceForm()">＋ Lernressource hinzufügen</button>`:"";
-
- const card=r=>{
- const type=typeOf(r),t=types[type],tags=tagsOf(r),url=urlOf(r);
- return`<article class="card resource-card"data-resource-id="${esc(r.id)}"data-resource-collection="${esc(r.collection)}">
- <div class="resource-head"><span class="resource-icon">${t.icon}</span><span class="pill">${esc(t.label)}</span></div>
- <h3>${esc(titleOf(r))}</h3>
- ${descOf(r)?`<p>${esc(descOf(r))}</p>`:""}
- ${subjectOf(r)?`<div class="resource-meta"> ${esc(subjectOf(r))}</div>`:""}
- ${tags.length?`<div class="chips">${tags.map(x=>`<span class="chip">#${esc(x)}</span>`).join("")}</div>`:""}
- ${url?`<button class="primary resource-open"onclick="window.openLernressource('${encodeURIComponent(url)}')">${t.icon} Lernressource öffnen →</button>`:`<div class="notice">Für diese Ressource ist noch kein Link hinterlegt.</div>`}
- ${canEdit?`<div class="form-actions"style="margin-top:10px"><button class="secondary"onclick="editLernressourceForm('${esc(r.collection)}','${esc(r.id)}','${esc(String(titleOf(r)).replace(/\n/g,"\\n"))}','${esc(type)}','${esc(String(url).replace(/\n/g,"\\n"))}','${esc(String(descOf(r)).replace(/\n/g,"\\n"))}','${esc(String(subjectOf(r)).replace(/\n/g,"\\n"))}','${esc(tags.join(",").replace(/\n/g,"\\n"))}')">Bearbeiten</button><button class="secondary"onclick="deleteCampusEntry('${r.collection}','${r.id}','Lernressource')">Löschen</button></div>`:""}
- </article>`;
- };
-
- return`${pageHead("LERNWERKSTATT","Lernressourcen-Bibliothek","Finde passende Lernmaterialien, digitale Angebote und externe Lernwege – zentral für Schüler und Lehrkräfte.",addButton)}
+async function renderRessourcenRoute(){try{await loadFirebase();const e=window.CampusFirebase;if(!e?.db)throw new Error("Firebase ist noch nicht bereit.");const t=["lernressourcen","resources"],n=[];for(const k of t)try{const x=e.collection(e.db,k);let E;try{E=await e.getDocs(e.query(x,e.orderBy("createdAt","desc"),e.limit(200)))}catch{E=await e.getDocs(x)}E.docs.forEach(W=>n.push({id:W.id,collection:k,...W.data()}))}catch(x){console.warn("Lernressourcen-Collection nicht lesbar:",k,x)}const i=new Set,r=n.filter(k=>{const x=[String(k.title??k.name??"").trim().toLowerCase(),String(k.url??k.link??"").trim().toLowerCase()].join("|");return!x.replace(/\|/g,"")||i.has(x)?!1:(i.add(x),!0)}),a={taskcard:{icon:"",label:"TaskCard"},ki:{icon:"",label:"KI-Lernressource"},external:{icon:"",label:"Externer Link"},video:{icon:"",label:"Video-Link"},bycs:{icon:"",label:"ByCS / mebis"},canva:{icon:"",label:"Canva"},learningapps:{icon:"",label:"LearningApps"},website:{icon:"",label:"Webseite"}},s=k=>{const x=String(k.type??k.category??"external").toLowerCase();return a[x]?x:x.includes("task")?"taskcard":x.includes("video")?"video":x.includes("bycs")||x.includes("mebis")?"bycs":x.includes("canva")?"canva":x.includes("learningapps")||x.includes("learning apps")?"learningapps":x.includes("ki")?"ki":x.includes("web")?"website":"external"},l=k=>String(k.url??k.link??"").trim(),c=k=>String(k.title??k.name??"Lernressource"),d=k=>String(k.description??k.text??""),u=k=>String(k.subject??k.fach??k.lernbereich??""),p=k=>Array.isArray(k.tags)?k.tags:typeof k.tags=="string"?k.tags.split(",").map(x=>x.trim()).filter(Boolean):[],m={taskcard:[],ki:[],external:[],video:[],bycs:[],canva:[],learningapps:[],website:[]};r.forEach(k=>m[s(k)].push(k));const f=typeof isTeacher=="function"&&isTeacher(),y=f?'<button class="primary"onclick="window.openLernressourceForm()">\uFF0B Lernressource hinzuf\xFCgen</button>':"",v=k=>{const x=s(k),E=a[x],W=p(k),j=l(k);return`<article class="card resource-card"data-resource-id="${esc(k.id)}"data-resource-collection="${esc(k.collection)}">
+ <div class="resource-head"><span class="resource-icon">${E.icon}</span><span class="pill">${esc(E.label)}</span></div>
+ <h3>${esc(c(k))}</h3>
+ ${d(k)?`<p>${esc(d(k))}</p>`:""}
+ ${u(k)?`<div class="resource-meta"> ${esc(u(k))}</div>`:""}
+ ${W.length?`<div class="chips">${W.map(J=>`<span class="chip">#${esc(J)}</span>`).join("")}</div>`:""}
+ ${j?`<button class="primary resource-open"onclick="window.openLernressource('${encodeURIComponent(j)}')">${E.icon} Lernressource \xF6ffnen \u2192</button>`:'<div class="notice">F\xFCr diese Ressource ist noch kein Link hinterlegt.</div>'}
+ ${f?`<div class="form-actions"style="margin-top:10px"><button class="secondary"onclick="editLernressourceForm('${esc(k.collection)}','${esc(k.id)}','${esc(String(c(k)).replace(/\n/g,"\\n"))}','${esc(x)}','${esc(String(j).replace(/\n/g,"\\n"))}','${esc(String(d(k)).replace(/\n/g,"\\n"))}','${esc(String(u(k)).replace(/\n/g,"\\n"))}','${esc(W.join(",").replace(/\n/g,"\\n"))}')">Bearbeiten</button><button class="secondary"onclick="deleteCampusEntry('${k.collection}','${k.id}','Lernressource')">L\xF6schen</button></div>`:""}
+ </article>`};return`${pageHead("LERNWERKSTATT","Lernressourcen-Bibliothek","Finde passende Lernmaterialien, digitale Angebote und externe Lernwege \u2013 zentral f\xFCr Sch\xFCler und Lehrkr\xE4fte.",y)}
  <div class="card"style="border-left:4px solid #3fa66a">
  <span class="badge"> DEINE LERNBIBLIOTHEK</span>
- <h2>Passende Ressource auswählen</h2>
+ <h2>Passende Ressource ausw\xE4hlen</h2>
  <p>TaskCards, KI-Lernangebote, Videos, ByCS/mebis, Canva und LearningApps sowie weitere Webseiten an einem Ort.</p>
  <div class="chips"><span class="chip"> TaskCard</span><span class="chip"> KI</span><span class="chip"> Video</span><span class="chip"> ByCS / mebis</span><span class="chip"> Canva</span><span class="chip"> LearningApps</span><span class="chip"> Webseite</span></div>
  </div>
  ${await lbOrdnerHtml()}
- ${Object.entries(grouped).map(([type,list])=>{
- if(!list.length)return"";
- const t=types[type];
- return`<section class="resource-section"><div class="section-head"><div><div class="kicker">${t.icon} ${t.label.toUpperCase()}</div><h2>${esc(t.label)}</h2></div><span class="pill">${list.length}</span></div><div class="grid grid-3">${list.map(card).join("")}</div></section>`;
- }).join("")}
- ${resources.length?`<div class="notice"style="margin-top:16px"> ${resources.length} Lernressource${resources.length===1?"":"n"} verfügbar.</div>`:`<div class="card empty"style="margin-top:12px"><strong>Noch keine Lernressourcen vorhanden.</strong><p>Lege z. B. eine TaskCard, einen KI-Link, ein Video oder einen ByCS-/mebis-Link an.</p>${canEdit?`<button class="primary"onclick="window.openLernressourceForm()">＋ Erste Lernressource anlegen</button>`:""}</div>`}
- ${footer()}`;
- }catch(error){
- console.error("Lernressourcen konnten nicht geladen werden:",error);
- return moduleError("Lernressourcen","app.js",error);
- }
-}
+ ${Object.entries(m).map(([k,x])=>{if(!x.length)return"";const E=a[k];return`<section class="resource-section"><div class="section-head"><div><div class="kicker">${E.icon} ${E.label.toUpperCase()}</div><h2>${esc(E.label)}</h2></div><span class="pill">${x.length}</span></div><div class="grid grid-3">${x.map(v).join("")}</div></section>`}).join("")}
+ ${r.length?`<div class="notice"style="margin-top:16px"> ${r.length} Lernressource${r.length===1?"":"n"} verf\xFCgbar.</div>`:`<div class="card empty"style="margin-top:12px"><strong>Noch keine Lernressourcen vorhanden.</strong><p>Lege z. B. eine TaskCard, einen KI-Link, ein Video oder einen ByCS-/mebis-Link an.</p>${f?'<button class="primary"onclick="window.openLernressourceForm()">\uFF0B Erste Lernressource anlegen</button>':""}</div>`}
+ ${footer()}`}catch(e){return console.error("Lernressourcen konnten nicht geladen werden:",e),moduleError("Lernressourcen","app.js",e)}}
 
 /* =========================================================
  PERSÖNLICHER LERNPFAD – trainiert selbstreguliertes Lernen:
@@ -1178,23 +1078,7 @@ function letzterDonnerstagVorOrAm(dateStr){
 }
 function cleanDateInput(v){return v||"—"}
 
-async function getUpcomingCampusCalendarEvent(){
- let events=[];
- try{events=await getCollection("events","start",false)}catch(e){console.error("Startseite Kalender events:",e)}
- if(!events.length){
- try{events=await getCollection("calendar","date",false)}catch(e){console.error("Startseite Kalender calendar:",e)}
- }
- const today=new Date(); today.setHours(0,0,0,0);
- const eventDate=e=>{
- const raw=e?.start||e?.date||e?.startDate;
- if(!raw)return null;
- if(typeof raw==="object"&&raw.seconds)return new Date(raw.seconds*1000);
- const d=new Date(String(raw).slice(0,10)+"T00:00:00");
- return isNaN(d)?null:d;
- };
- await calAusgeblendetLaden();events=[...events,...calFesteTermine()];
- return events.map(e=>({e,d:eventDate(e)})).filter(x=>x.d&&x.d>=today).sort((a,b)=>a.d-b.d)[0]?.e||null;
-}
+async function getUpcomingCampusCalendarEvent(){let e=[];try{e=await getCollection("events","start",!1)}catch(i){console.error("Startseite Kalender events:",i)}if(!e.length)try{e=await getCollection("calendar","date",!1)}catch(i){console.error("Startseite Kalender calendar:",i)}const t=new Date;t.setHours(0,0,0,0);const n=i=>{const r=i?.start||i?.date||i?.startDate;if(!r)return null;if(typeof r=="object"&&r.seconds)return new Date(r.seconds*1e3);const a=new Date(String(r).slice(0,10)+"T00:00:00");return isNaN(a)?null:a};return await calAusgeblendetLaden(),e=[...e,...calFesteTermine()],e.map(i=>({e:i,d:n(i)})).filter(i=>i.d&&i.d>=t).sort((i,r)=>i.d-r.d)[0]?.e||null}
 
 
 /* =========================================================
@@ -1577,93 +1461,47 @@ async function deleteSteckbrief(){
 window.openSteckbriefForm=openSteckbriefForm;window.saveSteckbrief=saveSteckbrief;window.deleteSteckbrief=deleteSteckbrief;
 window.mySteckbriefData=null;
 
-async function renderKlassenteam(){
- const [heimatEntries,steckbriefe,birthdays]=await Promise.all([getHeimatEintraege(),getSteckbriefe(),getAllBirthdaysSorted()]);
- const myHeimatort=heimatEntries.find(e=>e.uid===currentUser.uid);
- window.mySteckbriefData=steckbriefe.find(s=>s.uid===currentUser.uid)||null;
- return`${pageHead("GEMEINSCHAFT","Unser Klassenteam","Einander kennenlernen und übers Jahr zusammenfinden.")}
+async function renderKlassenteam(){const[e,t,n]=await Promise.all([getHeimatEintraege(),getSteckbriefe(),getAllBirthdaysSorted()]),i=e.find(r=>r.uid===currentUser.uid);return window.mySteckbriefData=t.find(r=>r.uid===currentUser.uid)||null,`${pageHead("GEMEINSCHAFT","Unser Klassenteam","Einander kennenlernen und \xFCbers Jahr zusammenfinden.")}
  <div class="card">
  <div class="kicker">KENNENLERNEN</div>
  <h2 style="margin-top:4px">Wo unser Klassenteam zu Hause ist</h2>
- <p style="color:var(--muted)">Trag deinen Heimatort ein – so seht ihr auf einen Blick, wer aus eurer Gegend kommt. Vielleicht ergeben sich daraus ja Fahrgemeinschaften oder gemeinsame Projekte übers Jahr.</p>
+ <p style="color:var(--muted)">Trag deinen Heimatort ein \u2013 so seht ihr auf einen Blick, wer aus eurer Gegend kommt. Vielleicht ergeben sich daraus ja Fahrgemeinschaften oder gemeinsame Projekte \xFCbers Jahr.</p>
  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
  <select id="heimatOrtSelect"style="flex:1;min-width:200px">
- <option value="">Ort auswählen …</option>
- ${[...LANDKREIS_ORTE].sort((a,b)=>a[0].localeCompare(b[0],"de")).map(([name])=>`<option value="${esc(name)}"${myHeimatort?.ort===name?"selected":""}>${esc(name)}</option>`).join("")}
+ <option value="">Ort ausw\xE4hlen \u2026</option>
+ ${[...LANDKREIS_ORTE].sort((r,a)=>r[0].localeCompare(a[0],"de")).map(([r])=>`<option value="${esc(r)}"${i?.ort===r?"selected":""}>${esc(r)}</option>`).join("")}
  </select>
- <button class="primary"onclick="saveHeimatort()">${myHeimatort?"Aktualisieren":"Eintragen"}</button>
- ${myHeimatort?`<button class="secondary"onclick="removeHeimatort()">Entfernen</button>`:""}
+ <button class="primary"onclick="saveHeimatort()">${i?"Aktualisieren":"Eintragen"}</button>
+ ${i?'<button class="secondary"onclick="removeHeimatort()">Entfernen</button>':""}
  </div>
- <div id="heimatkarteWrap">${heimatkarteSVG(heimatEntries)}</div>
+ <div id="heimatkarteWrap">${heimatkarteSVG(e)}</div>
  ${isTeacher()?`<details style="margin-top:14px">
- <summary style="cursor:pointer;color:var(--muted);font-size:13px">Für Lehrkräfte: Einträge verwalten (${heimatEntries.length})</summary>
- <div class="list"style="margin-top:10px">${heimatEntries.map(e=>`<div class="list-item"><div><strong>${esc(e.name||"Campus-Mitglied")}</strong><small>${esc(e.ort||"")}</small></div><button class="secondary"onclick="removeHeimatortAsTeacher('${e.uid}','${esc(e.name||"")}')">Entfernen</button></div>`).join("")||`<div class="empty">Noch keine Einträge.</div>`}</div>
- ${heimatEntries.length?`<div class="form-actions"style="margin-top:10px"><button class="secondary"onclick="resetAlleHeimatorte()">Alle Einträge zurücksetzen</button></div>`:""}
+ <summary style="cursor:pointer;color:var(--muted);font-size:13px">F\xFCr Lehrkr\xE4fte: Eintr\xE4ge verwalten (${e.length})</summary>
+ <div class="list"style="margin-top:10px">${e.map(r=>`<div class="list-item"><div><strong>${esc(r.name||"Campus-Mitglied")}</strong><small>${esc(r.ort||"")}</small></div><button class="secondary"onclick="removeHeimatortAsTeacher('${r.uid}','${esc(r.name||"")}')">Entfernen</button></div>`).join("")||'<div class="empty">Noch keine Eintr\xE4ge.</div>'}</div>
+ ${e.length?'<div class="form-actions"style="margin-top:10px"><button class="secondary"onclick="resetAlleHeimatorte()">Alle Eintr\xE4ge zur\xFCcksetzen</button></div>':""}
  </details>`:""}
  </div>
 
  <div class="card"style="margin-top:16px">
  <div class="kicker">STECKBRIEFE</div>
  <h2 style="margin-top:4px">Wer wir sind</h2>
- <p style="color:var(--muted)">Ein paar Sätze übereinander – hilft beim Kennenlernen und Zusammenarbeiten.</p>
- <div class="form-actions"style="margin-bottom:14px"><button class="primary"onclick="openSteckbriefForm(mySteckbriefData)">${mySteckbriefData?"Meinen Steckbrief bearbeiten":"＋ Meinen Steckbrief anlegen"}</button></div>
- <div class="grid grid-3">${steckbriefe.map(s=>`<div class="card"style="background:#f7fafc">
- <strong>${esc(s.name)}</strong>
- ${s.mag?`<p style="margin:8px 0 0;font-size:13px"><b>Mag:</b> ${esc(s.mag)}</p>`:""}
- ${s.gutDarin?`<p style="margin:6px 0 0;font-size:13px"><b>Gut darin:</b> ${esc(s.gutDarin)}</p>`:""}
- ${s.fakt?`<p style="margin:6px 0 0;font-size:13px"><b>Fakt:</b> ${esc(s.fakt)}</p>`:""}
- </div>`).join("")||`<div class="empty">Noch keine Steckbriefe – leg den ersten an!</div>`}</div>
+ <p style="color:var(--muted)">Ein paar S\xE4tze \xFCbereinander \u2013 hilft beim Kennenlernen und Zusammenarbeiten.</p>
+ <div class="form-actions"style="margin-bottom:14px"><button class="primary"onclick="openSteckbriefForm(mySteckbriefData)">${mySteckbriefData?"Meinen Steckbrief bearbeiten":"\uFF0B Meinen Steckbrief anlegen"}</button></div>
+ <div class="grid grid-3">${t.map(r=>`<div class="card"style="background:#f7fafc">
+ <strong>${esc(r.name)}</strong>
+ ${r.mag?`<p style="margin:8px 0 0;font-size:13px"><b>Mag:</b> ${esc(r.mag)}</p>`:""}
+ ${r.gutDarin?`<p style="margin:6px 0 0;font-size:13px"><b>Gut darin:</b> ${esc(r.gutDarin)}</p>`:""}
+ ${r.fakt?`<p style="margin:6px 0 0;font-size:13px"><b>Fakt:</b> ${esc(r.fakt)}</p>`:""}
+ </div>`).join("")||'<div class="empty">Noch keine Steckbriefe \u2013 leg den ersten an!</div>'}</div>
  </div>
 
  <div class="card"style="margin-top:16px">
  <div class="kicker">TERMINE</div>
  <h2 style="margin-top:4px">Geburtstage im Klassenteam</h2>
- <div class="list">${birthdays.map(b=>{const c=personColor(b.uid);return`<div class="list-item"style="background:${c.bg};border-left:4px solid ${c.border};border-radius:8px;padding:10px 12px;margin-bottom:6px"><div><strong style="color:${c.text}">${esc(b.name)}</strong><small>${esc(b.date.toLocaleDateString("de-DE",{day:"2-digit",month:"long"}))}</small></div>${b.isToday?`<span class="pill green"> Heute!</span>`:`<span class="pill"style="background:${c.border};color:#fff">in ${b.days} Tagen</span>`}</div>`}).join("")||`<div class="empty">Noch keine Geburtstage eingetragen.</div>`}</div>
+ <div class="list">${n.map(r=>{const a=personColor(r.uid);return`<div class="list-item"style="background:${a.bg};border-left:4px solid ${a.border};border-radius:8px;padding:10px 12px;margin-bottom:6px"><div><strong style="color:${a.text}">${esc(r.name)}</strong><small>${esc(r.date.toLocaleDateString("de-DE",{day:"2-digit",month:"long"}))}</small></div>${r.isToday?'<span class="pill green"> Heute!</span>':`<span class="pill"style="background:${a.border};color:#fff">in ${r.days} Tagen</span>`}</div>`}).join("")||'<div class="empty">Noch keine Geburtstage eingetragen.</div>'}</div>
  </div>
- ${footer()}`;
-}
-
-// ============================================================
-// STUNDENPLAN (WebUntis), NOTEN & WOCHENPLANUNG – F11Sb
-// ============================================================
-
-// Die 7 benoteten Fächer der F11Sb (Sozialwesen). Das Wahlpflichtfach
-// ist reiner Förderunterricht, wird nicht benotet und taucht daher hier
-// bewusst nicht auf.
-const F11SB_FAECHER=[
- {key:"deutsch",label:"Deutsch"},
- {key:"englisch",label:"Englisch"},
- {key:"geschichte",label:"Geschichte"},
- {key:"mathematik",label:"Mathematik"},
- {key:"paedagogik",label:"Pädagogik/Psychologie"},
- {key:"sozialwirtschaft",label:"Sozialwirtschaft und Recht"},
- {key:"chemie",label:"Chemie"}
-];
-// Fächer-Übersicht und Lehrplan-Zeitstrahl nach der Stundentafel FOS 11: zusätzlich der Wahlpflichtbereich
-// (Förderunterricht, nicht benotet und deshalb NICHT in F11SB_FAECHER, das die Notenberechnung speist).
-const F11SB_LEHRPLAN_FAECHER=[...F11SB_FAECHER,{key:"foerder",label:"Wahlpflichtbereich (Förderunterricht)"}];
-// Gruppen wie in der Stundentafel; fpA ist eine eigene Ausbildung mit eigenem Bereich (Route „praktikum“).
-const F11SB_FACHGRUPPEN=[
- {title:"Allgemeinbildende Fächer",keys:["deutsch","englisch","mathematik","geschichte"]},
- {title:"Profilfächer",keys:["paedagogik","sozialwirtschaft","chemie"]},
- {title:"Profilerweiternde Wahlpflichtfächer",keys:["foerder"]}
-];
-
-// ============================================================
-// LERNWERKSTATT · FÄCHER-ZEITSTRAHL
-// ============================================================
-// Praktikumsphasen 2026/27 (gilt fachübergreifend, aus dem B-Block-Plan).
-// B-Block-Termine exakt aus dem offiziellen Dokument "Einteilung Unterrichts-
-// und Praktikumszeit 2026/2027" der FOSBOS Weilheim übernommen (nur 6 Blöcke,
-// nicht 7 – vorherige Annahme war hier ungenau).
-const PRAKTIKUMSPHASEN=[
- {id:"pr1",start:"2026-09-15",end:"2026-10-02",titel:"Praktikum – B-Block – Erziehung (Block 1)",bereich:"Erziehungsbereich",icon:""},
- {id:"pr2",start:"2026-10-26",end:"2026-11-20",titel:"Praktikum – B-Block – Erziehung (Block 2)",bereich:"Erziehungsbereich",icon:""},
- {id:"pr3",start:"2026-12-14",end:"2027-01-15",titel:"Praktikum – B-Block – Erziehung (Block 3)",bereich:"Erziehungsbereich",icon:""},
- {id:"pr4",start:"2027-02-15",end:"2027-03-05",titel:"Praktikum – B-Block – Pflege (Block 1)",bereich:"Pflegebereich",icon:""},
- {id:"pr5",start:"2027-04-19",end:"2027-05-07",titel:"Praktikum – B-Block – Pflege (Block 2)",bereich:"Pflegebereich",icon:""},
- {id:"pr6",start:"2027-06-14",end:"2027-07-09",titel:"Praktikum – B-Block – Pflege (Block 3)",bereich:"Pflegebereich",icon:""}
-];
+ ${footer()}`}
+const F11SB_FAECHER=[{key:"deutsch",label:"Deutsch"},{key:"englisch",label:"Englisch"},{key:"geschichte",label:"Geschichte"},{key:"mathematik",label:"Mathematik"},{key:"paedagogik",label:"P\xE4dagogik/Psychologie"},{key:"sozialwirtschaft",label:"Sozialwirtschaft und Recht"},{key:"chemie",label:"Chemie"}],F11SB_LEHRPLAN_FAECHER=[...F11SB_FAECHER,{key:"foerder",label:"Wahlpflichtbereich (F\xF6rderunterricht)"}],r_MA=[{title:"Allgemeinbildende F\xE4cher",keys:["deutsch","englisch","mathematik","geschichte"]},{title:"Profilf\xE4cher",keys:["paedagogik","sozialwirtschaft","chemie"]},{title:"Profilerweiternde Wahlpflichtf\xE4cher",keys:["foerder"]}],PRAKTIKUMSPHASEN=[{id:"pr1",start:"2026-09-15",end:"2026-10-02",titel:"Praktikum \u2013 B-Block \u2013 Erziehung (Block 1)",bereich:"Erziehungsbereich",icon:""},{id:"pr2",start:"2026-10-26",end:"2026-11-20",titel:"Praktikum \u2013 B-Block \u2013 Erziehung (Block 2)",bereich:"Erziehungsbereich",icon:""},{id:"pr3",start:"2026-12-14",end:"2027-01-15",titel:"Praktikum \u2013 B-Block \u2013 Erziehung (Block 3)",bereich:"Erziehungsbereich",icon:""},{id:"pr4",start:"2027-02-15",end:"2027-03-05",titel:"Praktikum \u2013 B-Block \u2013 Pflege (Block 1)",bereich:"Pflegebereich",icon:""},{id:"pr5",start:"2027-04-19",end:"2027-05-07",titel:"Praktikum \u2013 B-Block \u2013 Pflege (Block 2)",bereich:"Pflegebereich",icon:""},{id:"pr6",start:"2027-06-14",end:"2027-07-09",titel:"Praktikum \u2013 B-Block \u2013 Pflege (Block 3)",bereich:"Pflegebereich",icon:""}];
 
 // Aufträge je Praktikumsphase: von Lehrkräften gepflegt, überall live
 // gespiegelt (Lernpfad-Wegpunkte, fpA-Übersicht, Startseite) – ein
@@ -2116,7 +1954,7 @@ const motivZustand={seit:0,keys:{},letzterText:""};
 function motivAn(){try{return localStorage.getItem("f12sb_motivation_aus")!=="1"}catch(e){return true}}
 function motivButtonAktualisieren(){
  const b=$("motivBtn");if(!b)return;
- const zeigen=!!currentUser;
+ const zeigen=!!currentUser&&!isTeacher();
  b.hidden=!zeigen;
  const an=motivAn();
  b.classList.toggle("aus",!an);
@@ -2135,7 +1973,7 @@ function motivZeigen(pick,modus){
  document.querySelectorAll(".motivations-karte,.motiv-mini,.motiv-konfetti").forEach(x=>x.remove());
  const el=document.createElement("div");
  if(modus==="mini"){
-  el.className="motiv-mini lxm"+(1+Math.floor(Math.random()*3));
+  el.className="motiv-mini";
   el.setAttribute("role","status");
   el.innerHTML=`<span class="motiv-badge"aria-hidden="true">${pick.e}</span><span class="motiv-text">${esc(pick.t)}</span>`;
   el.onclick=()=>el.remove();
@@ -2143,16 +1981,15 @@ function motivZeigen(pick,modus){
   setTimeout(()=>el.remove(),3300);
   return;
  }
- el.className="motivations-karte"+(modus==="bonus"?" bonus":"")+" lxv"+(1+Math.floor(Math.random()*4));
+ el.className="motivations-karte"+(modus==="bonus"?" bonus":"");
  el.setAttribute("role","status");
  el.innerHTML=`<div class="motivations-karte-inner"><span class="motivations-abzeichen"aria-hidden="true"><span class="motivations-emoji">${pick.e}</span></span><strong>${esc(pick.t)}</strong></div>`;
  el.onclick=()=>el.remove();
  document.body.appendChild(el);
  const farben=["#1598d1","#6c3483","#f5a623","#e0457b","#3fa66a","#f1c40f"];
  const k=document.createElement("div");k.className="motiv-konfetti";k.setAttribute("aria-hidden","true");
- const kv=Math.floor(Math.random()*3);
  for(let i=0;i<18;i++){
-  const c=document.createElement("i");if(kv===1)c.className="st";else if(kv===2)c.className="rd";
+  const c=document.createElement("i");
   c.style.left=(Math.random()*100)+"%";c.style.background=farben[i%farben.length];
   c.style.animationDelay=(Math.random()*0.5)+"s";c.style.animationDuration=(1.5+Math.random()*0.9)+"s";
   k.appendChild(c);
@@ -2160,30 +1997,7 @@ function motivZeigen(pick,modus){
  document.body.appendChild(k);
  setTimeout(()=>{el.remove();k.remove()},2700);
 }
-function showMotivationsBild(besonders,art,schluessel){
- if(!currentUser||!motivAn())return;
- const jetzt=Date.now();
- if(schluessel){
-  if(jetzt-(motivZustand.keys[schluessel]||0)<60000)return;
-  motivZustand.keys[schluessel]=jetzt;
- }
- motivZustand.seit++;
- let modus="mini";
- if(besonders)modus="gross";
- else{
-  const n=motivZustand.seit;
-  // variable Quote: direkt nach einer Nachricht selten, nach längerer Pause sicherer
-  const p=n>=9?1:n>=6?0.75:n===1?0.15:0.32;
-  if(Math.random()>p)return;
-  if(Math.random()<0.08)modus="bonus";
- }
- motivZustand.seit=0;
- const pool=isTeacher()?(modus==="gross"?LX_MOTIV_L.besonders:modus==="bonus"?LX_MOTIV_L.bonus:LX_MOTIV_L.lehrer):(modus==="gross"?MOTIV_BESONDERS:modus==="bonus"?MOTIV_BONUS:[...(MOTIV_POOLS[art]||[]),...MOTIV_POOLS.allgemein]);
- let pick=pool[0];
- for(let i=0;i<8;i++){pick=pool[Math.floor(Math.random()*pool.length)];if(pick.t!==motivZustand.letzterText)break;}
- motivZustand.letzterText=pick.t;
- motivZeigen(pick,modus);
-}
+function showMotivationsBild(e,t,n){if(!currentUser||isTeacher()||!motivAn())return;const i=Date.now();if(n){if(i-(motivZustand.keys[n]||0)<6e4)return;motivZustand.keys[n]=i}motivZustand.seit++;let r="mini";if(e)r="gross";else{const l=motivZustand.seit,c=l>=9?1:l>=6?.75:l===1?.15:.32;if(Math.random()>c)return;Math.random()<.08&&(r="bonus")}motivZustand.seit=0;const a=r==="gross"?MOTIV_BESONDERS:r==="bonus"?MOTIV_BONUS:[...MOTIV_POOLS[t]||[],...MOTIV_POOLS.allgemein];let s=a[0];for(let l=0;l<8&&(s=a[Math.floor(Math.random()*a.length)],s.t===motivZustand.letzterText);l++);motivZustand.letzterText=s.t,motivZeigen(s,r)}
 // Alte Aufrufstellen nutzen weiterhin diesen Namen.
 function showMotivationsToast(besonders){showMotivationsBild(besonders)}
 window.motivUmschalten=motivUmschalten;
@@ -2431,27 +2245,21 @@ async function msZurueck(){
  if(k.ansicht==="schueler"){pgDaten=null;return openProjektSchuelerDetail(k.uid,k.phId);}
  closeModal();return render();
 }
-async function openMsBeitrag(phId,teamId,i,ansicht){
- const ph=projektPhaseById(phId);if(!ph)return;
- msKontext={...(msKontext||{}),phId,teamId,ansicht:ansicht||msKontext?.ansicht||"seite"};
- let b=null;
- try{const s=await getDoc(doc(db,"meilensteinBeitraege",`${teamId}_${i}_${currentUser.uid}`));b=s.exists()?s.data():null;}catch(e){}
- modal(`<button class="modal-close"onclick="closeModal()">×</button>
-  <div class="kicker"style="color:${ppFarbe(ph)}">${esc(ph.lb)} · PROJEKT-MEILENSTEIN${ph.beitragHinweis?"":` ${i+1}/${ph.meilensteine.length}`}</div>
-  <h2>${esc(ph.meilensteine[i])}</h2>
-  <p style="color:var(--muted);font-size:13px;margin-top:0">Was hast <b>du</b> zu diesem Meilenstein beigetragen? Der Meilenstein gilt erst als erreicht, wenn alle aus eurem Team ihren Beitrag eingetragen haben${msBrauchtBestaetigung(ph,i)?" und eure Lehrkraft ihn bestätigt hat":""}.</p>
+async function openMsBeitrag(e,t,n,i){const r=projektPhaseById(e);if(!r)return;msKontext={...msKontext||{},phId:e,teamId:t,ansicht:i||msKontext?.ansicht||"seite"};let a=null;try{const s=await getDoc(doc(db,"meilensteinBeitraege",`${t}_${n}_${currentUser.uid}`));a=s.exists()?s.data():null}catch{}modal(`<button class="modal-close"onclick="closeModal()">\xD7</button>
+  <div class="kicker"style="color:${ppFarbe(r)}">${esc(r.lb)} \xB7 PROJEKT-MEILENSTEIN${r.beitragHinweis?"":` ${n+1}/${r.meilensteine.length}`}</div>
+  <h2>${esc(r.meilensteine[n])}</h2>
+  <p style="color:var(--muted);font-size:13px;margin-top:0">Was hast <b>du</b> zu diesem Meilenstein beigetragen? Der Meilenstein gilt erst als erreicht, wenn alle aus eurem Team ihren Beitrag eingetragen haben${msBrauchtBestaetigung(r,n)?" und eure Lehrkraft ihn best\xE4tigt hat":""}.</p>
   <div class="form">
-   <label>Mein Beitrag<textarea id="msText"rows="4"maxlength="1500"placeholder="${esc((ph.beitragHinweis&&ph.beitragHinweis[i])||"z. B. Ich habe die Hypothese mit UV und AV formuliert und die Kontrollgruppe geplant.")}">${esc(b?.text||"")}</textarea></label>
-   <label>Link (optional)<input id="msLink"type="url"value="${esc(b?.link||"")}"placeholder="https://…"></label>
+   <label>Mein Beitrag<textarea id="msText"rows="4"maxlength="1500"placeholder="${esc(r.beitragHinweis&&r.beitragHinweis[n]||"z. B. Ich habe die Hypothese mit UV und AV formuliert und die Kontrollgruppe geplant.")}">${esc(a?.text||"")}</textarea></label>
+   <label>Link (optional)<input id="msLink"type="url"value="${esc(a?.link||"")}"placeholder="https://\u2026"></label>
    <label>Datei (optional, max. 15 MB)<input id="msDatei"type="file"></label>
-   ${b?.dateiUrl?`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><a class="pill"href="${esc(b.dateiUrl)}"target="_blank"rel="noopener">${esc(b.dateiName||"Datei")} ↗</a><label class="check"style="font-size:12px"><input id="msDateiWeg"type="checkbox"> Datei löschen</label></div>`:""}
+   ${a?.dateiUrl?`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><a class="pill"href="${esc(a.dateiUrl)}"target="_blank"rel="noopener">${esc(a.dateiName||"Datei")} \u2197</a><label class="check"style="font-size:12px"><input id="msDateiWeg"type="checkbox"> Datei l\xF6schen</label></div>`:""}
    <div class="form-actions">
     <button class="secondary"onclick="msZurueck()">Abbrechen</button>
-    ${b?`<button class="secondary"onclick="msBeitragLoeschen('${phId}','${teamId}',${i})">Beitrag löschen</button>`:""}
-    <button class="primary"onclick="msBeitragSpeichern('${phId}','${teamId}',${i})">Beitrag speichern</button>
+    ${a?`<button class="secondary"onclick="msBeitragLoeschen('${e}','${t}',${n})">Beitrag l\xF6schen</button>`:""}
+    <button class="primary"onclick="msBeitragSpeichern('${e}','${t}',${n})">Beitrag speichern</button>
    </div>
-  </div>`);
-}
+  </div>`)}
 async function msBeitragSpeichern(phId,teamId,i){
  const text=$("msText")?.value.trim()||"";
  let link=$("msLink")?.value.trim()||"";
@@ -2478,17 +2286,7 @@ async function msBeitragLoeschen(phId,teamId,i){
  try{const alt=await getDoc(ref);const url=alt.exists()?alt.data().dateiUrl:"";await deleteDoc(ref);await deleteCampusDatei(url);toast("Beitrag gelöscht.");await msZurueck();}
  catch(e){console.error(e);toast("Konnte nicht gelöscht werden.");}
 }
-async function msPruefen(phId,teamId,i,ok,ansicht){
- if(!isTeacher())return;
- let kommentar="";
- if(!ok){const r=prompt("Rückmeldung an das Team (was fehlt noch?):","");if(r===null)return;kommentar=r.trim();}
- msKontext={...(msKontext||{}),phId,teamId,ansicht:ansicht||msKontext?.ansicht||"seite"};
- try{
-  await updateDoc(doc(db,"lehrplanTeams",teamId),{[`msPruefung.${i}`]:{s:ok?"ok":"zurueck",kommentar,at:serverTimestamp(),von:currentUser.uid}});
-  toast(ok?"Meilenstein bestätigt.":"Meilenstein zurückgegeben.");
-  await msZurueck();
- }catch(e){console.error("Meilenstein prüfen:",e);toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Konnte nicht gespeichert werden.");}
-}
+async function msPruefen(e,t,n,i,r){if(!isTeacher())return;let a="";if(!i){const s=prompt("R\xFCckmeldung an das Team (was fehlt noch?):","");if(s===null)return;a=s.trim()}msKontext={...msKontext||{},phId:e,teamId:t,ansicht:r||msKontext?.ansicht||"seite"};try{await updateDoc(doc(db,"lehrplanTeams",t),{[`msPruefung.${n}`]:{s:i?"ok":"zurueck",kommentar:a,at:serverTimestamp(),von:currentUser.uid}}),toast(i?"Meilenstein best\xE4tigt.":"Meilenstein zur\xFCckgegeben."),await msZurueck()}catch(s){console.error("Meilenstein pr\xFCfen:",s),toast(s?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln pr\xFCfen.":"Konnte nicht gespeichert werden.")}}
 // Eigenes Fenster mit allen Meilensteinen eines Teams (aus der Wochenansicht).
 async function openMeilensteinModal(phId,teamId,zurueck){
  const ph=projektPhaseById(phId);if(!ph)return;
@@ -4116,33 +3914,10 @@ function aktuellePraktikumsphase(){
  const kommend=PRAKTIKUMSPHASEN.filter(p=>p.start>today).sort((a,b)=>a.start.localeCompare(b.start))[0];
  return kommend?{...kommend,status:"kommend"}:null;
 }
-async function miniKalenderHTML(){
- let events=[];
- try{events=(await getCollection("events","start",false)).map(e=>({...e,collection:"events"}))}catch(e){}
- if(!events.length){try{events=(await getCollection("calendar","date",false)).map(e=>({...e,collection:"calendar"}))}catch(e){}}
- let birthdayEvents=[];
- try{birthdayEvents=await getBirthdayEvents()}catch(e){}
- await calAusgeblendetLaden();events=[...events,...calFesteTermine()];
- // Dieselben Schulferien-Zeiträume wie im vollständigen Campus-Kalender.
- const ferienZeitraeume=[
- ["2026-08-03","2026-09-14"],["2026-11-02","2026-11-06"],["2026-12-24","2027-01-08"],
- ["2027-02-08","2027-02-12"],["2027-03-22","2027-04-02"],["2027-05-18","2027-05-28"],["2027-08-02","2027-09-13"]
- ];
- const istFerien=key=>ferienZeitraeume.some(([von,bis])=>key>=von&&key<=bis);
- const today=new Date();today.setHours(0,0,0,0);
- const monday=new Date(today);monday.setDate(today.getDate()-((today.getDay()+6)%7));
- const days=Array.from({length:7},(_,i)=>{const d=new Date(monday);d.setDate(monday.getDate()+i);return d});
- const dateKey=d=>d.toISOString().slice(0,10);
- const eventDates=new Set(events.map(e=>String(e.start||e.date||"").slice(0,10)));
- const birthdayDates=new Set(birthdayEvents.map(e=>String(e.start||"").slice(0,10)));
- const wt=["Mo","Di","Mi","Do","Fr","Sa","So"];
- return `<a href="#kalender"class="mini-kalender">
- ${days.map((d,i)=>{const key=dateKey(d);const isToday=key===dateKey(today);
- const ferien=istFerien(key),geburtstag=birthdayDates.has(key),termin=eventDates.has(key);
- return `<div class="mini-kalender-day${isToday?" mini-kalender-today":""}${ferien?" mini-kalender-ferien":""}"><small>${wt[i]}</small><strong>${d.getDate()}</strong>${geburtstag?`<span class="mini-kalender-dot mini-kalender-dot-pink"></span>`:termin?`<span class="mini-kalender-dot"></span>`:""}</div>`;}).join("")}
+async function miniKalenderHTML(){let e=[];try{e=(await getCollection("events","start",!1)).map(p=>({...p,collection:"events"}))}catch{}if(!e.length)try{e=(await getCollection("calendar","date",!1)).map(p=>({...p,collection:"calendar"}))}catch{}let t=[];try{t=await getBirthdayEvents()}catch{}await calAusgeblendetLaden(),e=[...e,...calFesteTermine()];const n=[["2026-08-03","2026-09-14"],["2026-11-02","2026-11-06"],["2026-12-24","2027-01-08"],["2027-02-08","2027-02-12"],["2027-03-22","2027-04-02"],["2027-05-18","2027-05-28"],["2027-08-02","2027-09-13"]],i=p=>n.some(([m,f])=>p>=m&&p<=f),r=new Date;r.setHours(0,0,0,0);const a=new Date(r);a.setDate(r.getDate()-(r.getDay()+6)%7);const s=Array.from({length:7},(p,m)=>{const f=new Date(a);return f.setDate(a.getDate()+m),f}),l=p=>p.toISOString().slice(0,10),c=new Set(e.map(p=>String(p.start||p.date||"").slice(0,10))),d=new Set(t.map(p=>String(p.start||"").slice(0,10))),u=["Mo","Di","Mi","Do","Fr","Sa","So"];return`<a href="#kalender"class="mini-kalender">
+ ${s.map((p,m)=>{const f=l(p),y=f===l(r),v=i(f),k=d.has(f),x=c.has(f);return`<div class="mini-kalender-day${y?" mini-kalender-today":""}${v?" mini-kalender-ferien":""}"><small>${u[m]}</small><strong>${p.getDate()}</strong>${k?'<span class="mini-kalender-dot mini-kalender-dot-pink"></span>':x?'<span class="mini-kalender-dot"></span>':""}</div>`}).join("")}
  </a>
- <small style="display:block;margin-top:6px;color:var(--muted);font-size:10px">Zum vollständigen Campus-Kalender →</small>`;
-}
+ <small style="display:block;margin-top:6px;color:var(--muted);font-size:10px">Zum vollst\xE4ndigen Campus-Kalender \u2192</small>`}
 // ---- Startseite: „Das steht für dich an“ (nur Schüler:innen) ----
 // Sammelt aus vorhandenen Daten, was für die angemeldete Person offen ist:
 // P/P-Module bis einschließlich dieser Woche, fehlende Blockberichte, fällige Einträge der Wochenplanung.
@@ -5132,16 +4907,7 @@ function ppmKursSchritte(m){
  if(Array.isArray(m.schritte)&&m.schritte.length)return m.schritte;
  return (PPM_KURSE[m.kursId]||{}).schritte||[];
 }
-async function ppmLaden(erzwingen){
- if(!erzwingen&&Date.now()-PPM.geladen<30000)return;
- try{
-  const s=await getDocs(collection(db,"ppModule"));
-  PPM.liste=s.docs.map(d=>({id:d.id,...d.data()}));PPM.aus=PPM.liste.filter(m=>m.modul==="trainingaus");PPM.liste=PPM.liste.filter(m=>m.modul!=="trainingaus");PPM.fehler="";
- }catch(e){console.error("Module laden:",e);PPM.fehler=(e&&(e.code||e.name))||"unbekannt";PPM.liste=[];}
- try{await Promise.all([...new Set(PPM.liste.filter(m=>m.modul==="selbstlern"&&String(m.kursId||"").startsWith("ea:")).map(m=>m.kursId.slice(3)))].map(id=>einarbeitungInfo(id)));}catch(e){console.error("Kursinfos laden:",e);}
- PPM.geladen=Date.now();
- PPM.liste.sort((a,b)=>(ppmSwIndex(a.start)-ppmSwIndex(b.start))||((a.ord||0)-(b.ord||0))||(tsSek(a.createdAt)-tsSek(b.createdAt)));
-}
+async function ppmLaden(e){if(!(!e&&Date.now()-PPM.geladen<3e4)){try{const t=await getDocs(collection(db,"ppModule"));PPM.liste=t.docs.map(n=>({id:n.id,...n.data()})),PPM.aus=[...PPM.liste.filter(n=>n.modul==="trainingaus")],PPM.liste=PPM.liste.filter(n=>n.modul!=="trainingaus"),PPM.fehler=""}catch(t){console.error("Module laden:",t),PPM.fehler=t&&(t.code||t.name)||"unbekannt",PPM.liste=[]}try{await Promise.all([...new Set(PPM.liste.filter(t=>t.modul==="selbstlern"&&String(t.kursId||"").startsWith("ea:")).map(t=>t.kursId.slice(3)))].map(t=>einarbeitungInfo(t)))}catch(t){console.error("Kursinfos laden:",t)}PPM.geladen=Date.now(),PPM.liste.sort((t,n)=>ppmSwIndex(t.start)-ppmSwIndex(n.start)||(t.ord||0)-(n.ord||0)||tsSek(t.createdAt)-tsSek(n.createdAt))}}
 function ppmSwIndex(id){return SCHULWOCHEN_PP.findIndex(w=>w.id===id);}
 function ppmWochen(m){const i=ppmSwIndex(m.start);if(i<0)return[];return SCHULWOCHEN_PP.slice(i,i+ppmDauerDef(m).wochen);}
 function ppmStd(min){return String(Math.round(min/PPM_MIN_PRO_STUNDE*10)/10).replace(".",",");} // Minuten → Unterrichtsstunden (à 45 Min.)
@@ -5549,67 +5315,25 @@ function ppmTypWahl(woche){
 }
 // Thema → „Baustein einplanen“: alle Bausteine sofort sichtbar, ein Klick öffnet die kurze Einplanung.
 // Trainings nach Kurzarbeit/Schulaufgabe: mehrere auf einmal ankreuzen, ohne Woche und Dauer. Die Module laufen ohne Schulwoche und belegen keinen Platz im Wochenplan.
-async function kwTrainingWahl(e){
- const ph=PROJEKT_PHASEN.find(p=>p.id===e.phase)||PROJEKT_PHASEN[0];
- const infos=await Promise.all(KW_TRAININGS.map(x=>einarbeitungInfo(x).catch(()=>null)));
- const da=new Set(kwModuleThema(e.id).map(m=>m.kursId));
- const zeilen=KW_TRAININGS.map((x,i)=>{const n=infos[i];if(!n||n.entwurf)return"";const schon=da.has("ea:"+x);
-  return`<label style="display:flex;gap:12px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:10px;margin-top:8px;cursor:${schon?"default":"pointer"}"><input type="checkbox" class="kwTrCb" value="${x}"${schon?" checked disabled":""}><span><b>${esc(n.titel)}</b>${((/^fa0/.test(x)&&KW_TR_HINT[x])||schon)?`<br><small style="color:var(--muted)">${[/^fa0/.test(x)?KW_TR_HINT[x]:"",schon?"schon eingestellt":""].filter(Boolean).join(" · ")}</small>`:""}</span></label>`}).join("");
- modal(`<button class="modal-close" onclick="closeModal()">×</button>
+async function KWTW(e){const ph=PROJEKT_PHASEN.find(p=>p.id===e.phase)||PROJEKT_PHASEN[0],infos=await Promise.all(["fa05","fa06","fa04","fa07"].map(x=>einarbeitungInfo(x).catch(()=>null))),da=new Set(kwModuleThema(e.id).map(m=>m.kursId)),T=["fa05","fa06","fa04","fa07"],z=T.map((x,i)=>{const n=infos[i];if(!n||n.entwurf)return"";const s=da.has("ea:"+x);return`<label style="display:flex;gap:12px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:10px;margin-top:8px;cursor:${s?"default":"pointer"}"><input type="checkbox" class="kwTrCb" value="${x}"${s?" checked disabled":""}><span><b>${esc(n.titel)}</b>${/^fa0/.test(x)||s?'<br><small style="color:var(--muted)">'+((/^fa0/.test(x)?{fa04:"Fall Mira",fa05:"Fall Mira",fa06:"Fall Mira",fa07:"Fall Mira"}[x]:"")||"")+((/^fa0/.test(x)&&s)?" \xB7 ":"")+(s?"schon eingestellt":"")+"</small>":""}</span></label>`}).join("");modal(`<button class="modal-close" onclick="closeModal()">\xD7</button>
   <div class="kicker">TRAININGS EINSTELLEN</div><h2>${esc(e.thema)}</h2>
-  <p style="color:var(--muted);margin:0 0 4px">Kreuze die Trainings an, die deine Schüler:innen nach der Rückgabe üben sollen.</p>
-  ${zeilen}
-  <div class="form-actions"><button class="secondary" type="button" onclick="closeModal()">Abbrechen</button><button class="primary" type="button" id="kwTrSave">Einstellen</button></div>`);
- $("kwTrSave").onclick=async()=>{
-  const ids=[...document.querySelectorAll(".kwTrCb:checked:not(:disabled)")].map(c=>c.value);
-  if(!ids.length){toast("Bitte mindestens ein Training ankreuzen.");return}
-  try{
-   for(const id of ids){const n=infos[KW_TRAININGS.indexOf(id)];
-    await addDoc(collection(db,"ppModule"),{modul:"selbstlern",lb:ph.lbNum,titel:n.titel,start:"",dauer:"w1",wochen:1,notiz:"",kursId:"ea:"+id,themen:[e.id],training:true,ord:KW_TRAININGS.indexOf(id)+1,createdBy:currentUser.uid,createdAt:serverTimestamp()});}
-   closeModal();await ppmLaden(true);await render();toast(ids.length===1?"Training eingestellt.":ids.length+" Trainings eingestellt.");
-  }catch(err){ppmFehler(err,"Die Trainings konnten nicht eingestellt werden");}
- };
-}
-async function kwBausteinWahl(themaId){
- if(!isTeacher())return;
- const e=kwThemaById(themaId);if(!e)return;
- if(e.leistung)return await kwTrainingWahl(e);
- const ph=PROJEKT_PHASEN.find(p=>p.id===e.phase)||PROJEKT_PHASEN[0];
- const woche=(ph.aptSchulwochen||[])[0]||null;
- const [fa,ein]=await Promise.all([faLaden().catch(()=>[]),einarbeitungInfo(themaId).catch(()=>null)]);
- const mine=(fa||[]).filter(u=>u.thema===themaId);
- const kern=mine.filter(u=>!u.zusatz),mehr=mine.filter(u=>u.zusatz);
- const lbAlle=(fa||[]).filter(u=>u.lb===ph.lbNum&&!u.zusatz);
- const min=l=>l.reduce((x,u)=>x+(u.minuten||0),0);
- const FARBE={selbstlern:"#1f8ea3",kprim:"#e08a2e",rallye:"#8460b8",uebung:"#4f9a35",lernuebersicht:"#3a7fd0",fachaufsatz:"#2f7d32",apt:"#3a7fd0",stunde:"#d4577f",einfuehrung:"#16907a",projekt:"#6b7a8c"};
- const karte=(typ,titel,text,btn,extra)=>`<button type="button" class="bw-k" data-typ="${typ}" style="--k:${FARBE[typ]||"#4a90d9"}"${extra||""}><span class="bw-t"><b>${esc(titel)}</b><small>${esc(text)}</small></span><span class="bw-b">${esc(btn||"Einplanen")}</span></button>`;
- const kursKarte=String(themaId).startsWith("ln-")?(await Promise.all(KW_TRAININGS.map(x=>einarbeitungInfo(x).catch(()=>null)))).map((x,i)=>x&&!x.entwurf?karte("selbstlern",x.titel,"Selbstlernkurs zum Üben","Einplanen",` data-kurs="ea:${KW_TRAININGS[i]}"`):"").join(""):(ein&&!ein.entwurf)?karte("selbstlern",ein.titel||"Selbstlernkurs",`Selbstlernkurs zu diesem Thema${ein.aufgaben?" · "+ein.aufgaben+" Aufgaben":""}`,"Einplanen",` data-kurs="ea:${esc(themaId)}"`):"";
- const faKarte=karte("fachaufsatz","Fachaufsatztraining",`Alle Fachaufsätze aus Abschlussprüfungen (Lernbereich 1 bis 4) mit ganzem Fall, Zeilennummern, Themafrage und Lösung zum Einblenden.`,"Auswählen");
- const T=k=>PPM_TYPEN[k];
- const einfach=(k,txt)=>karte(k,T(k).name,txt||T(k).text);
- modal(`<button class="modal-close" onclick="closeModal()">×</button>
-  <div class="kicker">BAUSTEIN EINPLANEN</div><h2>${esc(kwKurz(e))}</h2>
-  <p style="color:var(--muted);margin:0 0 4px">Wähle einen Baustein. Danach legst du nur noch Woche und Dauer fest.</p>
+  <p style="color:var(--muted);margin:0 0 4px">Kreuze die Trainings an, die deine Sch\xFCler:innen nach der R\xFCckgabe \xFCben sollen.</p>
+  ${z}
+  <div class="form-actions"><button class="secondary" type="button" onclick="closeModal()">Abbrechen</button><button class="primary" type="button" id="kwTrSave">Einstellen</button></div>`),$("kwTrSave").onclick=async()=>{const ids=[...document.querySelectorAll(".kwTrCb:checked:not(:disabled)")].map(c=>c.value);if(!ids.length){toast("Bitte mindestens ein Training ankreuzen.");return}try{for(const id of ids){const n=infos[T.indexOf(id)];await addDoc(collection(db,"ppModule"),{modul:"selbstlern",lb:ph.lbNum,titel:n.titel,start:"",dauer:"w1",wochen:1,notiz:"",kursId:"ea:"+id,themen:[e.id],training:!0,ord:T.indexOf(id)+1,createdBy:currentUser.uid,createdAt:serverTimestamp()})}closeModal(),await ppmLaden(!0),await render(),toast(ids.length===1?"Training eingestellt.":ids.length+" Trainings eingestellt.")}catch(err){ppmFehler(err,"Die Trainings konnten nicht eingestellt werden")}}}
+async function kwBausteinWahl(e){if(!isTeacher())return;const t=kwThemaById(e);if(!t)return;if(t.leistung)return await KWTW(t);const n=PROJEKT_PHASEN.find(x=>x.id===t.phase)||PROJEKT_PHASEN[0],i=(n.aptSchulwochen||[])[0]||null,[r,a]=await Promise.all([faLaden().catch(()=>[]),einarbeitungInfo(e).catch(()=>null)]),s=(r||[]).filter(x=>x.thema===e),l=s.filter(x=>!x.zusatz),c=s.filter(x=>x.zusatz),d=(r||[]).filter(x=>x.lb===n.lbNum&&!x.zusatz),u=x=>x.reduce((E,W)=>E+(W.minuten||0),0),p={selbstlern:"#1f8ea3",kprim:"#e08a2e",rallye:"#8460b8",uebung:"#4f9a35",lernuebersicht:"#3a7fd0",fachaufsatz:"#2f7d32",apt:"#3a7fd0",stunde:"#d4577f",einfuehrung:"#16907a",projekt:"#6b7a8c"},m=(x,E,W,j,J)=>`<button type="button" class="bw-k" data-typ="${x}" style="--k:${p[x]||"#4a90d9"}"${J||""}><span class="bw-t"><b>${esc(E)}</b><small>${esc(W)}</small></span><span class="bw-b">${esc(j||"Einplanen")}</span></button>`,f=String(e).startsWith("ln-")?(await Promise.all(["fa05","fa06","fa04","fa07"].map(x=>einarbeitungInfo(x).catch(()=>null)))).map((x,i)=>x&&!x.entwurf?m("selbstlern",x.titel,"Selbstlernkurs zum \xDCben","Einplanen",` data-kurs="ea:${["fa05","fa06","fa04","fa07"][i]}"`):"").join(""):a&&!a.entwurf?m("selbstlern",a.titel||"Selbstlernkurs",`Selbstlernkurs zu diesem Thema${a.aufgaben?" \xB7 "+a.aufgaben+" Aufgaben":""}`,"Einplanen",` data-kurs="ea:${esc(e)}"`):"",y=m("fachaufsatz","Fachaufsatztraining","Alle Fachaufs\xE4tze aus Abschlusspr\xFCfungen (Lernbereich 1 bis 4) mit ganzem Fall, Zeilennummern, Themafrage und L\xF6sung zum Einblenden.","Ausw\xE4hlen"),v=x=>PPM_TYPEN[x],k=(x,E)=>m(x,v(x).name,E||v(x).text);modal(`<button class="modal-close" onclick="closeModal()">\xD7</button>
+  <div class="kicker">BAUSTEIN EINPLANEN</div><h2>${esc(kwKurz(t))}</h2>
+  <p style="color:var(--muted);margin:0 0 4px">W\xE4hle einen Baustein. Danach legst du nur noch Woche und Dauer fest.</p>
   <div class="bw">
-   <h3 class="bw-h" style="--k:#1f8ea3">Üben und Vertiefen</h3>
-   ${kursKarte}${einfach("kprim","Kurzer Test mit K-Prim-Aufgaben, automatisch ausgewertet.")}${einfach("rallye","Stationen mit Aufgaben, einzeln oder im Team, mit Punkten.")}
-   ${karte("lernuebersicht","Lernübersicht","Whiteboard mit dem Wichtigsten auf einen Blick – Schüler:innen ergänzen ihre eigene Kopie.","Auswählen")}
-   ${karte("uebung","Übungen und Spiele","Zuordnung (Ziehen), Memory, Blockfall, Lückentext, Karteikarten – nach Lernbereich geordnet.","Auswählen")}
+   <h3 class="bw-h" style="--k:#1f8ea3">\xDCben und Vertiefen</h3>
+   ${f}${k("kprim","Kurzer Test mit K-Prim-Aufgaben, automatisch ausgewertet.")}${k("rallye","Stationen mit Aufgaben, einzeln oder im Team, mit Punkten.")}
+   ${m("lernuebersicht","Lern\xFCbersicht","Whiteboard mit dem Wichtigsten auf einen Blick \u2013 Sch\xFCler:innen erg\xE4nzen ihre eigene Kopie.","Ausw\xE4hlen")}
+   ${m("uebung","\xDCbungen und Spiele","Zuordnung (Ziehen), Memory, Blockfall, L\xFCckentext, Karteikarten \u2013 nach Lernbereich geordnet.","Ausw\xE4hlen")}
    <h3 class="bw-h" style="--k:#4f9a35">Fachaufsatz</h3>
-   ${faKarte}
+   ${y}
    <h3 class="bw-h" style="--k:#d4577f">Weitere Bausteine</h3>
-   ${einfach("selbstlern","Beliebigen Selbstlernkurs auswählen.")}${einfach("projekt","Team-Projekt mit Meilensteinen.")}
+   ${k("selbstlern","Beliebigen Selbstlernkurs ausw\xE4hlen.")}${k("projekt","Team-Projekt mit Meilensteinen.")}
   </div>
-  <div class="form-actions"><button class="secondary" type="button" onclick="closeModal()">Abbrechen</button></div>`);
- document.querySelectorAll(".bw-k").forEach(b=>b.onclick=async()=>{
-  const typ=b.dataset.typ;
-  if(typ==="lernuebersicht"){await kwLuPicker(themaId);return}
-  if(typ==="uebung"){await kwFaPicker(null,themaId,"spiele");return}
-  if(typ==="fachaufsatz"){await kwFaPicker(null,themaId,"fa");return}
-  window.__kwThemaNeu=b.dataset.ohnethema?null:themaId;
-  await ppmDialog(null,typ,woche,{einfach:true,lb:ph.lbNum,themaTitel:kwKurz(e),kurs:b.dataset.kurs||""});
- });
-}
+  <div class="form-actions"><button class="secondary" type="button" onclick="closeModal()">Abbrechen</button></div>`),document.querySelectorAll(".bw-k").forEach(x=>x.onclick=async()=>{const E=x.dataset.typ;if(E==="lernuebersicht"){await kwLuPicker(e);return}if(E==="uebung"){await kwFaPicker(null,e,"spiele");return}if(E==="fachaufsatz"){await kwFaPicker(null,e,"fa");return}window.__kwThemaNeu=x.dataset.ohnethema?null:e,await ppmDialog(null,E,i,{einfach:!0,lb:n.lbNum,themaTitel:kwKurz(t),kurs:x.dataset.kurs||""})})}
 window.kwBausteinWahl=kwBausteinWahl;
 // Projekt: öffnet direkt „Das Experiment“ (Standard im Lernbereich mit Einstieg) oder die Projektseite mit Teams und Meilensteinen.
 function ppmProjektDirekt(m){
@@ -5631,26 +5355,7 @@ function ppmWochenOptionen(sel){
  return SCHULWOCHEN_PP.map(w=>`<option value="${w.id}"${w.id===sel?" selected":""}>${fmtKurz(w.start)}–${fmtKurz(w.end)}</option>`).join("");
 }
 // Check-out für ein K-Prim-Modul: Auswahl nach Lernbereich geordnet. Angelegte Check-outs und noch nicht angelegte Vorlagen stehen gemeinsam in den Gruppen.
-function ppmCheckoutOptionen(checkouts,gewaehlt){
- const lbs=[1,2,3,4];
- const gruppe=(label,items)=>items.length?`<optgroup label="${esc(label)}">${items.join("")}</optgroup>`:"";
- const stat=c=>c.status==="live"?"läuft":c.status==="beendet"?"beendet":"Entwurf";
- let html='<option value="">Noch keinen (später verknüpfen)</option>';
- const verteilt=new Set();
- lbs.forEach(n=>{
-  const lbT=(PROJEKT_PHASEN.find(p=>p.lbNum===n)||{}).lbTitel||"";
-  const ex=checkouts.filter(c=>Number(c.lbNum)===n).sort((a,b)=>String(a.datum||"").localeCompare(String(b.datum||"")));
-  ex.forEach(c=>verteilt.add(c.id));
-  const exOpt=ex.map(c=>`<option value="${esc(c.id)}"${c.id===gewaehlt?" selected":""}>${esc(coTitelAnzeige(c)||"Check-out")} · angelegt (${stat(c)}${c.datum?" · "+esc(coDatum(c.datum)):""})</option>`);
-  // Vorlagen, aus denen es noch keinen Check-out gibt
-  const vl=CHECKOUT_VORLAGEN.filter(v=>Number(v.lbNum)===n&&!ex.some(c=>coTitelAnzeige(c)===coLabel(v))).sort((a,b)=>String(a.datum||"").localeCompare(String(b.datum||""))||(a.nr||0)-(b.nr||0));
-  const vlOpt=vl.map(v=>`<option value="vorlage:${esc(v.id)}">${esc(coLabel(v))} · Vorlage: ${esc(coVorlageInhalte(v).join(" + "))}</option>`);
-  html+=gruppe(`Lernbereich ${n}${lbT?" · "+lbT:""}`,[...exOpt,...vlOpt]);
- });
- const rest=checkouts.filter(c=>!verteilt.has(c.id));
- html+=gruppe("Ohne Lernbereich",rest.map(c=>`<option value="${esc(c.id)}"${c.id===gewaehlt?" selected":""}>${esc(coTitelAnzeige(c)||"Check-out")} · angelegt (${stat(c)})</option>`));
- return html;
-}
+function r_Zk(e,t){const n=[1,2,3,4],i=(c,d)=>d.length?`<optgroup label="${esc(c)}">${d.join("")}</optgroup>`:"",r=c=>c.status==="live"?"l\xE4uft":c.status==="beendet"?"beendet":"Entwurf";let a='<option value="">Noch keinen (sp\xE4ter verkn\xFCpfen)</option>';const s=new Set;n.forEach(c=>{const d=(PROJEKT_PHASEN.find(y=>y.lbNum===c)||{}).lbTitel||"",u=e.filter(y=>Number(y.lbNum)===c).sort((y,v)=>String(y.datum||"").localeCompare(String(v.datum||"")));u.forEach(y=>s.add(y.id));const p=u.map(y=>`<option value="${esc(y.id)}"${y.id===t?" selected":""}>${esc(coTitelAnzeige(y)||"Check-out")} \xB7 angelegt (${r(y)}${y.datum?" \xB7 "+esc(coDatum(y.datum)):""})</option>`),f=CHECKOUT_VORLAGEN.filter(y=>Number(y.lbNum)===c&&!u.some(v=>coTitelAnzeige(v)===coLabel(y))).sort((y,v)=>String(y.datum||"").localeCompare(String(v.datum||""))||(y.nr||0)-(v.nr||0)).map(y=>`<option value="vorlage:${esc(y.id)}">${esc(coLabel(y))} \xB7 Vorlage: ${esc(coVorlageInhalte(y).join(" + "))}</option>`);a+=i(`Lernbereich ${c}${d?" \xB7 "+d:""}`,[...p,...f])});const l=e.filter(c=>!s.has(c.id));return a+=i("Ohne Lernbereich",l.map(c=>`<option value="${esc(c.id)}"${c.id===t?" selected":""}>${esc(coTitelAnzeige(c)||"Check-out")} \xB7 angelegt (${r(c)})</option>`)),a}
 // Legt aus einer Vorlage einen Check-out-Entwurf an (wie „Speichern“ im Editor) und gibt die ID zurück.
 async function coAusVorlageAnlegen(v,datum){
  const au=v.aufgaben.map(coAufgabeAusBank);
@@ -5668,241 +5373,48 @@ async function coAusVorlageAnlegen(v,datum){
  await setDoc(doc(db,"checkoutLoesungen",r.id),loesung);
  return r.id;
 }
-async function ppmDialog(id,typ,woche,opt){
- opt=opt||{};
- const bearb=id?ppmById(id):null;
- const t=bearb?bearb.modul:typ;if(!PPM_TYPEN[t])return;
- const T=PPM_TYPEN[t];
- const projektId=bearb?bearb.projektId:opt.projektId;
- const projekt=projektId?ppmById(projektId):null;
- const heute=new Date().toISOString().slice(0,10);
- const erste=SCHULWOCHEN_PP.find(w=>w.end>=heute)||SCHULWOCHEN_PP[0];
- const projWochen=projekt?ppmWochen(projekt):null;
- const start=bearb?bearb.start:(woche&&(!projWochen||projWochen.some(w=>w.id===woche))?woche:(projWochen?projWochen[0].id:erste.id));
- let checkouts=[];
- if(t==="kprim"){try{checkouts=(await ladeCheckoutDaten()).checkouts||[];}catch(e){}}
- const ea=t==="selbstlern"?await ppmEaListe():[];
- const vorlagen=t==="projekt"?(await Promise.all(BEP_VORLAGEN_IDS.map(bepVorlage))).filter(Boolean):[];
- const lb0=bearb?bearb.lb:(projekt?projekt.lb:(opt.lb||1));
- const lbOpt=[1,2,3,4].map(n=>`<option value="${n}"${n===lb0?" selected":""}>Lernbereich ${n} · ${esc((PROJEKT_PHASEN.find(p=>p.lbNum===n)||{}).lbTitel||"")}</option>`).join("");
- const ph0=PROJEKT_PHASEN.find(p=>p.lbNum===lb0);
- const dauer0=bearb?ppmDauerKey(bearb):PPM_DAUER_STANDARD[t];
- const dauerListe=(projekt?PPM_DAUERN.filter(d=>d.min):PPM_DAUERN).filter(d=>!d.alt||d.k===dauer0);
- const dauerOpt=(()=>{const l=dauerListe.some(d=>d.k===dauer0)?dauerListe:[...dauerListe,{k:dauer0,lang:dauer0.slice(1)+" Wochen (bisher)"}];return l.map(d=>`<option value="${d.k}"${d.k===dauer0?" selected":""}>${esc(d.lang)}</option>`).join("");})();
- const last=ppmLast(bearb?bearb.id:null);
- const wochenListe=projWochen||SCHULWOCHEN_PP;
- const wochenOpt=wochenListe.map(w=>{const frei=Math.max(0,PPM_MIN_PRO_WOCHE-last[w.id].min);return`<option value="${w.id}"${w.id===start?" selected":""}>${fmtKurz(w.start)}–${fmtKurz(w.end)}${projekt?"":` · frei: ${ppmStd(frei)} Stunden`}</option>`;}).join("");
- let extra="";
- if(t==="projekt"){
-  const dir0=ppmProjektDirekt(bearb||{lb:lb0});
-  extra=`<label>Beim Aufrufen öffnet sich<select id="ppmDirekt"><option value="experiment"${dir0?" selected":""}>direkt „Das Experiment“ (interaktive Stunde)</option><option value="projekt"${dir0?"":" selected"}>die Projektseite mit Teams und Meilensteinen</option></select></label>
-   ${vorlagen.length?`<label>Projektvorlage<select id="ppmVorlage"><option value="">Keine: Standardprojekt des Lernbereichs</option>${vorlagen.map(x=>`<option value="${esc(x.id)}"${bearb&&bearb.vorlage===x.id?" selected":""}>${esc(x.titel)}</option>`).join("")}</select></label>
-   <p style="font-size:13px;color:var(--muted);margin:0">Mit Vorlage entsteht eine eigene Projektseite mit Teamwahl, Zeitplan, Fristen, Material und Teamübersicht. Empfohlen: Dauer 2 Wochen (Schulwoche, dann der Praktikumsblock, dann Schulwoche).</p>`:""}
-   <p style="font-size:13px;color:var(--muted);margin:0">Team-Projekt mit Meilensteinen anlegen: Das Projekt nutzt die Meilensteine und die Teams des Lernbereichs.</p>`;
- }
- if(t==="fachaufsatz"){
-  const faAlle=await faLaden();
-  const lbTitel=n=>(PROJEKT_PHASEN.find(p=>p.lbNum===n)||{}).lbTitel||"";
-  const grp=n=>{
-   const l=faAlle.filter(u=>u.lb===n),kern=l.filter(u=>!u.zusatz),mehr=l.filter(u=>u.zusatz);
-   const nachThema=[...new Set(l.map(u=>u.thema))];
-   const zeile=th=>{const eu=l.filter(u=>u.thema===th),k=eu.filter(u=>!u.zusatz);const t0=kwThemaById(th);
-    return`<div class="fa-th"><b>${t0?`Nr. ${esc(t0.nr)} · ${esc(kwKurz(t0))}`:`Weiteres Thema: ${esc(eu[0].zusatz||th)}`}</b><small>${k.length?k.length+" Übung"+(k.length===1?"":"en"):""}${k.length&&eu.length>k.length?" + ":""}${eu.length>k.length?(eu.length-k.length)+" zusätzlich":""}</small><span>${eu.map(u=>esc(u.titel)+(u.zusatz?" ("+esc(u.zusatz)+")":"")).join(" · ")}</span></div>`};
-   return`<details class="fa-lbgr" data-lb="${n}"${n===lb0?" open":""}><summary><b>Lernbereich ${n}</b> ${esc(lbTitel(n))}<small>${kern.length} Kernübungen${mehr.length?" · "+mehr.length+" zusätzlich":""}</small></summary>${nachThema.map(zeile).join("")}</details>`};
-  extra=`<div class="fa-uebers"><b>Übungen nach Lernbereich</b><p>Mit dem gewählten Lernbereich stehen die Kernübungen automatisch bereit. Vertiefungen und weitere Themen erscheinen für die Klasse unter „Mehr üben“. Willst du nur bestimmte Themen einplanen, kreuze sie unten bei den Lehrplan-Themen an.</p>${[1,2,3,4].map(grp).join("")}</div>`;
- }
- if(t==="apt")extra=`<p style="font-size:13px;color:var(--muted);margin:0">Die Frage aus der Abschlussprüfung, den relevanten Inhalt und die Lösung gestaltest du danach direkt auf der Modulseite.</p>`;
- if(t==="stunde")extra=`<label>Phase im Deeper-Learning-Konzept<select id="ppmPhase">${[1,2,3].map(n=>`<option value="${n}"${(bearb?bearb.phase:2)===n?" selected":""}>${PP12_PHASEN[n].kurz} · ${esc(PP12_PHASEN[n].name)}</option>`).join("")}</select></label>
-  ${bearb?"":`<p style="font-size:13px;color:var(--muted);margin:0">Zu jeder Stunde wird automatisch eine Digitale Tafel angelegt.</p>`}`;
- if(t==="einfuehrung"){
-  const th0=(bearb&&bearb.thema)||"gegenstand";
-  extra=`<label>Thema<select id="ppmThema"${bearb?" disabled":""}>${Object.entries(PPM_EINF_THEMEN).map(([k,v])=>`<option value="${k}"${k===th0?" selected":""}>${esc(v.titel)}</option>`).join("")}</select></label>
-   <p style="font-size:13px;color:var(--muted);margin:0">${bearb?"Das Thema lässt sich nach dem Anlegen nicht mehr ändern. Tafel und Kurse bleiben, wie sie angelegt wurden.":"Beim Speichern entsteht die Digitale Tafel mit den Vorlagen automatisch, die passenden Selbstlernkurse werden verknüpft."}</p>
-   ${Object.values(PPM_EINF_THEMEN).map(v=>`<p style="font-size:12px;color:var(--muted);margin:0"><b>${esc(v.titel)}:</b> ${esc(v.text)}</p>`).join("")}`;
- }
- if(t==="kprim")extra=`<label>Check-out verknüpfen<select id="ppmCheckout">${ppmCheckoutOptionen(checkouts,bearb&&bearb.checkoutId)}</select></label>
-   <p style="font-size:13px;color:var(--muted);margin:0">Die K-Prim-Tests stehen nach Lernbereich geordnet zur Auswahl. Eine „Vorlage“ wird beim Speichern automatisch als Check-out-Entwurf angelegt und mit diesem Modul verknüpft; freischalten kannst du ihn danach auf der Modulseite.</p>`;
- if(t==="rallye"){
-  extra=`<label>Wie spielen die Schüler:innen?<select id="ppmRModus"><option value="einzeln"${bearb&&bearb.rModus==="team"?"":" selected"}>Einzeln: Jede Person sammelt eigene Punkte</option><option value="team"${bearb&&bearb.rModus==="team"?" selected":""}>In Teams: Die Punkte zählen für das Team</option></select></label>
-   <label>Freischaltung der Stationen<select id="ppmRFrei">${Object.entries(LR_FREISCHALTUNG).map(([k,v])=>`<option value="${k}"${(bearb&&bearb.rFreischaltung||"qr")===k?" selected":""}>${esc(v)}</option>`).join("")}</select></label>
-   <p style="font-size:13px;color:var(--muted);margin:0">${bearb?"":"Die Stationen legst du danach auf der Modulseite an. "}Für die Rallye braucht jedes Handy Internet. Eine Kartenansicht und einen Offline-Modus gibt es nicht.</p>`;
- }
- if(t==="experiment"){
-  const gew=bearb?ppmExpTeile(bearb):PPM_EXP_TEILE.map(x=>x.k);
-  extra=`<div class="ppm-teile"><b style="font-size:13px">Teile der Einheit wählen</b>
-   ${PPM_EXP_TEILE.map(tl=>`<label class="check"><input type="checkbox" class="ppmTeil" value="${tl.k}"${gew.includes(tl.k)?" checked":""}><span><b>${esc(tl.name)}</b> <small>(ca. ${tl.min} Min.)</small><br><small style="color:var(--muted)">${esc(tl.text)}</small></span></label>`).join("")}
+async function ppmDialog(e,t,n,i){i=i||{};const r=e?ppmById(e):null,a=r?r.modul:t;if(!PPM_TYPEN[a])return;const s=PPM_TYPEN[a],l=r?r.projektId:i.projektId,c=l?ppmById(l):null,d=new Date().toISOString().slice(0,10),u=SCHULWOCHEN_PP.find(A=>A.end>=d)||SCHULWOCHEN_PP[0],p=c?ppmWochen(c):null,m=r?r.start:n&&(!p||p.some(A=>A.id===n))?n:p?p[0].id:u.id;let f=[];if(a==="kprim")try{f=(await ladeCheckoutDaten()).checkouts||[]}catch{}const y=a==="selbstlern"?await ppmEaListe():[],v=a==="projekt"?(await Promise.all(BEP_VORLAGEN_IDS.map(bepVorlage))).filter(Boolean):[],k=r?r.lb:c?c.lb:i.lb||1,x=[1,2,3,4].map(A=>`<option value="${A}"${A===k?" selected":""}>Lernbereich ${A} \xB7 ${esc((PROJEKT_PHASEN.find(H=>H.lbNum===A)||{}).lbTitel||"")}</option>`).join(""),E=PROJEKT_PHASEN.find(A=>A.lbNum===k),W=r?ppmDauerKey(r):PPM_DAUER_STANDARD[a],j=(c?PPM_DAUERN.filter(A=>A.min):PPM_DAUERN).filter(A=>!A.alt||A.k===W),J=(j.some(H=>H.k===W)?j:[...j,{k:W,lang:W.slice(1)+" Wochen (bisher)"}]).map(H=>`<option value="${H.k}"${H.k===W?" selected":""}>${esc(H.lang)}</option>`).join(""),ge=ppmLast(r?r.id:null),Fe=(p||SCHULWOCHEN_PP).map(A=>{const H=Math.max(0,PPM_MIN_PRO_WOCHE-ge[A.id].min);return`<option value="${A.id}"${A.id===m?" selected":""}>${fmtKurz(A.start)}\u2013${fmtKurz(A.end)}${c?"":` \xB7 frei: ${ppmStd(H)} Stunden`}</option>`}).join("");let Ne="";if(a==="projekt"){const A=ppmProjektDirekt(r||{lb:k});Ne=`<label>Beim Aufrufen \xF6ffnet sich<select id="ppmDirekt"><option value="experiment"${A?" selected":""}>direkt \u201EDas Experiment\u201C (interaktive Stunde)</option><option value="projekt"${A?"":" selected"}>die Projektseite mit Teams und Meilensteinen</option></select></label>
+   ${v.length?`<label>Projektvorlage<select id="ppmVorlage"><option value="">Keine: Standardprojekt des Lernbereichs</option>${v.map(H=>`<option value="${esc(H.id)}"${r&&r.vorlage===H.id?" selected":""}>${esc(H.titel)}</option>`).join("")}</select></label>
+   <p style="font-size:13px;color:var(--muted);margin:0">Mit Vorlage entsteht eine eigene Projektseite mit Teamwahl, Zeitplan, Fristen, Material und Team\xFCbersicht. Empfohlen: Dauer 2 Wochen (Schulwoche, dann der Praktikumsblock, dann Schulwoche).</p>`:""}
+   <p style="font-size:13px;color:var(--muted);margin:0">Team-Projekt mit Meilensteinen anlegen: Das Projekt nutzt die Meilensteine und die Teams des Lernbereichs.</p>`}if(a==="fachaufsatz"){const A=await faLaden(),H=ce=>(PROJEKT_PHASEN.find(ie=>ie.lbNum===ce)||{}).lbTitel||"",re=ce=>{const ie=A.filter(je=>je.lb===ce),de=ie.filter(je=>!je.zusatz),ue=ie.filter(je=>je.zusatz),Se=[...new Set(ie.map(je=>je.thema))],tt=je=>{const U=ie.filter(D=>D.thema===je),B=U.filter(D=>!D.zusatz),M=kwThemaById(je);return`<div class="fa-th"><b>${M?`Nr. ${esc(M.nr)} \xB7 ${esc(kwKurz(M))}`:`Weiteres Thema: ${esc(U[0].zusatz||je)}`}</b><small>${B.length?B.length+" \xDCbung"+(B.length===1?"":"en"):""}${B.length&&U.length>B.length?" + ":""}${U.length>B.length?U.length-B.length+" zus\xE4tzlich":""}</small><span>${U.map(D=>esc(D.titel)+(D.zusatz?" ("+esc(D.zusatz)+")":"")).join(" \xB7 ")}</span></div>`};return`<details class="fa-lbgr" data-lb="${ce}"${ce===k?" open":""}><summary><b>Lernbereich ${ce}</b> ${esc(H(ce))}<small>${de.length} Kern\xFCbungen${ue.length?" \xB7 "+ue.length+" zus\xE4tzlich":""}</small></summary>${Se.map(tt).join("")}</details>`};Ne=`<div class="fa-uebers"><b>\xDCbungen nach Lernbereich</b><p>Mit dem gew\xE4hlten Lernbereich stehen die Kern\xFCbungen automatisch bereit. Vertiefungen und weitere Themen erscheinen f\xFCr die Klasse unter \u201EMehr \xFCben\u201C. Willst du nur bestimmte Themen einplanen, kreuze sie unten bei den Lehrplan-Themen an.</p>${[1,2,3,4].map(re).join("")}</div>`}if(a==="apt"&&(Ne='<p style="font-size:13px;color:var(--muted);margin:0">Die Frage aus der Abschlusspr\xFCfung, den relevanten Inhalt und die L\xF6sung gestaltest du danach direkt auf der Modulseite.</p>'),a==="stunde"&&(Ne=`<label>Phase im Deeper-Learning-Konzept<select id="ppmPhase">${[1,2,3].map(A=>`<option value="${A}"${(r?r.phase:2)===A?" selected":""}>${PP12_PHASEN[A].kurz} \xB7 ${esc(PP12_PHASEN[A].name)}</option>`).join("")}</select></label>
+  ${r?"":'<p style="font-size:13px;color:var(--muted);margin:0">Zu jeder Stunde wird automatisch eine Digitale Tafel angelegt.</p>'}`),a==="einfuehrung"){const A=r&&r.thema||"gegenstand";Ne=`<label>Thema<select id="ppmThema"${r?" disabled":""}>${Object.entries(PPM_EINF_THEMEN).map(([H,re])=>`<option value="${H}"${H===A?" selected":""}>${esc(re.titel)}</option>`).join("")}</select></label>
+   <p style="font-size:13px;color:var(--muted);margin:0">${r?"Das Thema l\xE4sst sich nach dem Anlegen nicht mehr \xE4ndern. Tafel und Kurse bleiben, wie sie angelegt wurden.":"Beim Speichern entsteht die Digitale Tafel mit den Vorlagen automatisch, die passenden Selbstlernkurse werden verkn\xFCpft."}</p>
+   ${Object.values(PPM_EINF_THEMEN).map(H=>`<p style="font-size:12px;color:var(--muted);margin:0"><b>${esc(H.titel)}:</b> ${esc(H.text)}</p>`).join("")}`}if(a==="kprim"&&(Ne=`<label>Check-out verkn\xFCpfen<select id="ppmCheckout">${r_Zk(f,r&&r.checkoutId)}</select></label>
+   <p style="font-size:13px;color:var(--muted);margin:0">Die K-Prim-Tests stehen nach Lernbereich geordnet zur Auswahl. Eine \u201EVorlage\u201C wird beim Speichern automatisch als Check-out-Entwurf angelegt und mit diesem Modul verkn\xFCpft; freischalten kannst du ihn danach auf der Modulseite.</p>`),a==="rallye"&&(Ne=`<label>Wie spielen die Sch\xFCler:innen?<select id="ppmRModus"><option value="einzeln"${r&&r.rModus==="team"?"":" selected"}>Einzeln: Jede Person sammelt eigene Punkte</option><option value="team"${r&&r.rModus==="team"?" selected":""}>In Teams: Die Punkte z\xE4hlen f\xFCr das Team</option></select></label>
+   <label>Freischaltung der Stationen<select id="ppmRFrei">${Object.entries(LR_FREISCHALTUNG).map(([A,H])=>`<option value="${A}"${(r&&r.rFreischaltung||"qr")===A?" selected":""}>${esc(H)}</option>`).join("")}</select></label>
+   <p style="font-size:13px;color:var(--muted);margin:0">${r?"":"Die Stationen legst du danach auf der Modulseite an. "}F\xFCr die Rallye braucht jedes Handy Internet. Eine Kartenansicht und einen Offline-Modus gibt es nicht.</p>`),a==="experiment"){const A=r?ppmExpTeile(r):PPM_EXP_TEILE.map(H=>H.k);Ne=`<div class="ppm-teile"><b style="font-size:13px">Teile der Einheit w\xE4hlen</b>
+   ${PPM_EXP_TEILE.map(H=>`<label class="check"><input type="checkbox" class="ppmTeil" value="${H.k}"${A.includes(H.k)?" checked":""}><span><b>${esc(H.name)}</b> <small>(ca. ${H.min} Min.)</small><br><small style="color:var(--muted)">${esc(H.text)}</small></span></label>`).join("")}
    <div id="ppmTeileInfo" class="ppm-teileinfo"></div></div>
-   ${projekt?`<p style="font-size:13px;color:var(--muted);margin:0">Diese Einheit gehört zum Projekt „${esc(projekt.titel)}“ und zählt zur Projektzeit.</p>`:""}`;
- }
- if(t==="selbstlern"){
-  const alt=bearb&&bearb.kursId==="psych-gegenstand";
-  const aktuell=bearb&&String(bearb.kursId||"").startsWith("ea:")?bearb.kursId.slice(3):"";
-  const passend=ea.filter(e=>e.art==="selbstlern"||e.id===aktuell).sort((x,y)=>(x.lb||9)-(y.lb||9)||(parseInt(ppmEaNr(x.id,x))||99)-(parseInt(ppmEaNr(y.id,y))||99)||String(x.id).localeCompare(String(y.id)));
-  const lbGruppen=[...new Set(passend.map(e=>e.lb||0))];
-  const eaOpt=lbGruppen.map(n=>`<optgroup label="${n?"Lernbereich "+n:"Lernbereich offen"}">${passend.filter(e=>(e.lb||0)===n).map(e=>`<option value="ea:${esc(e.id)}" data-lb="${e.lb||""}"${(bearb&&bearb.kursId==="ea:"+e.id)||(!bearb&&opt.kurs==="ea:"+e.id)?" selected":""}>${esc(ppmEaLabel(e.id,{titel:e.titel,nr:e.nr,lb:e.lb,modulart:e.art}))}${e.entwurf?" (Entwurf)":""}</option>`).join("")}</optgroup>`).join("");
-  extra=`<label>Kurs (nur Selbstlernkurse)<select id="ppmKurs">
-   ${eaOpt}
-   <optgroup label="Weitere">${alt?`<option value="psych-gegenstand" selected>${esc(PPM_KURSE["psych-gegenstand"].titel)} (Kurzfassung von Claude)</option>`:""}<option value="eigen"${bearb&&bearb.kursId==="eigen"?" selected":""}>Eigener Kurs (selbst gestalten)</option></optgroup></select></label>
-   <p style="font-size:13px;color:var(--muted);margin:0">${passend.length?"Hier erscheinen nur Selbstlernkurse. Weitere fertige Inhalte kommen automatisch dazu, sobald ihre Datei im Ordner einarbeitung/inhalte im Repo liegt.":"Noch keine fertigen Selbstlernkurse gefunden. Du kannst einen eigenen Kurs gestalten."}</p>`;
- }
- modal(`<button class="modal-close" onclick="closeModal()">×</button>
-  <div class="kicker">${T.icon} ${esc(T.kurz.toUpperCase())}</div><h2>${bearb?"Modul bearbeiten":esc(T.name)}</h2>${opt.einfach&&opt.themaTitel?`<p class="ppm-fuer">Für das Thema <b>${esc(opt.themaTitel)}</b></p>`:""}
-  <div class="form ppm-form${opt.einfach?" ppm-einfach":""}">
+   ${c?`<p style="font-size:13px;color:var(--muted);margin:0">Diese Einheit geh\xF6rt zum Projekt \u201E${esc(c.titel)}\u201C und z\xE4hlt zur Projektzeit.</p>`:""}`}if(a==="selbstlern"){const A=r&&r.kursId==="psych-gegenstand",H=r&&String(r.kursId||"").startsWith("ea:")?r.kursId.slice(3):"",re=y.filter(de=>de.art==="selbstlern"||de.id===H).sort((de,ue)=>(de.lb||9)-(ue.lb||9)||(parseInt(ppmEaNr(de.id,de))||99)-(parseInt(ppmEaNr(ue.id,ue))||99)||String(de.id).localeCompare(String(ue.id)));Ne=`<label>Kurs (nur Selbstlernkurse)<select id="ppmKurs">
+   ${[...new Set(re.map(de=>de.lb||0))].map(de=>`<optgroup label="${de?"Lernbereich "+de:"Lernbereich offen"}">${re.filter(ue=>(ue.lb||0)===de).map(ue=>`<option value="ea:${esc(ue.id)}" data-lb="${ue.lb||""}"${r&&r.kursId==="ea:"+ue.id||!r&&i.kurs==="ea:"+ue.id?" selected":""}>${esc(ppmEaLabel(ue.id,{titel:ue.titel,nr:ue.nr,lb:ue.lb,modulart:ue.art}))}${ue.entwurf?" (Entwurf)":""}</option>`).join("")}</optgroup>`).join("")}
+   <optgroup label="Weitere">${A?`<option value="psych-gegenstand" selected>${esc(PPM_KURSE["psych-gegenstand"].titel)} (Kurzfassung von Claude)</option>`:""}<option value="eigen"${r&&r.kursId==="eigen"?" selected":""}>Eigener Kurs (selbst gestalten)</option></optgroup></select></label>
+   <p style="font-size:13px;color:var(--muted);margin:0">${re.length?"Hier erscheinen nur Selbstlernkurse. Weitere fertige Inhalte kommen automatisch dazu, sobald ihre Datei im Ordner einarbeitung/inhalte im Repo liegt.":"Noch keine fertigen Selbstlernkurse gefunden. Du kannst einen eigenen Kurs gestalten."}</p>`}modal(`<button class="modal-close" onclick="closeModal()">\xD7</button>
+  <div class="kicker">${s.icon} ${esc(s.kurz.toUpperCase())}</div><h2>${r?"Modul bearbeiten":esc(s.name)}</h2>${i.einfach&&i.themaTitel?`<p class="ppm-fuer">F\xFCr das Thema <b>${esc(i.themaTitel)}</b></p>`:""}
+  <div class="form ppm-form${i.einfach?" ppm-einfach":""}">
    <div class="ppm-sek ppm-sek-1"><p class="ppm-sek-kopf">1 Worum geht es?</p>
-    <label>Lernbereich<select id="ppmLb"${projekt?" disabled":""}>${lbOpt}</select></label>
-    <label>Titel<input id="ppmTitel" maxlength="120" value="${esc(bearb?bearb.titel:"")}" placeholder="${esc(t==="projekt"&&ph0?ph0.titel:(t==="experiment"?"Das Experiment":T.name))}"></label>
+    <label>Lernbereich<select id="ppmLb"${c?" disabled":""}>${x}</select></label>
+    <label>Titel<input id="ppmTitel" maxlength="120" value="${esc(r?r.titel:"")}" placeholder="${esc(a==="projekt"&&E?E.titel:a==="experiment"?"Das Experiment":s.name)}"></label>
    </div>
    <div class="ppm-sek ppm-sek-2"><p class="ppm-sek-kopf">2 Wann und wie lange?</p>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><label>Beginn (Schulwoche)<select id="ppmStart">${wochenOpt}</select></label>
-    <label>Dauer<select id="ppmDauer">${dauerOpt}</select></label></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><label>Beginn (Schulwoche)<select id="ppmStart">${Fe}</select></label>
+    <label>Dauer<select id="ppmDauer">${J}</select></label></div>
     <div id="ppmKapa" class="ppm-kapahint"></div>
    </div>
-   ${extra?`<div class="ppm-sek ppm-sek-3"><p class="ppm-sek-kopf">3 Inhalt</p>${extra}</div>`:""}
-   <div class="ppm-sek ppm-sek-4"><p class="ppm-sek-kopf">4 Für die Klasse</p>
-    <details class="ppm-details"${(bearb&&(bearb.themen||[]).length)||window.__kwThemaNeu?" open":""}><summary>Zu welchen Lehrplan-Themen gehört der Baustein?</summary><div style="display:flex;flex-direction:column;gap:2px;margin:6px 0 10px">${(()=>{const fz=t==="fachaufsatz"?FA_DATEN||[]:[];let lastLb="";return PP_EINHEITEN.concat(KW_LEISTUNGEN).map(e=>{const nU=fz.filter(u=>u.thema===e.id&&!u.zusatz).length;const kopf=t==="fachaufsatz"&&e.lb!==lastLb?`<b class="fa-lbkopf">${esc(e.lb)}</b>`:"";lastLb=e.lb;return kopf+`<label class="check"><input type="checkbox" class="ppmThemaCb" value="${e.id}"${((bearb&&bearb.themen)||[]).includes(e.id)||window.__kwThemaNeu===e.id?" checked":""}> ${esc(e.lb)} · Nr. ${esc(e.nr)} · ${esc(kwKurz(e))}${t==="fachaufsatz"?(nU?` <small class="fa-anz">${nU} Übung${nU===1?"":"en"}</small>`:` <small class="fa-anz fa-keine">noch keine Übung</small>`):""}</label>`}).join("")})()}</div></details>
-    <label>Hinweis an die Klasse (optional)<textarea id="ppmNotiz" rows="2" maxlength="400">${esc(bearb?bearb.notiz||"":"")}</textarea></label>
+   ${Ne?`<div class="ppm-sek ppm-sek-3"><p class="ppm-sek-kopf">3 Inhalt</p>${Ne}</div>`:""}
+   <div class="ppm-sek ppm-sek-4"><p class="ppm-sek-kopf">4 F\xFCr die Klasse</p>
+    <details class="ppm-details"${r&&(r.themen||[]).length||window.__kwThemaNeu?" open":""}><summary>Zu welchen Lehrplan-Themen geh\xF6rt der Baustein?</summary><div style="display:flex;flex-direction:column;gap:2px;margin:6px 0 10px">${(()=>{const A=a==="fachaufsatz"?FA_DATEN||[]:[];let H="";return PP_EINHEITEN.concat(KW_LEISTUNGEN).map(re=>{const ce=A.filter(de=>de.thema===re.id&&!de.zusatz).length,ie=a==="fachaufsatz"&&re.lb!==H?`<b class="fa-lbkopf">${esc(re.lb)}</b>`:"";return H=re.lb,ie+`<label class="check"><input type="checkbox" class="ppmThemaCb" value="${re.id}"${(r&&r.themen||[]).includes(re.id)||window.__kwThemaNeu===re.id?" checked":""}> ${esc(re.lb)} \xB7 Nr. ${esc(re.nr)} \xB7 ${esc(kwKurz(re))}${a==="fachaufsatz"?ce?` <small class="fa-anz">${ce} \xDCbung${ce===1?"":"en"}</small>`:' <small class="fa-anz fa-keine">noch keine \xDCbung</small>':""}</label>`}).join("")})()}</div></details>
+    <label>Hinweis an die Klasse (optional)<textarea id="ppmNotiz" rows="2" maxlength="400">${esc(r&&r.notiz||"")}</textarea></label>
    </div>
    <div class="ppm-sek ppm-sek-5"><p class="ppm-sek-kopf">5 Material</p>
     <div id="ppmMatBox" class="ppm-matbox"></div>
    </div>
-   <div class="form-actions">${bearb?`<button class="secondary" type="button" id="ppmLoeschen">Modul löschen</button>`:""}<button class="secondary" type="button" onclick="closeModal()">Abbrechen</button><button class="primary" type="button" id="ppmSpeichern">Speichern</button></div>
-  </div>`);
- const lbSel=$("ppmLb"),ti=$("ppmTitel"),btn=$("ppmSpeichern");
- if(opt.einfach){const f=document.querySelector(".ppm-form"),a=document.createElement("button");a.type="button";a.className="text-button ppm-mehr";a.textContent="Weitere Einstellungen (Titel, Thema, Hinweis, Material)";a.onclick=()=>{f.classList.remove("ppm-einfach");a.remove()};f.insertBefore(a,f.querySelector(".form-actions"))}
- if(t==="fachaufsatz"&&lbSel)lbSel.addEventListener("change",()=>document.querySelectorAll(".fa-lbgr").forEach(d=>{d.open=d.dataset.lb===lbSel.value}));
-  // ---- Material anhängen (Dateien und Links), wird beim Speichern übernommen ----
-  const matBest=[...((bearb&&bearb.material)||[])];   // schon am Modul hängende Materialien
-  const matNeu=[];                                     // neu hinzugefügt: {typ,titel,url} (Link) oder {typ,titel,file}
-  const matWegUrls=[];                                 // entfernte Dateien, werden nach dem Speichern aus dem Speicher gelöscht
-  let matLinkOffen=false,matHochgeladen=[];
-  const matRender=()=>{
-   const box=$("ppmMatBox");if(!box)return;
-   const zeile=(x,attr)=>{const inf=PPM_MAT_INFO[x.typ]||PPM_MAT_INFO.link;return`<div class="ppm-mat" style="flex-wrap:wrap"><span style="font-size:20px">${inf[0]}</span><div style="flex:1;min-width:140px"><b>${esc(x.titel||x.name||"Material")}</b><br><small style="color:var(--muted)">${inf[1]}${x.file?" · wird beim Speichern hochgeladen":""}</small></div><button type="button" class="ppm-btn klein" ${attr} title="Entfernen" aria-label="Material entfernen">✕</button></div>`;};
-   box.innerHTML=`<b style="font-size:14px">Material anhängen (optional)</b>
-    ${matBest.map((x,i)=>zeile(x,`data-mb="${i}"`)).join("")}${matNeu.map((x,i)=>zeile(x,`data-mn="${i}"`)).join("")}
+   <div class="form-actions">${r?'<button class="secondary" type="button" id="ppmLoeschen">Modul l\xF6schen</button>':""}<button class="secondary" type="button" onclick="closeModal()">Abbrechen</button><button class="primary" type="button" id="ppmSpeichern">Speichern</button></div>
+  </div>`);const ne=$("ppmLb"),me=$("ppmTitel"),Ie=$("ppmSpeichern");if(i.einfach){const A=document.querySelector(".ppm-form"),H=document.createElement("button");H.type="button",H.className="text-button ppm-mehr",H.textContent="Weitere Einstellungen (Titel, Thema, Hinweis, Material)",H.onclick=()=>{A.classList.remove("ppm-einfach"),H.remove()},A.insertBefore(H,A.querySelector(".form-actions"))}a==="fachaufsatz"&&ne&&ne.addEventListener("change",()=>document.querySelectorAll(".fa-lbgr").forEach(A=>{A.open=A.dataset.lb===ne.value}));const et=[...r&&r.material||[]],xe=[],O=[];let K=!1,F=[];const P=()=>{const A=$("ppmMatBox");if(!A)return;const H=(re,ce)=>{const ie=PPM_MAT_INFO[re.typ]||PPM_MAT_INFO.link;return`<div class="ppm-mat" style="flex-wrap:wrap"><span style="font-size:20px">${ie[0]}</span><div style="flex:1;min-width:140px"><b>${esc(re.titel||re.name||"Material")}</b><br><small style="color:var(--muted)">${ie[1]}${re.file?" \xB7 wird beim Speichern hochgeladen":""}</small></div><button type="button" class="ppm-btn klein" ${ce} title="Entfernen" aria-label="Material entfernen">\u2715</button></div>`};A.innerHTML=`<b style="font-size:14px">Material anh\xE4ngen (optional)</b>
+    ${et.map((re,ce)=>H(re,`data-mb="${ce}"`)).join("")}${xe.map((re,ce)=>H(re,`data-mn="${ce}"`)).join("")}
     <div class="ppm-zeile" style="border:0;padding:6px 0 0"><button type="button" class="ppm-btn" data-mat="datei"> Datei (PDF, Film, Audio, Bild)</button><button type="button" class="ppm-btn" data-mat="link"> Link</button><input type="file" id="ppmMatInput" accept="application/pdf,.pdf,video/*,audio/*,image/*" hidden></div>
-    ${matLinkOffen?`<div style="display:grid;gap:8px;margin-top:6px"><input id="ppmMatUrl" placeholder="https://…" aria-label="Adresse"><input id="ppmMatUrlTitel" maxlength="100" placeholder="Titel (optional)" aria-label="Titel"><div><button type="button" class="ppm-btn primaer" data-mat="link-ok">Link hinzufügen</button> <button type="button" class="ppm-btn" data-mat="link-x">Abbrechen</button></div></div>`:""}
-    <small style="color:var(--muted)">Dateien bis 15 MB. Das Material erscheint auf der Modulseite für die Klasse.</small>`;
-  };
-  matRender();
-  $("ppmMatBox").addEventListener("click",ev=>{
-   const b=ev.target.closest("button");if(!b)return;
-   if(b.dataset.mb!==undefined){const x=matBest.splice(Number(b.dataset.mb),1)[0];if(x&&x.typ!=="link"&&x.url)matWegUrls.push(x.url);matRender();return;}
-   if(b.dataset.mn!==undefined){matNeu.splice(Number(b.dataset.mn),1);matRender();return;}
-   const a=b.dataset.mat;
-   if(a==="datei"){const inp=$("ppmMatInput");inp.onchange=e=>{const f=e.target.files&&e.target.files[0];if(!f)return;
-     if(f.size>DATEI_MAX_BYTES){toast("Datei ist zu groß (max. 15 MB).");e.target.value="";return;}
-     matNeu.push({typ:ppmDateiTyp(f),titel:f.name.replace(/\.[a-z0-9]{2,5}$/i,""),name:f.name,file:f});matRender();};inp.click();return;}
-   if(a==="link"){matLinkOffen=true;matRender();const u=$("ppmMatUrl");if(u)u.focus();return;}
-   if(a==="link-x"){matLinkOffen=false;matRender();return;}
-   if(a==="link-ok"){const u=wbSichereUrl($("ppmMatUrl").value);if(!u){toast("Das ist keine gültige Internetadresse.");return;}
-     matNeu.push({typ:"link",titel:$("ppmMatUrlTitel").value.trim()||u.replace(/^https?:\/\//,""),url:u});matLinkOffen=false;matRender();return;}
-  });
- const teileGewaehlt=()=>[...document.querySelectorAll(".ppmTeil")].filter(c=>c.checked).map(c=>c.value);
- const aktualisieren=()=>{
-  const dk=$("ppmDauer").value;
-  let ok=true;
-  if(projekt){$("ppmKapa").innerHTML=`<span style="color:#1f6a3a">✓ Einheit im Projekt: zählt zur Projektzeit, kein eigener Platz nötig.</span>`;}
-  else{const pr=ppmPruefen($("ppmStart").value,dk,bearb?bearb.id:null,t);ok=pr.ok;$("ppmKapa").innerHTML=ppmKapaHtml(pr);}
-  if(t==="experiment"){
-   const g=teileGewaehlt(),min=ppmExpMinuten(g),d=PPM_DAUERN.find(x=>x.k===dk),info=$("ppmTeileInfo");
-   let txt=`Gewählt: ${g.length} von ${PPM_EXP_TEILE.length} Teilen, ca. ${min} Min.`;
-   if(d&&d.min)txt+=min<=d.min?` · passt in ${d.min} Minuten`:` · <span style="color:#b3261e">länger als die eingeplanten ${d.min} Minuten</span>`;
-   if(!g.length){txt=`<span style="color:#b3261e">Bitte mindestens einen Teil wählen.</span>`;ok=false;}
-   info.innerHTML=txt;
-  }
-  btn.disabled=!ok;btn.title=ok?"":"In dieser Woche ist nicht genug Platz (6,3 Unterrichtsstunden pro Woche).";
- };
- if(t==="selbstlern"){const ks=$("ppmKurs");if(ks)ks.addEventListener("change",()=>{const o=ks.options[ks.selectedIndex],n=o&&o.dataset.lb;if(n&&!lbSel.disabled)lbSel.value=n;});}
- if(t==="projekt"&&!bearb)lbSel.addEventListener("change",()=>{const x=PROJEKT_PHASEN.find(y=>y.lbNum===Number(lbSel.value));ti.placeholder=x?x.titel:T.name;const d=$("ppmDirekt");if(d)d.value=(x&&x.einstieg)?"experiment":"projekt";});
- $("ppmStart").addEventListener("change",aktualisieren);$("ppmDauer").addEventListener("change",aktualisieren);
- const vSel=$("ppmVorlage");
- if(vSel)vSel.addEventListener("change",()=>{const x=vorlagen.find(y=>y.id===vSel.value);if(x){ti.placeholder=x.titel;if(!bearb&&x.dauerEmpfohlen&&[...$("ppmDauer").options].some(o=>o.value===x.dauerEmpfohlen))$("ppmDauer").value=x.dauerEmpfohlen;}aktualisieren();});
- document.querySelectorAll(".ppmTeil").forEach(c=>c.addEventListener("change",()=>{
-  const box=[...document.querySelectorAll(".ppmTeil")],get=k=>box.find(x=>x.value===k);
-  if(c.value==="ergebnisse"&&c.checked)get("experiment").checked=true;
-  if(c.value==="experiment"&&!c.checked)get("ergebnisse").checked=false;
-  aktualisieren();
- }));
- aktualisieren();
- btn.addEventListener("click",async()=>{
-  const lb=Number(lbSel.value),pr=projekt?{ok:true}:ppmPruefen($("ppmStart").value,$("ppmDauer").value,bearb?bearb.id:null,t);
-  if(!pr.ok){toast(pr.zeilen&&pr.zeilen[0]&&pr.zeilen[0].spur?"In dieser Zeit läuft schon ein anderes Projekt.":"In dieser Woche ist nicht genug Platz (6,3 Unterrichtsstunden pro Woche).");return;}
-  const dk=$("ppmDauer").value,def=PPM_DAUERN.find(d=>d.k===dk);
-  const daten={modul:t,lb,titel:ti.value.trim(),start:$("ppmStart").value,dauer:dk,wochen:def?def.wochen:(Number(dk.slice(1))||1),notiz:$("ppmNotiz").value.trim()};
-  if(!daten.titel){const x=PROJEKT_PHASEN.find(y=>y.lbNum===lb);daten.titel=t==="projekt"&&x?x.titel:(t==="apt"?"Prüfungstraining · LB"+lb:t==="kprim"?"K-Prim-Aufgabensatz · LB"+lb:t==="stunde"?"Deeper-Learning-Einheit · LB"+lb:t==="experiment"?"Das Experiment":t==="rallye"?"Lernrallye · LB"+lb:t==="fachaufsatz"?"Fachaufsatz-Übung · LB"+lb:"Selbstlernkurs · LB"+lb);}
-  if(t==="einfuehrung"){
-   daten.thema=$("ppmThema").value;
-   const th=PPM_EINF_THEMEN[daten.thema]||PPM_EINF_THEMEN.eigen;
-   if(!ti.value.trim())daten.titel="Einführung: "+th.titel;
-   if(!bearb)daten.kurse=[...th.kurse];
-  }
-  daten.themen=[...document.querySelectorAll(".ppmThemaCb:checked")].map(c=>c.value);window.__kwThemaNeu=null;
-  if(projektId)daten.projektId=projektId;
-  if(t==="projekt"&&$("ppmDirekt"))daten.direkt=$("ppmDirekt").value;
-  if(t==="projekt"&&$("ppmVorlage")){daten.vorlage=$("ppmVorlage").value;if(daten.vorlage&&!ti.value.trim()){const vv=vorlagen.find(y=>y.id===daten.vorlage);if(vv)daten.titel=vv.titel;}}
-  if(t==="stunde")daten.phase=Number($("ppmPhase").value);
-  if(t==="kprim"){
-    const sel=$("ppmCheckout").value||"";
-    daten.checkoutId=sel;
-    try{
-     if(sel.startsWith("vorlage:")){
-      const v=CHECKOUT_VORLAGEN.find(x=>x.id===sel.slice(8));
-      if(!v){toast("Vorlage nicht gefunden.");return;}
-      const wk=SCHULWOCHEN_PP.find(w=>w.id===daten.start);
-      daten.checkoutId=await coAusVorlageAnlegen(v,wk?wk.end:v.datum);
-      if(!ti.value.trim())daten.titel=coLabel(v);
-     }else if(sel&&!ti.value.trim()){
-      const c=checkouts.find(x=>x.id===sel);if(c&&c.titel)daten.titel=c.titel;
-     }
-    }catch(err){console.error("Check-out aus Vorlage:",err);toast("Der Check-out konnte nicht angelegt werden.");return;}
-   }
-  if(t==="experiment"){
-   daten.teile=PPM_EXP_TEILE.map(x=>x.k).filter(k=>teileGewaehlt().includes(k));
-   const min=ppmExpMinuten(daten.teile);
-   if(def&&def.min&&min>def.min&&!confirm(`Die gewählten Teile brauchen etwa ${min} Minuten, eingeplant sind ${def.min}. Trotzdem speichern?`))return;
-  }
-  if(t==="rallye"){daten.rModus=$("ppmRModus").value;daten.rFreischaltung=$("ppmRFrei").value;}
-  if(t==="selbstlern"){
-   daten.kursId=$("ppmKurs").value;
-   if(!ti.value.trim()){
-    if(daten.kursId.startsWith("ea:")){const e=ea.find(x=>"ea:"+x.id===daten.kursId);if(e)daten.titel=e.id==="fa01"?(e.titel||daten.titel):ppmEaLabel(e.id,{titel:e.titel,nr:e.nr,lb:e.lb,modulart:e.art});}
-    else if(PPM_KURSE[daten.kursId])daten.titel=PPM_KURSE[daten.kursId].titel;
-   }
-  }
-  try{
-   // Neue Dateien hochladen (bei einem Fehler wird nichts gespeichert, das Fenster bleibt offen)
-   const matNeuFertig=[];
-   matHochgeladen=[];
-   if(matNeu.some(x=>x.file))toast("Material wird hochgeladen …");
-   for(const x of matNeu){
-    if(x.file){const up=await uploadCampusDatei(x.file,`ppMaterial/${bearb?bearb.id:"neu"}`);matHochgeladen.push(up.url);matNeuFertig.push({typ:x.typ,titel:x.titel,name:x.name,url:up.url});}
-    else matNeuFertig.push({typ:x.typ,titel:x.titel,url:x.url});
-   }
-   const matAlle=[...matBest,...matNeuFertig];
-   if(matAlle.length||(bearb&&(bearb.material||[]).length))daten.material=matAlle;
-   if(bearb){await updateDoc(doc(db,"ppModule",bearb.id),{...daten,updatedAt:serverTimestamp()});matWegUrls.forEach(u=>deleteCampusDatei(u));}
-   else{
-    const basis={...daten,createdBy:currentUser.uid,createdAt:serverTimestamp()};
-    if(t==="projekt")basis.einheiten=[];
-    if(t==="stunde"){basis.material=daten.material||[];basis.fragen=[];basis.tafelId=await ppmTafelAnlegen(daten.titel);}
-    if(t==="einfuehrung"){basis.material=daten.material||[];basis.tafelId=await ppmTafelMitVorlagen(daten.titel,(PPM_EINF_THEMEN[daten.thema]||PPM_EINF_THEMEN.eigen).tafel);}
-    if(t==="rallye"){basis.stationen=[];basis.rAktiv=false;}
-    if(t==="selbstlern"&&daten.kursId==="eigen")basis.schritte=[{id:"s1",typ:"text",titel:"Erster Schritt",text:"## Willkommen\nHier beginnt dein Kurs."},{id:"s2",typ:"abschluss",titel:"Geschafft",text:"Du hast den Kurs abgeschlossen."}];
-    await addDoc(collection(db,"ppModule"),basis);
-   }
-   closeModal();await ppmLaden(true);await render();toast("Modul gespeichert.");
-  }catch(e){matHochgeladen.forEach(u=>deleteCampusDatei(u));matHochgeladen=[];ppmFehler(e,"Das Modul konnte nicht gespeichert werden");}
- });
- const lo=$("ppmLoeschen");
- if(lo)lo.addEventListener("click",async()=>{
-  if(!confirm("Dieses Modul wirklich löschen? Fortschritte der Klasse bleiben in der Datenbank erhalten, sind aber nicht mehr sichtbar."))return;
-  try{
-   if(bearb.modul==="projekt"){for(const x of PPM.liste.filter(y=>y.projektId===bearb.id))await deleteDoc(doc(db,"ppModule",x.id));}
-   await deleteDoc(doc(db,"ppModule",bearb.id));closeModal();activePPModul=null;await ppmLaden(true);await render();toast("Modul gelöscht.");
-  }catch(e){ppmFehler(e,"Löschen nicht möglich");}
- });
-}
+    ${K?'<div style="display:grid;gap:8px;margin-top:6px"><input id="ppmMatUrl" placeholder="https://\u2026" aria-label="Adresse"><input id="ppmMatUrlTitel" maxlength="100" placeholder="Titel (optional)" aria-label="Titel"><div><button type="button" class="ppm-btn primaer" data-mat="link-ok">Link hinzuf\xFCgen</button> <button type="button" class="ppm-btn" data-mat="link-x">Abbrechen</button></div></div>':""}
+    <small style="color:var(--muted)">Dateien bis 15 MB. Das Material erscheint auf der Modulseite f\xFCr die Klasse.</small>`};P(),$("ppmMatBox").addEventListener("click",A=>{const H=A.target.closest("button");if(!H)return;if(H.dataset.mb!==void 0){const ce=et.splice(Number(H.dataset.mb),1)[0];ce&&ce.typ!=="link"&&ce.url&&O.push(ce.url),P();return}if(H.dataset.mn!==void 0){xe.splice(Number(H.dataset.mn),1),P();return}const re=H.dataset.mat;if(re==="datei"){const ce=$("ppmMatInput");ce.onchange=ie=>{const de=ie.target.files&&ie.target.files[0];if(de){if(de.size>DATEI_MAX_BYTES){toast("Datei ist zu gro\xDF (max. 15 MB)."),ie.target.value="";return}xe.push({typ:ppmDateiTyp(de),titel:de.name.replace(/\.[a-z0-9]{2,5}$/i,""),name:de.name,file:de}),P()}},ce.click();return}if(re==="link"){K=!0,P();const ce=$("ppmMatUrl");ce&&ce.focus();return}if(re==="link-x"){K=!1,P();return}if(re==="link-ok"){const ce=wbSichereUrl($("ppmMatUrl").value);if(!ce){toast("Das ist keine g\xFCltige Internetadresse.");return}xe.push({typ:"link",titel:$("ppmMatUrlTitel").value.trim()||ce.replace(/^https?:\/\//,""),url:ce}),K=!1,P();return}});const T=()=>[...document.querySelectorAll(".ppmTeil")].filter(A=>A.checked).map(A=>A.value),L=()=>{const A=$("ppmDauer").value;let H=!0;if(c)$("ppmKapa").innerHTML='<span style="color:#1f6a3a">\u2713 Einheit im Projekt: z\xE4hlt zur Projektzeit, kein eigener Platz n\xF6tig.</span>';else{const re=ppmPruefen($("ppmStart").value,A,r?r.id:null,a);H=re.ok,$("ppmKapa").innerHTML=ppmKapaHtml(re)}if(a==="experiment"){const re=T(),ce=ppmExpMinuten(re),ie=PPM_DAUERN.find(Se=>Se.k===A),de=$("ppmTeileInfo");let ue=`Gew\xE4hlt: ${re.length} von ${PPM_EXP_TEILE.length} Teilen, ca. ${ce} Min.`;ie&&ie.min&&(ue+=ce<=ie.min?` \xB7 passt in ${ie.min} Minuten`:` \xB7 <span style="color:#b3261e">l\xE4nger als die eingeplanten ${ie.min} Minuten</span>`),re.length||(ue='<span style="color:#b3261e">Bitte mindestens einen Teil w\xE4hlen.</span>',H=!1),de.innerHTML=ue}Ie.disabled=!H,Ie.title=H?"":"In dieser Woche ist nicht genug Platz (6,3 Unterrichtsstunden pro Woche)."};if(a==="selbstlern"){const A=$("ppmKurs");A&&A.addEventListener("change",()=>{const H=A.options[A.selectedIndex],re=H&&H.dataset.lb;re&&!ne.disabled&&(ne.value=re)})}a==="projekt"&&!r&&ne.addEventListener("change",()=>{const A=PROJEKT_PHASEN.find(re=>re.lbNum===Number(ne.value));me.placeholder=A?A.titel:s.name;const H=$("ppmDirekt");H&&(H.value=A&&A.einstieg?"experiment":"projekt")}),$("ppmStart").addEventListener("change",L),$("ppmDauer").addEventListener("change",L);const G=$("ppmVorlage");G&&G.addEventListener("change",()=>{const A=v.find(H=>H.id===G.value);A&&(me.placeholder=A.titel,!r&&A.dauerEmpfohlen&&[...$("ppmDauer").options].some(H=>H.value===A.dauerEmpfohlen)&&($("ppmDauer").value=A.dauerEmpfohlen)),L()}),document.querySelectorAll(".ppmTeil").forEach(A=>A.addEventListener("change",()=>{const H=[...document.querySelectorAll(".ppmTeil")],re=ce=>H.find(ie=>ie.value===ce);A.value==="ergebnisse"&&A.checked&&(re("experiment").checked=!0),A.value==="experiment"&&!A.checked&&(re("ergebnisse").checked=!1),L()})),L(),Ie.addEventListener("click",async()=>{const A=Number(ne.value),H=c?{ok:!0}:ppmPruefen($("ppmStart").value,$("ppmDauer").value,r?r.id:null,a);if(!H.ok){toast(H.zeilen&&H.zeilen[0]&&H.zeilen[0].spur?"In dieser Zeit l\xE4uft schon ein anderes Projekt.":"In dieser Woche ist nicht genug Platz (6,3 Unterrichtsstunden pro Woche).");return}const re=$("ppmDauer").value,ce=PPM_DAUERN.find(de=>de.k===re),ie={modul:a,lb:A,titel:me.value.trim(),start:$("ppmStart").value,dauer:re,wochen:ce?ce.wochen:Number(re.slice(1))||1,notiz:$("ppmNotiz").value.trim()};if(!ie.titel){const de=PROJEKT_PHASEN.find(ue=>ue.lbNum===A);ie.titel=a==="projekt"&&de?de.titel:a==="apt"?"Pr\xFCfungstraining \xB7 LB"+A:a==="kprim"?"K-Prim-Aufgabensatz \xB7 LB"+A:a==="stunde"?"Deeper-Learning-Einheit \xB7 LB"+A:a==="experiment"?"Das Experiment":a==="rallye"?"Lernrallye \xB7 LB"+A:a==="fachaufsatz"?"Fachaufsatz-\xDCbung \xB7 LB"+A:"Selbstlernkurs \xB7 LB"+A}if(a==="einfuehrung"){ie.thema=$("ppmThema").value;const de=PPM_EINF_THEMEN[ie.thema]||PPM_EINF_THEMEN.eigen;me.value.trim()||(ie.titel="Einf\xFChrung: "+de.titel),r||(ie.kurse=[...de.kurse])}if(ie.themen=[...document.querySelectorAll(".ppmThemaCb:checked")].map(de=>de.value),window.__kwThemaNeu=null,l&&(ie.projektId=l),a==="projekt"&&$("ppmDirekt")&&(ie.direkt=$("ppmDirekt").value),a==="projekt"&&$("ppmVorlage")&&(ie.vorlage=$("ppmVorlage").value,ie.vorlage&&!me.value.trim())){const de=v.find(ue=>ue.id===ie.vorlage);de&&(ie.titel=de.titel)}if(a==="stunde"&&(ie.phase=Number($("ppmPhase").value)),a==="kprim"){const de=$("ppmCheckout").value||"";ie.checkoutId=de;try{if(de.startsWith("vorlage:")){const ue=CHECKOUT_VORLAGEN.find(tt=>tt.id===de.slice(8));if(!ue){toast("Vorlage nicht gefunden.");return}const Se=SCHULWOCHEN_PP.find(tt=>tt.id===ie.start);ie.checkoutId=await coAusVorlageAnlegen(ue,Se?Se.end:ue.datum),me.value.trim()||(ie.titel=coLabel(ue))}else if(de&&!me.value.trim()){const ue=f.find(Se=>Se.id===de);ue&&ue.titel&&(ie.titel=ue.titel)}}catch(ue){console.error("Check-out aus Vorlage:",ue),toast("Der Check-out konnte nicht angelegt werden.");return}}if(a==="experiment"){ie.teile=PPM_EXP_TEILE.map(ue=>ue.k).filter(ue=>T().includes(ue));const de=ppmExpMinuten(ie.teile);if(ce&&ce.min&&de>ce.min&&!confirm(`Die gew\xE4hlten Teile brauchen etwa ${de} Minuten, eingeplant sind ${ce.min}. Trotzdem speichern?`))return}if(a==="rallye"&&(ie.rModus=$("ppmRModus").value,ie.rFreischaltung=$("ppmRFrei").value),a==="selbstlern"&&(ie.kursId=$("ppmKurs").value,!me.value.trim()))if(ie.kursId.startsWith("ea:")){const de=y.find(ue=>"ea:"+ue.id===ie.kursId);de&&(ie.titel=de.id==="fa01"?de.titel||ie.titel:ppmEaLabel(de.id,{titel:de.titel,nr:de.nr,lb:de.lb,modulart:de.art}))}else PPM_KURSE[ie.kursId]&&(ie.titel=PPM_KURSE[ie.kursId].titel);try{const de=[];F=[],xe.some(Se=>Se.file)&&toast("Material wird hochgeladen \u2026");for(const Se of xe)if(Se.file){const tt=await uploadCampusDatei(Se.file,`ppMaterial/${r?r.id:"neu"}`);F.push(tt.url),de.push({typ:Se.typ,titel:Se.titel,name:Se.name,url:tt.url})}else de.push({typ:Se.typ,titel:Se.titel,url:Se.url});const ue=[...et,...de];if((ue.length||r&&(r.material||[]).length)&&(ie.material=ue),r)await updateDoc(doc(db,"ppModule",r.id),{...ie,updatedAt:serverTimestamp()}),O.forEach(Se=>deleteCampusDatei(Se));else{const Se={...ie,createdBy:currentUser.uid,createdAt:serverTimestamp()};a==="projekt"&&(Se.einheiten=[]),a==="stunde"&&(Se.material=ie.material||[],Se.fragen=[],Se.tafelId=await ppmTafelAnlegen(ie.titel)),a==="einfuehrung"&&(Se.material=ie.material||[],Se.tafelId=await r_Jk(ie.titel,(PPM_EINF_THEMEN[ie.thema]||PPM_EINF_THEMEN.eigen).tafel)),a==="rallye"&&(Se.stationen=[],Se.rAktiv=!1),a==="selbstlern"&&ie.kursId==="eigen"&&(Se.schritte=[{id:"s1",typ:"text",titel:"Erster Schritt",text:`## Willkommen
+Hier beginnt dein Kurs.`},{id:"s2",typ:"abschluss",titel:"Geschafft",text:"Du hast den Kurs abgeschlossen."}]),await addDoc(collection(db,"ppModule"),Se)}closeModal(),await ppmLaden(!0),await render(),toast("Modul gespeichert.")}catch(de){F.forEach(ue=>deleteCampusDatei(ue)),F=[],ppmFehler(de,"Das Modul konnte nicht gespeichert werden")}});const V=$("ppmLoeschen");V&&V.addEventListener("click",async()=>{if(confirm("Dieses Modul wirklich l\xF6schen? Fortschritte der Klasse bleiben in der Datenbank erhalten, sind aber nicht mehr sichtbar."))try{if(r.modul==="projekt")for(const A of PPM.liste.filter(H=>H.projektId===r.id))await deleteDoc(doc(db,"ppModule",A.id));await deleteDoc(doc(db,"ppModule",r.id)),closeModal(),activePPModul=null,await ppmLaden(!0),await render(),toast("Modul gel\xF6scht.")}catch(A){ppmFehler(A,"L\xF6schen nicht m\xF6glich")}})}
 function ppmFehler(e,text){
  console.error("Modulplaner:",e);
  toast(e&&e.code==="permission-denied"?`${text}: Firebase verweigert den Zugriff (permission-denied). Bitte die Firestore-Regeln prüfen.`:`${text}: ${(e&&(e.code||(e.message&&e.message.length<220?e.message:e.name)))||"unbekannt"}`);
@@ -5912,22 +5424,7 @@ async function ppmTafelAnlegen(titel){
  return r.id;
 }
 // Tafel für „Einführung in den Lernbereich“: je Vorlage eine Seite, Mitarbeit für alle geöffnet.
-async function ppmTafelMitVorlagen(titel,namen){
- const von=anzeigeName(profile,currentUser);
- const r=await addDoc(collection(db,"whiteboards"),{title:String(titel).slice(0,120),description:"Tafel zur Einführung in den Lernbereich",art:"tafel",schreibschutz:true,seiten:Math.max(1,namen.length),bg:"blau",createdBy:currentUser.uid,createdByName:von,createdAt:serverTimestamp()});
- const t0=Date.now(),jobs=[];
- namen.forEach((name,i)=>{
-  const v=WB_VORLAGEN.find(x=>x.name===name);if(!v)return;
-  v.items(0,0).forEach((t,n)=>{
-   const std=WB_STANDARD[t.type]||{};
-   const d={boardId:r.id,seite:i+1,c:std.c||"grau",fs:std.fs||18,z:t0+i*100+n,authorUid:currentUser.uid,authorName:von,...std,...t,createdAt:serverTimestamp(),updatedAt:serverTimestamp()};
-   Object.keys(d).forEach(k=>{if(d[k]===undefined)delete d[k];});
-   jobs.push(setDoc(doc(collection(db,"whiteboardItems")),d));
-  });
- });
- await Promise.all(jobs);
- return r.id;
-}
+async function r_Jk(e,t){const n=anzeigeName(profile,currentUser),i=await addDoc(collection(db,"whiteboards"),{title:String(e).slice(0,120),description:"Tafel zur Einf\xFChrung in den Lernbereich",art:"tafel",schreibschutz:!0,seiten:Math.max(1,t.length),bg:"blau",createdBy:currentUser.uid,createdByName:n,createdAt:serverTimestamp()}),r=Date.now(),a=[];return t.forEach((s,l)=>{const c=WB_VORLAGEN.find(d=>d.name===s);c&&c.items(0,0).forEach((d,u)=>{const p=WB_STANDARD[d.type]||{},m={boardId:i.id,seite:l+1,c:p.c||"grau",fs:p.fs||18,z:r+l*100+u,authorUid:currentUser.uid,authorName:n,...p,...d,createdAt:serverTimestamp(),updatedAt:serverTimestamp()};Object.keys(m).forEach(f=>{m[f]===void 0&&delete m[f]}),a.push(setDoc(doc(collection(db,"whiteboardItems")),m))})}),await Promise.all(a),i.id}
 async function ppmStandardplan(){
  if(PPM.liste.length&&!confirm("Es gibt schon Module. Den bisherigen Ablauf trotzdem zusätzlich anlegen?"))return;
  try{
@@ -5966,7 +5463,7 @@ async function faLaden(){
 }
 function faKey(id){return"fa:"+(currentUser?currentUser.uid:"x")+":"+id}
 function faLies(id){try{return JSON.parse(localStorage.getItem(faKey(id))||"{}")}catch(e){return{}}}
-function faSchreib(id,patch){try{localStorage.setItem(faKey(id),JSON.stringify({...faLies(id),...patch}))}catch(e){}}
+function faSchreib(e,t){try{localStorage.setItem(faKey(e),JSON.stringify({...faLies(e),...t}))}catch{}}
 function faZeilenText(u){return(u.fall||[]).map(z=>z[0]?"Z. "+z[0]+": "+z[1]:z[1]).join("\n")}
 function faLoesungText(u){return(u.loesung||[]).map(s=>s.b+": "+s.t).join("\n")}
 function faZeilenHTML(u){return`<div class="fa-fall"><b>${esc(u.fallkopf||"Fallbeispiel")}</b>${u.fallHinweis?`<small class="fa-zh">${esc(u.fallHinweis)}</small>`:""}${(u.fall||[]).map(z=>z[0]?`<div class="fa-z${Number(z[0])%5===0?" fa-z5":""}"><span>${esc(z[0])}</span><p>${esc(z[1])}</p></div>`:`<p class="fa-zk">${esc(z[1])}</p>`).join("")}</div>`}
@@ -6790,12 +6287,7 @@ async function ppmKursSeite(m){
 }
 
 // ---- Schreiben (Schüler:in) ----
-async function ppmStundeSchreiben(m,teil){
- const alt=PPM.meine.stunde[m.id]||{modulId:m.id,uid:currentUser.uid,name:ppmName(),antworten:[],gezeigt:[],bewertung:[]};
- const neu={...alt,...teil,modulId:m.id,uid:currentUser.uid,name:ppmName(),updatedAt:serverTimestamp()};
- await setDoc(doc(db,"ppStundenAntworten",ppmDocId(m)),neu);
- PPM.meine.stunde[m.id]=neu;
-}
+async function ppmStundeSchreiben(e,t){const i={...PPM.meine.stunde[e.id]||{modulId:e.id,uid:currentUser.uid,name:ppmName(),antworten:[],gezeigt:[],bewertung:[]},...t,modulId:e.id,uid:currentUser.uid,name:ppmName(),updatedAt:serverTimestamp()};await setDoc(doc(db,"ppStundenAntworten",ppmDocId(e)),i),PPM.meine.stunde[e.id]=i}
 async function ppmKursSchreiben(m,fn){
  const alt=PPM.meine.kurs[m.id]||{modulId:m.id,uid:currentUser.uid,name:ppmName(),erledigt:{},zuordnung:{},antworten:{},gezeigt:{}};
  const neu=JSON.parse(JSON.stringify({...alt,erledigt:alt.erledigt||{},zuordnung:alt.zuordnung||{},antworten:alt.antworten||{},gezeigt:alt.gezeigt||{}}));
@@ -7052,41 +6544,7 @@ function ppmDndZiel(){
  if(vor){vor.classList.add("ppm-vor");ppmDnd.vor=vor.dataset.id;}
  else if(karten.length)karten[karten.length-1].classList.add("ppm-ende");
 }
-async function ppmDndAblegen(id,zielW,vorId){
- const m=ppmById(id);if(!m||!zielW||!isTeacher())return;
- const iAlt=ppmSwIndex(m.start),iNeu=ppmSwIndex(zielW);
- if(iNeu<0){toast("Hier lässt sich nichts planen.");return;}
- const d=iNeu-iAlt,neu=SCHULWOCHEN_PP[iNeu];
- if(d!==0&&!m.projektId){
-  const pr=ppmPruefen(neu.id,ppmDauerKey(m),m.id,m.modul);
-  if(!pr.ok){toast(pr.fehler||`In der Woche ${fmtKurz(neu.start)}–${fmtKurz(neu.end)} ist nicht genug Platz.`);return;}
- }
- // Reihenfolge der Zielwoche so, wie sie gerade angezeigt wird, mit dem gezogenen Modul an der Ablagestelle
- const zeile=document.querySelector(`.ppm-woche[data-w="${zielW}"] .ppm-reihe`);
- let ids=zeile?[...zeile.querySelectorAll(".ppm-karte[data-id]")].map(c=>c.dataset.id).filter(x=>x!==id):PPM.liste.filter(x=>x.start===zielW&&x.id!==id).map(x=>x.id);
- const pos=vorId?ids.indexOf(vorId):-1;
- if(pos>=0)ids.splice(pos,0,id);else ids.push(id);
- if(d===0){const alt=zeile?[...zeile.querySelectorAll(".ppm-karte[data-id]")].map(c=>c.dataset.id):[];if(alt.join("|")===ids.join("|"))return;}
- const y=window.scrollY;
- try{
-  for(let k=0;k<ids.length;k++){
-   const x=ppmById(ids[k]);if(!x)continue;
-   const o=(k+1)*10,upd={};
-   if((x.ord||0)!==o)upd.ord=o;
-   if(x.id===id&&d!==0)upd.start=neu.id;
-   if(Object.keys(upd).length)await updateDoc(doc(db,"ppModule",x.id),{...upd,updatedAt:serverTimestamp()});
-  }
-  if(d!==0&&m.modul==="projekt"){ // Einheiten im Projekt wandern mit
-   for(const x of PPM.liste.filter(z=>z.projektId===m.id)){
-    const j=ppmSwIndex(x.start)+d;
-    if(j>=0&&j<SCHULWOCHEN_PP.length)await updateDoc(doc(db,"ppModule",x.id),{start:SCHULWOCHEN_PP[j].id,updatedAt:serverTimestamp()});
-   }
-  }
-  await ppmLaden(true);await render();
-  try{window.scrollTo(0,y);}catch(e){}
-  if(d!==0)toast(`Verschoben auf ${fmtKurz(neu.start)}–${fmtKurz(neu.end)}.`);
- }catch(e){console.error(e);toast(e&&e.code==="permission-denied"?"Firebase verweigert das Speichern.":"Konnte nicht verschoben werden.");}
-}
+async function ppmDndAblegen(e,t,n){const i=ppmById(e);if(!i||!t||!isTeacher())return;const r=ppmSwIndex(i.start),a=ppmSwIndex(t);if(a<0){toast("Hier l\xE4sst sich nichts planen.");return}const s=a-r,l=SCHULWOCHEN_PP[a];if(s!==0&&!i.projektId){const m=ppmPruefen(l.id,ppmDauerKey(i),i.id,i.modul);if(!m.ok){toast(m.fehler||`In der Woche ${fmtKurz(l.start)}\u2013${fmtKurz(l.end)} ist nicht genug Platz.`);return}}const c=document.querySelector(`.ppm-woche[data-w="${t}"] .ppm-reihe`);let d=c?[...c.querySelectorAll(".ppm-karte[data-id]")].map(m=>m.dataset.id).filter(m=>m!==e):PPM.liste.filter(m=>m.start===t&&m.id!==e).map(m=>m.id);const u=n?d.indexOf(n):-1;if(u>=0?d.splice(u,0,e):d.push(e),s===0&&(c?[...c.querySelectorAll(".ppm-karte[data-id]")].map(f=>f.dataset.id):[]).join("|")===d.join("|"))return;const p=window.scrollY;try{for(let m=0;m<d.length;m++){const f=ppmById(d[m]);if(!f)continue;const y=(m+1)*10,v={};(f.ord||0)!==y&&(v.ord=y),f.id===e&&s!==0&&(v.start=l.id),Object.keys(v).length&&await updateDoc(doc(db,"ppModule",f.id),{...v,updatedAt:serverTimestamp()})}if(s!==0&&i.modul==="projekt")for(const m of PPM.liste.filter(f=>f.projektId===i.id)){const f=ppmSwIndex(m.start)+s;f>=0&&f<SCHULWOCHEN_PP.length&&await updateDoc(doc(db,"ppModule",m.id),{start:SCHULWOCHEN_PP[f].id,updatedAt:serverTimestamp()})}await ppmLaden(!0),await render();try{window.scrollTo(0,p)}catch{}s!==0&&toast(`Verschoben auf ${fmtKurz(l.start)}\u2013${fmtKurz(l.end)}.`)}catch(m){console.error(m),toast(m&&m.code==="permission-denied"?"Firebase verweigert das Speichern.":"Konnte nicht verschoben werden.")}}
 if(!window.__ppmDndGebunden){
  window.__ppmDndGebunden=true;
  document.addEventListener("pointerdown",e=>{
@@ -7599,62 +7057,7 @@ async function lrCodeEinloesen(m,stand,codeRoh){
  }catch(e){ppmFehler(e,"Station konnte nicht freigeschaltet werden");}
 }
 // ---- Klicks der Lernrallye ----
-async function lrKlick(e){
- const b=e.target.closest&&e.target.closest("[data-lr]");
- if(!b)return;
- const a=b.dataset.lr;
- const m=activePPModul?ppmById(activePPModul):null;
- if(a==="reset"){ // im Auswertungs-Fenster: Stand einer Person zurücksetzen
-  if(!isTeacher())return;
-  if(!confirm("Den Stand dieser Person in der Rallye wirklich zurücksetzen?"))return;
-  try{const id=b.dataset.doc;await deleteDoc(doc(db,"ppRallyeStand",id));await deleteDoc(doc(db,"ppRallyeRang",id));toast("Zurückgesetzt.");closeModal();if(m)await lrAuswertungDialog(m);}catch(err){ppmFehler(err,"Zurücksetzen nicht möglich");}
-  return;
- }
- if(!m||m.modul!=="rallye")return;
- const lehrer=isTeacher(),stand=LR.stand[m.id];
- try{
-  if(a==="station"){
-   const sid=b.dataset.sid;LR.sicht={modulId:m.id,sid};await render();window.scrollTo(0,0);return;
-  }
-  if(a==="zurueck"){LR.sicht=null;await render();return;}
-  if(a==="neu-laden"){await render();return;}
-  if(a==="pruefen"){
-   const st=lrStation(m,b.dataset.sid);if(!st)return;
-   const r=lrAntwortLesen(st);
-   if(!r.ok){toast(st.typ==="kprim"?"Bitte alle vier Aussagen beantworten.":st.typ==="zuordnen"?"Bitte jedem Begriff eine Erklärung zuordnen.":"Bitte zuerst eine Antwort geben.");return;}
-   const erg={...lrBewerten(st,r.a),a:r.a,zeit:Date.now()};
-   if(lehrer){LR.sicht={modulId:m.id,sid:st.id,erg};await render();return;}
-   if(!m.rAktiv){toast("Die Rallye ist beendet.");return;}
-   stand.erg[st.id]=erg;
-   await lrSpeichern(m,stand);
-   await render();return;
-  }
-  if(a==="team"||a==="team-neu"){
-   if(lehrer)return;
-   const name=a==="team"?b.dataset.team:($("lrTeamName")?.value||"").trim().replace(/\s+/g," ");
-   if(!name){toast("Bitte einen Teamnamen eingeben.");return;}
-   stand.team=name;await lrSpeichern(m,stand);await render();return;
-  }
-  if(a==="code"){if(!lehrer)await lrCodeEinloesen(m,stand,$("lrCode")?.value);return;}
-  if(a==="scan"){if(!lehrer)await lrScannen(m,stand);return;}
-  if(!lehrer)return;
-  if(a==="aktiv"){await updateDoc(doc(db,"ppModule",m.id),{rAktiv:!m.rAktiv,updatedAt:serverTimestamp()});await ppmLaden(true);await render();toast(m.rAktiv?"Die Rallye ist beendet.":"Die Rallye läuft.");return;}
-  if(a==="st-neu"){lrStationDialog(m,null);return;}
-  if(a==="st-edit"){lrStationDialog(m,b.dataset.sid);return;}
-  if(a==="st-weg"){
-   const st=lrStation(m,b.dataset.sid);if(!st)return;
-   if(!confirm(`Die Station „${st.titel}“ wirklich löschen? Bereits gesammelte Punkte bleiben in der Rangliste stehen.`))return;
-   await lrStationenSpeichern(m,(m.stationen||[]).filter(x=>x.id!==st.id));return;
-  }
-  if(a==="st-auf"||a==="st-ab"){
-   const l=[...(m.stationen||[])],i=l.findIndex(x=>x.id===b.dataset.sid),j=a==="st-auf"?i-1:i+1;
-   if(i<0||j<0||j>=l.length)return;
-   [l[i],l[j]]=[l[j],l[i]];await lrStationenSpeichern(m,l);return;
-  }
-  if(a==="auswertung"){await lrAuswertungDialog(m);return;}
-  if(a==="qr-druck"){lrQrDruck(m);return;}
- }catch(err){ppmFehler(err,"Aktion nicht möglich");}
-}
+async function lrKlick(e){const t=e.target.closest&&e.target.closest("[data-lr]");if(!t)return;const n=t.dataset.lr,i=activePPModul?ppmById(activePPModul):null;if(n==="reset"){if(!isTeacher()||!confirm("Den Stand dieser Person in der Rallye wirklich zur\xFCcksetzen?"))return;try{const s=t.dataset.doc;await deleteDoc(doc(db,"ppRallyeStand",s)),await deleteDoc(doc(db,"ppRallyeRang",s)),toast("Zur\xFCckgesetzt."),closeModal(),i&&await lrAuswertungDialog(i)}catch(s){ppmFehler(s,"Zur\xFCcksetzen nicht m\xF6glich")}return}if(!i||i.modul!=="rallye")return;const r=isTeacher(),a=LR.stand[i.id];try{if(n==="station"){const s=t.dataset.sid;LR.sicht={modulId:i.id,sid:s},await render(),window.scrollTo(0,0);return}if(n==="zurueck"){LR.sicht=null,await render();return}if(n==="neu-laden"){await render();return}if(n==="pruefen"){const s=lrStation(i,t.dataset.sid);if(!s)return;const l=lrAntwortLesen(s);if(!l.ok){toast(s.typ==="kprim"?"Bitte alle vier Aussagen beantworten.":s.typ==="zuordnen"?"Bitte jedem Begriff eine Erkl\xE4rung zuordnen.":"Bitte zuerst eine Antwort geben.");return}const c={...lrBewerten(s,l.a),a:l.a,zeit:Date.now()};if(r){LR.sicht={modulId:i.id,sid:s.id,erg:c},await render();return}if(!i.rAktiv){toast("Die Rallye ist beendet.");return}a.erg[s.id]=c,await lrSpeichern(i,a),await render();return}if(n==="team"||n==="team-neu"){if(r)return;const s=n==="team"?t.dataset.team:($("lrTeamName")?.value||"").trim().replace(/\s+/g," ");if(!s){toast("Bitte einen Teamnamen eingeben.");return}a.team=s,await lrSpeichern(i,a),await render();return}if(n==="code"){r||await lrCodeEinloesen(i,a,$("lrCode")?.value);return}if(n==="scan"){r||await lrScannen(i,a);return}if(!r)return;if(n==="aktiv"){await updateDoc(doc(db,"ppModule",i.id),{rAktiv:!i.rAktiv,updatedAt:serverTimestamp()}),await ppmLaden(!0),await render(),toast(i.rAktiv?"Die Rallye ist beendet.":"Die Rallye l\xE4uft.");return}if(n==="st-neu"){lrStationDialog(i,null);return}if(n==="st-edit"){lrStationDialog(i,t.dataset.sid);return}if(n==="st-weg"){const s=lrStation(i,t.dataset.sid);if(!s||!confirm(`Die Station \u201E${s.titel}\u201C wirklich l\xF6schen? Bereits gesammelte Punkte bleiben in der Rangliste stehen.`))return;await lrStationenSpeichern(i,(i.stationen||[]).filter(l=>l.id!==s.id));return}if(n==="st-auf"||n==="st-ab"){const s=[...i.stationen||[]],l=s.findIndex(d=>d.id===t.dataset.sid),c=n==="st-auf"?l-1:l+1;if(l<0||c<0||c>=s.length)return;[s[l],s[c]]=[s[c],s[l]],await lrStationenSpeichern(i,s);return}if(n==="auswertung"){await lrAuswertungDialog(i);return}if(n==="qr-druck"){lrQrDruck(i);return}}catch(s){ppmFehler(s,"Aktion nicht m\xF6glich")}}
 if(!window.__lrKlickGebunden){window.__lrKlickGebunden=true;document.addEventListener("click",lrKlick);}
 
 async function renderPaedagogikPhasenZeitstrahl(fach,fortschrittMap,heute){
@@ -8784,30 +8187,7 @@ function ladeCheckoutDaten(){ // gleiche Daten innerhalb von 5 s nur einmal lade
  if(_coP&&Date.now()-_coT<5000&&_coT>(window.__fsDirty||0))return _coP;
  _coT=Date.now();return _coP=ladeCheckoutDatenRoh();
 }
-async function ladeCheckoutDatenRoh(){
- const lehrer=isTeacher();
- const basis={anzahlGesamt:10,anzahlWaehlen:7,auswahlOffen:false};
- try{
-  const einstP=getDoc(doc(db,"checkoutEinstellungen","pp")).catch(()=>null);
-  const abgP=lehrer?null:getDocs(query(collection(db,"checkoutAbgaben"),where("uid","==",currentUser.uid)));if(abgP)abgP.catch(()=>{});
-  const ausP=lehrer?null:getDoc(doc(db,"checkoutAuswahl",currentUser.uid)).catch(()=>null);
-  const docs=lehrer?(await getDocs(collection(db,"checkouts"))).docs
-   :(await Promise.all(["live","beendet"].map(st=>getDocs(query(collection(db,"checkouts"),where("status","==",st)))))).flatMap(s=>s.docs);
-  const checkouts=docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>String(a.datum||"").localeCompare(String(b.datum||""))||tsSek(a.createdAt)-tsSek(b.createdAt));
-  let einst={};
-  try{const e=await einstP;einst=e&&e.exists()?e.data():{};}catch(e){}
-  const meineAbgaben={};let auswahl=null;const stat={};
-  if(lehrer){
-   try{(await getDocs(collection(db,"checkoutAbgaben"))).docs.forEach(x=>{const a=x.data();if(!a.ausgewertet)return;const t=(stat[a.checkoutId]=stat[a.checkoutId]||{n:0,summe:0});t.n++;t.summe+=Number(a.notenpunkte)||0;});}catch(e){console.error("Check-out-Statistik:",e);}
-  }
-  if(!lehrer){
-   const s=await abgP;
-   s.docs.forEach(d=>{const x=d.data();meineAbgaben[x.checkoutId]=x;});
-   try{const a=await ausP;auswahl=a&&a.exists()?a.data():null;}catch(e){}
-  }
-  return{checkouts,einst:{...basis,...einst},meineAbgaben,auswahl,stat};
- }catch(e){console.error("Check-outs laden:",e);return{checkouts:[],einst:basis,meineAbgaben:{},auswahl:null,stat:{},fehler:true};}
-}
+async function ladeCheckoutDatenRoh(){const e=isTeacher(),t={anzahlGesamt:10,anzahlWaehlen:7,auswahlOffen:!1};try{const n=getDoc(doc(db,"checkoutEinstellungen","pp")).catch(()=>null),i=e?null:getDocs(query(collection(db,"checkoutAbgaben"),where("uid","==",currentUser.uid)));i&&i.catch(()=>{});const r=e?null:getDoc(doc(db,"checkoutAuswahl",currentUser.uid)).catch(()=>null),s=(e?(await getDocs(collection(db,"checkouts"))).docs:(await Promise.all(["live","beendet"].map(p=>getDocs(query(collection(db,"checkouts"),where("status","==",p)))))).flatMap(p=>p.docs)).map(p=>({id:p.id,...p.data()})).sort((p,m)=>String(p.datum||"").localeCompare(String(m.datum||""))||tsSek(p.createdAt)-tsSek(m.createdAt));let l={};try{const p=await n;l=p&&p.exists()?p.data():{}}catch{}const c={};let d=null;const u={};if(e)try{(await getDocs(collection(db,"checkoutAbgaben"))).docs.forEach(p=>{const m=p.data();if(!m.ausgewertet)return;const f=u[m.checkoutId]=u[m.checkoutId]||{n:0,summe:0};f.n++,f.summe+=Number(m.notenpunkte)||0})}catch(p){console.error("Check-out-Statistik:",p)}if(!e){(await i).docs.forEach(m=>{const f=m.data();c[f.checkoutId]=f});try{const m=await r;d=m&&m.exists()?m.data():null}catch{}}return{checkouts:s,einst:{...t,...l},meineAbgaben:c,auswahl:d,stat:u}}catch(n){return console.error("Check-outs laden:",n),{checkouts:[],einst:t,meineAbgaben:{},auswahl:null,stat:{},fehler:!0}}}
 // Die für den Kurzarbeit-Ersatz zählenden Check-outs (beendet, „zählt").
 // Bibliothek = alle beendeten Check-outs, die für den Kurzarbeit-Ersatz zählen.
 function coPool(checkouts,einst){return checkouts.filter(c=>c.status==="beendet"&&c.zaehlt!==false);}
@@ -11616,30 +10996,21 @@ function coGleicheVignette(co){
  return l.every(a=>a.vignette.text===v0.text&&(a.vignette.titel||"")===(v0.titel||""))?v0:null;
 }
 // Inhalt des Tests. vorschau=true: Ansicht für Lehrkräfte im Editor (nichts wird gespeichert).
-function coTestInhaltHTML(co,id,ant,c,vorschau,opt){
- opt=opt||{};
- const gleich=coGleicheVignette(co);
- const glob=coGemeinsameSituation(co)||gleich;
- const n=(co.aufgaben||[]).length;
- const lsg=opt.loesung||null;
- const band=vorschau?(opt.bandHTML||`<div class="kp-vorschau-band">👁 <b>Vorschau</b> · So sehen Schüler:innen den Test. Es wird nichts gespeichert. <button class="secondary"type="button"onclick="coEditorVorschauZurueck()">← Zurück zum Editor</button></div>`):"";
- const zurueck=opt.zurueckOnclick||"coEditorVorschauZurueck()",zLabel=opt.zurueckLabel||"← Zurück zum Editor";
- return`<div id="coTest"class="kp-test${opt.loesungAn?" kp-lsg-an":""}">
-  ${band}
-  <div class="kicker"style="color:${c}">🏁 CHECK-OUT · LB ${esc(co.lbNum)} · ${coDatum(co.datum)}</div>
-  <h2>${esc(coTitelAnzeige(co))}</h2>
-  <div class="kp-fortschritt"><div class="kp-balken"><i id="coBalken"style="background:${c}"></i></div><span id="coStand"></span></div>
-  ${coBepunktungHTML(n,vorschau)}
-  ${glob?`<div class="kp-vig"style="border-left-color:${c}"><div class="kp-label">📖 Fallvignette${glob.titel&&gleich?` · ${esc(glob.titel)}`:""}</div>${coSituationHTML(glob,false,gleich?!!gleich.zeilen:true,!!gleich)}</div>`:""}
-  ${(co.aufgaben||[]).map((q,i)=>`<section class="kp-karte"style="--c:${c}">
-   <header class="kp-kopf"><span class="kp-nummer">${i+1}</span><div><b>Aufgabe ${i+1} von ${n}</b><small>bis zu ${CHECKOUT_BE_NACH_FEHLERN[0]} BE</small></div><span class="kp-fort">0/4</span></header>
-   ${coFallHTML(gleich?{...q,vignette:null}:q)}
-   <div class="kp-liste">${(q.aussagen||[]).map((t,j)=>{const l=lsg?.[i];const r=l?.richtig?.[j];return`<div class="kp-zeile"><span class="kp-num">${j+1}</span>${l?`<div class="kp-text"><p style="margin:0">${esc(t)}</p><div class="kp-lsg ${r?"r":"f"}">🔑 <b>${r?"Richtig":"Falsch"}</b>${l.erklaerung?.[j]?` · ${esc(l.erklaerung[j])}`:""}</div></div>`:`<p class="kp-text">${esc(t)}</p>`}
-    <div class="kp-wahl"role="radiogroup"aria-label="Aussage ${j+1}">${[["r","✓ Richtig"],["f","✗ Falsch"]].map(([v,lab])=>`<label class="kp-opt ${v}"><input type="radio"name="coT${i}_${j}"value="${v}"aria-label="Aussage ${j+1}: ${v==="r"?"richtig":"falsch"}"${(ant||{})[`${i}_${j}`]===v?" checked":""} onchange="${vorschau?"coStandAktualisieren()":`coAntwort('${id}','${i}_${j}','${v}')`}"><span>${lab}</span></label>`).join("")}</div></div>`;}).join("")}</div>
+function coTestInhaltHTML(e,t,n,i,r,a){a=a||{};const s=coGleicheVignette(e),l=coGemeinsameSituation(e)||s,c=(e.aufgaben||[]).length,d=a.loesung||null,u=r?a.bandHTML||'<div class="kp-vorschau-band">\u{1F441} <b>Vorschau</b> \xB7 So sehen Sch\xFCler:innen den Test. Es wird nichts gespeichert. <button class="secondary"type="button"onclick="coEditorVorschauZurueck()">\u2190 Zur\xFCck zum Editor</button></div>':"",p=a.zurueckOnclick||"coEditorVorschauZurueck()",m=a.zurueckLabel||"\u2190 Zur\xFCck zum Editor";return`<div id="coTest"class="kp-test${a.loesungAn?" kp-lsg-an":""}">
+  ${u}
+  <div class="kicker"style="color:${i}">\u{1F3C1} CHECK-OUT \xB7 LB ${esc(e.lbNum)} \xB7 ${coDatum(e.datum)}</div>
+  <h2>${esc(coTitelAnzeige(e))}</h2>
+  <div class="kp-fortschritt"><div class="kp-balken"><i id="coBalken"style="background:${i}"></i></div><span id="coStand"></span></div>
+  ${coBepunktungHTML(c,r)}
+  ${l?`<div class="kp-vig"style="border-left-color:${i}"><div class="kp-label">\u{1F4D6} Fallvignette${l.titel&&s?` \xB7 ${esc(l.titel)}`:""}</div>${coSituationHTML(l,!1,s?!!s.zeilen:!0,!!s)}</div>`:""}
+  ${(e.aufgaben||[]).map((f,y)=>`<section class="kp-karte"style="--c:${i}">
+   <header class="kp-kopf"><span class="kp-nummer">${y+1}</span><div><b>Aufgabe ${y+1} von ${c}</b><small>bis zu ${CHECKOUT_BE_NACH_FEHLERN[0]} BE</small></div><span class="kp-fort">0/4</span></header>
+   ${coFallHTML(s?{...f,vignette:null}:f)}
+   <div class="kp-liste">${(f.aussagen||[]).map((v,k)=>{const x=d?.[y],E=x?.richtig?.[k];return`<div class="kp-zeile"><span class="kp-num">${k+1}</span>${x?`<div class="kp-text"><p style="margin:0">${esc(v)}</p><div class="kp-lsg ${E?"r":"f"}">\u{1F511} <b>${E?"Richtig":"Falsch"}</b>${x.erklaerung?.[k]?` \xB7 ${esc(x.erklaerung[k])}`:""}</div></div>`:`<p class="kp-text">${esc(v)}</p>`}
+    <div class="kp-wahl"role="radiogroup"aria-label="Aussage ${k+1}">${[["r","\u2713 Richtig"],["f","\u2717 Falsch"]].map(([W,j])=>`<label class="kp-opt ${W}"><input type="radio"name="coT${y}_${k}"value="${W}"aria-label="Aussage ${k+1}: ${W==="r"?"richtig":"falsch"}"${(n||{})[`${y}_${k}`]===W?" checked":""} onchange="${r?"coStandAktualisieren()":`coAntwort('${t}','${y}_${k}','${W}')`}"><span>${j}</span></label>`).join("")}</div></div>`}).join("")}</div>
   </section>`).join("")}
-  <div class="co-test-fuss"><span id="coStand2"></span>${vorschau?`<button class="secondary"type="button"onclick="${zurueck}">${zLabel}</button>`:`<button class="primary"onclick="coAbgeben('${id}')">Abgeben</button>`}</div>
- </div>`;
-}
+  <div class="co-test-fuss"><span id="coStand2"></span>${r?`<button class="secondary"type="button"onclick="${p}">${m}</button>`:`<button class="primary"onclick="coAbgeben('${t}')">Abgeben</button>`}</div>
+ </div>`}
 function coStandAktualisieren(co){
  const n=document.querySelectorAll("#coTest .kp-zeile").length||(co?.aufgaben||[]).length*4;
  const k=document.querySelectorAll('#coTest input[type="radio"]:checked').length;
@@ -12254,186 +11625,132 @@ function showWocheTab(tabId){
 }
 window.showWocheTab=showWocheTab;
 
-async function openWocheDetail(fach,wocheId,startTabOverride){
- if(istStundeneinheit(wocheId))return openAptDetail(wocheId);
- const woche=lehrplanWocheById(fach,wocheId);
- if(!woche){toast("Diese Woche wurde nicht gefunden.");return}
- const [auftrag,materialien,teams,produkte,fortschritt,lsTasks,lsAttempts,basischeckFragen,meinBasischeck]=await Promise.all([
- getLehrplanAuftrag(wocheId),getLehrplanMaterialien(wocheId),getLehrplanTeams(teamAnchorFor(wocheId)),
- getLehrplanProdukte(wocheId),getLehrplanFortschritt(wocheId),
- getLernstandTasks().catch(()=>[]),getMyLernstandAttempts().catch(()=>[]),
- getBasischeckFragen(wocheId),getMyBasischeckVersuch(wocheId)
- ]);
- // Verknüpfung mit der Lernstandsmessung: dieselben Aufgaben, gefiltert
- // nach dem Lernbereich dieser Woche (z. B. "LB 3" → "lb3"). Kein eigener
- // Datentopf – Ergebnisse und Versuche sind automatisch synchron, weil es
- // exakt dieselbe Datenquelle wie unter Lernwerkstatt → Lernstandsmessung ist.
- const wocheLbKeys=(woche.lb||"").match(/\d/g)?.map(n=>"lb"+n)||[];
- const relevanteTasks=lsTasks.filter(t=>wocheLbKeys.includes(t.learningArea));
- const lernstandBearbeitet=relevanteTasks.some(t=>lernstandAttemptCount(lsAttempts,t.id)>0);
- const ziele=(LEHRPLAN_ZIELE_VORSCHLAG[wocheId]||[]).map((text,i)=>({id:`z${i}`,text}));
- const alleErfuellt=ziele.length>0 && ziele.every(z=>fortschritt.zieleErfuellt?.[z.id]);
- const meinTeam=teams.find(t=>(t.mitgliederUids||[]).includes(currentUser.uid));
- const fachLbl=F11SB_LEHRPLAN_FAECHER.find(f=>f.key===fach)?.label||fach;
- const meinProdukt=produkte.some(p=>p.uid===currentUser.uid);
-
- // Fortschritt: jeder Arbeitsschritt bekommt einen eigenen Haken, damit
- // jederzeit klar ist, wo genau man gerade steht.
- const schritte=[
- {label:"Auftrag gelesen",done:!!fortschritt.auftragGelesen,tab:"ziele"},
- {label:"Material erhalten",done:!!fortschritt.materialErhalten,tab:"material"},
- ...(basischeckFragen.length?[{label:"Wissens-Check",done:!!meinBasischeck,tab:"basischeck"}]:[]),
- ...(wocheHatTeam(woche)?[{label:"Team gebildet",done:!!meinTeam,tab:"team"}]:[]),
-  ...(woche.interaktiv?[{label:"Interaktive Stunde",done:!!fortschritt.experimentErledigt,tab:"ziele"}]:[]),
- {label:"Lernprodukt",done:meinProdukt,tab:"produkte"},
- {label:"Abschluss-Check",done:lernstandBearbeitet,tab:"lernstand"},
- {label:"Selbsteinschätzung",done:alleErfuellt,tab:"selbsteinschaetzung"},
- {label:"Fertig",done:!!fortschritt.abgeschlossen,tab:"selbsteinschaetzung"}
- ];
- let aktivIdx=schritte.findIndex(s=>!s.done);
- if(aktivIdx===-1)aktivIdx=schritte.length-1;
- const startTab=startTabOverride||schritte[Math.min(aktivIdx,schritte.length-1)].tab;
- // Pädagogik/Psychologie: kleiner Fortschrittskopf + Querverlinkung ins APT
- const ppKopf=fach==="paedagogik"?await ppEinheitKopfHTML(wocheId):"";
- const aptLinks=fach==="paedagogik"?PP_EINHEITEN.filter(a=>a.typ==="apt"&&(a.bezug||[]).includes(wocheId)):[];
-
- modal(`<button class="modal-close"onclick="closeModal()">×</button>
- ${ppKopf}
- <div class="kicker">${esc(fachLbl)} · ${esc(woche.lb)} · ${esc(fmtDateOnly(woche.start))}–${esc(fmtDateOnly(woche.end))}</div>
- <h2>${esc(woche.thema)}</h2>
- <span class="pill"style="background:${woche.interaktiv?"#3F7FC1":woche.typ==="projekt"?"#3fa66a":"#e0a324"};color:#fff">${woche.interaktiv?"Interaktive Einstiegsstunde":woche.typ==="projekt"?"Projektarbeit":"Selbstlern-/Eigenarbeit"}</span>
- <p style="margin-top:10px;color:var(--muted)">${esc(woche.planung)}</p>
- ${woche.praxis?`<div class="card"style="border-left:4px solid #4a90d9;margin-top:10px;padding:10px 12px"><strong style="font-size:12px"> Praxistransfer</strong><small style="display:block;margin-top:4px">${esc(woche.praxis)}</small></div>`:""}
- ${aptLinks.length?`<div class="pp-bezug-box"style="--c:${lernbereichAkzentfarbe(woche.lb)}">🎓 <b>Wird im Abschlussprüfungs-Training vertieft:</b> ${aptLinks.map(a=>`<a href="javascript:void 0"onclick="openAptDetail('${a.id}')">${esc(a.thema)}</a>`).join(" · ")}</div>`:""}
+async function openWocheDetail(e,t,n){if(istStundeneinheit(t))return openAptDetail(t);const i=lehrplanWocheById(e,t);if(!i){toast("Diese Woche wurde nicht gefunden.");return}const[r,a,s,l,c,d,u,p,m]=await Promise.all([getLehrplanAuftrag(t),getLehrplanMaterialien(t),getLehrplanTeams(teamAnchorFor(t)),getLehrplanProdukte(t),getLehrplanFortschritt(t),getLernstandTasks().catch(()=>[]),getMyLernstandAttempts().catch(()=>[]),getBasischeckFragen(t),getMyBasischeckVersuch(t)]),f=(i.lb||"").match(/\d/g)?.map(ne=>"lb"+ne)||[],y=d.filter(ne=>f.includes(ne.learningArea)),v=y.some(ne=>lernstandAttemptCount(u,ne.id)>0),k=(LEHRPLAN_ZIELE_VORSCHLAG[t]||[]).map((ne,me)=>({id:`z${me}`,text:ne})),x=k.length>0&&k.every(ne=>c.zieleErfuellt?.[ne.id]),E=s.find(ne=>(ne.mitgliederUids||[]).includes(currentUser.uid)),W=F11SB_LEHRPLAN_FAECHER.find(ne=>ne.key===e)?.label||e,j=l.some(ne=>ne.uid===currentUser.uid),J=[{label:"Auftrag gelesen",done:!!c.auftragGelesen,tab:"ziele"},{label:"Material erhalten",done:!!c.materialErhalten,tab:"material"},...p.length?[{label:"Wissens-Check",done:!!m,tab:"basischeck"}]:[],...wocheHatTeam(i)?[{label:"Team gebildet",done:!!E,tab:"team"}]:[],...i.interaktiv?[{label:"Interaktive Stunde",done:!!c.experimentErledigt,tab:"ziele"}]:[],{label:"Lernprodukt",done:j,tab:"produkte"},{label:"Abschluss-Check",done:v,tab:"lernstand"},{label:"Selbsteinsch\xE4tzung",done:x,tab:"selbsteinschaetzung"},{label:"Fertig",done:!!c.abgeschlossen,tab:"selbsteinschaetzung"}];let ge=J.findIndex(ne=>!ne.done);ge===-1&&(ge=J.length-1);const Ae=n||J[Math.min(ge,J.length-1)].tab,Fe=e==="paedagogik"?await ppEinheitKopfHTML(t):"",Ne=e==="paedagogik"?PP_EINHEITEN.filter(ne=>ne.typ==="apt"&&(ne.bezug||[]).includes(t)):[];modal(`<button class="modal-close"onclick="closeModal()">\xD7</button>
+ ${Fe}
+ <div class="kicker">${esc(W)} \xB7 ${esc(i.lb)} \xB7 ${esc(fmtDateOnly(i.start))}\u2013${esc(fmtDateOnly(i.end))}</div>
+ <h2>${esc(i.thema)}</h2>
+ <span class="pill"style="background:${i.interaktiv?"#3F7FC1":i.typ==="projekt"?"#3fa66a":"#e0a324"};color:#fff">${i.interaktiv?"Interaktive Einstiegsstunde":i.typ==="projekt"?"Projektarbeit":"Selbstlern-/Eigenarbeit"}</span>
+ <p style="margin-top:10px;color:var(--muted)">${esc(i.planung)}</p>
+ ${i.praxis?`<div class="card"style="border-left:4px solid #4a90d9;margin-top:10px;padding:10px 12px"><strong style="font-size:12px"> Praxistransfer</strong><small style="display:block;margin-top:4px">${esc(i.praxis)}</small></div>`:""}
+ ${Ne.length?`<div class="pp-bezug-box"style="--c:${lernbereichAkzentfarbe(i.lb)}">\u{1F393} <b>Wird im Abschlusspr\xFCfungs-Training vertieft:</b> ${Ne.map(ne=>`<a href="javascript:void 0"onclick="openAptDetail('${ne.id}')">${esc(ne.thema)}</a>`).join(" \xB7 ")}</div>`:""}
 
  <div class="wd-stepper">
- ${schritte.map((s,i)=>`<div class="wd-step${s.done?" wd-step-done":""}${i===aktivIdx&&!s.done?" wd-step-aktiv":""}">
- <div class="wd-step-dot">${s.done?"✓":i+1}</div><small>${esc(s.label)}</small>
- </div>${i<schritte.length-1?`<div class="wd-step-line${schritte[i+1].done||s.done?" wd-step-line-done":""}"></div>`:""}`).join("")}
+ ${J.map((ne,me)=>`<div class="wd-step${ne.done?" wd-step-done":""}${me===ge&&!ne.done?" wd-step-aktiv":""}">
+ <div class="wd-step-dot">${ne.done?"\u2713":me+1}</div><small>${esc(ne.label)}</small>
+ </div>${me<J.length-1?`<div class="wd-step-line${J[me+1].done||ne.done?" wd-step-line-done":""}"></div>`:""}`).join("")}
  </div>
- ${isTeacher()?(()=>{const ph=projektPhaseByWoche(wocheId);return`<div style="margin:-10px 0 16px;display:flex;gap:8px;flex-wrap:wrap"><button class="secondary"style="font-size:11px"onclick="openWochenLiveUebersicht('${fach}','${wocheId}')"> Live-Übersicht: Wo steht die Klasse gerade?</button>${ph?`<button class="primary"style="font-size:11px"onclick="openPhasenLiveUebersicht('${ph.id}')"> Projekt-Live-Übersicht (${esc(ph.titel)})</button>`:""}</div>`;})():""}
+ ${isTeacher()?(()=>{const ne=projektPhaseByWoche(t);return`<div style="margin:-10px 0 16px;display:flex;gap:8px;flex-wrap:wrap"><button class="secondary"style="font-size:11px"onclick="openWochenLiveUebersicht('${e}','${t}')"> Live-\xDCbersicht: Wo steht die Klasse gerade?</button>${ne?`<button class="primary"style="font-size:11px"onclick="openPhasenLiveUebersicht('${ne.id}')"> Projekt-Live-\xDCbersicht (${esc(ne.titel)})</button>`:""}</div>`})():""}
 
  <div class="wd-tabs">
  <button type="button"class="wd-tab"data-tab="ziele"onclick="showWocheTab('ziele')"> Lernziele und Aufgaben</button>
  <button type="button"class="wd-tab"data-tab="material"onclick="showWocheTab('material')"> Lernmaterialien</button>
- ${basischeckFragen.length||isTeacher()?`<button type="button"class="wd-tab"data-tab="basischeck"onclick="showWocheTab('basischeck')"> Wissens-Check</button>`:""}
- <button type="button"class="wd-tab"data-tab="team"onclick="showWocheTab('team')"> ${wocheHatTeam(woche)?"Team":"(Team)"}</button>
+ ${p.length||isTeacher()?`<button type="button"class="wd-tab"data-tab="basischeck"onclick="showWocheTab('basischeck')"> Wissens-Check</button>`:""}
+ <button type="button"class="wd-tab"data-tab="team"onclick="showWocheTab('team')"> ${wocheHatTeam(i)?"Team":"(Team)"}</button>
  <button type="button"class="wd-tab"data-tab="produkte"onclick="showWocheTab('produkte')"> Lernprodukte</button>
  <button type="button"class="wd-tab"data-tab="lernstand"onclick="showWocheTab('lernstand')"> Abschluss-Check</button>
- <button type="button"class="wd-tab"data-tab="selbsteinschaetzung"onclick="showWocheTab('selbsteinschaetzung')"> Selbsteinschätzung</button>
+ <button type="button"class="wd-tab"data-tab="selbsteinschaetzung"onclick="showWocheTab('selbsteinschaetzung')"> Selbsteinsch\xE4tzung</button>
  </div>
 
  <div class="wd-panel"id="wdPanel_ziele">
- ${woche.interaktiv?await stundeKarteHTML(fortschritt):""}
+ ${i.interaktiv?await stundeKarteHTML(c):""}
  <div class="wd-ziele-info">
- <strong> Lernziele laut Lehrplan</strong> <small>(${esc(woche.lb)}, LehrplanPLUS FOS 11 Pädagogik/Psychologie)</small>
- <ul>${ziele.map(z=>`<li>${esc(z.text)}</li>`).join("")||"<li>Für dieses Fach/diese Woche sind noch keine Lehrplan-Ziele hinterlegt.</li>"}</ul>
+ <strong> Lernziele laut Lehrplan</strong> <small>(${esc(i.lb)}, LehrplanPLUS FOS 11 P\xE4dagogik/Psychologie)</small>
+ <ul>${k.map(ne=>`<li>${esc(ne.text)}</li>`).join("")||"<li>F\xFCr dieses Fach/diese Woche sind noch keine Lehrplan-Ziele hinterlegt.</li>"}</ul>
  </div>
 
  <h3 style="margin:18px 0 4px;font-size:13px;text-transform:uppercase;letter-spacing:.02em;color:var(--muted)"> Konkreter Arbeitsauftrag</h3>
- <p style="font-size:11px;color:var(--muted);margin:0 0 10px">Von der Lehrkraft frei gestaltet – legt fest, WIE die Lernziele oben konkret bearbeitet werden.</p>
+ <p style="font-size:11px;color:var(--muted);margin:0 0 10px">Von der Lehrkraft frei gestaltet \u2013 legt fest, WIE die Lernziele oben konkret bearbeitet werden.</p>
  ${isTeacher()?`<div class="form">
- <label>Titel<input id="auftragTitel"type="text"value="${esc(auftrag?.titel||"")}"placeholder="z. B. Fallanalyse Erziehungsstile"></label>
- <label>Beschreibung<textarea id="auftragBeschreibung"rows="4"placeholder="Was genau sollen die Schüler:innen tun?">${esc(auftrag?.beschreibung||"")}</textarea></label>
+ <label>Titel<input id="auftragTitel"type="text"value="${esc(r?.titel||"")}"placeholder="z. B. Fallanalyse Erziehungsstile"></label>
+ <label>Beschreibung<textarea id="auftragBeschreibung"rows="4"placeholder="Was genau sollen die Sch\xFCler:innen tun?">${esc(r?.beschreibung||"")}</textarea></label>
  <div class="form-actions">
- <button class="primary"onclick="saveLehrplanAuftrag('${fach}','${wocheId}')">Speichern</button>
- ${auftrag?`<button class="secondary"onclick="deleteLehrplanAuftrag('${auftrag.id}','${fach}','${wocheId}')">Löschen</button>`:""}
+ <button class="primary"onclick="saveLehrplanAuftrag('${e}','${t}')">Speichern</button>
+ ${r?`<button class="secondary"onclick="deleteLehrplanAuftrag('${r.id}','${e}','${t}')">L\xF6schen</button>`:""}
  </div>
- </div>`
- :!auftrag?`<div class="empty">Für diese Woche wurde noch kein Arbeitsauftrag eingetragen.</div>`
- :`<div class="card"style="border-left:4px solid #4a90d9"><strong>${esc(auftrag.titel)}</strong>${auftrag.beschreibung?`<p style="margin:6px 0 0;white-space:pre-wrap">${esc(auftrag.beschreibung)}</p>`:""}</div>`}
- ${!isTeacher()?`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:14px;font-weight:700;font-size:13px"><input type="checkbox"${fortschritt.auftragGelesen?"checked":""} onchange="toggleAuftragGelesen('${fach}','${wocheId}',this.checked)"><span> Auftrag gelesen, Ziele sind mir klar</span></label>`:""}
+ </div>`:r?`<div class="card"style="border-left:4px solid #4a90d9"><strong>${esc(r.titel)}</strong>${r.beschreibung?`<p style="margin:6px 0 0;white-space:pre-wrap">${esc(r.beschreibung)}</p>`:""}</div>`:'<div class="empty">F\xFCr diese Woche wurde noch kein Arbeitsauftrag eingetragen.</div>'}
+ ${isTeacher()?"":`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:14px;font-weight:700;font-size:13px"><input type="checkbox"${c.auftragGelesen?"checked":""} onchange="toggleAuftragGelesen('${e}','${t}',this.checked)"><span> Auftrag gelesen, Ziele sind mir klar</span></label>`}
  <p style="font-size:11px;color:var(--muted);margin:16px 0 6px">Bevor es losgeht:</p>
- ${miniToolRow([["🧭","Lernpfad","lernpfad"],["🤔","Metakognition","metakognition"]])}
+ ${miniToolRow([["\u{1F9ED}","Lernpfad","lernpfad"],["\u{1F914}","Metakognition","metakognition"]])}
  </div>
 
  <div class="wd-panel"id="wdPanel_material">
  ${isTeacher()?`<div class="form"style="margin-bottom:12px">
  <div style="display:flex;gap:8px;flex-wrap:wrap">
- <select id="matKategorie">${MATERIAL_KATEGORIEN.map(k=>`<option value="${k.key}">${k.label}</option>`).join("")}</select>
+ <select id="matKategorie">${MATERIAL_KATEGORIEN.map(ne=>`<option value="${ne.key}">${ne.label}</option>`).join("")}</select>
  <input id="matTitel"type="text"placeholder="Titel"style="flex:1;min-width:140px">
  <input id="matUrl"type="url"placeholder="Link/URL"style="flex:1;min-width:160px">
- <button class="primary"onclick="addLehrplanMaterial('${fach}','${wocheId}')">＋ Hinzufügen</button>
+ <button class="primary"onclick="addLehrplanMaterial('${e}','${t}')">\uFF0B Hinzuf\xFCgen</button>
  </div>
  </div>`:""}
- <div class="list">${materialien.map(m=>`<div class="list-item"style="flex-direction:column;align-items:stretch;gap:8px">
- <div style="display:flex;justify-content:space-between;align-items:center"><strong>${esc(MATERIAL_KATEGORIEN.find(k=>k.key===m.kategorie)?.label||m.kategorie)}: ${esc(m.titel)}</strong>${isTeacher()?`<button class="secondary"onclick="deleteLehrplanMaterial('${m.id}','${fach}','${wocheId}')">Löschen</button>`:""}</div>
- ${m.url?materialEmbedHTML(m):""}
- </div>`).join("")||`<div class="empty">Noch keine Lernmaterialien eingestellt.</div>`}</div>
+ <div class="list">${a.map(ne=>`<div class="list-item"style="flex-direction:column;align-items:stretch;gap:8px">
+ <div style="display:flex;justify-content:space-between;align-items:center"><strong>${esc(MATERIAL_KATEGORIEN.find(me=>me.key===ne.kategorie)?.label||ne.kategorie)}: ${esc(ne.titel)}</strong>${isTeacher()?`<button class="secondary"onclick="deleteLehrplanMaterial('${ne.id}','${e}','${t}')">L\xF6schen</button>`:""}</div>
+ ${ne.url?materialEmbedHTML(ne):""}
+ </div>`).join("")||'<div class="empty">Noch keine Lernmaterialien eingestellt.</div>'}</div>
  <p style="font-size:11px;color:var(--muted);margin-top:12px">Zum Bearbeiten des Materials:</p>
- ${miniToolRow([["🗂️","Karteikarten & Timer","lernwerkzeuge"],["🤖","KI zum Lernen","ki-lernen"],["🔗","Lernressourcen","ressourcen"],["⏱️","Uhr & Timer","uhr-timer"]])}
- ${!isTeacher()?`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:14px;font-weight:700;font-size:13px"><input type="checkbox"${fortschritt.materialErhalten?"checked":""} onchange="toggleMaterialErhalten('${fach}','${wocheId}',this.checked)"><span> Materialien erhalten/gesichtet</span></label>`:""}
+ ${miniToolRow([["\u{1F5C2}\uFE0F","Karteikarten & Timer","lernwerkzeuge"],["\u{1F916}","KI zum Lernen","ki-lernen"],["\u{1F517}","Lernressourcen","ressourcen"],["\u23F1\uFE0F","Uhr & Timer","uhr-timer"]])}
+ ${isTeacher()?"":`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:14px;font-weight:700;font-size:13px"><input type="checkbox"${c.materialErhalten?"checked":""} onchange="toggleMaterialErhalten('${e}','${t}',this.checked)"><span> Materialien erhalten/gesichtet</span></label>`}
  </div>
 
  <div class="wd-panel"id="wdPanel_basischeck">
  <p style="color:var(--muted);margin-top:0;font-size:12px">Kurzer Check vor dem Lehrtext: bis zu 5 Fragen, die zeigen, ob die Grundidee angekommen ist.</p>
- ${basischeckPanelHTML(fach,wocheId,basischeckFragen,meinBasischeck)}
+ ${basischeckPanelHTML(e,t,p,m)}
  </div>
 
  <div class="wd-panel"id="wdPanel_team">
- <p style="color:var(--muted);margin-top:0">Team/Gruppe${wocheHatTeam(woche)?" – für dieses Projekt vorgesehen":" – freiwillig (deshalb in Klammern)"}. Passende Mitstreiter:innen findest du auch über die Kompetenzwerkstatt.</p>
- <div class="list">${teams.map(t=>{
- const inTeam=(t.mitgliederUids||[]).includes(currentUser.uid);
- const phase=projektPhaseByWoche(wocheId);
- const zeigtMeilensteine=phase&&!phase.einstieg&&phase.notwendigeWochen.includes(wocheId);
- return`<div class="list-item"style="flex-direction:column;align-items:stretch;gap:8px">
- <div style="display:flex;justify-content:space-between;align-items:center"><div><strong>${esc(t.teamName)}</strong><small>${esc((t.mitgliederNamen||[]).join(", ")||"Noch niemand")}</small></div><div style="display:flex;gap:6px">${inTeam?`<button class="secondary"onclick="leaveLehrplanTeam('${t.id}','${fach}','${wocheId}')">Verlassen</button>`:`<button class="primary"onclick="joinLehrplanTeam('${t.id}','${fach}','${wocheId}')">Beitreten</button>`}${isTeacher()?`<button class="secondary"onclick="deleteLehrplanTeam('${t.id}','${fach}','${wocheId}')">Auflösen</button>`:""}</div></div>
- ${zeigtMeilensteine&&(inTeam||isTeacher())?`<div><button class="secondary"style="font-size:12px"onclick="openMeilensteinModal('${phase.id}','${t.id}',{fach:'${fach}',woche:'${wocheId}'})">★ Meilensteine & ${inTeam?"meine Beiträge":"Beiträge ansehen"}</button></div>`:""}
- </div>`}).join("")||`<div class="empty">Noch keine Teams gebildet.</div>`}</div>
- ${!meinTeam?`<div class="form-actions"style="margin-top:10px"><input id="neuTeamName"type="text"placeholder="Team-Name"style="flex:1"><button class="primary"onclick="createLehrplanTeam('${fach}','${wocheId}')">＋ Team gründen</button></div>`:""}
- ${miniToolRow([["🌟","Kompetenzwerkstatt","kompetenz"],["🤝","Kollaborations-Tools","kollaboration"]])}
+ <p style="color:var(--muted);margin-top:0">Team/Gruppe${wocheHatTeam(i)?" \u2013 f\xFCr dieses Projekt vorgesehen":" \u2013 freiwillig (deshalb in Klammern)"}. Passende Mitstreiter:innen findest du auch \xFCber die Kompetenzwerkstatt.</p>
+ <div class="list">${s.map(ne=>{const me=(ne.mitgliederUids||[]).includes(currentUser.uid),Ie=projektPhaseByWoche(t),et=Ie&&!Ie.einstieg&&Ie.notwendigeWochen.includes(t);return`<div class="list-item"style="flex-direction:column;align-items:stretch;gap:8px">
+ <div style="display:flex;justify-content:space-between;align-items:center"><div><strong>${esc(ne.teamName)}</strong><small>${esc((ne.mitgliederNamen||[]).join(", ")||"Noch niemand")}</small></div><div style="display:flex;gap:6px">${me?`<button class="secondary"onclick="leaveLehrplanTeam('${ne.id}','${e}','${t}')">Verlassen</button>`:`<button class="primary"onclick="joinLehrplanTeam('${ne.id}','${e}','${t}')">Beitreten</button>`}${isTeacher()?`<button class="secondary"onclick="deleteLehrplanTeam('${ne.id}','${e}','${t}')">Aufl\xF6sen</button>`:""}</div></div>
+ ${et&&(me||isTeacher())?`<div><button class="secondary"style="font-size:12px"onclick="openMeilensteinModal('${Ie.id}','${ne.id}',{fach:'${e}',woche:'${t}'})">\u2605 Meilensteine & ${me?"meine Beitr\xE4ge":"Beitr\xE4ge ansehen"}</button></div>`:""}
+ </div>`}).join("")||'<div class="empty">Noch keine Teams gebildet.</div>'}</div>
+ ${E?"":`<div class="form-actions"style="margin-top:10px"><input id="neuTeamName"type="text"placeholder="Team-Name"style="flex:1"><button class="primary"onclick="createLehrplanTeam('${e}','${t}')">\uFF0B Team gr\xFCnden</button></div>`}
+ ${miniToolRow([["\u{1F31F}","Kompetenzwerkstatt","kompetenz"],["\u{1F91D}","Kollaborations-Tools","kollaboration"]])}
  </div>
 
  <div class="wd-panel"id="wdPanel_produkte">
- <div class="list">${produkte.map(p=>`<div class="list-item"style="flex-direction:column;align-items:stretch;gap:8px">
- <div style="display:flex;justify-content:space-between;align-items:center"><div><strong>${esc(p.titel)}</strong><small>${esc(p.name)}${p.inhalt?" · "+esc(p.inhalt.slice(0,60)):""}</small></div>${(p.uid===currentUser.uid||isTeacher())?`<button class="secondary"onclick="deleteLehrplanProdukt('${p.id}','${fach}','${wocheId}')">Löschen</button>`:""}</div>
- ${p.dateiUrl?dateiEmbedHTML(p.dateiUrl,p.dateiName):""}
- </div>`).join("")||`<div class="empty">Noch keine Lernprodukte hochgeladen.</div>`}</div>
+ <div class="list">${l.map(ne=>`<div class="list-item"style="flex-direction:column;align-items:stretch;gap:8px">
+ <div style="display:flex;justify-content:space-between;align-items:center"><div><strong>${esc(ne.titel)}</strong><small>${esc(ne.name)}${ne.inhalt?" \xB7 "+esc(ne.inhalt.slice(0,60)):""}</small></div>${ne.uid===currentUser.uid||isTeacher()?`<button class="secondary"onclick="deleteLehrplanProdukt('${ne.id}','${e}','${t}')">L\xF6schen</button>`:""}</div>
+ ${ne.dateiUrl?dateiEmbedHTML(ne.dateiUrl,ne.dateiName):""}
+ </div>`).join("")||'<div class="empty">Noch keine Lernprodukte hochgeladen.</div>'}</div>
  <p style="font-size:11px;color:var(--muted);margin-top:12px">Zum Erstellen deines Produkts:</p>
- ${miniToolRow([["🔗","Lernressourcen","ressourcen"],["🤖","KI zum Lernen","ki-lernen"],["✍️","Fachaufsatztraining","fachaufsatz"]])}
+ ${miniToolRow([["\u{1F517}","Lernressourcen","ressourcen"],["\u{1F916}","KI zum Lernen","ki-lernen"],["\u270D\uFE0F","Fachaufsatztraining","fachaufsatz"]])}
  <div class="form-actions"style="margin-top:10px;flex-wrap:wrap">
  <input id="produktTitel"type="text"placeholder="Titel des Lernprodukts"style="flex:1;min-width:140px">
  <input id="produktInhalt"type="text"placeholder="Link oder kurze Beschreibung (optional)"style="flex:1;min-width:160px">
  </div>
  <div class="form-actions"style="margin-top:8px;flex-wrap:wrap;align-items:center">
  <label style="font-weight:700;font-size:12px">Datei (optional, max. 15 MB)<input id="produktDatei"type="file"style="display:block;margin-top:4px"></label>
- <button class="primary"onclick="addLehrplanProdukt('${fach}','${wocheId}')">＋ Hochladen</button>
+ <button class="primary"onclick="addLehrplanProdukt('${e}','${t}')">\uFF0B Hochladen</button>
  </div>
  </div>
 
  <div class="wd-panel"id="wdPanel_lernstand">
- <p style="color:var(--muted);margin-top:0">Dieselben Kompetenzüberprüfungen wie unter „Lernstandsmessung" in der Lernwerkstatt, hier gefiltert nach ${esc(woche.lb)}. Die Lehrkraft sieht dein Ergebnis über das Ampelsystem.</p>
- <div class="list">${relevanteTasks.map(t=>{
- const latest=lernstandLatest(lsAttempts,t.id),count=lernstandAttemptCount(lsAttempts,t.id),max=lernstandMaxPoints(t.id);
- return`<div class="list-item"><div><strong>${t.nr}. ${esc(t.title)}</strong><small>${count?`letzter Stand: ${latest.total}/${max} · Versuch ${latest.attempt}`:"noch nicht bearbeitet"}</small></div>
+ <p style="color:var(--muted);margin-top:0">Dieselben Kompetenz\xFCberpr\xFCfungen wie unter \u201ELernstandsmessung" in der Lernwerkstatt, hier gefiltert nach ${esc(i.lb)}. Die Lehrkraft sieht dein Ergebnis \xFCber das Ampelsystem.</p>
+ <div class="list">${y.map(ne=>{const me=lernstandLatest(u,ne.id),Ie=lernstandAttemptCount(u,ne.id),et=lernstandMaxPoints(ne.id);return`<div class="list-item"><div><strong>${ne.nr}. ${esc(ne.title)}</strong><small>${Ie?`letzter Stand: ${me.total}/${et} \xB7 Versuch ${me.attempt}`:"noch nicht bearbeitet"}</small></div>
  <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
- ${latest?`<span class="pill ${lernstandStatus(latest.total,max)}">${lernstandStatusText(latest.total,max)}</span>`:""}
- ${count?`<button class="secondary"onclick="openLernstandResult('${t.id}')">🔓 Musterlösung</button>`:""}
- <button class="primary"onclick="openLernstand('${t.id}')">${count?"Weiter/ansehen":"Starten"} →</button>
- </div></div>`;
- }).join("")||`<div class="empty">Für ${esc(woche.lb)} sind noch keine Lernstandsmessungen hinterlegt.</div>`}</div>
+ ${me?`<span class="pill ${lernstandStatus(me.total,et)}">${lernstandStatusText(me.total,et)}</span>`:""}
+ ${Ie?`<button class="secondary"onclick="openLernstandResult('${ne.id}')">\u{1F513} Musterl\xF6sung</button>`:""}
+ <button class="primary"onclick="openLernstand('${ne.id}')">${Ie?"Weiter/ansehen":"Starten"} \u2192</button>
+ </div></div>`}).join("")||`<div class="empty">F\xFCr ${esc(i.lb)} sind noch keine Lernstandsmessungen hinterlegt.</div>`}</div>
  <div class="form-actions"style="margin-top:10px"><button class="secondary"onclick="closeModal();go('lernstand')"> Alle Lernstandsmessungen ansehen</button></div>
  </div>
 
  <div class="wd-panel"id="wdPanel_selbsteinschaetzung">
- <p style="color:var(--muted);margin-top:0">Schätz dich jetzt zum Schluss selbst ein: Welche Lernziele hast du wirklich erreicht?</p>
- <div class="list">${ziele.map(z=>`<div class="list-item"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;flex:1"><input type="checkbox"${fortschritt.zieleErfuellt?.[z.id]?"checked":""} onchange="toggleZielErfuellt('${fach}','${wocheId}','${z.id}',this.checked)"><span>${esc(z.text)}</span></label></div>`).join("")||`<div class="empty">Für dieses Fach/diese Woche sind noch keine Lehrplan-Ziele hinterlegt.</div>`}</div>
- ${ziele.length?`<div class="form-actions"style="margin-top:12px">
- <button class="primary"${fortschritt.abgeschlossen?"disabled":""} onclick="markWocheAbgeschlossen('${fach}','${wocheId}')">${fortschritt.abgeschlossen?"✓ Woche abgeschlossen":alleErfuellt?"✓ Woche als abgeschlossen markieren":" Erst alle Ziele erfüllen"}</button>
+ <p style="color:var(--muted);margin-top:0">Sch\xE4tz dich jetzt zum Schluss selbst ein: Welche Lernziele hast du wirklich erreicht?</p>
+ <div class="list">${k.map(ne=>`<div class="list-item"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;flex:1"><input type="checkbox"${c.zieleErfuellt?.[ne.id]?"checked":""} onchange="toggleZielErfuellt('${e}','${t}','${ne.id}',this.checked)"><span>${esc(ne.text)}</span></label></div>`).join("")||'<div class="empty">F\xFCr dieses Fach/diese Woche sind noch keine Lehrplan-Ziele hinterlegt.</div>'}</div>
+ ${k.length?`<div class="form-actions"style="margin-top:12px">
+ <button class="primary"${c.abgeschlossen?"disabled":""} onclick="markWocheAbgeschlossen('${e}','${t}')">${c.abgeschlossen?"\u2713 Woche abgeschlossen":x?"\u2713 Woche als abgeschlossen markieren":" Erst alle Ziele erf\xFCllen"}</button>
  </div>`:""}
  <p style="font-size:11px;color:var(--muted);margin-top:16px">Zur Vertiefung deiner Reflexion:</p>
- ${miniToolRow([["🤔","Metakognition","metakognition"],["🧭","Lernpfad aktualisieren","lernpfad"],["💬","Lerncoaching","lerncoaching"]])}
+ ${miniToolRow([["\u{1F914}","Metakognition","metakognition"],["\u{1F9ED}","Lernpfad aktualisieren","lernpfad"],["\u{1F4AC}","Lerncoaching","lerncoaching"]])}
  </div>
 
  <div class="wd-footer">
- <button class="secondary"onclick="closeModal()">Schließen</button>
+ <button class="secondary"onclick="closeModal()">Schlie\xDFen</button>
  <span style="flex:1"></span>
- <button class="secondary"onclick="closeModal();go('forum-board')">❓ Im Forum fragen</button>
+ <button class="secondary"onclick="closeModal();go('forum-board')">\u2753 Im Forum fragen</button>
  <button class="primary"onclick="closeModal();go('forum-nachrichten')"> Lehrkraft fragen</button>
  </div>
- `);
- showWocheTab(startTab);
-}
+ `),showWocheTab(Ae)}
 window.openWocheDetail=openWocheDetail;
 
 // ============================================================
@@ -13068,7 +12385,7 @@ function wbLinienFuer(id){
 }
 function wbIstSvg(it){return it.type==="stroke"||it.type==="line";}
 function wbSichtbar(it){return (it.seite||1)===wb.seite;}
-function wbSeitenItems(){return [...wb.items.values()].filter(wbSichtbar);}
+function wbSeitenItems(){return[...wb.items.values()].filter(wbSichtbar)}
 function wbKopfH(it){return it.type==="image"&&(wb.board.art==="tafel"||it.titel)?38:0;}
 function wbDarfLoeschen(it){return isTeacher()||it.authorUid===currentUser.uid;}
 function wbWelt(cx,cy){
@@ -13268,46 +12585,16 @@ function wbEntfernenDom(id){
  const el=wb.els.get(id);if(el){el.remove();wb.els.delete(id);}
  const g=wb.svgEls.get(id);if(g){g.remove();wb.svgEls.delete(id);}
 }
-function wbZ(){
- const liste=[...wb.items.values()].sort((a,b)=>((a.type==="frame"?0:1)-(b.type==="frame"?0:1))||((a.z||0)-(b.z||0)));
- liste.forEach((it,i)=>{const el=wb.els.get(it.id);if(el)el.style.zIndex=String(i+1);});
- liste.filter(wbIstSvg).forEach(it=>{const g=wb.svgEls.get(it.id);if(g)wb.svg.insertBefore(g,wb.selG);});
-}
+function wbZ(){const e=[...wb.items.values()].sort((t,n)=>(t.type==="frame"?0:1)-(n.type==="frame"?0:1)||(t.z||0)-(n.z||0));e.forEach((t,n)=>{const i=wb.els.get(t.id);i&&(i.style.zIndex=String(n+1))}),e.filter(wbIstSvg).forEach(t=>{const n=wb.svgEls.get(t.id);n&&wb.svg.insertBefore(n,wb.selG)})}
 function wbNachAenderung(){
  const h=$("wbHinweis");if(h)h.hidden=wbSeitenItems().length>0||wb.ro;
  wbSelSvg();wbPropsZeichnen();
 }
 
 // ---- Auswahl ----
-function wbAuswahlSetzen(ids){
- const alt=new Set(wb.sel);wb.sel=new Set(ids);
- new Set([...alt,...wb.sel]).forEach(id=>wbZeichne(id));
- wbSelSvg();wbPropsZeichnen();
-}
-function wbSelSvg(){
- if(!wb||!wb.selG)return;
- const k=wb.view.k;let html="";
- wb.sel.forEach(id=>{
-  const it=wb.items.get(id);if(!it||!wbIstSvg(it))return;
-  const b=wbBox(it),p=8/k;
-  html+=`<rect x="${b.x-p}"y="${b.y-p}"width="${b.w+p*2}"height="${b.h+p*2}"fill="none"stroke="#2f7fc6"stroke-width="${1.5/k}"stroke-dasharray="${6/k} ${4/k}"rx="${4/k}"/>`;
- });
- if(wb.sel.size===1){
-  const it=wb.items.get([...wb.sel][0]);
-  if(it&&it.type==="line"){
-   const en=wbEnden(it);
-   [[1,en.x1,en.y1],[2,en.x2,en.y2]].forEach(([n,x,y])=>{html+=`<circle data-ep="${n}"cx="${x}"cy="${y}"r="${8/k}"fill="#fff"stroke="#2f7fc6"stroke-width="${2/k}"style="pointer-events:all;cursor:move"/>`;});
-  }
- }
- wb.selG.innerHTML=html;
-}
-function wbTrefferLinie(pt){
- const tol=10/wb.view.k;let best=null;
- [...wb.items.values()].filter(i=>wbIstSvg(i)&&wbSichtbar(i)).sort((a,b)=>(b.z||0)-(a.z||0)).some(it=>{
-  const n=wbAbstand(it,pt);if(n<=tol+((it.sw||4)/2)){best=it;return true;}return false;
- });
- return best;
-}
+function wbAuswahlSetzen(e){const t=new Set(wb.sel);wb.sel=new Set(e),new Set([...t,...wb.sel]).forEach(n=>wbZeichne(n)),wbSelSvg(),wbPropsZeichnen()}
+function wbSelSvg(){if(!wb||!wb.selG)return;const e=wb.view.k;let t="";if(wb.sel.forEach(n=>{const i=wb.items.get(n);if(!i||!wbIstSvg(i))return;const r=wbBox(i),a=8/e;t+=`<rect x="${r.x-a}"y="${r.y-a}"width="${r.w+a*2}"height="${r.h+a*2}"fill="none"stroke="#2f7fc6"stroke-width="${1.5/e}"stroke-dasharray="${6/e} ${4/e}"rx="${4/e}"/>`}),wb.sel.size===1){const n=wb.items.get([...wb.sel][0]);if(n&&n.type==="line"){const i=wbEnden(n);[[1,i.x1,i.y1],[2,i.x2,i.y2]].forEach(([r,a,s])=>{t+=`<circle data-ep="${r}"cx="${a}"cy="${s}"r="${8/e}"fill="#fff"stroke="#2f7fc6"stroke-width="${2/e}"style="pointer-events:all;cursor:move"/>`})}}wb.selG.innerHTML=t}
+function wbTrefferLinie(e){const t=10/wb.view.k;let n=null;return[...wb.items.values()].filter(i=>wbIstSvg(i)&&wbSichtbar(i)).sort((i,r)=>(r.z||0)-(i.z||0)).some(i=>wbAbstand(i,e)<=t+(i.sw||4)/2?(n=i,!0):!1),n}
 function wbAbstandPunktStrecke(px,py,ax,ay,bx,by){
  const dx=bx-ax,dy=by-ay,l2=dx*dx+dy*dy;
  let t=l2?((px-ax)*dx+(py-ay)*dy)/l2:0;t=Math.max(0,Math.min(1,t));
@@ -13333,70 +12620,10 @@ function wbVereinfachen(pts,eps){
 }
 
 // ---- Eigenschaftsleiste ----
-function wbPropsZeichnen(){
- const box=$("wbProps");if(!box)return;
- const sel=[...wb.sel].map(id=>wb.items.get(id)).filter(Boolean);
- const werkzeugTyp={note:"note",text:"text",shape:"shape",line:"line",pen:"stroke",frame:"frame"}[wb.tool];
- const typen=new Set(sel.length?sel.map(i=>i.type):(werkzeugTyp?[werkzeugTyp]:[]));
- if(!typen.size){box.hidden=true;box.innerHTML="";return;}
- const aktFarbe=sel.length?sel[0].c:(wb.farben[wb.tool]||"grau");
- const hatSw=["stroke","line","shape"].some(t=>typen.has(t));
- const hatFs=["note","text","shape","frame","card"].some(t=>typen.has(t));
- const hatPfeil=typen.has("line");
- const aktSw=sel.length?(sel[0].sw||WB_STANDARD[sel[0].type]?.sw||4):(wb.sw[wb.tool]||4);
- let html=`<div class="wb-gruppe">${WB_FARBEN.map(f=>`<button type="button"class="wb-sw${f.k===aktFarbe?" on":""}"data-farbe="${f.k}"title="${f.k}"style="background:${f.soft};box-shadow:0 0 0 1px ${f.dark}55${f.k===aktFarbe?",0 0 0 3px #2f7fc6":""}"></button>`).join("")}</div>`;
- if(hatSw)html+=`<div class="wb-gruppe">${[[2,"Dünn"],[4,"Mittel"],[8,"Dick"]].map(([w,t])=>`<button type="button"class="wb-mini${aktSw===w?" on":""}"data-sw="${w}"title="${t}"><span style="display:block;width:16px;height:${Math.max(2,w/1.5)}px;background:currentColor;border-radius:4px"></span></button>`).join("")}</div>`;
- if(hatFs)html+=`<div class="wb-gruppe"><button type="button"class="wb-mini"data-fs="-2"title="Schrift kleiner">A−</button><button type="button"class="wb-mini"data-fs="2"title="Schrift größer">A+</button></div>`;
- if(hatPfeil)html+=`<div class="wb-gruppe"><button type="button"class="wb-mini${sel.some(i=>i.arrow)?" on":""}"data-pfeil="1"title="Pfeilspitze ein/aus">➜</button></div>`;
- if(sel.length)html+=`<div class="wb-gruppe"><button type="button"class="wb-mini"data-aktion="dup"title="Duplizieren (Strg+D)">${wbIcon("copy",18)}</button><button type="button"class="wb-mini"data-aktion="vor"title="Nach vorn">${wbIcon("front",18)}</button><button type="button"class="wb-mini"data-aktion="zurueck"title="Nach hinten">${wbIcon("back",18)}</button><button type="button"class="wb-mini"data-aktion="del"title="Löschen (Entf)">${wbIcon("trash",18)}</button></div>`;
- box.innerHTML=html;box.hidden=false;
-}
-function wbAufAuswahl(felderFn){
- const ids=[...wb.sel];
- const vorher=ids.map(id=>({id,alt:{...wb.items.get(id)}}));
- const nachher=[];
- ids.forEach(id=>{const it=wb.items.get(id);if(!it)return;const f=felderFn(it);Object.assign(it,f);wbZeichne(id);nachher.push([id,f]);});
- wbSelSvg();wbPropsZeichnen();
- nachher.forEach(([id,f])=>updateDoc(doc(db,"whiteboardItems",id),{...f,updatedAt:serverTimestamp()}).catch(wbFehler));
- wbUndoPush(async()=>{for(const v of vorher){const felder={};Object.keys(nachher.find(n=>n[0]===v.id)[1]).forEach(k=>{felder[k]=v.alt[k]===undefined?null:v.alt[k];});const it=wb.items.get(v.id);if(it){Object.assign(it,felder);wbZeichne(v.id);}await updateDoc(doc(db,"whiteboardItems",v.id),{...felder,updatedAt:serverTimestamp()}).catch(()=>{});}wbSelSvg();wbPropsZeichnen();});
-}
-function wbEigenschaftKlick(e){
- const b=e.target.closest("button");if(!b)return;
- if(b.dataset.farbe){
-  const k=b.dataset.farbe;
-  if(wb.sel.size)wbAufAuswahl(()=>({c:k}));
-  if(wb.farben[wb.tool]!==undefined)wb.farben[wb.tool]=k;
-  wbPropsZeichnen();
- }else if(b.dataset.sw){
-  const w=Number(b.dataset.sw);
-  if(wb.sw[wb.tool]!==undefined)wb.sw[wb.tool]=w;
-  if(wb.sel.size)wbAufAuswahl(it=>["stroke","line","shape"].includes(it.type)?{sw:w}:{});
-  wbPropsZeichnen();
- }else if(b.dataset.fs){
-  const d=Number(b.dataset.fs);
-  wbAufAuswahl(it=>["note","text","shape","frame","card"].includes(it.type)?{fs:wbBegrenzen((it.fs||18)+d,10,96)}:{});
- }else if(b.dataset.pfeil){
-  const an=![...wb.sel].map(id=>wb.items.get(id)).some(i=>i?.arrow);
-  wbAufAuswahl(it=>it.type==="line"?{arrow:an}:{});
- }else if(b.dataset.aktion==="del")wbLoeschenIds([...wb.sel]);
- else if(b.dataset.aktion==="dup")wbDuplizieren();
- else if(b.dataset.aktion==="vor")wbAufAuswahl(()=>({z:Date.now()}));
- else if(b.dataset.aktion==="zurueck"){const mn=Math.min(...[...wb.items.values()].map(i=>i.z||0));let n=0;wbAufAuswahl(()=>({z:mn-1000-(n++)}));}
- wbZ();
-}
-function wbDuplizieren(){
- const ids=[...wb.sel];if(!ids.length)return;
- const neu=[];
- ids.forEach((id,i)=>{
-  const it=wb.items.get(id);if(!it)return;
-  const {id:_i,createdAt,updatedAt,authorUid,authorName,...rest}=it;
-  const k={...rest,x:(rest.x||0)+28,y:(rest.y||0)+28};
-  if(rest.type==="line"){const n=wbEnden(it);k.x=Math.round(n.x1)+28;k.y=Math.round(n.y1)+28;k.x2=Math.round(n.x2)+28;k.y2=Math.round(n.y2)+28;k.a=null;k.b=null;}
-  neu.push(wbErzeugen(k,{zOffset:i}));
- });
- wbAuswahlSetzen(neu);
- wbUndoPush(async()=>{await wbLoeschenIds(neu,true);});
-}
+function wbPropsZeichnen(){const e=$("wbProps");if(!e)return;const t=[...wb.sel].map(u=>wb.items.get(u)).filter(Boolean),n={note:"note",text:"text",shape:"shape",line:"line",pen:"stroke",frame:"frame"}[wb.tool],i=new Set(t.length?t.map(u=>u.type):n?[n]:[]);if(!i.size){e.hidden=!0,e.innerHTML="";return}const r=t.length?t[0].c:wb.farben[wb.tool]||"grau",a=["stroke","line","shape"].some(u=>i.has(u)),s=["note","text","shape","frame","card"].some(u=>i.has(u)),l=i.has("line"),c=t.length?t[0].sw||WB_STANDARD[t[0].type]?.sw||4:wb.sw[wb.tool]||4;let d=`<div class="wb-gruppe">${WB_FARBEN.map(u=>`<button type="button"class="wb-sw${u.k===r?" on":""}"data-farbe="${u.k}"title="${u.k}"style="background:${u.soft};box-shadow:0 0 0 1px ${u.dark}55${u.k===r?",0 0 0 3px #2f7fc6":""}"></button>`).join("")}</div>`;a&&(d+=`<div class="wb-gruppe">${[[2,"D\xFCnn"],[4,"Mittel"],[8,"Dick"]].map(([u,p])=>`<button type="button"class="wb-mini${c===u?" on":""}"data-sw="${u}"title="${p}"><span style="display:block;width:16px;height:${Math.max(2,u/1.5)}px;background:currentColor;border-radius:4px"></span></button>`).join("")}</div>`),s&&(d+='<div class="wb-gruppe"><button type="button"class="wb-mini"data-fs="-2"title="Schrift kleiner">A\u2212</button><button type="button"class="wb-mini"data-fs="2"title="Schrift gr\xF6\xDFer">A+</button></div>'),l&&(d+=`<div class="wb-gruppe"><button type="button"class="wb-mini${t.some(u=>u.arrow)?" on":""}"data-pfeil="1"title="Pfeilspitze ein/aus">\u279C</button></div>`),t.length&&(d+=`<div class="wb-gruppe"><button type="button"class="wb-mini"data-aktion="dup"title="Duplizieren (Strg+D)">${wbIcon("copy",18)}</button><button type="button"class="wb-mini"data-aktion="vor"title="Nach vorn">${wbIcon("front",18)}</button><button type="button"class="wb-mini"data-aktion="zurueck"title="Nach hinten">${wbIcon("back",18)}</button><button type="button"class="wb-mini"data-aktion="del"title="L\xF6schen (Entf)">${wbIcon("trash",18)}</button></div>`),e.innerHTML=d,e.hidden=!1}
+function r_Ur(e){const t=[...wb.sel],n=t.map(r=>({id:r,alt:{...wb.items.get(r)}})),i=[];t.forEach(r=>{const a=wb.items.get(r);if(!a)return;const s=e(a);Object.assign(a,s),wbZeichne(r),i.push([r,s])}),wbSelSvg(),wbPropsZeichnen(),i.forEach(([r,a])=>updateDoc(doc(db,"whiteboardItems",r),{...a,updatedAt:serverTimestamp()}).catch(wbFehler)),wbUndoPush(async()=>{for(const r of n){const a={};Object.keys(i.find(l=>l[0]===r.id)[1]).forEach(l=>{a[l]=r.alt[l]===void 0?null:r.alt[l]});const s=wb.items.get(r.id);s&&(Object.assign(s,a),wbZeichne(r.id)),await updateDoc(doc(db,"whiteboardItems",r.id),{...a,updatedAt:serverTimestamp()}).catch(()=>{})}wbSelSvg(),wbPropsZeichnen()})}
+function r_Nx(e){const t=e.target.closest("button");if(t){if(t.dataset.farbe){const n=t.dataset.farbe;wb.sel.size&&r_Ur(()=>({c:n})),wb.farben[wb.tool]!==void 0&&(wb.farben[wb.tool]=n),wbPropsZeichnen()}else if(t.dataset.sw){const n=Number(t.dataset.sw);wb.sw[wb.tool]!==void 0&&(wb.sw[wb.tool]=n),wb.sel.size&&r_Ur(i=>["stroke","line","shape"].includes(i.type)?{sw:n}:{}),wbPropsZeichnen()}else if(t.dataset.fs){const n=Number(t.dataset.fs);r_Ur(i=>["note","text","shape","frame","card"].includes(i.type)?{fs:wbBegrenzen((i.fs||18)+n,10,96)}:{})}else if(t.dataset.pfeil){const n=![...wb.sel].map(i=>wb.items.get(i)).some(i=>i?.arrow);r_Ur(i=>i.type==="line"?{arrow:n}:{})}else if(t.dataset.aktion==="del")wbLoeschenIds([...wb.sel]);else if(t.dataset.aktion==="dup")r_Up();else if(t.dataset.aktion==="vor")r_Ur(()=>({z:Date.now()}));else if(t.dataset.aktion==="zurueck"){const n=Math.min(...[...wb.items.values()].map(r=>r.z||0));let i=0;r_Ur(()=>({z:n-1e3-i++}))}wbZ()}}
+function r_Up(){const e=[...wb.sel];if(!e.length)return;const t=[];e.forEach((n,i)=>{const r=wb.items.get(n);if(!r)return;const{id:a,createdAt:s,updatedAt:l,authorUid:c,authorName:d,...u}=r,p={...u,x:(u.x||0)+28,y:(u.y||0)+28};if(u.type==="line"){const m=wbEnden(r);p.x=Math.round(m.x1)+28,p.y=Math.round(m.y1)+28,p.x2=Math.round(m.x2)+28,p.y2=Math.round(m.y2)+28,p.a=null,p.b=null}t.push(wbErzeugen(p,{zOffset:i}))}),wbAuswahlSetzen(t),wbUndoPush(async()=>{await wbLoeschenIds(t,!0)})}
 
 // ---- Texte bearbeiten ----
 function wbBearbeitenStart(id,feld){
@@ -13434,144 +12661,9 @@ function wbSetzeWerkzeug(t){
  if(t!=="select"&&["note","text","shape","line","pen","frame"].indexOf(t)>-1&&wb.sel.size)wbAuswahlSetzen([]);
  wbPropsZeichnen();
 }
-function wbRadieren(pt){
- const tol=12/wb.view.k;const treffer=[];
- wb.items.forEach(it=>{if(wbIstSvg(it)&&wbSichtbar(it)&&wbAbstand(it,pt)<=tol+(it.sw||4)/2)treffer.push(it.id);});
- if(treffer.length){
-  const eigene=treffer.filter(id=>wbDarfLoeschen(wb.items.get(id)));
-  if(!eigene.length){if(!wb.radierHinweis){wb.radierHinweis=true;toast("Zeichnungen anderer Personen kann nur eine Lehrkraft radieren.");}return;}
-  (wb.radiert=wb.radiert||[]).push(...eigene.map(id=>({...wb.items.get(id)})));
-  eigene.forEach(id=>{const it=wb.items.get(id);wb.items.delete(id);wb.sel.delete(id);wbEntfernenDom(id);deleteDoc(doc(db,"whiteboardItems",id)).catch(wbFehler);});
-  wbNachAenderung();
- }
-}
-function wbDown(e){
- if(!wb||e.target.closest?.(".wb-menu"))return;
- const pid=e.pointerId??1;wb.pointers.set(pid,{x:e.clientX,y:e.clientY});
- if(wb.pointers.size>=2){wbPinchStart();return;}
- if(e.button===2)return;
- if(e.target.closest?.('[contenteditable="true"]'))return;
- // Eigene Doppelklick-Erkennung: Der Browser meldet kein dblclick, wenn pointerdown abgebrochen wird.
- {
-  const jetzt=Date.now(),l=wb.letzterDown;
-  if(l&&!l.bewegt&&jetzt-l.t<400&&Math.hypot(e.clientX-l.x,e.clientY-l.y)<12&&e.button!==1&&wb.tool==="select"&&!e.target.closest?.("[data-act],a,.wb-video-start,.wb-rs,[data-ep]")){
-   wb.letzterDown=null;wb.dblT=Date.now();wbDoppel({target:e.target,clientX:e.clientX,clientY:e.clientY});e.preventDefault();return;
-  }
-  wb.letzterDown={t:jetzt,x:e.clientX,y:e.clientY,bewegt:false};
- }
- if(wb.editing)wbBearbeitenEnde(true);
- $("wbFormMenu").hidden=true;$("wbTplMenu").hidden=true;
- const pt=wbWelt(e.clientX,e.clientY);
- const tippen=e.pointerType==="touch";
- if(wb.tool==="hand"||e.button===1||wb.space){
-  wb.aktion={t:"pan",sx:e.clientX,sy:e.clientY,vx:wb.view.x,vy:wb.view.y};wb.stage.style.cursor="grabbing";e.preventDefault();return;
- }
- if(e.target.closest?.("[data-act],[data-aktion],a,.wb-video-start")){return;}
- if(wb.ro){wb.aktion={t:"pan",sx:e.clientX,sy:e.clientY,vx:wb.view.x,vy:wb.view.y};e.preventDefault();return;}
- const tool=wb.tool;
- if(tool==="select"){
-  const ep=e.target.closest?.("[data-ep]");
-  const rs=e.target.closest?.(".wb-rs");
-  const itemEl=e.target.closest?.(".wb-item");
-  if(ep){
-   const id=[...wb.sel][0],it=wb.items.get(id);
-   if(it){wb.lokal.add(id);wb.aktion={t:"ep",id,n:Number(ep.dataset.ep),alt:{x:it.x,y:it.y,x2:it.x2,y2:it.y2,a:it.a||null,b:it.b||null}};}
-   e.preventDefault();return;
-  }
-  if(rs&&itemEl){
-   const id=itemEl.dataset.id,it=wb.items.get(id);
-   if(it){wb.lokal.add(id);wb.aktion={t:"resize",id,sx:e.clientX,sy:e.clientY,w0:it.w,h0:it.h};}
-   e.preventDefault();return;
-  }
-  let treffer=itemEl?wb.items.get(itemEl.dataset.id):wbTrefferLinie(pt);
-  if(treffer){
-   const id=treffer.id;
-   if(e.shiftKey){const s=new Set(wb.sel);if(s.has(id))s.delete(id);else s.add(id);wbAuswahlSetzen(s);}
-   else if(!wb.sel.has(id))wbAuswahlSetzen([id]);
-   const ids=[...wb.sel];
-   if(!ids.length){e.preventDefault();return;}
-   const start={};ids.forEach(i=>{const x=wb.items.get(i);if(x&&!(x.type==="line"&&(x.a||x.b))){start[i]={x:x.x,y:x.y,x2:x.x2,y2:x.y2};wb.lokal.add(i);}});
-   wb.aktion={t:"move",sx:e.clientX,sy:e.clientY,start,bewegt:false,klickId:id,shift:e.shiftKey};
-   e.preventDefault();return;
-  }
-  if(tippen){wb.aktion={t:"pan",sx:e.clientX,sy:e.clientY,vx:wb.view.x,vy:wb.view.y};e.preventDefault();return;}
-  if(!e.shiftKey)wbAuswahlSetzen([]);
-  const r=wb.stage.getBoundingClientRect();
-  const gummi=document.createElement("div");gummi.className="wb-rubber";wb.stage.appendChild(gummi);
-  wb.aktion={t:"gummi",sx:e.clientX,sy:e.clientY,rx:r.left,ry:r.top,el:gummi,shift:e.shiftKey,vorher:new Set(wb.sel)};
-  e.preventDefault();return;
- }
- if(tool==="note"||tool==="text"){wb.aktion={t:"klick",tool,sx:e.clientX,sy:e.clientY,pt};e.preventDefault();return;}
- if(tool==="shape"||tool==="frame"){
-  const v=document.createElement("div");v.className="wb-rubber";wb.stage.appendChild(v);
-  wb.aktion={t:"ziehen",tool,pt,cur:pt,sx:e.clientX,sy:e.clientY,el:v};e.preventDefault();return;
- }
- if(tool==="line"){const an=wbItemAn(pt);wb.aktion={t:"linie",pt,cur:pt,a:an?an.id:null};e.preventDefault();return;}
- if(tool==="pen"){wb.aktion={t:"stift",pts:[[pt.x,pt.y]]};e.preventDefault();return;}
- if(tool==="eraser"){wb.radiert=[];wb.radierHinweis=false;wb.aktion={t:"radieren"};wbRadieren(pt);e.preventDefault();return;}
-}
-function wbMove(e){
- if(!wb)return;
- if(wb.letzterDown&&!wb.letzterDown.bewegt&&Math.hypot(e.clientX-wb.letzterDown.x,e.clientY-wb.letzterDown.y)>5)wb.letzterDown.bewegt=true;
- const pid=e.pointerId??1;if(wb.pointers.has(pid))wb.pointers.set(pid,{x:e.clientX,y:e.clientY});
- if(wb.pointers.size>=2&&wb.pinch){wbPinchBewegen();return;}
- const a=wb.aktion;if(!a)return;
- const k=wb.view.k;
- if(a.t==="pan"){wb.view={...wb.view,x:a.vx+(e.clientX-a.sx),y:a.vy+(e.clientY-a.sy)};wbAnsichtSetzen();return;}
- const pt=wbWelt(e.clientX,e.clientY);
- if(a.t==="move"){
-  const dx=(e.clientX-a.sx)/k,dy=(e.clientY-a.sy)/k;
-  if(!a.bewegt&&Math.hypot(e.clientX-a.sx,e.clientY-a.sy)<4)return;
-  a.bewegt=true;
-  Object.keys(a.start).forEach(id=>{
-   const it=wb.items.get(id),s=a.start[id];if(!it)return;
-   const f={x:Math.round(s.x+dx),y:Math.round(s.y+dy)};
-   if(it.type==="line"){f.x2=Math.round(s.x2+dx);f.y2=Math.round(s.y2+dy);}
-   Object.assign(it,f);wbZeichne(id);wbUpdateDrosselt(id,f);
-  });
-  wbSelSvg();return;
- }
- if(a.t==="resize"){
-  const it=wb.items.get(a.id);if(!it)return;
-  const min=it.type==="text"?{w:80,h:32}:(WB_KARTENTYPEN.includes(it.type)?{w:150,h:100}:{w:60,h:40});
-  const f={w:Math.round(Math.max(min.w,a.w0+(e.clientX-a.sx)/k)),h:Math.round(Math.max(min.h,a.h0+(e.clientY-a.sy)/k))};
-  if(it.type==="image"&&it.ar)f.h=Math.max(30,Math.round(f.w/it.ar)+wbKopfH(it));
-  Object.assign(it,f);wbZeichne(a.id);wbUpdateDrosselt(a.id,f);return;
- }
- if(a.t==="ep"){
-  const it=wb.items.get(a.id);if(!it)return;
-  let ziel=wbItemAn(pt,a.id);
-  if(ziel&&((a.n===1&&it.b===ziel.id)||(a.n===2&&it.a===ziel.id)))ziel=null;
-  wbZielMarkieren(ziel?ziel.id:null);
-  const f=a.n===1?{x:Math.round(pt.x),y:Math.round(pt.y),a:ziel?ziel.id:null}:{x2:Math.round(pt.x),y2:Math.round(pt.y),b:ziel?ziel.id:null};
-  Object.assign(it,f);wbZeichne(a.id);wbSelSvg();wbUpdateDrosselt(a.id,f);return;
- }
- if(a.t==="gummi"){
-  const x=Math.min(a.sx,e.clientX)-a.rx,y=Math.min(a.sy,e.clientY)-a.ry;
-  Object.assign(a.el.style,{left:x+"px",top:y+"px",width:Math.abs(e.clientX-a.sx)+"px",height:Math.abs(e.clientY-a.sy)+"px"});return;
- }
- if(a.t==="ziehen"){
-  a.cur=pt;
-  const r=wb.stage.getBoundingClientRect();
-  const x=Math.min(a.sx,e.clientX)-r.left,y=Math.min(a.sy,e.clientY)-r.top;
-  Object.assign(a.el.style,{left:x+"px",top:y+"px",width:Math.abs(e.clientX-a.sx)+"px",height:Math.abs(e.clientY-a.sy)+"px"});return;
- }
- if(a.t==="linie"){
-  a.cur=pt;
-  let ziel=wbItemAn(pt);if(ziel&&ziel.id===a.a)ziel=null;
-  a.b=ziel?ziel.id:null;wbZielMarkieren(a.b);
-  const n=wbEnden({x:a.pt.x,y:a.pt.y,x2:pt.x,y2:pt.y,a:a.a,b:a.b});
-  wbVorschau(`<path d="M${n.x1} ${n.y1}L${n.x2} ${n.y2}${wb.arrowNeu?wbPfeilspitze(n.x1,n.y1,n.x2,n.y2,wb.sw.line):""}"fill="none"stroke="${wbFarbe(wb.farben.line).dark}"stroke-width="${wb.sw.line}"stroke-linecap="round"opacity=".75"/>`);return;
- }
- if(a.t==="stift"){
-  const l=a.pts[a.pts.length-1];
-  if(Math.hypot(pt.x-l[0],pt.y-l[1])*k<2)return;
-  a.pts.push([pt.x,pt.y]);
-  let d=`M${a.pts[0][0]} ${a.pts[0][1]}`;for(let i=1;i<a.pts.length;i++)d+=`L${a.pts[i][0]} ${a.pts[i][1]}`;
-  wbVorschau(`<path d="${d}"fill="none"stroke="${wbFarbe(wb.farben.pen).dark}"stroke-width="${wb.sw.pen}"stroke-linecap="round"stroke-linejoin="round"/>`);return;
- }
- if(a.t==="radieren"){wbRadieren(pt);return;}
-}
+function r_Gp(e){const t=12/wb.view.k,n=[];if(wb.items.forEach(i=>{wbIstSvg(i)&&wbSichtbar(i)&&wbAbstand(i,e)<=t+(i.sw||4)/2&&n.push(i.id)}),n.length){const i=n.filter(r=>wbDarfLoeschen(wb.items.get(r)));if(!i.length){wb.radierHinweis||(wb.radierHinweis=!0,toast("Zeichnungen anderer Personen kann nur eine Lehrkraft radieren."));return}(wb.radiert=wb.radiert||[]).push(...i.map(r=>({...wb.items.get(r)}))),i.forEach(r=>{const a=wb.items.get(r);wb.items.delete(r),wb.sel.delete(r),wbEntfernenDom(r),deleteDoc(doc(db,"whiteboardItems",r)).catch(wbFehler)}),wbNachAenderung()}}
+function r_Kx(e){if(!wb||e.target.closest?.(".wb-menu"))return;const t=e.pointerId??1;if(wb.pointers.set(t,{x:e.clientX,y:e.clientY}),wb.pointers.size>=2){r_jx();return}if(e.button===2||e.target.closest?.('[contenteditable="true"]'))return;{const a=Date.now(),s=wb.letzterDown;if(s&&!s.bewegt&&a-s.t<400&&Math.hypot(e.clientX-s.x,e.clientY-s.y)<12&&e.button!==1&&wb.tool==="select"&&!e.target.closest?.("[data-act],a,.wb-video-start,.wb-rs,[data-ep]")){wb.letzterDown=null,wb.dblT=Date.now(),wbDoppel({target:e.target,clientX:e.clientX,clientY:e.clientY}),e.preventDefault();return}wb.letzterDown={t:a,x:e.clientX,y:e.clientY,bewegt:!1}}wb.editing&&wbBearbeitenEnde(!0),$("wbFormMenu").hidden=!0,$("wbTplMenu").hidden=!0;const n=wbWelt(e.clientX,e.clientY),i=e.pointerType==="touch";if(wb.tool==="hand"||e.button===1||wb.space){wb.aktion={t:"pan",sx:e.clientX,sy:e.clientY,vx:wb.view.x,vy:wb.view.y},wb.stage.style.cursor="grabbing",e.preventDefault();return}if(e.target.closest?.("[data-act],[data-aktion],a,.wb-video-start"))return;if(wb.ro){wb.aktion={t:"pan",sx:e.clientX,sy:e.clientY,vx:wb.view.x,vy:wb.view.y},e.preventDefault();return}const r=wb.tool;if(r==="select"){const a=e.target.closest?.("[data-ep]"),s=e.target.closest?.(".wb-rs"),l=e.target.closest?.(".wb-item");if(a){const p=[...wb.sel][0],m=wb.items.get(p);m&&(wb.lokal.add(p),wb.aktion={t:"ep",id:p,n:Number(a.dataset.ep),alt:{x:m.x,y:m.y,x2:m.x2,y2:m.y2,a:m.a||null,b:m.b||null}}),e.preventDefault();return}if(s&&l){const p=l.dataset.id,m=wb.items.get(p);m&&(wb.lokal.add(p),wb.aktion={t:"resize",id:p,sx:e.clientX,sy:e.clientY,w0:m.w,h0:m.h}),e.preventDefault();return}let c=l?wb.items.get(l.dataset.id):wbTrefferLinie(n);if(c){const p=c.id;if(e.shiftKey){const y=new Set(wb.sel);y.has(p)?y.delete(p):y.add(p),wbAuswahlSetzen(y)}else wb.sel.has(p)||wbAuswahlSetzen([p]);const m=[...wb.sel];if(!m.length){e.preventDefault();return}const f={};m.forEach(y=>{const v=wb.items.get(y);v&&!(v.type==="line"&&(v.a||v.b))&&(f[y]={x:v.x,y:v.y,x2:v.x2,y2:v.y2},wb.lokal.add(y))}),wb.aktion={t:"move",sx:e.clientX,sy:e.clientY,start:f,bewegt:!1,klickId:p,shift:e.shiftKey},e.preventDefault();return}if(i){wb.aktion={t:"pan",sx:e.clientX,sy:e.clientY,vx:wb.view.x,vy:wb.view.y},e.preventDefault();return}e.shiftKey||wbAuswahlSetzen([]);const d=wb.stage.getBoundingClientRect(),u=document.createElement("div");u.className="wb-rubber",wb.stage.appendChild(u),wb.aktion={t:"gummi",sx:e.clientX,sy:e.clientY,rx:d.left,ry:d.top,el:u,shift:e.shiftKey,vorher:new Set(wb.sel)},e.preventDefault();return}if(r==="note"||r==="text"){wb.aktion={t:"klick",tool:r,sx:e.clientX,sy:e.clientY,pt:n},e.preventDefault();return}if(r==="shape"||r==="frame"){const a=document.createElement("div");a.className="wb-rubber",wb.stage.appendChild(a),wb.aktion={t:"ziehen",tool:r,pt:n,cur:n,sx:e.clientX,sy:e.clientY,el:a},e.preventDefault();return}if(r==="line"){const a=wbItemAn(n);wb.aktion={t:"linie",pt:n,cur:n,a:a?a.id:null},e.preventDefault();return}if(r==="pen"){wb.aktion={t:"stift",pts:[[n.x,n.y]]},e.preventDefault();return}if(r==="eraser"){wb.radiert=[],wb.radierHinweis=!1,wb.aktion={t:"radieren"},r_Gp(n),e.preventDefault();return}}
+function r_Ix(e){if(!wb)return;wb.letzterDown&&!wb.letzterDown.bewegt&&Math.hypot(e.clientX-wb.letzterDown.x,e.clientY-wb.letzterDown.y)>5&&(wb.letzterDown.bewegt=!0);const t=e.pointerId??1;if(wb.pointers.has(t)&&wb.pointers.set(t,{x:e.clientX,y:e.clientY}),wb.pointers.size>=2&&wb.pinch){r_Cx();return}const n=wb.aktion;if(!n)return;const i=wb.view.k;if(n.t==="pan"){wb.view={...wb.view,x:n.vx+(e.clientX-n.sx),y:n.vy+(e.clientY-n.sy)},wbAnsichtSetzen();return}const r=wbWelt(e.clientX,e.clientY);if(n.t==="move"){const a=(e.clientX-n.sx)/i,s=(e.clientY-n.sy)/i;if(!n.bewegt&&Math.hypot(e.clientX-n.sx,e.clientY-n.sy)<4)return;n.bewegt=!0,Object.keys(n.start).forEach(l=>{const c=wb.items.get(l),d=n.start[l];if(!c)return;const u={x:Math.round(d.x+a),y:Math.round(d.y+s)};c.type==="line"&&(u.x2=Math.round(d.x2+a),u.y2=Math.round(d.y2+s)),Object.assign(c,u),wbZeichne(l),wbUpdateDrosselt(l,u)}),wbSelSvg();return}if(n.t==="resize"){const a=wb.items.get(n.id);if(!a)return;const s=a.type==="text"?{w:80,h:32}:WB_KARTENTYPEN.includes(a.type)?{w:150,h:100}:{w:60,h:40},l={w:Math.round(Math.max(s.w,n.w0+(e.clientX-n.sx)/i)),h:Math.round(Math.max(s.h,n.h0+(e.clientY-n.sy)/i))};a.type==="image"&&a.ar&&(l.h=Math.max(30,Math.round(l.w/a.ar)+wbKopfH(a))),Object.assign(a,l),wbZeichne(n.id),wbUpdateDrosselt(n.id,l);return}if(n.t==="ep"){const a=wb.items.get(n.id);if(!a)return;let s=wbItemAn(r,n.id);s&&(n.n===1&&a.b===s.id||n.n===2&&a.a===s.id)&&(s=null),wbZielMarkieren(s?s.id:null);const l=n.n===1?{x:Math.round(r.x),y:Math.round(r.y),a:s?s.id:null}:{x2:Math.round(r.x),y2:Math.round(r.y),b:s?s.id:null};Object.assign(a,l),wbZeichne(n.id),wbSelSvg(),wbUpdateDrosselt(n.id,l);return}if(n.t==="gummi"){const a=Math.min(n.sx,e.clientX)-n.rx,s=Math.min(n.sy,e.clientY)-n.ry;Object.assign(n.el.style,{left:a+"px",top:s+"px",width:Math.abs(e.clientX-n.sx)+"px",height:Math.abs(e.clientY-n.sy)+"px"});return}if(n.t==="ziehen"){n.cur=r;const a=wb.stage.getBoundingClientRect(),s=Math.min(n.sx,e.clientX)-a.left,l=Math.min(n.sy,e.clientY)-a.top;Object.assign(n.el.style,{left:s+"px",top:l+"px",width:Math.abs(e.clientX-n.sx)+"px",height:Math.abs(e.clientY-n.sy)+"px"});return}if(n.t==="linie"){n.cur=r;let a=wbItemAn(r);a&&a.id===n.a&&(a=null),n.b=a?a.id:null,wbZielMarkieren(n.b);const s=wbEnden({x:n.pt.x,y:n.pt.y,x2:r.x,y2:r.y,a:n.a,b:n.b});wbVorschau(`<path d="M${s.x1} ${s.y1}L${s.x2} ${s.y2}${wb.arrowNeu?wbPfeilspitze(s.x1,s.y1,s.x2,s.y2,wb.sw.line):""}"fill="none"stroke="${wbFarbe(wb.farben.line).dark}"stroke-width="${wb.sw.line}"stroke-linecap="round"opacity=".75"/>`);return}if(n.t==="stift"){const a=n.pts[n.pts.length-1];if(Math.hypot(r.x-a[0],r.y-a[1])*i<2)return;n.pts.push([r.x,r.y]);let s=`M${n.pts[0][0]} ${n.pts[0][1]}`;for(let l=1;l<n.pts.length;l++)s+=`L${n.pts[l][0]} ${n.pts[l][1]}`;wbVorschau(`<path d="${s}"fill="none"stroke="${wbFarbe(wb.farben.pen).dark}"stroke-width="${wb.sw.pen}"stroke-linecap="round"stroke-linejoin="round"/>`);return}if(n.t==="radieren"){r_Gp(r);return}}
 function wbVorschau(html){const g=$("wbVorschau");if(g)g.innerHTML=html;}
 function wbUp(e){
  if(!wb)return;
@@ -13660,26 +12752,9 @@ function wbUp(e){
   return;
  }
 }
-function wbPinchStart(){
- const p=[...wb.pointers.values()];if(p.length<2)return;
- wb.aktion=null;wbVorschau("");
- const cx=(p[0].x+p[1].x)/2,cy=(p[0].y+p[1].y)/2;
- const w=wbWelt(cx,cy);
- wb.pinch={d:Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y)||1,k:wb.view.k,wx:w.x,wy:w.y};
-}
-function wbPinchBewegen(){
- const p=[...wb.pointers.values()];if(p.length<2||!wb.pinch)return;
- const r=wb.stage.getBoundingClientRect();
- const cx=(p[0].x+p[1].x)/2-r.left,cy=(p[0].y+p[1].y)/2-r.top;
- const d=Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y)||1;
- const k=wbBegrenzen(wb.pinch.k*d/wb.pinch.d,0.1,4);
- wb.view={k,x:cx-wb.pinch.wx*k,y:cy-wb.pinch.wy*k};wbAnsichtSetzen();
-}
-function wbRad(e){
- e.preventDefault();
- if(e.shiftKey){wb.view={...wb.view,x:wb.view.x-(e.deltaX||e.deltaY)};wbAnsichtSetzen();return;}
- wbZoomBei(e.clientX,e.clientY,Math.exp(-e.deltaY*(e.ctrlKey?0.01:0.0015)));
-}
+function r_jx(){const e=[...wb.pointers.values()];if(e.length<2)return;wb.aktion=null,wbVorschau("");const t=(e[0].x+e[1].x)/2,n=(e[0].y+e[1].y)/2,i=wbWelt(t,n);wb.pinch={d:Math.hypot(e[0].x-e[1].x,e[0].y-e[1].y)||1,k:wb.view.k,wx:i.x,wy:i.y}}
+function r_Cx(){const e=[...wb.pointers.values()];if(e.length<2||!wb.pinch)return;const t=wb.stage.getBoundingClientRect(),n=(e[0].x+e[1].x)/2-t.left,i=(e[0].y+e[1].y)/2-t.top,r=Math.hypot(e[0].x-e[1].x,e[0].y-e[1].y)||1,a=wbBegrenzen(wb.pinch.k*r/wb.pinch.d,.1,4);wb.view={k:a,x:n-wb.pinch.wx*a,y:i-wb.pinch.wy*a},wbAnsichtSetzen()}
+function r_Wx(e){if(e.preventDefault(),e.shiftKey){wb.view={...wb.view,x:wb.view.x-(e.deltaX||e.deltaY)},wbAnsichtSetzen();return}wbZoomBei(e.clientX,e.clientY,Math.exp(-e.deltaY*(e.ctrlKey?.01:.0015)))}
 function wbDoppel(e){
  if(!wb||wb.ro||wb.tool!=="select")return;
  const itemEl=e.target.closest?.(".wb-item");
@@ -13699,42 +12774,7 @@ function wbDoppel(e){
  wbAuswahlSetzen([id]);wbBearbeitenStart(id);
 }
 function wbEditierbar(t){return !!(t&&((t.isContentEditable)||(t.closest&&t.closest('[contenteditable="true"]'))));}
-function wbTaste(e){
- if(!wb)return;
- const t=e.target;
- const tippt=t&&(wbEditierbar(t)||/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
- if(wb.editing&&wbEditierbar(t)){
-  if(e.key==="Escape"){e.preventDefault();wbBearbeitenEnde(false);}
-  else if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)){e.preventDefault();wbBearbeitenEnde(true);}
-  return;
- }
- if(tippt||!$("modalBackdrop").hidden)return;
- const ctrl=e.ctrlKey||e.metaKey;
- if(e.code==="Space"){wb.space=true;e.preventDefault();return;}
- if(wb.ro&&!(e.key==="Escape"||e.key==="+"||e.key==="="||e.key==="-"||e.key==="0"))return;
- if(ctrl&&e.key.toLowerCase()==="z"){e.preventDefault();wbRueckgaengig();return;}
- if(ctrl&&e.key.toLowerCase()==="d"){e.preventDefault();wbDuplizieren();return;}
- if(ctrl&&e.key.toLowerCase()==="a"){e.preventDefault();wbAuswahlSetzen(wbSeitenItems().map(i=>i.id));return;}
- if(ctrl&&e.key.toLowerCase()==="c"){wb.zwischen=[...wb.sel].map(id=>({...wb.items.get(id)}));return;}
- if(ctrl&&e.key.toLowerCase()==="v"){
-  if(!wb.zwischen||!wb.zwischen.length)return;e.preventDefault();
-  const neu=wb.zwischen.map((it,i)=>{const {id,createdAt,updatedAt,authorUid,authorName,...rest}=it;const k={...rest,seite:wb.seite,x:rest.x+40,y:rest.y+40};if(rest.type==="line"){k.x2=rest.x2+40;k.y2=rest.y2+40;k.a=null;k.b=null;}return wbErzeugen(k,{zOffset:i});});
-  wbAuswahlSetzen(neu);wbUndoPush(async()=>{await wbLoeschenIds(neu,true);});return;
- }
- if(e.key==="Delete"||e.key==="Backspace"){if(wb.sel.size){e.preventDefault();wbLoeschenIds([...wb.sel]);}return;}
- if(e.key==="Escape"){
-  if(wb.wrap.classList.contains("wb-full")&&!wb.sel.size&&wb.tool==="select"){wbVollbild(false);return;}
-  wbSetzeWerkzeug("select");wbAuswahlSetzen([]);return;
- }
- if(e.key==="+"||e.key==="="){wbMitteZoom(1.2);return;}
- if(e.key==="-"){wbMitteZoom(1/1.2);return;}
- if(e.key==="0"){wbAlleAnzeigen();return;}
- if(ctrl||e.altKey)return;
- const map={v:"select",h:"hand",n:"note",t:"text",s:"shape",l:"line",p:"pen",e:"eraser",f:"frame",i:"bild"};
- const w=map[e.key.toLowerCase()];
- if(w==="bild"){const inp=$("wbBildInput");if(inp)inp.click();}
- else if(w){wbSetzeWerkzeug(w);}
-}
+function r_Rx(e){if(!wb)return;const t=e.target,n=t&&(wbEditierbar(t)||/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));if(wb.editing&&wbEditierbar(t)){e.key==="Escape"?(e.preventDefault(),wbBearbeitenEnde(!1)):e.key==="Enter"&&(e.ctrlKey||e.metaKey)&&(e.preventDefault(),wbBearbeitenEnde(!0));return}if(n||!$("modalBackdrop").hidden)return;const i=e.ctrlKey||e.metaKey;if(e.code==="Space"){wb.space=!0,e.preventDefault();return}if(wb.ro&&!(e.key==="Escape"||e.key==="+"||e.key==="="||e.key==="-"||e.key==="0"))return;if(i&&e.key.toLowerCase()==="z"){e.preventDefault(),wbRueckgaengig();return}if(i&&e.key.toLowerCase()==="d"){e.preventDefault(),r_Up();return}if(i&&e.key.toLowerCase()==="a"){e.preventDefault(),wbAuswahlSetzen(wbSeitenItems().map(s=>s.id));return}if(i&&e.key.toLowerCase()==="c"){wb.zwischen=[...wb.sel].map(s=>({...wb.items.get(s)}));return}if(i&&e.key.toLowerCase()==="v"){if(!wb.zwischen||!wb.zwischen.length)return;e.preventDefault();const s=wb.zwischen.map((l,c)=>{const{id:d,createdAt:u,updatedAt:p,authorUid:m,authorName:f,...y}=l,v={...y,seite:wb.seite,x:y.x+40,y:y.y+40};return y.type==="line"&&(v.x2=y.x2+40,v.y2=y.y2+40,v.a=null,v.b=null),wbErzeugen(v,{zOffset:c})});wbAuswahlSetzen(s),wbUndoPush(async()=>{await wbLoeschenIds(s,!0)});return}if(e.key==="Delete"||e.key==="Backspace"){wb.sel.size&&(e.preventDefault(),wbLoeschenIds([...wb.sel]));return}if(e.key==="Escape"){if(wb.wrap.classList.contains("wb-full")&&!wb.sel.size&&wb.tool==="select"){wbVollbild(!1);return}wbSetzeWerkzeug("select"),wbAuswahlSetzen([]);return}if(e.key==="+"||e.key==="="){wbMitteZoom(1.2);return}if(e.key==="-"){wbMitteZoom(1/1.2);return}if(e.key==="0"){wbAlleAnzeigen();return}if(i||e.altKey)return;const a={v:"select",h:"hand",n:"note",t:"text",s:"shape",l:"line",p:"pen",e:"eraser",f:"frame",i:"bild"}[e.key.toLowerCase()];if(a==="bild"){const s=$("wbBildInput");s&&s.click()}else a&&wbSetzeWerkzeug(a)}
 function wbTasteLos(e){if(wb&&e.code==="Space")wb.space=false;}
 
 // ---- Menüs, Vorlagen, Export ----
@@ -13799,73 +12839,7 @@ async function wbExport(){
  })));
  wbExportZeichnen(bilderMap);
 }
-function wbExportZeichnen(bilderMap){
- const items=wbSeitenItems();
- if(!items.length){toast("Diese Seite ist noch leer.");return}
- let x1=1e9,y1=1e9,x2=-1e9,y2=-1e9;
- items.forEach(it=>{const b=wbBox(it);x1=Math.min(x1,b.x);y1=Math.min(y1,b.y);x2=Math.max(x2,b.x+b.w);y2=Math.max(y2,b.y+b.h);});
- const pad=48,W=x2-x1+pad*2,H=y2-y1+pad*2+22;
- const s=Math.min(2,4096/W,4096/H);
- const cv=document.createElement("canvas");cv.width=Math.ceil(W*s);cv.height=Math.ceil(H*s);
- const c=cv.getContext("2d");if(!c){toast("Export wird von diesem Browser nicht unterstützt.");return}
- c.scale(s,s);c.fillStyle="#fff";c.fillRect(0,0,W,H);c.translate(pad-x1,pad-y1);
- const rr=(x,y,w,h,r)=>{c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();};
- const sortiert=items.slice().sort((a,b)=>((a.type==="frame"?0:1)-(b.type==="frame"?0:1))||((a.z||0)-(b.z||0)));
- const text=(it,farbe,mitte)=>{
-  c.fillStyle=farbe;c.font=`${it.fs||18}px Arial, sans-serif`;c.textBaseline="top";
-  const maxW=it.w-(mitte?it.w*0.28:28);const zl=wbUmbruch(c,it.text,maxW);const lh=(it.fs||18)*1.3;
-  const th=zl.length*lh;let y=mitte?it.y+(it.h-th)/2:it.y+12;
-  zl.forEach(z=>{c.textAlign=mitte?"center":"left";c.fillText(z,mitte?it.x+it.w/2:it.x+14,y);y+=lh;});
- };
- sortiert.filter(i=>!wbIstSvg(i)).forEach(it=>{
-  const f=wbFarbe(it.c);
-  if(it.type==="frame"){rr(it.x,it.y,it.w,it.h,14);c.fillStyle=f.soft+"59";c.fill();c.setLineDash([8,6]);c.lineWidth=2;c.strokeStyle=f.dark;c.stroke();c.setLineDash([]);c.font=`bold ${it.fs||22}px Arial, sans-serif`;c.fillStyle=f.dark;c.textAlign="left";c.textBaseline="top";c.fillText(it.text||"",it.x+14,it.y+10);}
-  else if(it.type==="note"){c.save();c.shadowColor="rgba(40,50,70,.25)";c.shadowBlur=10;c.shadowOffsetY=4;rr(it.x,it.y,it.w,it.h,6);c.fillStyle=f.soft;c.fill();c.restore();text(it,"#1f2d3d",false);c.font="10px Arial";c.fillStyle="rgba(31,45,61,.55)";c.textAlign="left";c.fillText(wbKurz(it.authorName),it.x+12,it.y+it.h-14);}
-  else if(it.type==="text"){text(it,f.dark,false);}
-  else if(["card","tool","qr","link","video","embed","datei"].includes(it.type)){
-   c.save();c.shadowColor="rgba(40,50,70,.2)";c.shadowBlur=8;c.shadowOffsetY=3;rr(it.x,it.y,it.w,it.h,12);c.fillStyle="#fff";c.fill();c.restore();
-   c.save();rr(it.x,it.y,it.w,it.h,12);c.clip();c.fillStyle=f.soft;c.fillRect(it.x,it.y,it.w,34);c.restore();
-   c.fillStyle=f.dark;c.font="bold 14px Arial, sans-serif";c.textAlign="left";c.textBaseline="middle";
-   c.fillText(it.type==="tool"?(wbToolDef(it.tool)?.titel||""):(it.titel||""),it.x+14,it.y+17);c.textBaseline="top";
-   if(it.type==="card"){text({...it,y:it.y+34,h:it.h-34},"#1f2d3d",false);}
-   else if(it.type==="qr"&&wbSichereUrl(it.url)){
-    try{const q=WB_QR(0,"M");q.addData(wbSichereUrl(it.url));q.make();const n=q.getModuleCount(),sz=Math.min(it.w-30,it.h-60),cs=sz/n,ox=it.x+(it.w-sz)/2,oy=it.y+44;
-     c.fillStyle="#111";for(let r=0;r<n;r++)for(let k=0;k<n;k++)if(q.isDark(r,k))c.fillRect(ox+k*cs,oy+r*cs,cs+0.5,cs+0.5);}catch(e){}
-   }else{c.fillStyle="#51657a";c.font="14px Arial, sans-serif";c.textAlign="center";c.textBaseline="middle";c.fillText(String(wbToolKurz(it)).slice(0,60),it.x+it.w/2,it.y+it.h/2+10);}
-  }
-  else if(it.type==="image"){
-   c.save();c.shadowColor="rgba(40,50,70,.25)";c.shadowBlur=10;c.shadowOffsetY=4;rr(it.x,it.y,it.w,it.h,10);c.fillStyle="#e9edf1";c.fill();c.restore();
-   const im=bilderMap&&bilderMap.get(it.id);
-   if(im){c.save();rr(it.x,it.y,it.w,it.h,10);c.clip();c.drawImage(im,it.x,it.y,it.w,it.h);c.restore();}
-  }
-  else if(it.type==="shape"){
-   c.beginPath();
-   if(it.shape==="ellipse")c.ellipse(it.x+it.w/2,it.y+it.h/2,it.w/2,it.h/2,0,0,Math.PI*2);
-   else if(it.shape==="diamond"){c.moveTo(it.x+it.w/2,it.y);c.lineTo(it.x+it.w,it.y+it.h/2);c.lineTo(it.x+it.w/2,it.y+it.h);c.lineTo(it.x,it.y+it.h/2);c.closePath();}
-   else if(it.shape==="triangle"){c.moveTo(it.x+it.w/2,it.y);c.lineTo(it.x+it.w,it.y+it.h);c.lineTo(it.x,it.y+it.h);c.closePath();}
-   else rr(it.x,it.y,it.w,it.h,6);
-   c.fillStyle=f.soft;c.fill();c.lineWidth=it.sw||3;c.strokeStyle=f.dark;c.stroke();text(it,"#1f2d3d",true);
-  }
- });
- sortiert.filter(wbIstSvg).forEach(it=>{
-  const f=wbFarbe(it.c);c.strokeStyle=f.dark;c.lineWidth=it.sw||4;c.lineCap="round";c.lineJoin="round";c.beginPath();
-  if(it.type==="stroke"){const p=it.pts||[];c.moveTo(it.x+p[0],it.y+p[1]);for(let i=2;i<p.length;i+=2)c.lineTo(it.x+p[i],it.y+p[i+1]);if(p.length===2)c.lineTo(it.x+p[0]+0.01,it.y+p[1]);c.stroke();}
-  else{
-   const n=wbEnden(it);
-   c.moveTo(n.x1,n.y1);c.lineTo(n.x2,n.y2);c.stroke();
-   if(it.arrow){const a=Math.atan2(n.y2-n.y1,n.x2-n.x1),l=10+(it.sw||4)*2.2,b=0.45;c.beginPath();c.moveTo(n.x2-l*Math.cos(a-b),n.y2-l*Math.sin(a-b));c.lineTo(n.x2,n.y2);c.lineTo(n.x2-l*Math.cos(a+b),n.y2-l*Math.sin(a+b));c.stroke();}
-  }
- });
- c.setTransform(s,0,0,s,0,0);c.fillStyle="#8a99a8";c.font="12px Arial";c.textAlign="left";c.textBaseline="alphabetic";
- c.fillText(`F11Sb · Whiteboard · ${wb.board.title||""}`,pad,H-12);
- if(wb.pdfModus){wb.pdfModus=false;wbPdfFenster(cv);return;}
- cv.toBlob(b=>{
-  if(!b){toast("Das Bild konnte nicht erstellt werden.");return}
-  const url=URL.createObjectURL(b);const a=document.createElement("a");
-  a.href=url;a.download=`whiteboard-${String(wb.board.title||"board").replace(/[^\wäöüÄÖÜß-]+/g,"-")}.png`;document.body.appendChild(a);a.click();a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),2000);toast("Bild gespeichert.");
- },"image/png");
-}
+function wbExportZeichnen(e){const t=wbSeitenItems();if(!t.length){toast("Diese Seite ist noch leer.");return}let n=1e9,i=1e9,r=-1e9,a=-1e9;t.forEach(v=>{const k=wbBox(v);n=Math.min(n,k.x),i=Math.min(i,k.y),r=Math.max(r,k.x+k.w),a=Math.max(a,k.y+k.h)});const s=48,l=r-n+s*2,c=a-i+s*2+22,d=Math.min(2,4096/l,4096/c),u=document.createElement("canvas");u.width=Math.ceil(l*d),u.height=Math.ceil(c*d);const p=u.getContext("2d");if(!p){toast("Export wird von diesem Browser nicht unterst\xFCtzt.");return}p.scale(d,d),p.fillStyle="#fff",p.fillRect(0,0,l,c),p.translate(s-n,s-i);const m=(v,k,x,E,W)=>{p.beginPath(),p.moveTo(v+W,k),p.arcTo(v+x,k,v+x,k+E,W),p.arcTo(v+x,k+E,v,k+E,W),p.arcTo(v,k+E,v,k,W),p.arcTo(v,k,v+x,k,W),p.closePath()},f=t.slice().sort((v,k)=>(v.type==="frame"?0:1)-(k.type==="frame"?0:1)||(v.z||0)-(k.z||0)),y=(v,k,x)=>{p.fillStyle=k,p.font=`${v.fs||18}px Arial, sans-serif`,p.textBaseline="top";const E=v.w-(x?v.w*.28:28),W=wbUmbruch(p,v.text,E),j=(v.fs||18)*1.3,J=W.length*j;let ge=x?v.y+(v.h-J)/2:v.y+12;W.forEach(Ae=>{p.textAlign=x?"center":"left",p.fillText(Ae,x?v.x+v.w/2:v.x+14,ge),ge+=j})};if(f.filter(v=>!wbIstSvg(v)).forEach(v=>{const k=wbFarbe(v.c);if(v.type==="frame")m(v.x,v.y,v.w,v.h,14),p.fillStyle=k.soft+"59",p.fill(),p.setLineDash([8,6]),p.lineWidth=2,p.strokeStyle=k.dark,p.stroke(),p.setLineDash([]),p.font=`bold ${v.fs||22}px Arial, sans-serif`,p.fillStyle=k.dark,p.textAlign="left",p.textBaseline="top",p.fillText(v.text||"",v.x+14,v.y+10);else if(v.type==="note")p.save(),p.shadowColor="rgba(40,50,70,.25)",p.shadowBlur=10,p.shadowOffsetY=4,m(v.x,v.y,v.w,v.h,6),p.fillStyle=k.soft,p.fill(),p.restore(),y(v,"#1f2d3d",!1),p.font="10px Arial",p.fillStyle="rgba(31,45,61,.55)",p.textAlign="left",p.fillText(wbKurz(v.authorName),v.x+12,v.y+v.h-14);else if(v.type==="text")y(v,k.dark,!1);else if(["card","tool","qr","link","video","embed","datei"].includes(v.type))if(p.save(),p.shadowColor="rgba(40,50,70,.2)",p.shadowBlur=8,p.shadowOffsetY=3,m(v.x,v.y,v.w,v.h,12),p.fillStyle="#fff",p.fill(),p.restore(),p.save(),m(v.x,v.y,v.w,v.h,12),p.clip(),p.fillStyle=k.soft,p.fillRect(v.x,v.y,v.w,34),p.restore(),p.fillStyle=k.dark,p.font="bold 14px Arial, sans-serif",p.textAlign="left",p.textBaseline="middle",p.fillText(v.type==="tool"?wbToolDef(v.tool)?.titel||"":v.titel||"",v.x+14,v.y+17),p.textBaseline="top",v.type==="card")y({...v,y:v.y+34,h:v.h-34},"#1f2d3d",!1);else if(v.type==="qr"&&wbSichereUrl(v.url))try{const x=WB_QR(0,"M");x.addData(wbSichereUrl(v.url)),x.make();const E=x.getModuleCount(),W=Math.min(v.w-30,v.h-60),j=W/E,J=v.x+(v.w-W)/2,ge=v.y+44;p.fillStyle="#111";for(let Ae=0;Ae<E;Ae++)for(let Fe=0;Fe<E;Fe++)x.isDark(Ae,Fe)&&p.fillRect(J+Fe*j,ge+Ae*j,j+.5,j+.5)}catch{}else p.fillStyle="#51657a",p.font="14px Arial, sans-serif",p.textAlign="center",p.textBaseline="middle",p.fillText(String(wbToolKurz(v)).slice(0,60),v.x+v.w/2,v.y+v.h/2+10);else if(v.type==="image"){p.save(),p.shadowColor="rgba(40,50,70,.25)",p.shadowBlur=10,p.shadowOffsetY=4,m(v.x,v.y,v.w,v.h,10),p.fillStyle="#e9edf1",p.fill(),p.restore();const x=e&&e.get(v.id);x&&(p.save(),m(v.x,v.y,v.w,v.h,10),p.clip(),p.drawImage(x,v.x,v.y,v.w,v.h),p.restore())}else v.type==="shape"&&(p.beginPath(),v.shape==="ellipse"?p.ellipse(v.x+v.w/2,v.y+v.h/2,v.w/2,v.h/2,0,0,Math.PI*2):v.shape==="diamond"?(p.moveTo(v.x+v.w/2,v.y),p.lineTo(v.x+v.w,v.y+v.h/2),p.lineTo(v.x+v.w/2,v.y+v.h),p.lineTo(v.x,v.y+v.h/2),p.closePath()):v.shape==="triangle"?(p.moveTo(v.x+v.w/2,v.y),p.lineTo(v.x+v.w,v.y+v.h),p.lineTo(v.x,v.y+v.h),p.closePath()):m(v.x,v.y,v.w,v.h,6),p.fillStyle=k.soft,p.fill(),p.lineWidth=v.sw||3,p.strokeStyle=k.dark,p.stroke(),y(v,"#1f2d3d",!0))}),f.filter(wbIstSvg).forEach(v=>{const k=wbFarbe(v.c);if(p.strokeStyle=k.dark,p.lineWidth=v.sw||4,p.lineCap="round",p.lineJoin="round",p.beginPath(),v.type==="stroke"){const x=v.pts||[];p.moveTo(v.x+x[0],v.y+x[1]);for(let E=2;E<x.length;E+=2)p.lineTo(v.x+x[E],v.y+x[E+1]);x.length===2&&p.lineTo(v.x+x[0]+.01,v.y+x[1]),p.stroke()}else{const x=wbEnden(v);if(p.moveTo(x.x1,x.y1),p.lineTo(x.x2,x.y2),p.stroke(),v.arrow){const E=Math.atan2(x.y2-x.y1,x.x2-x.x1),W=10+(v.sw||4)*2.2,j=.45;p.beginPath(),p.moveTo(x.x2-W*Math.cos(E-j),x.y2-W*Math.sin(E-j)),p.lineTo(x.x2,x.y2),p.lineTo(x.x2-W*Math.cos(E+j),x.y2-W*Math.sin(E+j)),p.stroke()}}}),p.setTransform(d,0,0,d,0,0),p.fillStyle="#8a99a8",p.font="12px Arial",p.textAlign="left",p.textBaseline="alphabetic",p.fillText(`F11Sb \xB7 Whiteboard \xB7 ${wb.board.title||""}`,s,c-12),wb.pdfModus){wb.pdfModus=!1,wbPdfFenster(u);return}u.toBlob(v=>{if(!v){toast("Das Bild konnte nicht erstellt werden.");return}const k=URL.createObjectURL(v),x=document.createElement("a");x.href=k,x.download=`whiteboard-${String(wb.board.title||"board").replace(/[^\wäöüÄÖÜß-]+/g,"-")}.png`,document.body.appendChild(x),x.click(),x.remove(),setTimeout(()=>URL.revokeObjectURL(k),2e3),toast("Bild gespeichert.")},"image/png")}
 
 
 // ---- Bilder (als verkleinertes JPEG in Firestore, getrennt vom Element, damit Verschieben schnell bleibt) ----
@@ -13912,31 +12886,8 @@ async function wbBildEinfuegen(data,bw,bh,pt){
  wbSetzeWerkzeug("select");wbAuswahlSetzen([id]);
  return id;
 }
-async function wbBildDatei(datei,pt){
- if(!datei||!/^image\//.test(datei.type||"")){toast("Bitte eine Bilddatei wählen.");return}
- if(datei.size>15*1024*1024){toast("Das Bild ist zu groß (maximal 15 MB).");return}
- if(!isTeacher()&&wb&&[...wb.items.values()].filter(i=>i.type==="image").length>=12){toast("Auf diesem Whiteboard sind schon 12 Bilder. Bitte erst eines löschen.");return}
- try{
-  toast("Bild wird verarbeitet …");
-  const b=await wbBildVorbereiten(datei);
-  await wbBildEinfuegen(b.data,b.w,b.h,pt);
- }catch(e){
-  console.error("Bild einfügen:",e);
-  toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern des Bildes. Bitte die Firestore-Regeln prüfen.":"Das Bild konnte nicht eingefügt werden.");
- }
-}
-
-// ---- Live-Mauszeiger der anderen ----
-function wbCursorSenden(pt,weg){
- if(!wb||!wb.cursorAn)return;
- const jetzt=Date.now();
- const andere=[...wb.praesenz.values()].filter(p=>p.uid!==currentUser.uid&&jetzt-(p.seen||0)<75000).length;
- if(!andere||andere>WB_MAX_CURSOR)return;
- if(!weg&&jetzt-wb.cursorT<700)return;
- if(weg&&wb.cursorWeg)return;
- wb.cursorT=jetzt;wb.cursorWeg=!!weg;
- setDoc(doc(db,"whiteboardPresence",`${wb.id}_${currentUser.uid}`),{boardId:wb.id,uid:currentUser.uid,name:anzeigeName(profile,currentUser),seen:jetzt,cx:weg?null:Math.round(pt.x),cy:weg?null:Math.round(pt.y),cs:jetzt},{merge:true}).catch(()=>{});
-}
+async function r_Uc(e,t){if(!e||!/^image\//.test(e.type||"")){toast("Bitte eine Bilddatei w\xE4hlen.");return}if(e.size>15*1024*1024){toast("Das Bild ist zu gro\xDF (maximal 15 MB).");return}if(!isTeacher()&&wb&&[...wb.items.values()].filter(n=>n.type==="image").length>=12){toast("Auf diesem Whiteboard sind schon 12 Bilder. Bitte erst eines l\xF6schen.");return}try{toast("Bild wird verarbeitet \u2026");const n=await wbBildVorbereiten(e);await wbBildEinfuegen(n.data,n.w,n.h,t)}catch(n){console.error("Bild einf\xFCgen:",n),toast(n?.code==="permission-denied"?"Firebase verweigert das Speichern des Bildes. Bitte die Firestore-Regeln pr\xFCfen.":"Das Bild konnte nicht eingef\xFCgt werden.")}}
+function r_Gc(e,t){if(!wb||!wb.cursorAn)return;const n=Date.now(),i=[...wb.praesenz.values()].filter(r=>r.uid!==currentUser.uid&&n-(r.seen||0)<75e3).length;!i||i>WB_MAX_CURSOR||!t&&n-wb.cursorT<700||t&&wb.cursorWeg||(wb.cursorT=n,wb.cursorWeg=!!t,setDoc(doc(db,"whiteboardPresence",`${wb.id}_${currentUser.uid}`),{boardId:wb.id,uid:currentUser.uid,name:anzeigeName(profile,currentUser),seen:n,cx:t?null:Math.round(e.x),cy:t?null:Math.round(e.y),cs:n},{merge:!0}).catch(()=>{}))}
 function wbCursorZeichnen(ohneAnim){
  if(!wb)return;
  const layer=$("wbCursors");if(!layer)return;
@@ -13974,134 +12925,14 @@ function wbToolKurz(it){
  }
 }
 // ---- Online-Anzeige ----
-function wbOnlineZeichnen(){
- const box=$("wbOnline");if(!box||!wb)return;
- const jetzt=Date.now();
- const liste=[...wb.praesenz.values()].filter(p=>jetzt-(p.seen||0)<75000).sort((a,b)=>String(a.uid).localeCompare(String(b.uid)));
- box.innerHTML=liste.slice(0,8).map(p=>{const c=personColor(p.uid);const ini=(wbKurz(p.name)[0]||"?").toUpperCase();return`<span class="wb-ava"style="background:${c.border}"title="${esc(p.name||"")}${p.uid===currentUser.uid?" (du)":""}">${esc(ini)}</span>`;}).join("")+(liste.length>8?`<span class="wb-ava"style="background:#8a99a8">+${liste.length-8}</span>`:"");
-}
+function r_Qp(){const e=$("wbOnline");if(!e||!wb)return;const t=Date.now(),n=[...wb.praesenz.values()].filter(i=>t-(i.seen||0)<75e3).sort((i,r)=>String(i.uid).localeCompare(String(r.uid)));e.innerHTML=n.slice(0,8).map(i=>{const r=personColor(i.uid),a=(wbKurz(i.name)[0]||"?").toUpperCase();return`<span class="wb-ava"style="background:${r.border}"title="${esc(i.name||"")}${i.uid===currentUser.uid?" (du)":""}">${esc(a)}</span>`}).join("")+(n.length>8?`<span class="wb-ava"style="background:#8a99a8">+${n.length-8}</span>`:"")}
 function wbPresenzSchreiben(){
  if(!wb)return;
  setDoc(doc(db,"whiteboardPresence",`${wb.id}_${currentUser.uid}`),{boardId:wb.id,uid:currentUser.uid,name:anzeigeName(profile,currentUser),seen:Date.now()},{merge:true}).catch(()=>{});
 }
 
 // ---- Start und Ende ----
-function initWhiteboardBoard(id){
- wbStop();
- const stage=$("wbStage");if(!stage)return;
- wb={id,stage,wrap:$("wbWrap"),world:$("wbWorld"),itemsEl:$("wbItems"),svg:$("wbSvg"),selG:$("wbSelG"),
-  view:wbAnsicht[id+"#1"]?{...wbAnsicht[id+"#1"]}:null,seite:1,board:(wbBoardCache&&wbBoardCache.id===id)?wbBoardCache:{},tool:"select",form:"rect",arrowNeu:true,
-  farben:{note:"gelb",text:"grau",shape:"blau",line:"grau",pen:"grau",frame:"grau"},
-  sw:{line:4,pen:4,shape:3},items:new Map(),els:new Map(),svgEls:new Map(),sel:new Set(),lokal:new Set(),
-  undo:[],drossel:{},pointers:new Map(),aktion:null,pinch:null,editing:null,space:false,praesenz:new Map(),timers:[],handler:[],erstesLaden:true,
-  ro:false,editFeld:"text",videoAn:new Set(),folgenAus:false,fuehrt:false,letzteFuehrung:null,fuehrTimer:null,kartenZaehler:0,
-  bilder:new Map(),bilderLaden:new Set(),cursorAn:true,cursorT:0,cursorWeg:true,cursorEls:new Map(),zielId:null,animTimer:null};
-
- if(!wb.view){const s=wbBuehne();wb.view={x:s.w/2,y:s.h/2,k:1};}
- wbAnsichtSetzen();
- const on=(el,ev,fn,opt)=>{el.addEventListener(ev,fn,opt);wb.handler.push([el,ev,fn,opt]);};
- on(stage,"pointerdown",wbDown);on(window,"pointermove",wbMove);on(window,"pointerup",wbUp);on(window,"pointercancel",wbUp);
- on(stage,"pointerdown",()=>{if(wb.wrap)wb.wrap.classList.add("wb-zieht");},true);on(window,"pointerup",()=>{if(wb.wrap)wb.wrap.classList.remove("wb-zieht");});on(window,"pointercancel",()=>{if(wb.wrap)wb.wrap.classList.remove("wb-zieht");});
- on(stage,"wheel",wbRad,{passive:false});on(stage,"contextmenu",e=>e.preventDefault());
- on(stage,"dblclick",e=>{if(Date.now()-(wb.dblT||0)<700)return;wbDoppel(e);});
- on(document,"keydown",wbTaste);on(document,"keyup",wbTasteLos);
- on(stage,"pointermove",e=>{if(wb)wbCursorSenden(wbWelt(e.clientX,e.clientY));});
- on(stage,"pointerleave",()=>wbCursorSenden(null,true));
- on($("wbCursorAn"),"click",()=>{
-  wb.cursorAn=!wb.cursorAn;$("wbCursorAn").classList.toggle("on",wb.cursorAn);
-  if(!wb.cursorAn)wbCursorSenden(null,true);wbCursorZeichnen();
-  toast(wb.cursorAn?"Mauszeiger der anderen sind sichtbar.":"Mauszeiger sind ausgeblendet.");
- });
- on($("wbBild"),"click",()=>$("wbBildInput").click());
- on($("wbBildInput"),"change",e=>{const f=e.target.files&&e.target.files[0];if(f)wbBildDatei(f);e.target.value="";});
- on(document,"paste",e=>{
-  if(!wb||wb.editing||wb.ro)return;const t=e.target;
-  if(t&&(wbEditierbar(t)||/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)))return;
-  const f=[...(e.clipboardData&&e.clipboardData.files?e.clipboardData.files:[])].find(x=>/^image\//.test(x.type));
-  if(f){e.preventDefault();wbBildDatei(f);}
- });
- on(stage,"click",wbKlick);
- on($("wbLeiste"),"click",e=>{
-  const b=e.target.closest("button");if(!b||wb.ro)return;
-  if(b.dataset.tool)wbSetzeWerkzeug(b.dataset.tool);
-  else if(b.dataset.karte)wbKarteEinfuegen(b.dataset.karte);
-  else if(b.dataset.leiste==="werkzeuge"){wb.wrap.classList.toggle("wb-tools-offen");b.classList.toggle("on",wb.wrap.classList.contains("wb-tools-offen"));}
- });
- on($("wbHg"),"click",()=>{
-  const m=$("wbHgMenu");if(!m.hidden){m.hidden=true;return;}
-  m.innerHTML=`<div class="wb-menu-titel">Hintergrund</div><div class="wb-hg-reihe">${WB_HG.map(x=>`<button type="button"class="wb-hg${x.k===(wb.board.bg||"weiss")?" on":""}"data-hg="${x.k}"title="${x.n}"style="background:${x.c}"></button>`).join("")}</div>`;
-  m.hidden=false;
-  const r=$("wbHg").getBoundingClientRect(),w=wb.wrap.getBoundingClientRect();
-  m.style.right=Math.max(8,w.right-r.right)+"px";m.style.left="auto";m.style.top=(r.bottom-w.top+8)+"px";
- });
- on($("wbHgMenu"),"click",async e=>{
-  const b=e.target.closest("[data-hg]");if(!b)return;
-  $("wbHgMenu").hidden=true;
-  try{await updateDoc(doc(db,"whiteboards",wb.id),{bg:b.dataset.hg});}catch(err){wbFehler(err);}
- });
- on($("wbKartenBtn"),"click",()=>{const m=$("wbKartenMenu");if(m.hidden)wbKartenMenuAuf();else m.hidden=true;});
- on($("wbKartenMenu"),"click",e=>{const b=e.target.closest("[data-karte]");if(b)wbKarteEinfuegen(b.dataset.karte);});
- on($("wbDateiInput"),"change",e=>{const f=e.target.files&&e.target.files[0];if(f)wbDateiHochladen(f);e.target.value="";});
- on($("wbSeiten"),"click",e=>{
-  const b=e.target.closest("[data-seite]");if(!b)return;
-  const v=b.dataset.seite;
-  if(v==="neu")wbSeiteNeu();else if(v==="weg")wbSeiteLoeschen();else wbSeiteWechseln(Number(v));
- });
- const sb=$("wbSchutz");if(sb)on(sb,"click",wbSchutzUmschalten);
- on($("wbFolgen"),"click",wbFolgenUmschalten);
- on($("wbFolgenStop"),"click",()=>{wb.folgenAus=true;$("wbFolgenBanner").hidden=true;toast("Du folgst der Lehrkraft nicht mehr.");});
- on(stage,"dragover",e=>e.preventDefault());
- on(stage,"drop",e=>{
-  e.preventDefault();if(wb.ro)return;
-  const fl=[...(e.dataTransfer&&e.dataTransfer.files?e.dataTransfer.files:[])].filter(x=>/^image\//.test(x.type)).slice(0,5);
-  const pt=wbWelt(e.clientX,e.clientY);fl.forEach((x,i)=>wbBildDatei(x,{x:pt.x+i*30,y:pt.y+i*30}));
- });
- on($("wbTools"),"click",e=>{
-  const b=e.target.closest("[data-tool]");if(!b)return;
-  const t=b.dataset.tool;
-  if(t==="shape"&&wb.tool==="shape"){wbFormMenuAuf();return;}
-  wbSetzeWerkzeug(t);if(t==="shape")wbFormMenuAuf();
- });
- on($("wbFormMenu"),"click",e=>{const b=e.target.closest("[data-form]");if(!b)return;wb.form=b.dataset.form;$("wbFormMenu").hidden=true;wbSetzeWerkzeug("shape");});
- on($("wbTplMenu"),"click",e=>{const b=e.target.closest("[data-tpl]");if(b)wbVorlageEinsetzen(Number(b.dataset.tpl));});
- on($("wbProps"),"click",wbEigenschaftKlick);
- on($("wbUndo"),"click",wbRueckgaengig);
- on($("wbZoomPlus"),"click",()=>wbMitteZoom(1.25));on($("wbZoomMinus"),"click",()=>wbMitteZoom(0.8));on($("wbFit"),"click",wbAlleAnzeigen);
- on($("wbNamen"),"click",()=>{wb.wrap.classList.toggle("wb-hide-namen");$("wbNamen").classList.toggle("on",wb.wrap.classList.contains("wb-hide-namen"));});
- on($("wbTpl"),"click",()=>{const m=$("wbTplMenu");if(m.hidden)wbTplMenuAuf();else m.hidden=true;});
- on($("wbExport"),"click",wbExport);on($("wbExportPdf"),"click",wbExportPdf);on($("wbVoll"),"click",()=>wbVollbild());on($("wbHilfe"),"click",wbHilfe);
- on($("wbZurueck"),"click",closeWhiteboard);
- if($("wbZurueckThema"))on($("wbZurueckThema"),"click",()=>{wbVonKw=false;activeWhiteboardId=null;go("kw-thema")});
- const un=$("wbUmbenennen");if(un)on(un,"click",async()=>{
-  const n=prompt("Neuer Titel für das Whiteboard:",wb.board.title||"");if(n===null||!n.trim())return;
-  try{await updateDoc(doc(db,"whiteboards",id),{title:n.trim().slice(0,120)});toast("Umbenannt.");await render();}catch(e){wbFehler(e);}
- });
- const lo=$("wbLoeschen");if(lo)on(lo,"click",()=>wbBoardLoeschen(id));
- wbUndoKnopf();wbPropsZeichnen();
- wb.boardUnsub=onSnapshot(doc(db,"whiteboards",id),s=>{
-  if(!wb||wb.id!==id)return;
-  if(s.exists()){wb.board={id,...s.data()};wbBoardGeaendert();}
- },e=>wbFehler(e));
- wbBoardGeaendert();
- // Live-Daten
- wb.unsub=onSnapshot(query(collection(db,"whiteboardItems"),where("boardId","==",id)),snap=>{
-  if(!wb||wb.id!==id)return;
-  snap.docChanges().forEach(ch=>{
-   const iid=ch.doc.id;
-   if(ch.type==="removed"){wb.items.delete(iid);wb.sel.delete(iid);wbEntfernenDom(iid);return;}
-   if(wb.lokal.has(iid))return;
-   wb.items.set(iid,{id:iid,...ch.doc.data()});wbZeichne(iid);
-  });
-  wbZ();wbNachAenderung();
-  if(wb.erstesLaden){wb.erstesLaden=false;if(!wbAnsicht[id+"#"+wb.seite]&&wbSeitenItems().length)wbAlleAnzeigen();}
- },e=>{wbFehler(e);if(!(e&&e.code==="permission-denied"))wbMeldung(`Die Elemente konnten nicht geladen werden (${(e&&(e.code||e.name))||"unbekannt"}).`);});
- wb.praesUnsub=onSnapshot(query(collection(db,"whiteboardPresence"),where("boardId","==",id)),snap=>{
-  if(!wb||wb.id!==id)return;
-  wb.praesenz=new Map(snap.docs.map(d=>[d.id,d.data()]));wbOnlineZeichnen();wbCursorZeichnen();
- },()=>{});
- wbPresenzSchreiben();
- wb.timers.push(setInterval(wbPresenzSchreiben,25000),setInterval(wbOnlineZeichnen,15000),setInterval(()=>wbCursorZeichnen(),4000),setInterval(wbToolTick,250));
-}
+function initWhiteboardBoard(e){wbStop();const t=$("wbStage");if(!t)return;if(wb={id:e,stage:t,wrap:$("wbWrap"),world:$("wbWorld"),itemsEl:$("wbItems"),svg:$("wbSvg"),selG:$("wbSelG"),view:wbAnsicht[e+"#1"]?{...wbAnsicht[e+"#1"]}:null,seite:1,board:wbBoardCache&&wbBoardCache.id===e?wbBoardCache:{},tool:"select",form:"rect",arrowNeu:!0,farben:{note:"gelb",text:"grau",shape:"blau",line:"grau",pen:"grau",frame:"grau"},sw:{line:4,pen:4,shape:3},items:new Map,els:new Map,svgEls:new Map,sel:new Set,lokal:new Set,undo:[],drossel:{},pointers:new Map,aktion:null,pinch:null,editing:null,space:!1,praesenz:new Map,timers:[],handler:[],erstesLaden:!0,ro:!1,editFeld:"text",videoAn:new Set,folgenAus:!1,fuehrt:!1,letzteFuehrung:null,fuehrTimer:null,kartenZaehler:0,bilder:new Map,bilderLaden:new Set,cursorAn:!0,cursorT:0,cursorWeg:!0,cursorEls:new Map,zielId:null,animTimer:null},!wb.view){const s=wbBuehne();wb.view={x:s.w/2,y:s.h/2,k:1}}wbAnsichtSetzen();const n=(s,l,c,d)=>{s.addEventListener(l,c,d),wb.handler.push([s,l,c,d])};n(t,"pointerdown",r_Kx),n(window,"pointermove",r_Ix),n(window,"pointerup",wbUp),n(window,"pointercancel",wbUp),n(t,"pointerdown",()=>{wb.wrap&&wb.wrap.classList.add("wb-zieht")},!0),n(window,"pointerup",()=>{wb.wrap&&wb.wrap.classList.remove("wb-zieht")}),n(window,"pointercancel",()=>{wb.wrap&&wb.wrap.classList.remove("wb-zieht")}),n(t,"wheel",r_Wx,{passive:!1}),n(t,"contextmenu",s=>s.preventDefault()),n(t,"dblclick",s=>{Date.now()-(wb.dblT||0)<700||wbDoppel(s)}),n(document,"keydown",r_Rx),n(document,"keyup",wbTasteLos),n(t,"pointermove",s=>{wb&&r_Gc(wbWelt(s.clientX,s.clientY))}),n(t,"pointerleave",()=>r_Gc(null,!0)),n($("wbCursorAn"),"click",()=>{wb.cursorAn=!wb.cursorAn,$("wbCursorAn").classList.toggle("on",wb.cursorAn),wb.cursorAn||r_Gc(null,!0),wbCursorZeichnen(),toast(wb.cursorAn?"Mauszeiger der anderen sind sichtbar.":"Mauszeiger sind ausgeblendet.")}),n($("wbBild"),"click",()=>$("wbBildInput").click()),n($("wbBildInput"),"change",s=>{const l=s.target.files&&s.target.files[0];l&&r_Uc(l),s.target.value=""}),n(document,"paste",s=>{if(!wb||wb.editing||wb.ro)return;const l=s.target;if(l&&(wbEditierbar(l)||/^(INPUT|TEXTAREA|SELECT)$/.test(l.tagName)))return;const c=[...s.clipboardData&&s.clipboardData.files?s.clipboardData.files:[]].find(d=>/^image\//.test(d.type));c&&(s.preventDefault(),r_Uc(c))}),n(t,"click",wbKlick),n($("wbLeiste"),"click",s=>{const l=s.target.closest("button");!l||wb.ro||(l.dataset.tool?wbSetzeWerkzeug(l.dataset.tool):l.dataset.karte?wbKarteEinfuegen(l.dataset.karte):l.dataset.leiste==="werkzeuge"&&(wb.wrap.classList.toggle("wb-tools-offen"),l.classList.toggle("on",wb.wrap.classList.contains("wb-tools-offen"))))}),n($("wbHg"),"click",()=>{const s=$("wbHgMenu");if(!s.hidden){s.hidden=!0;return}s.innerHTML=`<div class="wb-menu-titel">Hintergrund</div><div class="wb-hg-reihe">${WB_HG.map(d=>`<button type="button"class="wb-hg${d.k===(wb.board.bg||"weiss")?" on":""}"data-hg="${d.k}"title="${d.n}"style="background:${d.c}"></button>`).join("")}</div>`,s.hidden=!1;const l=$("wbHg").getBoundingClientRect(),c=wb.wrap.getBoundingClientRect();s.style.right=Math.max(8,c.right-l.right)+"px",s.style.left="auto",s.style.top=l.bottom-c.top+8+"px"}),n($("wbHgMenu"),"click",async s=>{const l=s.target.closest("[data-hg]");if(l){$("wbHgMenu").hidden=!0;try{await updateDoc(doc(db,"whiteboards",wb.id),{bg:l.dataset.hg})}catch(c){wbFehler(c)}}}),n($("wbKartenBtn"),"click",()=>{const s=$("wbKartenMenu");s.hidden?wbKartenMenuAuf():s.hidden=!0}),n($("wbKartenMenu"),"click",s=>{const l=s.target.closest("[data-karte]");l&&wbKarteEinfuegen(l.dataset.karte)}),n($("wbDateiInput"),"change",s=>{const l=s.target.files&&s.target.files[0];l&&wbDateiHochladen(l),s.target.value=""}),n($("wbSeiten"),"click",s=>{const l=s.target.closest("[data-seite]");if(!l)return;const c=l.dataset.seite;c==="neu"?wbSeiteNeu():c==="weg"?r_Xx():wbSeiteWechseln(Number(c))});const i=$("wbSchutz");i&&n(i,"click",wbSchutzUmschalten),n($("wbFolgen"),"click",wbFolgenUmschalten),n($("wbFolgenStop"),"click",()=>{wb.folgenAus=!0,$("wbFolgenBanner").hidden=!0,toast("Du folgst der Lehrkraft nicht mehr.")}),n(t,"dragover",s=>s.preventDefault()),n(t,"drop",s=>{if(s.preventDefault(),wb.ro)return;const l=[...s.dataTransfer&&s.dataTransfer.files?s.dataTransfer.files:[]].filter(d=>/^image\//.test(d.type)).slice(0,5),c=wbWelt(s.clientX,s.clientY);l.forEach((d,u)=>r_Uc(d,{x:c.x+u*30,y:c.y+u*30}))}),n($("wbTools"),"click",s=>{const l=s.target.closest("[data-tool]");if(!l)return;const c=l.dataset.tool;if(c==="shape"&&wb.tool==="shape"){wbFormMenuAuf();return}wbSetzeWerkzeug(c),c==="shape"&&wbFormMenuAuf()}),n($("wbFormMenu"),"click",s=>{const l=s.target.closest("[data-form]");l&&(wb.form=l.dataset.form,$("wbFormMenu").hidden=!0,wbSetzeWerkzeug("shape"))}),n($("wbTplMenu"),"click",s=>{const l=s.target.closest("[data-tpl]");l&&wbVorlageEinsetzen(Number(l.dataset.tpl))}),n($("wbProps"),"click",r_Nx),n($("wbUndo"),"click",wbRueckgaengig),n($("wbZoomPlus"),"click",()=>wbMitteZoom(1.25)),n($("wbZoomMinus"),"click",()=>wbMitteZoom(.8)),n($("wbFit"),"click",wbAlleAnzeigen),n($("wbNamen"),"click",()=>{wb.wrap.classList.toggle("wb-hide-namen"),$("wbNamen").classList.toggle("on",wb.wrap.classList.contains("wb-hide-namen"))}),n($("wbTpl"),"click",()=>{const s=$("wbTplMenu");s.hidden?wbTplMenuAuf():s.hidden=!0}),n($("wbExport"),"click",wbExport),n($("wbExportPdf"),"click",wbExportPdf),n($("wbVoll"),"click",()=>wbVollbild()),n($("wbHilfe"),"click",wbHilfe),n($("wbZurueck"),"click",closeWhiteboard),$("wbZurueckThema")&&n($("wbZurueckThema"),"click",()=>{wbVonKw=!1,activeWhiteboardId=null,go("kw-thema")});const r=$("wbUmbenennen");r&&n(r,"click",async()=>{const s=prompt("Neuer Titel f\xFCr das Whiteboard:",wb.board.title||"");if(!(s===null||!s.trim()))try{await updateDoc(doc(db,"whiteboards",e),{title:s.trim().slice(0,120)}),toast("Umbenannt."),await render()}catch(l){wbFehler(l)}});const a=$("wbLoeschen");a&&n(a,"click",()=>wbBoardLoeschen(e)),wbUndoKnopf(),wbPropsZeichnen(),wb.boardUnsub=onSnapshot(doc(db,"whiteboards",e),s=>{!wb||wb.id!==e||s.exists()&&(wb.board={id:e,...s.data()},wbBoardGeaendert())},s=>wbFehler(s)),wbBoardGeaendert(),wb.unsub=onSnapshot(query(collection(db,"whiteboardItems"),where("boardId","==",e)),s=>{!wb||wb.id!==e||(s.docChanges().forEach(l=>{const c=l.doc.id;if(l.type==="removed"){wb.items.delete(c),wb.sel.delete(c),wbEntfernenDom(c);return}wb.lokal.has(c)||(wb.items.set(c,{id:c,...l.doc.data()}),wbZeichne(c))}),wbZ(),wbNachAenderung(),wb.erstesLaden&&(wb.erstesLaden=!1,!wbAnsicht[e+"#"+wb.seite]&&wbSeitenItems().length&&wbAlleAnzeigen()))},s=>{wbFehler(s),s&&s.code==="permission-denied"||wbMeldung(`Die Elemente konnten nicht geladen werden (${s&&(s.code||s.name)||"unbekannt"}).`)}),wb.praesUnsub=onSnapshot(query(collection(db,"whiteboardPresence"),where("boardId","==",e)),s=>{!wb||wb.id!==e||(wb.praesenz=new Map(s.docs.map(l=>[l.id,l.data()])),r_Qp(),wbCursorZeichnen())},()=>{}),wbPresenzSchreiben(),wb.timers.push(setInterval(wbPresenzSchreiben,25e3),setInterval(r_Qp,15e3),setInterval(()=>wbCursorZeichnen(),4e3),setInterval(wbToolTick,250))}
 function wbStop(){
  if(!wb)return;
  const w=wb;wb=null;
@@ -14201,35 +13032,12 @@ function wbSeitenLeiste(){
  if(isTeacher()&&n>1&&wb.seite===n)h+=`<button type="button"class="wb-seite-btn wb-seite-weg"data-seite="weg"title="Letzte Seite löschen">${wbIcon("trash",16)}</button>`;
  box.innerHTML=h;box.hidden=!h;
 }
-function wbSeiteWechseln(n){
- if(!wb||n===wb.seite)return;
- wbBearbeitenEnde(true);
- wbAnsicht[wb.id+"#"+wb.seite]={...wb.view};
- wb.seite=n;wb.sel=new Set();
- wb.els.forEach(el=>el.remove());wb.els.clear();
- wb.svgEls.forEach(g=>g.remove());wb.svgEls.clear();
- wb.items.forEach((it,id)=>wbZeichne(id));
- wbZ();
- const v=wbAnsicht[wb.id+"#"+n],s=wbBuehne();
- wb.view=v?{...v}:{x:s.w/2,y:s.h/2,k:1};
- wbAnsichtSetzen();wbSeitenLeiste();wbNachAenderung();
- if(!v&&wbSeitenItems().length)wbAlleAnzeigen();
- wbFuehrungSenden();
-}
+function wbSeiteWechseln(e){if(!wb||e===wb.seite)return;wbBearbeitenEnde(!0),wbAnsicht[wb.id+"#"+wb.seite]={...wb.view},wb.seite=e,wb.sel=new Set,wb.els.forEach(i=>i.remove()),wb.els.clear(),wb.svgEls.forEach(i=>i.remove()),wb.svgEls.clear(),wb.items.forEach((i,r)=>wbZeichne(r)),wbZ();const t=wbAnsicht[wb.id+"#"+e],n=wbBuehne();wb.view=t?{...t}:{x:n.w/2,y:n.h/2,k:1},wbAnsichtSetzen(),wbSeitenLeiste(),wbNachAenderung(),!t&&wbSeitenItems().length&&wbAlleAnzeigen(),wbFuehrungSenden()}
 async function wbSeiteNeu(){
  const n=wbSeitenZahl();if(n>=10)return;
  try{await updateDoc(doc(db,"whiteboards",wb.id),{seiten:n+1});wb.board.seiten=n+1;wbSeiteWechseln(n+1);}catch(e){wbFehler(e);}
 }
-async function wbSeiteLoeschen(){
- const n=wbSeitenZahl();if(n<2||wb.seite!==n)return;
- const items=[...wb.items.values()].filter(i=>(i.seite||1)===n);
- if(!confirm(`Seite ${n} mit ${items.length} Element${items.length===1?"":"en"} wirklich löschen?`))return;
- try{
-  await Promise.all(items.map(i=>deleteDoc(doc(db,"whiteboardItems",i.id))));
-  await updateDoc(doc(db,"whiteboards",wb.id),{seiten:n-1});wb.board.seiten=n-1;
-  wbSeiteWechseln(n-1);
- }catch(e){wbFehler(e);}
-}
+async function r_Xx(){const e=wbSeitenZahl();if(e<2||wb.seite!==e)return;const t=[...wb.items.values()].filter(n=>(n.seite||1)===e);if(confirm(`Seite ${e} mit ${t.length} Element${t.length===1?"":"en"} wirklich l\xF6schen?`))try{await Promise.all(t.map(n=>deleteDoc(doc(db,"whiteboardItems",n.id)))),await updateDoc(doc(db,"whiteboards",wb.id),{seiten:e-1}),wb.board.seiten=e-1,wbSeiteWechseln(e-1)}catch(n){wbFehler(n)}}
 
 // ---- Board-Eigenschaften (Nur-Ansicht, „Alle folgen mir“) ----
 function wbBoardGeaendert(){
@@ -14529,12 +13337,7 @@ function wbFreiePosition(w,h){
  const f=kand.find(q=>frei(q.x,q.y)&&drin(q.x,q.y))||kand.find(q=>frei(q.x,q.y));
  return f?{x:Math.round(f.x),y:Math.round(f.y)}:{x:Math.round(c.x-w/2),y:Math.round(c.y-h/2)};
 }
-function wbAufKarteZentrieren(x,y,w,h){
- const s=wbBuehne(),k=wb.view.k;
- const x0=-wb.view.x/k,y0=-wb.view.y/k,x1=(s.w-wb.view.x)/k,y1=(s.h-wb.view.y)/k;
- if(x>=x0+90/k&&y>=y0+70/k&&x+w<=x1-20/k&&y+h<=y1-90/k)return;
- wb.view={...wb.view,x:s.w/2-(x+w/2)*k,y:s.h/2-(y+h/2)*k};wbAnsichtSetzen();
-}
+function wbAufKarteZentrieren(e,t,n,i){const r=wbBuehne(),a=wb.view.k,s=-wb.view.x/a,l=-wb.view.y/a,c=(r.w-wb.view.x)/a,d=(r.h-wb.view.y)/a;e>=s+90/a&&t>=l+70/a&&e+n<=c-20/a&&t+i<=d-90/a||(wb.view={...wb.view,x:r.w/2-(e+n/2)*a,y:r.h/2-(t+i/2)*a},wbAnsichtSetzen())}
 function wbKarteEinfuegen(k){
  $("wbKartenMenu").hidden=true;
  if(wb.ro)return;
@@ -20003,31 +18806,7 @@ function downloadICS(events,filename,calName){
  setTimeout(()=>{URL.revokeObjectURL(url);a.remove()},0);
 }
 
-async function exportCampusCalendarICS(){
- try{
- let events=[];
- try{events=await getCollection("events","start",false)}catch(e){console.error(e)}
- if(!events.length){
- try{events=await getCollection("calendar","date",false)}catch(e){console.error(e)}
- }
- let birthdayEvents=[];
- try{birthdayEvents=await getBirthdayEvents()}catch(e){console.error(e)}
- const ferienZeitraeume=[
- ["2026-08-03","2026-09-14","Sommerferien 2026"],
- ["2026-11-02","2026-11-06","Herbstferien / unterrichtsfreie Tage um Allerheiligen"],
- ["2026-12-24","2027-01-08","Weihnachtsferien"],
- ["2027-02-08","2027-02-12","Frühjahrsferien 2027"],
- ["2027-03-22","2027-04-02","Osterferien 2027"],
- ["2027-05-18","2027-05-28","Pfingstferien 2027"],
- ["2027-08-02","2027-09-13","Sommerferien 2027"]
- ];
- const ferienRangeEvents=ferienZeitraeume.map(([start,end,label])=>(
- {start,rangeEnd:end,title:label,description:"Schulferien in Bayern"}
- ));
- downloadICS([...events,...calFesteTermine(),...birthdayEvents,...ferienRangeEvents],"campuskalender.ics","F11Sb Kalender");
- toast("Kalender wird heruntergeladen – Datei öffnen, um sie zum Handy-Kalender hinzuzufügen.");
- }catch(e){console.error("Kalender-Export:",e);toast("Der Kalender konnte nicht exportiert werden.")}
-}
+async function exportCampusCalendarICS(){try{let e=[];try{e=await getCollection("events","start",!1)}catch(r){console.error(r)}if(!e.length)try{e=await getCollection("calendar","date",!1)}catch(r){console.error(r)}let t=[];try{t=await getBirthdayEvents()}catch(r){console.error(r)}const i=[["2026-08-03","2026-09-14","Sommerferien 2026"],["2026-11-02","2026-11-06","Herbstferien / unterrichtsfreie Tage um Allerheiligen"],["2026-12-24","2027-01-08","Weihnachtsferien"],["2027-02-08","2027-02-12","Fr\xFChjahrsferien 2027"],["2027-03-22","2027-04-02","Osterferien 2027"],["2027-05-18","2027-05-28","Pfingstferien 2027"],["2027-08-02","2027-09-13","Sommerferien 2027"]].map(([r,a,s])=>({start:r,rangeEnd:a,title:s,description:"Schulferien in Bayern"}));downloadICS([...e,...calFesteTermine(),...t,...i],"campuskalender.ics","F11Sb Kalender"),toast("Kalender wird heruntergeladen \u2013 Datei \xF6ffnen, um sie zum Handy-Kalender hinzuzuf\xFCgen.")}catch(e){console.error("Kalender-Export:",e),toast("Der Kalender konnte nicht exportiert werden.")}}
 
 function exportCalendarDayICS(y,m,d){
  const events=window._campusCalendarEvents||[];
@@ -20109,119 +18888,21 @@ async function calFixWiederherstellen(){
  }catch(e){console.error("Feste Termine wiederherstellen:",e);toast("Konnte nicht wiederhergestellt werden.");}
 }
 window.calFixAusblenden=calFixAusblenden;window.calFixWiederherstellen=calFixWiederherstellen;
-function calFesteTermineRoh(){
- return[
-  {start:"2026-10-29",type:"digitaltag",title:"1. Digitaltag",description:"Digitaltag der FOSBOS Weilheim."},
-  ...calLeistungsnachweise()
- ];
-}
+function calFesteTermineRoh(){return[{start:"2026-10-29",type:"digitaltag",title:"1. Digitaltag",description:"Digitaltag der FOSBOS Weilheim."},...calLeistungsnachweise()]}
 // Kurzform für die Monatsübersicht: Vorname und Initial des Nachnamens
 function calKurzName(n){
  const t=String(n||"").trim().split(/\s+/).filter(Boolean);
  if(!t.length)return"";
  return t.length>1?`${t[0]} ${t[t.length-1][0]}.`:t[0];
 }
-async function renderKalender(){
- let events=[];
- try{events=(await getCollection("events","start",false)).map(e=>({...e,collection:"events"}))}catch(e){console.error("Kalender events:",e)}
- if(!events.length){
- try{events=(await getCollection("calendar","date",false)).map(e=>({...e,collection:"calendar"}))}catch(e){console.error("Kalender calendar:",e)}
- }
-
- const typeMeta=CAL_TYPEN;
-
- // Schulferien Bayern – Schuljahr 2026/27.
- const ferienZeitraeume=[
- ["2026-08-03","2026-09-14","Sommerferien 2026"],
- ["2026-11-02","2026-11-06","Herbstferien / unterrichtsfreie Tage um Allerheiligen"],
- ["2026-12-24","2027-01-08","Weihnachtsferien"],
- ["2027-02-08","2027-02-12","Frühjahrsferien 2027"],
- ["2027-03-22","2027-04-02","Osterferien 2027"],
- ["2027-05-18","2027-05-28","Pfingstferien 2027"],
- ["2027-08-02","2027-09-13","Sommerferien 2027"]
- ];
- const ferienEvents=[];
- ferienZeitraeume.forEach(([von,bis,label])=>{
- const start=new Date(von+"T00:00:00");
- const end=new Date(bis+"T00:00:00");
- for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1)){
- ferienEvents.push({
- start:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`,
- type:"ferien",
- title:label,
- description:"Schulferien in Bayern"
- });
- }
- });
- let birthdayEvents=[];
- try{birthdayEvents=await getBirthdayEvents()}catch(e){console.error("Kalender Geburtstage:",e)}
- await calAusgeblendetLaden();events=[...events,...calFesteTermine(),...birthdayEvents,...ferienEvents];
-
- const normalizeType=e=>{
- const raw=String(e?.type||e?.eventType||e?.category||"sonstiges").toLowerCase().trim();
- return raw==="präsentation"?"praesentation":(typeMeta[raw]?raw:"sonstiges");
- };
- const dateVal=e=>{
- const raw=e?.start||e?.date||e?.startDate;
- if(!raw)return null;
- if(typeof raw==="object"&&raw.seconds)return new Date(raw.seconds*1000);
- const d=new Date(String(raw).slice(0,10)+"T00:00:00");
- return isNaN(d)?null:d;
- };
- const eventsForDay=(y,m,d)=>events.filter(e=>{
- const x=dateVal(e);
- return x&&x.getFullYear()===y&&x.getMonth()===m&&x.getDate()===d;
- });
-
- const months=[
- {m:8,y:2026,name:"September 2026"},{m:9,y:2026,name:"Oktober 2026"},
- {m:10,y:2026,name:"November 2026"},{m:11,y:2026,name:"Dezember 2026"},
- {m:0,y:2027,name:"Januar 2027"},{m:1,y:2027,name:"Februar 2027"},
- {m:2,y:2027,name:"März 2027"},{m:3,y:2027,name:"April 2027"},
- {m:4,y:2027,name:"Mai 2027"},{m:5,y:2027,name:"Juni 2027"},{m:6,y:2027,name:"Juli 2027"},
- {m:7,y:2027,name:"August 2027"}
- ];
- const week=["Mo","Di","Mi","Do","Fr","Sa","So"];
-
- const monthHTML=(y,m,name)=>{
- const first=new Date(y,m,1),days=new Date(y,m+1,0).getDate(),offset=(first.getDay()+6)%7,cells=[];
- for(let i=0;i<offset;i++)cells.push('<div class="cal-day empty"></div>');
- for(let d=1;d<=days;d++){
- const ds=eventsForDay(y,m,d);
- const firstType=ds.length?normalizeType(ds[0]):"";
- const meta=firstType?typeMeta[firstType]:null;
- // Geburtstage: Namen statt „Geburtstag“
- const gebDs=firstType==="geburtstag"?ds.filter(x=>normalizeType(x)==="geburtstag"):[];
- let zellText=meta?meta.label:"",zeigt=1;
- if(gebDs.length){zellText=gebDs.map(x=>calKurzName(x.person)).filter(Boolean).join(", ")||meta.label;zeigt=gebDs.length;}
- else if(firstType==="schulaufgabe"||firstType==="kurzarbeit"){
-  const gleich=ds.filter(x=>normalizeType(x)===firstType);
-  const faecher=gleich.map(x=>x.kurz||x.fach||"").filter(Boolean);
-  if(faecher.length){zellText=(firstType==="schulaufgabe"?"SA ":"KU ")+faecher.join(", ");zeigt=gleich.length;}
- }
- const tip=ds.map(x=>x.person||x.title||x.name||"").filter(Boolean).join(" · ");
- cells.push(`<button type="button"class="cal-day ${meta?`has-event ${meta.className}`:""}"title="${esc(tip)}"onclick="openCalendarDay(${y},${m},${d})">
- <span class="cal-num">${d}</span>
- ${meta?`<span class="cal-event-type">${esc(zellText)}</span>${ds.length>zeigt?`<span class="cal-count">+${ds.length-zeigt}</span>`:""}`:""}
- </button>`);
- }
- while(cells.length%7)cells.push('<div class="cal-day empty"></div>');
- return`<section class="card cal-month">
- <div class="cal-month-head"><h2>${name}</h2></div>
- <div class="cal-week">${week.map(x=>`<div>${x}</div>`).join("")}</div>
- <div class="cal-grid">${cells.join("")}</div>
- </section>`;
- };
-
- window._campusCalendarEvents=events;
- const addButton=isTeacher()?'<button id="calendarAddBtn"class="primary"type="button">＋ Termin eintragen</button>':"";
- const birthdayButton='<button id="calendarBirthdayBtn"class="secondary"type="button"> Meinen Geburtstag eintragen</button>';
- const exportButton='<button class="secondary"type="button"onclick="exportCampusCalendarICS()"> Kalender aufs Handy exportieren</button>';
- const legend=Object.entries(typeMeta).map(([k,v])=>
- `<span class="cal-legend-item"><i class="cal-legend-dot ${v.className}"></i>${esc(v.label)}</span>`
- ).join("");
-
- const html=`${pageHead("ORGANISATION","Campus-Kalender","Das Schuljahr auf einen Blick. Termine sind je nach Terminart farblich gekennzeichnet.",`${addButton}${birthdayButton}${exportButton}`)}
+async function renderKalender(){let e=[];try{e=(await getCollection("events","start",!1)).map(k=>({...k,collection:"events"}))}catch(k){console.error("Kalender events:",k)}if(!e.length)try{e=(await getCollection("calendar","date",!1)).map(k=>({...k,collection:"calendar"}))}catch(k){console.error("Kalender calendar:",k)}const t=CAL_TYPEN,n=[["2026-08-03","2026-09-14","Sommerferien 2026"],["2026-11-02","2026-11-06","Herbstferien / unterrichtsfreie Tage um Allerheiligen"],["2026-12-24","2027-01-08","Weihnachtsferien"],["2027-02-08","2027-02-12","Fr\xFChjahrsferien 2027"],["2027-03-22","2027-04-02","Osterferien 2027"],["2027-05-18","2027-05-28","Pfingstferien 2027"],["2027-08-02","2027-09-13","Sommerferien 2027"]],i=[];n.forEach(([k,x,E])=>{const W=new Date(k+"T00:00:00"),j=new Date(x+"T00:00:00");for(let J=new Date(W);J<=j;J.setDate(J.getDate()+1))i.push({start:`${J.getFullYear()}-${String(J.getMonth()+1).padStart(2,"0")}-${String(J.getDate()).padStart(2,"0")}`,type:"ferien",title:E,description:"Schulferien in Bayern"})});let r=[];try{r=await getBirthdayEvents()}catch(k){console.error("Kalender Geburtstage:",k)}await calAusgeblendetLaden(),e=[...e,...calFesteTermine(),...r,...i];const a=k=>{const x=String(k?.type||k?.eventType||k?.category||"sonstiges").toLowerCase().trim();return x==="pr\xE4sentation"?"praesentation":t[x]?x:"sonstiges"},s=k=>{const x=k?.start||k?.date||k?.startDate;if(!x)return null;if(typeof x=="object"&&x.seconds)return new Date(x.seconds*1e3);const E=new Date(String(x).slice(0,10)+"T00:00:00");return isNaN(E)?null:E},l=(k,x,E)=>e.filter(W=>{const j=s(W);return j&&j.getFullYear()===k&&j.getMonth()===x&&j.getDate()===E}),c=[{m:8,y:2026,name:"September 2026"},{m:9,y:2026,name:"Oktober 2026"},{m:10,y:2026,name:"November 2026"},{m:11,y:2026,name:"Dezember 2026"},{m:0,y:2027,name:"Januar 2027"},{m:1,y:2027,name:"Februar 2027"},{m:2,y:2027,name:"M\xE4rz 2027"},{m:3,y:2027,name:"April 2027"},{m:4,y:2027,name:"Mai 2027"},{m:5,y:2027,name:"Juni 2027"},{m:6,y:2027,name:"Juli 2027"},{m:7,y:2027,name:"August 2027"}],d=["Mo","Di","Mi","Do","Fr","Sa","So"],u=(k,x,E)=>{const W=new Date(k,x,1),j=new Date(k,x+1,0).getDate(),J=(W.getDay()+6)%7,ge=[];for(let Ae=0;Ae<J;Ae++)ge.push('<div class="cal-day empty"></div>');for(let Ae=1;Ae<=j;Ae++){const Fe=l(k,x,Ae),Ne=Fe.length?a(Fe[0]):"",ne=Ne?t[Ne]:null,me=Ne==="geburtstag"?Fe.filter(O=>a(O)==="geburtstag"):[];let Ie=ne?ne.label:"",et=1;if(me.length)Ie=me.map(O=>calKurzName(O.person)).filter(Boolean).join(", ")||ne.label,et=me.length;else if(Ne==="schulaufgabe"||Ne==="kurzarbeit"){const O=Fe.filter(F=>a(F)===Ne),K=O.map(F=>F.kurz||F.fach||"").filter(Boolean);K.length&&(Ie=(Ne==="schulaufgabe"?"SA ":"KU ")+K.join(", "),et=O.length)}const xe=Fe.map(O=>O.person||O.title||O.name||"").filter(Boolean).join(" \xB7 ");ge.push(`<button type="button"class="cal-day ${ne?`has-event ${ne.className}`:""}"title="${esc(xe)}"onclick="openCalendarDay(${k},${x},${Ae})">
+ <span class="cal-num">${Ae}</span>
+ ${ne?`<span class="cal-event-type">${esc(Ie)}</span>${Fe.length>et?`<span class="cal-count">+${Fe.length-et}</span>`:""}`:""}
+ </button>`)}for(;ge.length%7;)ge.push('<div class="cal-day empty"></div>');return`<section class="card cal-month">
+ <div class="cal-month-head"><h2>${E}</h2></div>
+ <div class="cal-week">${d.map(Ae=>`<div>${Ae}</div>`).join("")}</div>
+ <div class="cal-grid">${ge.join("")}</div>
+ </section>`};window._campusCalendarEvents=e;const p=isTeacher()?'<button id="calendarAddBtn"class="primary"type="button">\uFF0B Termin eintragen</button>':"",m='<button id="calendarBirthdayBtn"class="secondary"type="button"> Meinen Geburtstag eintragen</button>',f='<button class="secondary"type="button"onclick="exportCampusCalendarICS()"> Kalender aufs Handy exportieren</button>',y=Object.entries(t).map(([k,x])=>`<span class="cal-legend-item"><i class="cal-legend-dot ${x.className}"></i>${esc(x.label)}</span>`).join(""),v=`${pageHead("ORGANISATION","Campus-Kalender","Das Schuljahr auf einen Blick. Termine sind je nach Terminart farblich gekennzeichnet.",`${p}${m}${f}`)}
  <style>
  .cal-months{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
  .cal-month{padding:18px}.cal-month-head{margin-bottom:10px}
@@ -20248,16 +18929,10 @@ async function renderKalender(){
  </style>
  <div class="card"style="margin-bottom:16px">
  <strong>Campus-Kalender</strong>
- <p>Termine werden im gemeinsamen Kalender gespeichert. Klicke auf einen Tag, um die Details zu sehen. <b>SA</b> = Schulaufgabe (blau), <b>KU</b> = Kurzarbeit (rot) – dahinter steht das Fach (D, E, Ch, P/P).</p>${isTeacher()&&calAusgeblendetSet.size?`<p style="margin:6px 0 0"><button class="secondary"onclick="calFixWiederherstellen()">Gelöschte feste Termine wiederherstellen (${calAusgeblendetSet.size})</button></p>`:""}
- <div class="cal-legend">${legend}</div>
+ <p>Termine werden im gemeinsamen Kalender gespeichert. Klicke auf einen Tag, um die Details zu sehen. <b>SA</b> = Schulaufgabe (blau), <b>KU</b> = Kurzarbeit (rot) \u2013 dahinter steht das Fach (D, E, Ch, P/P).</p>${isTeacher()&&calAusgeblendetSet.size?`<p style="margin:6px 0 0"><button class="secondary"onclick="calFixWiederherstellen()">Gel\xF6schte feste Termine wiederherstellen (${calAusgeblendetSet.size})</button></p>`:""}
+ <div class="cal-legend">${y}</div>
  </div>
- <div class="cal-months">${months.map(x=>monthHTML(x.y,x.m,x.name)).join("")}</div>${footer()}`;
- setTimeout(()=>{
- const b=$("calendarAddBtn");if(b)b.addEventListener("click",openCalendarForm);
- const bb=$("calendarBirthdayBtn");if(bb)bb.addEventListener("click",openBirthdayForm);
- },0);
- return html;
-}
+ <div class="cal-months">${c.map(k=>u(k.y,k.m,k.name)).join("")}</div>${footer()}`;return setTimeout(()=>{const k=$("calendarAddBtn");k&&k.addEventListener("click",openCalendarForm);const x=$("calendarBirthdayBtn");x&&x.addEventListener("click",openBirthdayForm)},0),v}
 
 // Liest die Geburtstage (nur Tag/Monat, kein Jahr) aller freigeschalteten
 // Campus-Mitglieder aus users/{uid}.birthday ("MM-DD") und wandelt sie in
@@ -22926,10 +21601,7 @@ function kwKurz(e){return String(e.thema||"").split(":")[0].replace(/\s*\(.*\)\s
 function kwThemenVonPhase(ph){return PP_EINHEITEN.filter(e=>e.phase===ph.id)}
 // Trainings nach einer Leistungserhebung: je Lernbereich eine Zeile unter den Themen der Lernlandkarte (Kurzarbeit, Schulaufgabe).
 // Sie sind keine Lehrplan-Themen und zählen nicht in Fortschritt und Themenzahl, nehmen aber Bausteine (Selbstlernkurse) auf.
-const KW_LEISTUNGEN=[{id:"ln-ka1",phase:"lb1",lbNum:1,lb:"LB 1",nr:"KA 1",thema:"1.Kurzarbeit",typ:"training",leistung:true,planung:"Hier findest du Trainings, mit denen du nach der Rückgabe gezielt deine Schwächen übst."},{id:"ln-sa1",phase:"lb2",lbNum:2,lb:"LB 2",nr:"SA 1",thema:"1.Schulaufgabe",typ:"training",leistung:true,planung:"Hier findest du Trainings, mit denen du nach der Rückgabe gezielt deine Schwächen übst."},{id:"ln-ka2",phase:"lb3",lbNum:3,lb:"LB 3",nr:"KA 2",thema:"2.Kurzarbeit",typ:"training",leistung:true,planung:"Hier findest du Trainings, mit denen du nach der Rückgabe gezielt deine Schwächen übst."},{id:"ln-sa2",phase:"lb4",lbNum:4,lb:"LB 4",nr:"SA 2",thema:"2.Schulaufgabe",typ:"training",leistung:true,planung:"Hier findest du Trainings, mit denen du nach der Rückgabe gezielt deine Schwächen übst."}];
-const KW_TRAININGS_ALLE=["fa01","fa04","fa05","fa06","fa07","fa03","fa02"]; // alle Fachaufsatz-Trainings: erscheinen auf jeder Themenseite
-const KW_TR_HINT={fa04:"Fall Mira",fa05:"Fall Mira",fa06:"Fall Mira",fa07:"Fall Mira"};
-const KW_TRAININGS=["fa05","fa06","fa04","fa07"]; // Theorie beschreiben, Fallbezug üben, Struktur einhalten, Schreiben üben
+const KW_LEISTUNGEN=[{id:"ln-ka1",phase:"lb1",lbNum:1,lb:"LB 1",nr:"KA 1",thema:"1.Kurzarbeit",typ:"training",leistung:true,planung:"Hier findest du Trainings, mit denen du nach der Rückgabe gezielt deine Schwächen übst."},{id:"ln-sa1",phase:"lb2",lbNum:2,lb:"LB 2",nr:"SA 1",thema:"1.Schulaufgabe",typ:"training",leistung:true,planung:"Hier findest du Trainings, mit denen du nach der Rückgabe gezielt deine Schwächen übst."},{id:"ln-ka2",phase:"lb3",lbNum:3,lb:"LB 3",nr:"KA 2",thema:"2.Kurzarbeit",typ:"training",leistung:true,planung:"Hier findest du Trainings, mit denen du nach der Rückgabe gezielt deine Schwächen übst."},{id:"ln-sa2",phase:"lb4",lbNum:4,lb:"LB 4",nr:"SA 2",thema:"2.Schulaufgabe",typ:"training",leistung:true,planung:"Hier findest du Trainings, mit denen du nach der Rückgabe gezielt deine Schwächen übst."}]; // Theorie beschreiben, Fallbezug üben, Struktur einhalten, Schreiben üben
 function kwThemaById(id){return PP_EINHEITEN.find(e=>e.id===id)||KW_LEISTUNGEN.find(e=>e.id===id)||null}
 function kwLeistungRow(ph){
  const l=KW_LEISTUNGEN.find(x=>x.phase===ph.id);if(!l)return"";
@@ -23366,44 +22038,13 @@ document.addEventListener("click",async ev=>{
  }catch(err){console.error("Lernstände:",err);toast("Das hat nicht geklappt. Bitte erneut versuchen.")}
 });
 /* ------------------------------------------------ Lehrkräfte: Haben alle ordentlich abgeschlossen? */
-async function renderKwFortschritt(){
- if(!kwLehrer())return await renderKachelwand();
- await kwLaden();
- const [us,kf,rs,sa,lf]=await Promise.all([
-  getDocs(collection(db,"users")),getDocs(collection(db,"ppKursFortschritt")).catch(()=>({docs:[]})),
-  getDocs(collection(db,"ppRallyeStand")).catch(()=>({docs:[]})),getDocs(collection(db,"ppStundenAntworten")).catch(()=>({docs:[]})),
-  getDocs(collection(db,"lehrplanFortschritt")).catch(()=>({docs:[]}))]);
- const schueler=us.docs.map(d=>({uid:d.id,...d.data()})).filter(u=>u.status==="approved"&&istKlasse11Sb(u)).sort((a,b)=>anzeigeName(a).localeCompare(anzeigeName(b),"de"));
- const K={},R={},S={},L={};
- kf.docs.forEach(d=>{const x=d.data();K[x.modulId+"_"+x.uid]=x});rs.docs.forEach(d=>{const x=d.data();R[x.modulId+"_"+x.uid]=x});
- sa.docs.forEach(d=>{const x=d.data();S[x.modulId+"_"+x.uid]=x});lf.docs.forEach(d=>{L[d.id]=d.data()});
- const mods=PPM.liste.filter(m=>["selbstlern","rallye","einfuehrung","apt","stunde"].includes(m.modul)).sort((a,b)=>(Number(a.lb)-Number(b.lb))||(ppmSwIndex(a.start)-ppmSwIndex(b.start)));
- // Zelle: {t:Text, k:"ok"|"teil"|"flach"|"offen"}
- const zelle=(m,u)=>{
-  try{
-   if(m.modul==="selbstlern"&&String(m.kursId||"").startsWith("ea:")){const f=L[u.uid+"_"+m.kursId.slice(3)]||{},a=f.einarbeitungAufgaben;
-    if(f.einarbeitungAbgeschlossen){const q=a&&a.gesamt?a.richtig/a.gesamt:1;return q<0.6?{t:`fertig, aber nur ${a.richtig}/${a.gesamt} richtig`,k:"flach"}:{t:a&&a.gesamt?`fertig · ${a.richtig}/${a.gesamt}`:"fertig",k:"ok"}}
-    return a?{t:`begonnen · ${a.richtig}/${a.gesamt}`,k:"teil"}:{t:"offen",k:"offen"}}
-   if(m.modul==="selbstlern"){const sch=ppmKursSchritte(m).filter(x=>x.typ!=="abschluss"),f=K[m.id+"_"+u.uid],n=f?sch.filter(x=>f.erledigt&&f.erledigt[x.id]).length:0;return n===sch.length&&sch.length?{t:"fertig",k:"ok"}:(n?{t:`${n}/${sch.length} Schritte`,k:"teil"}:{t:"offen",k:"offen"})}
-   if(m.modul==="rallye"){const s=R[m.id+"_"+u.uid]||{},n=(m.stationen||[]).length,f=Object.keys(s.erg||{}).length;
-    if(!f)return{t:"offen",k:"offen"};const richtig=Object.values(s.erg||{}).filter(x=>x&&(x.richtig===true||x.ok===true)).length;
-    return f>=n&&n?{t:`alle ${n} Stationen`,k:"ok"}:{t:`${f}/${n} Stationen`,k:"teil"}}
-   if(m.modul==="einfuehrung"){const ids=m.kurse||[];if(!ids.length)return{t:"–",k:"offen"};const n=ids.filter(id=>(L[u.uid+"_"+id]||{}).einarbeitungAbgeschlossen).length;return n===ids.length?{t:"fertig",k:"ok"}:(n?{t:`${n}/${ids.length} Kurse`,k:"teil"}:{t:"offen",k:"offen"})}
-   if(m.modul==="apt"){const f=S[m.id+"_"+u.uid]||{};return f.aptBewertung?{t:"verglichen",k:"ok"}:(f.aptAbgegeben?{t:"abgegeben",k:"teil"}:(f.aptAntwort?{t:"in Arbeit",k:"teil"}:{t:"offen",k:"offen"}))}
-   if(m.modul==="stunde"){const f=S[m.id+"_"+u.uid];return f&&f.fertig?{t:"fertig",k:"ok"}:(f?{t:"in Arbeit",k:"teil"}:{t:"offen",k:"offen"})}
-  }catch(e){}
-  return{t:"–",k:"offen"};
- };
- const kopf=mods.map(m=>{const T=KW_BAUSTEINE[m.modul]||["",""];return`<th><span class="chip ${T[1]}">${esc(T[0])}</span><br><small>LB ${esc(m.lb)} · ${esc(m.titel||"")}</small></th>`}).join("");
- const zeilen=schueler.map(u=>`<tr><th scope="row">${esc(anzeigeName(u))}</th>${mods.map(m=>{const z=zelle(m,u);return`<td class="kw-z ${z.k}">${esc(z.t)}</td>`}).join("")}</tr>`).join("");
- return`<div class="kw kw-seite" style="--c:#3A8FD4;--bg:#E3F0FA;--t:#1F6FB2">
+async function renderKwFortschritt(){if(!kwLehrer())return await renderKachelwand();await kwLaden();const[e,t,n,i,r]=await Promise.all([getDocs(collection(db,"users")),getDocs(collection(db,"ppKursFortschritt")).catch(()=>({docs:[]})),getDocs(collection(db,"ppRallyeStand")).catch(()=>({docs:[]})),getDocs(collection(db,"ppStundenAntworten")).catch(()=>({docs:[]})),getDocs(collection(db,"lehrplanFortschritt")).catch(()=>({docs:[]}))]),a=e.docs.map(y=>({uid:y.id,...y.data()})).filter(y=>y.status==="approved"&&istKlasse11Sb(y)).sort((y,v)=>anzeigeName(y).localeCompare(anzeigeName(v),"de")),s={},l={},c={},d={};t.docs.forEach(y=>{const v=y.data();s[v.modulId+"_"+v.uid]=v}),n.docs.forEach(y=>{const v=y.data();l[v.modulId+"_"+v.uid]=v}),i.docs.forEach(y=>{const v=y.data();c[v.modulId+"_"+v.uid]=v}),r.docs.forEach(y=>{d[y.id]=y.data()});const u=PPM.liste.filter(y=>["selbstlern","rallye","einfuehrung","apt","stunde"].includes(y.modul)).sort((y,v)=>Number(y.lb)-Number(v.lb)||ppmSwIndex(y.start)-ppmSwIndex(v.start)),p=(y,v)=>{try{if(y.modul==="selbstlern"&&String(y.kursId||"").startsWith("ea:")){const k=d[v.uid+"_"+y.kursId.slice(3)]||{},x=k.einarbeitungAufgaben;return k.einarbeitungAbgeschlossen?(x&&x.gesamt?x.richtig/x.gesamt:1)<.6?{t:`fertig, aber nur ${x.richtig}/${x.gesamt} richtig`,k:"flach"}:{t:x&&x.gesamt?`fertig \xB7 ${x.richtig}/${x.gesamt}`:"fertig",k:"ok"}:x?{t:`begonnen \xB7 ${x.richtig}/${x.gesamt}`,k:"teil"}:{t:"offen",k:"offen"}}if(y.modul==="selbstlern"){const k=ppmKursSchritte(y).filter(W=>W.typ!=="abschluss"),x=s[y.id+"_"+v.uid],E=x?k.filter(W=>x.erledigt&&x.erledigt[W.id]).length:0;return E===k.length&&k.length?{t:"fertig",k:"ok"}:E?{t:`${E}/${k.length} Schritte`,k:"teil"}:{t:"offen",k:"offen"}}if(y.modul==="rallye"){const k=l[y.id+"_"+v.uid]||{},x=(y.stationen||[]).length,E=Object.keys(k.erg||{}).length;if(!E)return{t:"offen",k:"offen"};const W=Object.values(k.erg||{}).filter(j=>j&&(j.richtig===!0||j.ok===!0)).length;return E>=x&&x?{t:`alle ${x} Stationen`,k:"ok"}:{t:`${E}/${x} Stationen`,k:"teil"}}if(y.modul==="einfuehrung"){const k=y.kurse||[];if(!k.length)return{t:"\u2013",k:"offen"};const x=k.filter(E=>(d[v.uid+"_"+E]||{}).einarbeitungAbgeschlossen).length;return x===k.length?{t:"fertig",k:"ok"}:x?{t:`${x}/${k.length} Kurse`,k:"teil"}:{t:"offen",k:"offen"}}if(y.modul==="apt"){const k=c[y.id+"_"+v.uid]||{};return k.aptBewertung?{t:"verglichen",k:"ok"}:k.aptAbgegeben?{t:"abgegeben",k:"teil"}:k.aptAntwort?{t:"in Arbeit",k:"teil"}:{t:"offen",k:"offen"}}if(y.modul==="stunde"){const k=c[y.id+"_"+v.uid];return k&&k.fertig?{t:"fertig",k:"ok"}:k?{t:"in Arbeit",k:"teil"}:{t:"offen",k:"offen"}}}catch{}return{t:"\u2013",k:"offen"}},m=u.map(y=>{const v=KW_BAUSTEINE[y.modul]||["",""];return`<th><span class="chip ${v[1]}">${esc(v[0])}</span><br><small>LB ${esc(y.lb)} \xB7 ${esc(y.titel||"")}</small></th>`}).join(""),f=a.map(y=>`<tr><th scope="row">${esc(anzeigeName(y))}</th>${u.map(v=>{const k=p(v,y);return`<td class="kw-z ${k.k}">${esc(k.t)}</td>`}).join("")}</tr>`).join("");return`<div class="kw kw-seite" style="--c:#3A8FD4;--bg:#E3F0FA;--t:#1F6FB2">
   ${kwSchuelerBanner()}
-  <button class="secondary" data-kw="wand">← Lernlandkarte</button>
-  <header class="kw-kopf"><small>FÜR LEHRKRÄFTE</small><h1>Erledigt? Selbstlernkurse und Lernrallyes</h1><p>Grün: ordentlich abgeschlossen. Orange: begonnen oder nur flüchtig bearbeitet (fertig, aber weniger als 60 % richtig). Grau: noch offen. Lehrkräfte-Konten erscheinen hier nicht.</p></header>
-  <div class="kw-card"><div class="kw-tabwrap">${mods.length&&schueler.length?`<table class="kw-tab"><thead><tr><th>Pseudonym</th>${kopf}</tr></thead><tbody>${zeilen}</tbody></table>`:`<div class="kw-leer">Noch keine passenden Bausteine oder freigeschaltete Schüler:innen.</div>`}</div></div>
+  <button class="secondary" data-kw="wand">\u2190 Lernlandkarte</button>
+  <header class="kw-kopf"><small>F\xDCR LEHRKR\xC4FTE</small><h1>Erledigt? Selbstlernkurse und Lernrallyes</h1><p>Gr\xFCn: ordentlich abgeschlossen. Orange: begonnen oder nur fl\xFCchtig bearbeitet (fertig, aber weniger als 60 % richtig). Grau: noch offen. Lehrkr\xE4fte-Konten erscheinen hier nicht.</p></header>
+  <div class="kw-card"><div class="kw-tabwrap">${u.length&&a.length?`<table class="kw-tab"><thead><tr><th>Pseudonym</th>${m}</tr></thead><tbody>${f}</tbody></table>`:'<div class="kw-leer">Noch keine passenden Bausteine oder freigeschaltete Sch\xFCler:innen.</div>'}</div></div>
   <div class="kw-card"><h3>Weitere Stellen</h3><div class="kw-aktionen"><button class="secondary" onclick="go('lernstand')">Lernstandsmessung (alle Aufgaben, Versuche)</button><button class="secondary" data-kw="checkouts">Check-out-Ergebnisse</button></div></div>
- </div>${footer()}`;
-}
+ </div>${footer()}`}
 /* ------------------------------------------------ Dateien am Thema anlegen */
 async function kwFaUebungOeffnen(uid){
  const alle=await faLaden(),u=alle.find(x=>x.id===uid);
@@ -23418,58 +22059,14 @@ const KW_KK={pp04:"Merkmale von Erziehung (und Bildung)",pp05:"Erziehungsstile n
 async function kwUbKatalog(){try{const r=await fetch("uebungsbausteine/stationen/katalog.json",{cache:"no-cache"});return r.ok?await r.json():[]}catch(e){return[]}}
 function kwWorte(t){return String(t||"").toLowerCase().replace(/[^a-zäöüß ]/g," ").split(/\s+/).filter(w=>w.length>=5)}
 // Übungen, Spiele und Karteikarten für ein Thema auswählen: nach Lernbereichen geordnet, ohne Termin und Dauer.
-async function kwFaPicker(kat,themaId,modus){
- const nurFa=modus==="fa",nurSp=modus==="spiele";
- const e=kwThemaById(themaId||activeKwThema);if(!e||!kwLehrer())return;
- const ph=PROJEKT_PHASEN.find(p=>p.id===e.phase);
- const [alle,vorh,ub]=await Promise.all([faLaden(),getDocs(query(collection(db,"lehrplanMaterialien"),where("wocheId","==",e.id))).then(sn=>sn.docs.map(d=>d.data())).catch(()=>[]),kwUbKatalog()]);
- const schon=new Set(vorh.filter(x=>String(x.url||"").startsWith("fa:")).map(x=>x.url.slice(3)));
- const schonUrl=new Set(vorh.map(x=>x.url));
- const kopf=g=>{const t=kwThemaById(g);return t?`Nr. ${t.nr} · ${kwKurz(t)}`:`Weiteres Thema: ${(alle.find(u=>u.thema===g)||{}).zusatz||g}`};
- const zeile=u=>`<label class="check"><input type="checkbox" class="kwFaCb" value="${esc(u.id)}"${schon.has(u.id)?" checked disabled":(u.thema===e.id&&!u.zusatz?" checked":"")}> <span><b>${esc(u.titel)}</b> <small>${[u.zusatz?esc(u.zusatz):"",schon.has(u.id)?"schon hinzugefügt":""].filter(Boolean).join(" · ")}</small></span></label>`;
- // Spiele und Übungsbausteine (uebungsbausteine/stationen/katalog.json), Zuordnung zum Thema über gemeinsame Wörter
- const ew=new Set(kwWorte(e.thema));
- const ubThemen=n=>[...new Set(ub.filter(x=>(x.pfad||[])[0]==="LB "+n).map(x=>x.thema))];
- const passt=t=>kwWorte(t).some(w=>ew.has(w));
- const ubZeile=x=>{const url=`uebungsbausteine/station.html?s=${x.id}`,da=schonUrl.has(url);return`<label class="check"><input type="checkbox" class="kwUbCb" value="${esc(x.id)}" data-st="${esc(x.stufe||"uebung")}"${da?" checked disabled":""}> <span><b>${esc(x.titel)}</b> <small>${[(x.pfad||[]).slice(-1)[0]||"",x.stufe==="vertiefung"?"Vertiefung":"",da?"schon hinzugefügt":""].filter(Boolean).map(esc).join(" · ")}</small></span></label>`};
- const kkGr=KW_KK[e.id];
- const lbGr=n=>{
-  const l=alle.filter(u=>u.lb===n),ut=ubThemen(n);if(nurFa?!l.length:nurSp?!ut.length:(!l.length&&!ut.length))return"";
-  const gr=[...new Set(l.map(u=>u.thema))].sort((a,b)=>(a===e.id?-1:b===e.id?1:0));
-  const lt=(PROJEKT_PHASEN.find(p=>p.lbNum===n)||{}).lbTitel||"";
-  const kk=n===ph.lbNum||true?(()=>{const url=`karteikarten/index.html?lb=${n}`+(n===ph.lbNum&&kkGr?`&thema=${encodeURIComponent(kkGr)}`:"");const da=schonUrl.has(url);return`<label class="check"><input type="checkbox" class="kwKkCb" value="${esc(url)}" data-t="${esc(`LB ${n} · ${n===ph.lbNum&&kkGr?kkGr:"Alle Themen"} · Karteikarten`)}"${da?" checked disabled":""}> <span><b>${esc(`LB ${n} · ${n===ph.lbNum&&kkGr?kkGr:"Alle Themen"} · Karteikarten`)}</b> <small>${da?"schon hinzugefügt":"Begriffe und Definitionen zum Üben"}</small></span></label>`})():"";
-  const ubHtml=ut.sort((a,b)=>(n===ph.lbNum?(passt(b)-passt(a)):0)).map(t=>`<div class="kw-fa-gr" style="--k:#8460b8"><b class="fa-lbkopf">Spiele und Übungen: ${esc(t)}</b>${ub.filter(x=>(x.pfad||[])[0]==="LB "+n&&x.thema===t).map(ubZeile).join("")}</div>`).join("");
-  return`<details class="fa-lbgr kw-fa-lb" data-lb="${n}"${n===ph.lbNum||nurFa?" open":""}><summary><b>Lernbereich ${n}</b> ${esc(lt)}<small>${[nurSp?"":l.length+" Übungen",nurFa?"":ub.filter(x=>(x.pfad||[])[0]==="LB "+n).length+" Spiele"].filter(Boolean).join(" · ")}</small></summary>
-   ${gr.length&&!nurSp?`<h4 class="kw-fa-h">Fachaufsatztraining</h4>`:""}${nurSp?"":gr.map(g=>`<div class="kw-fa-gr" style="--k:#4f9a35"><b class="fa-lbkopf">${esc(kopf(g))}</b>${l.filter(u=>u.thema===g).map(zeile).join("")}</div>`).join("")}
-   ${ut.length&&!nurFa?`<h4 class="kw-fa-h">Spiele, Zuordnungen und Vertiefungen</h4>${ubHtml}`:""}
-   ${nurFa?"":`<h4 class="kw-fa-h">Lernen mit Karteikarten</h4><div class="kw-fa-gr" style="--k:#e08a2e">${kk}</div>`}</details>`;
- };
- modal(`<button class="modal-close" onclick="closeModal()">×</button><div class="kicker">${esc(kwKurz(e)).toUpperCase()}</div><h2>${nurFa?"Fachaufsatztraining auswählen":nurSp?"Übungen und Spiele auswählen":"Übungen und Vertiefungen auswählen"}</h2>
-  <p style="color:var(--muted);margin:0 0 8px">${nurFa?"Kreuze die Fachaufsätze aus Abschlussprüfungen an, die bei diesem Thema erscheinen sollen. Alle Lernbereiche sind aufgeklappt, jeder Fall hat Zeilennummern.":"Kreuze an, was bei diesem Thema erscheinen soll: "+(nurSp?"":"Fachaufsatz-Übungen, ")+"Spiele (Zuordnung, Memory, Blockfall, Lückentext, Theorievergleich) und Karteikarten."} Sortiert nach Lernbereich.</p>
-  <div class="form kw-fa-pick">${[1,2,3,4].map(lbGr).join("")||`<div class="kw-leer">Noch keine Übungen vorhanden.</div>`}
-  ${kat?`<button type="button" class="text-button" id="kwFaDatei">Stattdessen eine eigene Datei oder einen Link hinzufügen</button>`:""}
-  <div class="form-actions"><button class="secondary" onclick="closeModal()">Abbrechen</button><button class="primary" id="kwFaSave">Hinzufügen</button></div></div>`);
- if(kat)$("kwFaDatei").onclick=()=>kwMatFormDatei(kat);
- lxPickerAufwerten();$("kwFaSave").onclick=async()=>{
-  const ids=[...document.querySelectorAll(".kwFaCb:checked:not(:disabled)")].map(c=>c.value);
-  const ubs=[...document.querySelectorAll(".kwUbCb:checked:not(:disabled)")].map(c=>({id:c.value,st:c.dataset.st}));
-  const kks=[...document.querySelectorAll(".kwKkCb:checked:not(:disabled)")].map(c=>({url:c.value,t:c.dataset.t}));
-  const n=ids.length+ubs.length+kks.length;
-  if(!n){toast("Bitte mindestens einen Eintrag ankreuzen.");return}
-  const basis={wocheId:e.id,fach:"paedagogik",dateiName:"",createdBy:currentUser.uid};
-  try{
-   // Vertiefungen landen immer bei den Vertiefungsaufgaben: Lückentext = Stufe 1, Theorievergleich = Stufe 2, Fachaufsatz-Vertiefung = Stufe 3
-   const katFa=u=>(kat&&/^vertiefung\d$/.test(kat))?kat:(u.zusatz?"vertiefung3":"uebung");
-   const katUb=kt=>(kat&&/^vertiefung\d$/.test(kat))?kat:(kt.stufe==="vertiefung"?(/Lückentext/.test((kt.pfad||[]).slice(-1)[0]||"")?"vertiefung1":"vertiefung2"):"uebung");
-   for(const id of ids){const u=alle.find(x=>x.id===id);
-    await addDoc(collection(db,"lehrplanMaterialien"),{...basis,kategorie:katFa(u),titel:u.titel+(u.zusatz==="Vertiefung"?" (Vertiefung)":""),url:"fa:"+id,createdAt:serverTimestamp()})}
-   for(const x of ubs){const kt=ub.find(y=>y.id===x.id);
-    await addDoc(collection(db,"lehrplanMaterialien"),{...basis,kategorie:katUb(kt),titel:kt.titel,url:`uebungsbausteine/station.html?s=${x.id}`,createdAt:serverTimestamp()})}
-   for(const x of kks)await addDoc(collection(db,"lehrplanMaterialien"),{...basis,kategorie:(kat&&/^vertiefung\d$/.test(kat))?kat:"uebung",titel:x.t,url:x.url,createdAt:serverTimestamp()});
-   closeModal();toast(n===1?"Hinzugefügt.":n+" Einträge hinzugefügt.");render();
-  }catch(err){console.error(err);toast("Konnte nicht gespeichert werden.")}
- };
-}
+async function kwFaPicker(e,t,n){const i=n==="fa",r=n==="spiele",a=kwThemaById(t||activeKwThema);if(!a||!kwLehrer())return;const s=PROJEKT_PHASEN.find(j=>j.id===a.phase),[l,c,d]=await Promise.all([faLaden(),getDocs(query(collection(db,"lehrplanMaterialien"),where("wocheId","==",a.id))).then(j=>j.docs.map(J=>J.data())).catch(()=>[]),kwUbKatalog()]),u=new Set(c.filter(j=>String(j.url||"").startsWith("fa:")).map(j=>j.url.slice(3))),p=new Set(c.map(j=>j.url)),m=j=>{const J=kwThemaById(j);return J?`Nr. ${J.nr} \xB7 ${kwKurz(J)}`:`Weiteres Thema: ${(l.find(ge=>ge.thema===j)||{}).zusatz||j}`},f=j=>`<label class="check"><input type="checkbox" class="kwFaCb" value="${esc(j.id)}"${u.has(j.id)?" checked disabled":j.thema===a.id&&!j.zusatz?" checked":""}> <span><b>${esc(j.titel)}</b> <small>${[j.zusatz?esc(j.zusatz):"",u.has(j.id)?"schon hinzugef\xFCgt":""].filter(Boolean).join(" \xB7 ")}</small></span></label>`,y=new Set(kwWorte(a.thema)),v=j=>[...new Set(d.filter(J=>(J.pfad||[])[0]==="LB "+j).map(J=>J.thema))],k=j=>kwWorte(j).some(J=>y.has(J)),x=j=>{const J=`uebungsbausteine/station.html?s=${j.id}`,ge=p.has(J);return`<label class="check"><input type="checkbox" class="kwUbCb" value="${esc(j.id)}" data-st="${esc(j.stufe||"uebung")}"${ge?" checked disabled":""}> <span><b>${esc(j.titel)}</b> <small>${[(j.pfad||[]).slice(-1)[0]||"",j.stufe==="vertiefung"?"Vertiefung":"",ge?"schon hinzugef\xFCgt":""].filter(Boolean).map(esc).join(" \xB7 ")}</small></span></label>`},E=KW_KK[a.id],W=j=>{const J=l.filter(me=>me.lb===j),ge=v(j);if(i?!J.length:(r||!J.length)&&!ge.length)return"";const Ae=[...new Set(J.map(me=>me.thema))].sort((me,Ie)=>me===a.id?-1:Ie===a.id?1:0),Fe=(PROJEKT_PHASEN.find(me=>me.lbNum===j)||{}).lbTitel||"",Ne=(s.lbNum,(()=>{const me=`karteikarten/index.html?lb=${j}`+(j===s.lbNum&&E?`&thema=${encodeURIComponent(E)}`:""),Ie=p.has(me);return`<label class="check"><input type="checkbox" class="kwKkCb" value="${esc(me)}" data-t="${esc(`LB ${j} \xB7 ${j===s.lbNum&&E?E:"Alle Themen"} \xB7 Karteikarten`)}"${Ie?" checked disabled":""}> <span><b>${esc(`LB ${j} \xB7 ${j===s.lbNum&&E?E:"Alle Themen"} \xB7 Karteikarten`)}</b> <small>${Ie?"schon hinzugef\xFCgt":"Begriffe und Definitionen zum \xDCben"}</small></span></label>`})()),ne=ge.sort((me,Ie)=>j===s.lbNum?k(Ie)-k(me):0).map(me=>`<div class="kw-fa-gr" style="--k:#8460b8"><b class="fa-lbkopf">Spiele und \xDCbungen: ${esc(me)}</b>${d.filter(Ie=>(Ie.pfad||[])[0]==="LB "+j&&Ie.thema===me).map(x).join("")}</div>`).join("");return`<details class="fa-lbgr kw-fa-lb" data-lb="${j}"${j===s.lbNum||i?" open":""}><summary><b>Lernbereich ${j}</b> ${esc(Fe)}<small>${[r?"":J.length+" \xDCbungen",i?"":d.filter(me=>(me.pfad||[])[0]==="LB "+j).length+" Spiele"].filter(Boolean).join(" \xB7 ")}</small></summary>
+   ${Ae.length&&!r?'<h4 class="kw-fa-h">Fachaufsatztraining</h4>':""}${r?"":Ae.map(me=>`<div class="kw-fa-gr" style="--k:#4f9a35"><b class="fa-lbkopf">${esc(m(me))}</b>${J.filter(Ie=>Ie.thema===me).map(f).join("")}</div>`).join("")}
+   ${ge.length&&!i?`<h4 class="kw-fa-h">Spiele, Zuordnungen und Vertiefungen</h4>${ne}`:""}
+   ${i?"":`<h4 class="kw-fa-h">Lernen mit Karteikarten</h4><div class="kw-fa-gr" style="--k:#e08a2e">${Ne}</div>`}</details>`};modal(`<button class="modal-close" onclick="closeModal()">\xD7</button><div class="kicker">${esc(kwKurz(a)).toUpperCase()}</div><h2>${i?"Fachaufsatztraining ausw\xE4hlen":r?"\xDCbungen und Spiele ausw\xE4hlen":"\xDCbungen und Vertiefungen ausw\xE4hlen"}</h2>
+  <p style="color:var(--muted);margin:0 0 8px">${i?"Kreuze die Fachaufs\xE4tze aus Abschlusspr\xFCfungen an, die bei diesem Thema erscheinen sollen. Alle Lernbereiche sind aufgeklappt, jeder Fall hat Zeilennummern.":"Kreuze an, was bei diesem Thema erscheinen soll: "+(r?"":"Fachaufsatz-\xDCbungen, ")+"Spiele (Zuordnung, Memory, Blockfall, L\xFCckentext, Theorievergleich) und Karteikarten."} Sortiert nach Lernbereich.</p>
+  <div class="form kw-fa-pick">${[1,2,3,4].map(W).join("")||'<div class="kw-leer">Noch keine \xDCbungen vorhanden.</div>'}
+  ${e?'<button type="button" class="text-button" id="kwFaDatei">Stattdessen eine eigene Datei oder einen Link hinzuf\xFCgen</button>':""}
+  <div class="form-actions"><button class="secondary" onclick="closeModal()">Abbrechen</button><button class="primary" id="kwFaSave">Hinzuf\xFCgen</button></div></div>`),e&&($("kwFaDatei").onclick=()=>kwMatFormDatei(e)),lxPickerAufwerten();$("kwFaSave").onclick=async()=>{const j=[...document.querySelectorAll(".kwFaCb:checked:not(:disabled)")].map(Ne=>Ne.value),J=[...document.querySelectorAll(".kwUbCb:checked:not(:disabled)")].map(Ne=>({id:Ne.value,st:Ne.dataset.st})),ge=[...document.querySelectorAll(".kwKkCb:checked:not(:disabled)")].map(Ne=>({url:Ne.value,t:Ne.dataset.t})),Ae=j.length+J.length+ge.length;if(!Ae){toast("Bitte mindestens einen Eintrag ankreuzen.");return}const Fe={wocheId:a.id,fach:"paedagogik",dateiName:"",createdBy:currentUser.uid};try{const Ne=me=>e&&/^vertiefung\d$/.test(e)?e:me.zusatz?"vertiefung3":"uebung",ne=me=>e&&/^vertiefung\d$/.test(e)?e:me.stufe==="vertiefung"?/Lückentext/.test((me.pfad||[]).slice(-1)[0]||"")?"vertiefung1":"vertiefung2":"uebung";for(const me of j){const Ie=l.find(et=>et.id===me);await addDoc(collection(db,"lehrplanMaterialien"),{...Fe,kategorie:Ne(Ie),titel:Ie.titel+(Ie.zusatz==="Vertiefung"?" (Vertiefung)":""),url:"fa:"+me,createdAt:serverTimestamp()})}for(const me of J){const Ie=d.find(et=>et.id===me.id);await addDoc(collection(db,"lehrplanMaterialien"),{...Fe,kategorie:ne(Ie),titel:Ie.titel,url:`uebungsbausteine/station.html?s=${me.id}`,createdAt:serverTimestamp()})}for(const me of ge)await addDoc(collection(db,"lehrplanMaterialien"),{...Fe,kategorie:e&&/^vertiefung\d$/.test(e)?e:"uebung",titel:me.t,url:me.url,createdAt:serverTimestamp()});closeModal(),toast(Ae===1?"Hinzugef\xFCgt.":Ae+" Eintr\xE4ge hinzugef\xFCgt."),render()}catch(Ne){console.error(Ne),toast("Konnte nicht gespeichert werden.")}}}
 window.kwFaPicker=kwFaPicker;
 async function kwMatForm(kat){
  if(!kwLehrer())return;
@@ -23515,18 +22112,7 @@ async function kwModulWaehlen(themaId){
    closeModal();await ppmLaden(true);toast("Zugeordnet.");render()}catch(err){console.error(err);toast("Konnte nicht gespeichert werden.")}
  };
 }
-async function kwTrAus(id,themaId,zurueck){
- if(!kwLehrer())return;
- await ppmLaden(true);
- try{
-  if(zurueck){for(const a of (PPM.aus||[]).filter(a=>(a.themen||[]).includes(themaId)))await deleteDoc(doc(db,"ppModule",a.id))}
-  else{
-   if(!confirm("Diesen Kurs auf dieser Themenseite ausblenden?\n\nEr bleibt in der App erhalten und kann hier wieder eingeblendet werden."))return;
-   await addDoc(collection(db,"ppModule"),{modul:"trainingaus",kursId:id,themen:[themaId],lb:0,createdBy:currentUser.uid,createdAt:serverTimestamp()});
-  }
-  await ppmLaden(true);toast(zurueck?"Eingeblendet.":"Ausgeblendet.");render();
- }catch(err){console.error(err);toast("Das hat nicht geklappt.")}
-}
+
 async function kwModulEntfernen(modulId,themaId){
  if(!kwLehrer())return;
  await ppmLaden(true);
@@ -23541,37 +22127,18 @@ async function kwModulEntfernen(modulId,themaId){
  }catch(err){console.error(err);toast("Das Entfernen hat nicht geklappt.")}
 }
 /* ------------------------------------------------ Klicks */
-document.addEventListener("click",async ev=>{
- const b=ev.target.closest&&ev.target.closest("[data-kw]");if(!b||!currentUser)return;
- const a=b.dataset.kw,id=b.dataset.id;
+async function kwTrAus(id,themaId,zurueck){
+ if(!kwLehrer())return;
+ await ppmLaden(true);
  try{
-  if(a==="thema"){activeKwThema=id;go("kw-thema")}
-  else if(a==="projekt"){activeKwLb=Number(b.dataset.lb);go("kw-projekt")}
-  else if(a==="wand")go("start");
-  else if(a==="checkouts")go("lernstaende");
-  else if(a==="fortschritt")go("kw-fortschritt");
-  else if(a==="matadd")kwMatForm(b.dataset.kat);
-  else if(a==="faueb")kwFaUebungOeffnen(id);
-  else if(a==="ubopen")ubOeffnen(b.dataset.url,b.dataset.w,b.dataset.t);
-  else if(a==="matweg"){if(!confirm("Diese Datei wirklich entfernen?"))return;await deleteDoc(doc(db,"lehrplanMaterialien",id));toast("Entfernt.");render()}
-  else if(a==="board"){wbVonKw=true;if(kwLehrer())openWhiteboard(id);else{const s=await getDoc(doc(db,"whiteboards",id));if(s.exists()&&s.data().lernVorlage)await lbMeineKopie(id,String(s.data().title||"").replace(/\s*–\s*Lernübersicht$/,""));else openWhiteboard(id)}}
-  else if(a==="checkin"){const e=kwThemaById(id);const fr=await getBasischeckFragen(id);if(!fr.length){toast("Für dieses Thema ist noch kein Wissens-Check hinterlegt.");return}window.__eaRueck=null;openCheckIn(id)}
-  else if(a==="alt"){const e=kwThemaById(id);e.typ==="apt"?openAptDetail(id):openWocheDetail("paedagogik",id)}
-  else if(a==="ea"){window.__eaRueck=async()=>{await render()};openEinarbeitung(id)}
-  else if(a==="modul")ppmOeffnen(id);
-  else if(a==="modulneu"){const e=kwThemaById(id),ph=PROJEKT_PHASEN.find(p=>p.id===e.phase);window.__kwThemaNeu=id;kwBausteinWahl(id)}
-  else if(a==="modulwahl")kwModulWaehlen(id);
-  else if(a==="modulweg")await kwModulEntfernen(id,b.dataset.thema);else if(a==="trweg")await kwTrAus(id,b.dataset.thema,false);else if(a==="trzurueck")await kwTrAus(null,id,true);
-  else if(a==="projektstart"){const ph=kwPhase(b.dataset.lb);const pm=PPM.liste.find(m=>m.modul==="projekt"&&Number(m.lb)===ph.lbNum&&!m.projektId);if(pm)ppmOeffnen(pm.id);else{activePPModul=null;activeFach="paedagogik";activePhaseDetail=ph.id+":projekt";go("fach")}}
-  else if(a==="exp"){activeFach="paedagogik";openExperimentStunde(null)}
-  else if(a==="fertig"){
-   const neu=!kwErledigt(id);
-   await setDoc(doc(db,"lehrplanFortschritt",`${currentUser.uid}_${id}`),{uid:currentUser.uid,wocheId:id,fach:"paedagogik",abgeschlossen:neu,updatedAt:serverTimestamp()},{merge:true});
-   if(neu)showMotivationsBild(true,"abgabe");render();
+  if(zurueck){for(const a of (PPM.aus||[]).filter(a=>(a.themen||[]).includes(themaId)))await deleteDoc(doc(db,"ppModule",a.id))}
+  else{
+   if(!confirm("Diesen Kurs auf dieser Themenseite ausblenden?\n\nEr bleibt in der App erhalten und kann hier wieder eingeblendet werden."))return;
+   await addDoc(collection(db,"ppModule"),{modul:"trainingaus",kursId:id,themen:[themaId],lb:0,createdBy:currentUser.uid,createdAt:serverTimestamp()});
   }
- }catch(err){console.error("Kachelwand:",err);toast("Das hat nicht geklappt. Bitte erneut versuchen.")}
-});
-
+  await ppmLaden(true);toast(zurueck?"Eingeblendet.":"Ausgeblendet.");render();
+ }catch(err){console.error(err);toast("Das hat nicht geklappt.")}
+}
 /* ---- Klassenstufen-Einstellungen F11Sb ---- */
 const LX_CFG={
  app:"F11Sb",klasse:11,fpa:true,
@@ -23596,6 +22163,9 @@ const LX_CFG={
  zusatzTrainings:[],
  klasseFilter:u=>istKlasse11Sb(u)
 };
+const KW_TRAININGS_ALLE=["fa01","fa04","fa05","fa06","fa07","fa03","fa02"];
+const KW_TR_HINT={fa04:"Fall Mira",fa05:"Fall Mira",fa06:"Fall Mira",fa07:"Fall Mira"};
+let pp12Beschaeftigt=false;
 
 /* =========================================================
  UMBAU (Nov 2026)
@@ -24441,68 +23011,7 @@ function lxMatSort(){Object.keys(KW.mat||{}).forEach(k=>KW.mat[k].sort((a,b)=>lx
 })();
 
 
-init();
-
-
-/* =========================================================
- ROBUST INTERACTION BRIDGE – KALENDER & IMPULSE
- ========================================================= */
-(function(){
- if(window.__CampusInteractionBridgeInstalled)return;
- window.__CampusInteractionBridgeInstalled=true;
-
- document.addEventListener("click", async function(ev){
- const el=ev.target.closest("[data-calendar-add],[data-calendar-day],[data-impulse-id],[data-open-impulse]");
- if(!el)return;
-
- ev.preventDefault();
- ev.stopPropagation();
-
- try{
- if(el.hasAttribute("data-calendar-add")){
- if(typeof window.openCalendarForm==="function") window.openCalendarForm();
- else if(typeof openCalendarForm==="function") openCalendarForm();
- return;
- }
-
- if(el.hasAttribute("data-calendar-day")){
- const raw=el.getAttribute("data-calendar-day");
- const parts=raw.split("-").map(Number);
- if(parts.length===3 && typeof window.openCalendarDay==="function"){
- window.openCalendarDay(parts[0],parts[1],parts[2]);
- }
- return;
- }
-
- const impulseId=el.getAttribute("data-impulse-id")||el.getAttribute("data-open-impulse");
- if(impulseId){
- if(typeof window.openImpulse==="function") window.openImpulse(impulseId);
- else if(typeof window.openImpuls==="function") window.openImpuls(impulseId);
- else if(typeof window.openImpulseModal==="function") window.openImpulseModal(impulseId);
- else{
- const data=window._campusImpulses||window.impulses||[];
- const item=data.find(x=>String(x.id)===String(impulseId));
- if(item){
- const title=item.title||item.name||"Impuls";
- const body=item.text||item.content||item.description||"";
- if(typeof window.modal==="function") window.modal(`<button class="modal-close"onclick="closeModal()">×</button><div class="kicker">IMPULS</div><h2>${esc(title)}</h2><p>${esc(body)}</p>`);
- }
- }
- }
- }catch(err){
- console.error("Campus Interaction:",err);
- }
- },true);
-})();
-
-
-/* Compatibility aliases */
-if(typeof window.openCalendarForm!=="function" && typeof openCalendarForm==="function") window.openCalendarForm=openCalendarForm;
-if(typeof window.addCalendar!=="function" && typeof addCalendar==="function") window.addCalendar=addCalendar;
-if(typeof window.openCalendarDay!=="function" && typeof openCalendarDay==="function") window.openCalendarDay=openCalendarDay;
-if(typeof window.openImpulse!=="function" && typeof openImpulse==="function") window.openImpulse=openImpulse;
-if(typeof window.openImpuls!=="function" && typeof openImpuls==="function") window.openImpuls=openImpuls;
-if(typeof window.openImpulseModal!=="function" && typeof openImpulseModal==="function") window.openImpulseModal=openImpulseModal;
+document.addEventListener("click",async e=>{const t=e.target.closest&&e.target.closest("[data-kw]");if(!t||!currentUser)return;const n=t.dataset.kw,i=t.dataset.id;try{if(n==="thema")activeKwThema=i,go("kw-thema");else if(n==="projekt")activeKwLb=Number(t.dataset.lb),go("kw-projekt");else if(n==="wand")go("start");else if(n==="checkouts")go("lernstaende");else if(n==="fortschritt")go("kw-fortschritt");else if(n==="matadd")kwMatForm(t.dataset.kat);else if(n==="faueb")kwFaUebungOeffnen(i);else if(n==="ubopen")ubOeffnen(t.dataset.url,t.dataset.w,t.dataset.t);else if(n==="matweg"){if(!confirm("Diese Datei wirklich entfernen?"))return;await deleteDoc(doc(db,"lehrplanMaterialien",i)),toast("Entfernt."),render()}else if(n==="board")if(wbVonKw=!0,kwLehrer())openWhiteboard(i);else{const r=await getDoc(doc(db,"whiteboards",i));r.exists()&&r.data().lernVorlage?await lbMeineKopie(i,String(r.data().title||"").replace(/\s*–\s*Lernübersicht$/,"")):openWhiteboard(i)}else if(n==="checkin"){const r=kwThemaById(i);if(!(await getBasischeckFragen(i)).length){toast("F\xFCr dieses Thema ist noch kein Wissens-Check hinterlegt.");return}window.__eaRueck=null,openCheckIn(i)}else if(n==="alt")kwThemaById(i).typ==="apt"?openAptDetail(i):openWocheDetail("paedagogik",i);else if(n==="ea")window.__eaRueck=async()=>{await render()},openEinarbeitung(i);else if(n==="modul")ppmOeffnen(i);else if(n==="modulneu"){const r=kwThemaById(i),a=PROJEKT_PHASEN.find(s=>s.id===r.phase);window.__kwThemaNeu=i,kwBausteinWahl(i)}else if(n==="modulwahl")kwModulWaehlen(i);else if(n==="trweg")await kwTrAus(i,t.dataset.thema,!1);else if(n==="trzurueck")await kwTrAus(null,i,!0);else if(n==="modulweg")await kwModulEntfernen(i,t.dataset.thema);else if(n==="projektstart"){const r=kwPhase(t.dataset.lb),a=PPM.liste.find(s=>s.modul==="projekt"&&Number(s.lb)===r.lbNum&&!s.projektId);a?ppmOeffnen(a.id):(activePPModul=null,activeFach="paedagogik",activePhaseDetail=r.id+":projekt",go("fach"))}else if(n==="exp")activeFach="paedagogik",openExperimentStunde(null);else if(n==="fertig"){const r=!kwErledigt(i);await setDoc(doc(db,"lehrplanFortschritt",`${currentUser.uid}_${i}`),{uid:currentUser.uid,wocheId:i,fach:"paedagogik",abgeschlossen:r,updatedAt:serverTimestamp()},{merge:!0}),r&&showMotivationsBild(!0,"abgabe"),render()}}catch(r){console.error("Kachelwand:",r),toast("Das hat nicht geklappt. Bitte erneut versuchen.")}}),init(),(function(){window.__CampusInteractionBridgeInstalled||(window.__CampusInteractionBridgeInstalled=!0,document.addEventListener("click",async function(e){const t=e.target.closest("[data-calendar-add],[data-calendar-day],[data-impulse-id],[data-open-impulse]");if(t){e.preventDefault(),e.stopPropagation();try{if(t.hasAttribute("data-calendar-add")){typeof window.openCalendarForm=="function"?window.openCalendarForm():typeof openCalendarForm=="function"&&openCalendarForm();return}if(t.hasAttribute("data-calendar-day")){const r=t.getAttribute("data-calendar-day").split("-").map(Number);r.length===3&&typeof window.openCalendarDay=="function"&&window.openCalendarDay(r[0],r[1],r[2]);return}const n=t.getAttribute("data-impulse-id")||t.getAttribute("data-open-impulse");if(n)if(typeof window.openImpulse=="function")window.openImpulse(n);else if(typeof window.openImpuls=="function")window.openImpuls(n);else if(typeof window.openImpulseModal=="function")window.openImpulseModal(n);else{const r=(window._campusImpulses||window.impulses||[]).find(a=>String(a.id)===String(n));if(r){const a=r.title||r.name||"Impuls",s=r.text||r.content||r.description||"";typeof window.modal=="function"&&window.modal(`<button class="modal-close"onclick="closeModal()">\xD7</button><div class="kicker">IMPULS</div><h2>${esc(a)}</h2><p>${esc(s)}</p>`)}}}catch(n){console.error("Campus Interaction:",n)}}},!0))})(),typeof window.openCalendarForm!="function"&&typeof openCalendarForm=="function"&&(window.openCalendarForm=openCalendarForm),typeof window.addCalendar!="function"&&typeof addCalendar=="function"&&(window.addCalendar=addCalendar),typeof window.openCalendarDay!="function"&&typeof openCalendarDay=="function"&&(window.openCalendarDay=openCalendarDay),typeof window.openImpulse!="function"&&typeof openImpulse=="function"&&(window.openImpulse=openImpulse),typeof window.openImpuls!="function"&&typeof openImpuls=="function"&&(window.openImpuls=openImpuls),typeof window.openImpulseModal!="function"&&typeof openImpulseModal=="function"&&(window.openImpulseModal=openImpulseModal);
 
 
 try{ if(typeof closeResilienzModal==="function") window.closeResilienzModal=closeResilienzModal; }catch(_){}
@@ -24557,40 +23066,7 @@ const LB_ICON={
 // ---- Eigene Kopie der Lernübersicht ----
 // Die Vorlage (Whiteboard der Lehrkraft) wird einmal pro Schüler:in kopiert: Elemente, Bilder, Seitenzahl, Hintergrund.
 let lbBusy=false;
-async function lbMeineKopie(vorlageId,titel){
- if(lbBusy)return;lbBusy=true;
- try{
-  const kid=vorlageId+"_"+currentUser.uid,kref=doc(db,"ppLernuebersicht",kid);
-  let s=null;try{s=await getDoc(kref);}catch(e){console.warn("Lernübersicht lesen:",e);}
-  if(s&&s.exists()&&s.data().boardId){
-   const b=await getDoc(doc(db,"whiteboards",s.data().boardId));
-   if(b.exists()){openWhiteboard(b.id);return;}
-  }
-  const v=await getDoc(doc(db,"whiteboards",vorlageId));
-  if(!v.exists()){toast("Die Lernübersicht der Lehrkraft gibt es nicht mehr.");return;}
-  toast("Deine eigene Lernübersicht wird angelegt …");
-  const vd=v.data(),name=anzeigeName(profile,currentUser);
-  const nb=await addDoc(collection(db,"whiteboards"),{title:("Meine Lernübersicht: "+String(titel||vd.title||"").replace(/\s*–\s*Lernübersicht$/,"")).slice(0,120),description:"Eigene Kopie der Lernübersicht",art:"lern",schreibschutz:false,seiten:vd.seiten||1,bg:vd.bg||"weiss",lernVon:currentUser.uid,vorlageId,createdBy:currentUser.uid,createdByName:name,createdAt:serverTimestamp()});
-  const [its,ims]=await Promise.all([getDocs(query(collection(db,"whiteboardItems"),where("boardId","==",vorlageId))),getDocs(query(collection(db,"whiteboardImages"),where("boardId","==",vorlageId)))]);
-  const idMap=new Map();
-  its.docs.forEach(d=>idMap.set(d.id,doc(collection(db,"whiteboardItems")).id));
-  ims.docs.forEach(d=>idMap.set(d.id,doc(collection(db,"whiteboardImages")).id));
-  const jobs=[];
-  ims.docs.forEach(d=>jobs.push(()=>setDoc(doc(db,"whiteboardImages",idMap.get(d.id)),{boardId:nb.id,data:d.data().data,authorUid:currentUser.uid,createdAt:serverTimestamp()})));
-  its.docs.forEach(d=>{
-   const x={...d.data()};
-   Object.keys(x).forEach(k=>{if(typeof x[k]==="string"&&idMap.has(x[k]))x[k]=idMap.get(x[k]);});
-   x.boardId=nb.id;x.authorUid=currentUser.uid;x.authorName=name;x.createdAt=serverTimestamp();x.updatedAt=serverTimestamp();
-   jobs.push(()=>setDoc(doc(db,"whiteboardItems",idMap.get(d.id)),x));
-  });
-  for(let i=0;i<jobs.length;i+=20)await Promise.all(jobs.slice(i,i+20).map(f=>f()));
-  await setDoc(kref,{lernId:vorlageId,uid:currentUser.uid,name,boardId:nb.id,titel:titel||"",updatedAt:serverTimestamp()});
-  openWhiteboard(nb.id);
- }catch(err){
-  console.error("Lernübersicht kopieren:",err);
-  toast(err?.code==="permission-denied"?"Firebase verweigert das Anlegen. Bitte die Firestore-Regeln prüfen.":"Deine Lernübersicht konnte nicht angelegt werden.");
- }finally{lbBusy=false;}
-}
+async function lbMeineKopie(e,t){if(!lbBusy){lbBusy=!0;try{const n=e+"_"+currentUser.uid,i=doc(db,"ppLernuebersicht",n);let r=null;try{r=await getDoc(i)}catch(f){console.warn("Lern\xFCbersicht lesen:",f)}if(r&&r.exists()&&r.data().boardId){const f=await getDoc(doc(db,"whiteboards",r.data().boardId));if(f.exists()){openWhiteboard(f.id);return}}const a=await getDoc(doc(db,"whiteboards",e));if(!a.exists()){toast("Die Lern\xFCbersicht der Lehrkraft gibt es nicht mehr.");return}toast("Deine eigene Lern\xFCbersicht wird angelegt \u2026");const s=a.data(),l=anzeigeName(profile,currentUser),c=await addDoc(collection(db,"whiteboards"),{title:("Meine Lern\xFCbersicht: "+String(t||s.title||"").replace(/\s*–\s*Lernübersicht$/,"")).slice(0,120),description:"Eigene Kopie der Lern\xFCbersicht",art:"lern",schreibschutz:!1,seiten:s.seiten||1,bg:s.bg||"weiss",lernVon:currentUser.uid,vorlageId:e,createdBy:currentUser.uid,createdByName:l,createdAt:serverTimestamp()}),[d,u]=await Promise.all([getDocs(query(collection(db,"whiteboardItems"),where("boardId","==",e))),getDocs(query(collection(db,"whiteboardImages"),where("boardId","==",e)))]),p=new Map;d.docs.forEach(f=>p.set(f.id,doc(collection(db,"whiteboardItems")).id)),u.docs.forEach(f=>p.set(f.id,doc(collection(db,"whiteboardImages")).id));const m=[];u.docs.forEach(f=>m.push(()=>setDoc(doc(db,"whiteboardImages",p.get(f.id)),{boardId:c.id,data:f.data().data,authorUid:currentUser.uid,createdAt:serverTimestamp()}))),d.docs.forEach(f=>{const y={...f.data()};Object.keys(y).forEach(v=>{typeof y[v]=="string"&&p.has(y[v])&&(y[v]=p.get(y[v]))}),y.boardId=c.id,y.authorUid=currentUser.uid,y.authorName=l,y.createdAt=serverTimestamp(),y.updatedAt=serverTimestamp(),m.push(()=>setDoc(doc(db,"whiteboardItems",p.get(f.id)),y))});for(let f=0;f<m.length;f+=20)await Promise.all(m.slice(f,f+20).map(y=>y()));await setDoc(i,{lernId:e,uid:currentUser.uid,name:l,boardId:c.id,titel:t||"",updatedAt:serverTimestamp()}),openWhiteboard(c.id)}catch(n){console.error("Lern\xFCbersicht kopieren:",n),toast(n?.code==="permission-denied"?"Firebase verweigert das Anlegen. Bitte die Firestore-Regeln pr\xFCfen.":"Deine Lern\xFCbersicht konnte nicht angelegt werden.")}finally{lbBusy=!1}}}
 // ---- Das Lernübersicht-Whiteboard: fünf Bausteine ----
 // ① Kernfrage · ② Kernwissen · ③ Zusammenhänge · ④ Beispiel/Fall · ⑤ Lernanker
 // Koordinaten um den Mittelpunkt (x,y). Ohne Inhalt entsteht die leere Vorlage mit Hilfetexten.
@@ -24605,34 +23081,7 @@ const LB_BEISPIEL={
  fall:"Fall (Kita): Der fünfjährige Tim will sofort weiter mit dem Bagger spielen (Es), weiß aber, dass vor dem Mittagessen aufgeräumt wird (Über-Ich).\n\nStarkes Ich: Tim vereinbart „noch fünf Minuten, dann räume ich auf“ und hält sich daran → selbstbestimmt.\n\nSchwaches Ich: Tim wird nur von dem gesteuert, was gerade am stärksten drückt (Wutanfall oder Gehorsam aus Angst) → fremdbestimmt.",
  anker:["Ich kann Ich-Stärke und Ich-Schwäche mit je zwei Merkmalen beschreiben.","Ich kann erklären, warum das Ich zwischen Es, Über-Ich und Realität vermittelt.","Ich kann an einem Beispiel zeigen, wann eine Person selbst- bzw. fremdbestimmt handelt."]
 };
-function lbLernItems(x,y,thema,bsp){
- // Freie Gestaltung: Eintrag mit eigenem "items"-Feld (Elemente mit Koordinaten um den Mittelpunkt)
- if(bsp&&typeof bsp==="object"&&Array.isArray(bsp.items))return bsp.items.map(i=>({...i,x:x+i.x,y:y+i.y,...(i.type==="line"?{x2:x+i.x2,y2:y+i.y2}:{})}));
- const L=[],f=(px,py,w,h,c,text)=>L.push({type:"frame",x:x+px,y:y+py,w,h,c,text}),
-  n=(px,py,w,h,c,text,fs)=>L.push({type:"note",x:x+px,y:y+py,w,h,c,fs:fs||18,text}),
-  t=(px,py,w,h,fs,text)=>L.push({type:"text",x:x+px,y:y+py,w,h,fs,text}),
-  s=(px,py,w,h,c,text)=>L.push({type:"shape",shape:"ellipse",x:x+px,y:y+py,w,h,c,fs:20,text}),
-  l=(x1,y1,x2,y2)=>L.push({type:"line",x:x+x1,y:y+y1,x2:x+x2,y2:y+y2,c:"grau",sw:4,arrow:true});
- const B=bsp===true?LB_BEISPIEL:(bsp||null);
- t(-1000,-700,2000,70,44,"Lernübersicht: "+(bsp?B.thema:(thema||"Thema der Stunde")));
- t(-1000,-632,2000,36,20,bsp?B.unter:"Fach · Lernbereich · Datum");
- f(-1000,-580,2000,230,"blau","① KERNFRAGE · Was ist das Thema?");
- f(-1000,-320,1180,600,"gruen","② KERNWISSEN · Was muss ich wissen?");
- f(200,-320,800,600,"orange","③ ZUSAMMENHÄNGE · Wie hängt es zusammen?");
- f(-1000,310,1180,430,"lila","④ BEISPIEL / FALL · Wie sieht es in der Praxis aus?");
- f(200,310,800,430,"tuerkis","⑤ LERNANKER · Was muss ich am Ende aus dem Kopf können?");
- n(-980,-520,1960,150,"gelb",bsp?B.frage:"Schreibe die Leitfrage der Stunde in einem Satz.",bsp?26:22);
- if(bsp){const k=B.wissen.length,w=Math.floor((1140-20*(k-1))/k);B.wissen.forEach((x,i)=>n(-980+i*(w+20),-250,w,520,x.c||"gelb",x.text,k>2?20:23));}
- else{["Kernbegriff 1: Definition in eigenen Worten","Kernbegriff 2: Merkmale, Beispiele","Kernbegriff 3: Wichtiges im Überblick"].forEach((tx,i)=>n(-980+i*390,-250,370,520,"gelb",tx,20));}
- s(490,-80,220,120,"blau",bsp?(B.mitte||"Ich"):"Thema");
- const bg=bsp?(B.begriffe||["Es","Über-Ich","Realität"]):["Begriff A","Begriff B","Begriff C"],fa=bsp?["rosa","lila","tuerkis"]:["gelb","gelb","gelb"];
- s(230,-250,230,100,fa[0],bg[0]);s(740,-250,230,100,fa[1],bg[1]);s(490,90,220,90,fa[2],bg[2]);
- l(520,-55,400,-150);l(680,-55,800,-150);l(600,40,600,90);
- n(220,195,760,80,"gelb",bsp?B.zusammen:"Zusammenhang in einem Satz: … führt zu … , weil …",19);
- n(-980,370,1140,340,"gelb",bsp?B.fall:"Ein Fall aus Kita, Schule oder Alltag: Was passiert? Wie zeigt sich das Thema? Was würde eine Fachkraft tun?",bsp?23:20);
- (bsp?B.anker.slice(0,3):["Das kann ich aus dem Kopf: …","Das kann ich aus dem Kopf: …","Das kann ich aus dem Kopf: …"]).forEach((tx,i,arr)=>{const w=Math.floor((770-10*(arr.length-1))/arr.length);n(215+i*(w+10),370,w,340,"gelb",tx,bsp?21:19);});
- return L;
-}
+function lbLernItems(e,t,n,i){if(i&&typeof i=="object"&&Array.isArray(i.items))return i.items.map(f=>({...f,x:e+f.x,y:t+f.y,...f.type==="line"?{x2:e+f.x2,y2:t+f.y2}:{}}));const r=[],a=(f,y,v,k,x,E)=>r.push({type:"frame",x:e+f,y:t+y,w:v,h:k,c:x,text:E}),s=(f,y,v,k,x,E,W)=>r.push({type:"note",x:e+f,y:t+y,w:v,h:k,c:x,fs:W||18,text:E}),l=(f,y,v,k,x,E)=>r.push({type:"text",x:e+f,y:t+y,w:v,h:k,fs:x,text:E}),c=(f,y,v,k,x,E)=>r.push({type:"shape",shape:"ellipse",x:e+f,y:t+y,w:v,h:k,c:x,fs:20,text:E}),d=(f,y,v,k)=>r.push({type:"line",x:e+f,y:t+y,x2:e+v,y2:t+k,c:"grau",sw:4,arrow:!0}),u=i===!0?LB_BEISPIEL:i||null;if(l(-1e3,-700,2e3,70,44,"Lern\xFCbersicht: "+(i?u.thema:n||"Thema der Stunde")),l(-1e3,-632,2e3,36,20,i?u.unter:"Fach \xB7 Lernbereich \xB7 Datum"),a(-1e3,-580,2e3,230,"blau","\u2460 KERNFRAGE \xB7 Was ist das Thema?"),a(-1e3,-320,1180,600,"gruen","\u2461 KERNWISSEN \xB7 Was muss ich wissen?"),a(200,-320,800,600,"orange","\u2462 ZUSAMMENH\xC4NGE \xB7 Wie h\xE4ngt es zusammen?"),a(-1e3,310,1180,430,"lila","\u2463 BEISPIEL / FALL \xB7 Wie sieht es in der Praxis aus?"),a(200,310,800,430,"tuerkis","\u2464 LERNANKER \xB7 Was muss ich am Ende aus dem Kopf k\xF6nnen?"),s(-980,-520,1960,150,"gelb",i?u.frage:"Schreibe die Leitfrage der Stunde in einem Satz.",i?26:22),i){const f=u.wissen.length,y=Math.floor((1140-20*(f-1))/f);u.wissen.forEach((v,k)=>s(-980+k*(y+20),-250,y,520,v.c||"gelb",v.text,f>2?20:23))}else["Kernbegriff 1: Definition in eigenen Worten","Kernbegriff 2: Merkmale, Beispiele","Kernbegriff 3: Wichtiges im \xDCberblick"].forEach((f,y)=>s(-980+y*390,-250,370,520,"gelb",f,20));c(490,-80,220,120,"blau",i?u.mitte||"Ich":"Thema");const p=i?u.begriffe||["Es","\xDCber-Ich","Realit\xE4t"]:["Begriff A","Begriff B","Begriff C"],m=i?["rosa","lila","tuerkis"]:["gelb","gelb","gelb"];return c(230,-250,230,100,m[0],p[0]),c(740,-250,230,100,m[1],p[1]),c(490,90,220,90,m[2],p[2]),d(520,-55,400,-150),d(680,-55,800,-150),d(600,40,600,90),s(220,195,760,80,"gelb",i?u.zusammen:"Zusammenhang in einem Satz: \u2026 f\xFChrt zu \u2026 , weil \u2026",19),s(-980,370,1140,340,"gelb",i?u.fall:"Ein Fall aus Kita, Schule oder Alltag: Was passiert? Wie zeigt sich das Thema? Was w\xFCrde eine Fachkraft tun?",i?23:20),(i?u.anker.slice(0,3):["Das kann ich aus dem Kopf: \u2026","Das kann ich aus dem Kopf: \u2026","Das kann ich aus dem Kopf: \u2026"]).forEach((f,y,v)=>{const k=Math.floor((770-10*(v.length-1))/v.length);s(215+y*(k+10),370,k,340,"gelb",f,i?21:19)}),r}
 // Vorlagen-Menü im Whiteboard (Lehrkräfte): beide Fassungen einfügen
 if(typeof WB_VORLAGEN!=="undefined"&&!WB_VORLAGEN.some(v=>v.name==="Lernübersicht (5 Bausteine)")){
  WB_VORLAGEN.unshift({name:"Beispiel: Starkes und schwaches Ich",beschr:"Ausgefüllte Lernübersicht mit fünf Bausteinen",items:(x,y)=>lbLernItems(x,y,"",true)});
@@ -25124,48 +23573,4 @@ function fsLeseMitWiederholung(fn){
  };
 }
 
-window.__booted=1;if(window.__bootOk)window.__bootOk();
-
-
-/* ===== Lernlandkarte: Vollansicht =====
-   Knopf „Vollansicht“ auf der Lernlandkarte: blendet Kopfzeile und Seitenleiste aus und zeigt
-   alle Lernbereiche nebeneinander über die ganze Breite (am Beamer/Bildschirm vollständig lesbar).
-   Beenden: Knopf „Vollansicht beenden“, Esc oder Seitenwechsel. */
-(function(){
- if(window.__kwVoll)return;window.__kwVoll=1;
- const B=document.body;
- function an(){return B.classList.contains("kw-voll")}
- function knoepfe(){document.querySelectorAll(".kw-voll-btn").forEach(b=>{b.textContent=an()?"✕ Vollansicht beenden":"⛶ Vollansicht"})}
- function ende(){
-  B.classList.remove("kw-voll");
-  try{if(document.fullscreenElement)document.exitFullscreen()}catch(e){}
-  knoepfe();
- }
- function start(){
-  B.classList.add("kw-voll");
-  try{const r=document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();if(r&&r.catch)r.catch(()=>{})}catch(e){}
-  knoepfe();window.scrollTo(0,0);
- }
- function umschalten(){an()?ende():start()}
- window.kwVollansicht=umschalten;
- function einbauen(){
-  const root=document.getElementById("kwRoot");
-  if(!root){if(an())ende();return}
-  if(!root.querySelector(".kw-wand"))return; // nur die Lernlandkarte selbst
-  if(root.querySelector(".kw-voll-btn"))return;
-  let links=root.querySelector(".kw-links");
-  if(!links){links=document.createElement("div");links.className="kw-links";const w=root.querySelector(".kw-wand");w.parentNode.insertBefore(links,w)}
-  const b=document.createElement("button");
-  b.type="button";b.className="secondary kw-voll-btn";b.title="Alle Lernbereiche auf einen Blick, ganze Bildschirmbreite";
-  b.addEventListener("click",umschalten);
-  links.insertBefore(b,links.firstChild);knoepfe();
- }
- const ex=document.createElement("button");
- ex.type="button";ex.className="primary kw-voll-exit";ex.textContent="✕ Vollansicht beenden";ex.addEventListener("click",ende);
- B.appendChild(ex);
- document.addEventListener("fullscreenchange",()=>{if(!document.fullscreenElement&&an())ende()});
- document.addEventListener("keydown",e=>{if(e.key==="Escape"&&an())ende()});
- let t=0;
- new MutationObserver(()=>{if(t)return;t=setTimeout(()=>{t=0;einbauen()},60)}).observe(document.getElementById("content")||B,{childList:true,subtree:true});
- einbauen();
-})();
+window.__booted=1,window.__bootOk&&window.__bootOk()
