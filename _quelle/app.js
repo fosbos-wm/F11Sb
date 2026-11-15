@@ -2719,9 +2719,9 @@ pp16:{tz:"Mediale Einflüsse zuordnen",tf:"Chance und Risiko von Medien",
 function checkinHash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
 function checkinMischen(arr,key){return arr.map((x,i)=>({x,h:checkinHash(key+"|"+i+"|"+String(x))})).sort((p,q)=>p.h-q.h).map(o=>o.x)}
 function checkinAusBank(id){
- const b=CHECKIN_11[id];if(!b)return[];
+ const ende=/@ende$/.test(id);if(ende)id=id.slice(0,-5);const b=(ende?CHECKOUT_11:CHECKIN_11)[id];if(!b)return[];
  const n=CHECKIN_NEU[id],t=CHECKIN_TAGS_11[id]||[];
- const items=n?[b[0],b[1],n.z,b[4],n.f]:b;
+ const items=ende?b:(n?[b[0],b[1],n.z,b[4],n.f]:b);
  const tags=n?[t[0],t[1],n.tz,t[4],n.tf]:t;
  return items.map((q,qi)=>{
   const tag=tags[qi]||"";
@@ -2757,11 +2757,12 @@ async function saveBasischeckFragen(fach,wocheId){
  const text=$(`bcFrage${i}`)?.value.trim();
  if(!text)continue;
  const typ=$(`bcTyp${i}`)?.value||"mc";
+ const tag=($(`bcTag${i}`)?.value||"").trim();
  if(typ==="mc"){
  const opts=[0,1,2].map(j=>$(`bcOpt${i}_${j}`)?.value.trim()).filter(Boolean);
  const richtig=parseInt($(`bcRichtig${i}`)?.value,10);
  if(opts.length<2||!Number.isFinite(richtig))continue;
- fragen.push({typ,text,optionen:opts,richtig});
+ fragen.push({typ,text,...(tag?{tag}:{}),optionen:opts,richtig});
  }else if(typ==="kprim"){
  const statements=[0,1,2,3].map(j=>({
  text:$(`bcStatement${i}_${j}`)?.value.trim()||"",
@@ -2769,27 +2770,27 @@ async function saveBasischeckFragen(fach,wocheId){
  })).filter(s=>s.text);
  if(statements.length<2)continue;
  const vignette=$(`bcVignette${i}`)?.value.trim()||"";
- fragen.push({typ,text,statements,...(vignette?{vignette}:{})});
+ fragen.push({typ,text,...(tag?{tag}:{}),statements,...(vignette?{vignette}:{})});
  }else if(typ==="offen"){
  const stichworte=($(`bcStichworte${i}`)?.value||"").split(",").map(s=>s.trim()).filter(Boolean);
  if(!stichworte.length)continue;
- fragen.push({typ,text,stichworte});
+ fragen.push({typ,text,...(tag?{tag}:{}),stichworte});
  }else if(typ==="zuordnung"){
  const paare=($(`bcPaare${i}`)?.value||"").split("\n").map(z=>{const k=z.indexOf("=");return k>0?{l:z.slice(0,k).trim(),r:z.slice(k+1).trim()}:null}).filter(p=>p&&p.l&&p.r).slice(0,5);
  if(paare.length<2){toast(`Frage ${i+1}: Zuordnung braucht mindestens 2 Zeilen der Form „Begriff = Beschreibung“.`);continue}
- fragen.push({typ,text,paare});
+ fragen.push({typ,text,...(tag?{tag}:{}),paare});
  }else if(typ==="lueckentext"){
  const loesung=($(`bcLoesung${i}`)?.value||"").split(",").map(x=>x.trim()).filter(Boolean);
  const extra=($(`bcExtra${i}`)?.value||"").split(",").map(x=>x.trim()).filter(Boolean);
  const luecken=(text.match(/___/g)||[]).length;
  if(!luecken||luecken!==loesung.length){toast(`Frage ${i+1}: Der Text braucht genau so viele ___ wie gesuchte Wörter (${loesung.length}).`);continue}
- fragen.push({typ,text,loesung,woerter:checkinMischen(loesung.concat(extra),text)});
+ fragen.push({typ,text,...(tag?{tag}:{}),loesung,woerter:checkinMischen(loesung.concat(extra),text)});
  }else if(typ==="reihenfolge"){
  const schritte=($(`bcSchritte${i}`)?.value||"").split("\n").map(x=>x.trim()).filter(Boolean).slice(0,6);
  if(schritte.length<3){toast(`Frage ${i+1}: Reihenfolge braucht mindestens 3 Schritte (je eine Zeile, in richtiger Reihenfolge).`);continue}
- fragen.push({typ,text,schritte});
+ fragen.push({typ,text,...(tag?{tag}:{}),schritte});
  }else if(typ==="frei"){
- fragen.push({typ,text,musterantwort:($(`bcMuster${i}`)?.value||"").trim()});
+ fragen.push({typ,text,...(tag?{tag}:{}),musterantwort:($(`bcMuster${i}`)?.value||"").trim()});
  }
  }
  if(!fragen.length){toast("Bitte mindestens eine vollständige Frage eingeben.");return}
@@ -2876,16 +2877,16 @@ async function submitBasischeck(fach,wocheId){
  const alt=await getMyBasischeckVersuch(wocheId);
  const sicher=parseInt(document.querySelector('input[name="ciSich"]:checked')?.value,10)||0;
  const altMs=alt&&alt.createdAt&&alt.createdAt.toMillis?alt.createdAt.toMillis():0;
- const verlauf=[...(alt?(alt.verlauf||[{r:alt.richtig,g:alt.gesamt,s:alt.sicher||0,t:altMs}]):[]),{r:richtig,g:gesamt,s:sicher,t:Date.now()}].slice(-10);
+ const verlauf=[...(alt?(alt.verlauf||[{r:alt.richtig,g:alt.gesamt,s:alt.sicher||0,t:altMs}]):[]),{r:richtig,g:gesamt,s:sicher,t:Date.now(),rf:ergebnisse.map(f=>f.frei?"x":f.richtig?"1":"0").join("")}].slice(-10);
  await setDoc(doc(db,"basischeckVersuche",`${currentUser.uid}_${wocheId}`),{
- uid:currentUser.uid,wocheId,fach,antworten:ergebnisse.map(e=>e.antwort),richtig,gesamt,ampel,sicher,verlauf,
+ uid:currentUser.uid,wocheId,fach,antworten:ergebnisse.map(e=>e.antwort),tg:fragen.map(f=>f.tag||""),richtig,gesamt,ampel,sicher,verlauf,
  name:anzeigeName(profile,currentUser),createdAt:serverTimestamp()
  });
  delete CI_NEU[wocheId];
  toast(`${richtig} von ${gesamt} richtig.`);
- if($("ciAnsicht")){await setDoc(doc(db,"lehrplanFortschritt",`${currentUser.uid}_${wocheId}`),{uid:currentUser.uid,wocheId,fach,basischeckErledigt:true,updatedAt:serverTimestamp()},{merge:true}).catch(e=>console.error(e));ppDirty=true;await openCheckIn(wocheId);if(ampel==="gruen")showMotivationsBild(false,"lernen","bc:"+wocheId);return}
+ if($("ciAnsicht")){(/@ende$/.test(wocheId)||await setDoc(doc(db,"lehrplanFortschritt",`${currentUser.uid}_${wocheId}`),{uid:currentUser.uid,wocheId,fach,basischeckErledigt:true,updatedAt:serverTimestamp()},{merge:true}).catch(e=>console.error(e)));ppDirty=true;await openCheckIn(wocheId);if(ampel==="gruen")showMotivationsBild(false,"lernen","bc:"+wocheId);return}
  if(lehrplanWocheById(fach,wocheId)?.typ==="apt"){await aptSetzen(wocheId,{basischeckErledigt:true},{tab:"basischeck"});return}
- await setDoc(doc(db,"lehrplanFortschritt",`${currentUser.uid}_${wocheId}`),{uid:currentUser.uid,wocheId,fach,basischeckErledigt:true,updatedAt:serverTimestamp()},{merge:true}).catch(e=>console.error(e));
+ (/@ende$/.test(wocheId)||await setDoc(doc(db,"lehrplanFortschritt",`${currentUser.uid}_${wocheId}`),{uid:currentUser.uid,wocheId,fach,basischeckErledigt:true,updatedAt:serverTimestamp()},{merge:true}).catch(e=>console.error(e)));
  await reopenDetail(fach,wocheId);
  if(ampel==="gruen")showMotivationsBild(false,"lernen","bc:"+wocheId);
  }catch(e){console.error("Wissens-Check abgeben:",e);toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Konnte nicht gespeichert werden.");}
@@ -7568,6 +7569,7 @@ function basischeckEditorHTML(fach,wocheId,fragen){
       ${T.map(([v,t])=>`<option value="${v}"${typ===v?" selected":""}>${t}</option>`).join("")}
      </select></label>
     </div>
+    <label class="bc-tag">Lernziel (verbindet Wissens-Check am Anfang und am Ende)<input id="bcTag${i}"type="text"value="${esc(f.tag||"")}"placeholder="z. B. Selbststeuerung"></label>
     <div id="bcMcBereich${i}"style="${dis("mc")}">
      <div class="grid grid-2">${[0,1,2].map(j=>`<label>Antwort ${j+1}${j>1?" (optional)":""}<input id="bcOpt${i}_${j}"type="text"value="${esc(f.optionen?.[j]||"")}"></label>`).join("")}</div>
      <label style="margin-top:6px">Richtige Antwort<select id="bcRichtig${i}">${[0,1,2].map(j=>`<option value="${j}"${f.richtig===j?" selected":""}>Antwort ${j+1}</option>`).join("")}</select></label>
@@ -7632,7 +7634,7 @@ window.ciWiederholen=ciWiederholen;
 function basischeckPanelHTML(fach,wocheId,basischeckFragen,meinBasischeck,extraSchueler=""){
  if(isTeacher())return basischeckEditorHTML(fach,wocheId,basischeckFragen);
  if(!basischeckFragen.length)return`<div class="empty">Für diesen Inhalt wurde noch kein Wissens-Check eingerichtet.</div>${extraSchueler}`;
- if(meinBasischeck){const af=ampelFarbe(meinBasischeck.ampel);return`<div class="ci-res"style="--a:${af}"><div class="ci-ring"><b>${meinBasischeck.richtig}</b><small>von ${meinBasischeck.gesamt}</small></div><div><strong>${meinBasischeck.richtig} von ${meinBasischeck.gesamt} richtig</strong><p>${esc(basischeckAmpelText(meinBasischeck.ampel))}</p>${ciVerlaufText(meinBasischeck)}</div></div>${basischeckFreiErgebnisHTML(basischeckFragen,meinBasischeck)}${ciVerlaufSVG(meinBasischeck)?`<div class="ci-verlauf"><b>Dein Verlauf</b>${ciVerlaufSVG(meinBasischeck)}</div>`:""}<button type="button"class="secondary"onclick="ciWiederholen('${wocheId}')">Wissen erneut prüfen</button>`}
+ if(meinBasischeck){const af=ampelFarbe(meinBasischeck.ampel);return`<div class="ci-res"style="--a:${af}"><div class="ci-ring"><b>${meinBasischeck.richtig}</b><small>von ${meinBasischeck.gesamt}</small></div><div><strong>${meinBasischeck.richtig} von ${meinBasischeck.gesamt} richtig</strong><p>${esc(ceIstEnde(wocheId)?ciEndeText(meinBasischeck.ampel):basischeckAmpelText(meinBasischeck.ampel))}</p>${ciVerlaufText(meinBasischeck)}</div></div>${basischeckFreiErgebnisHTML(basischeckFragen,meinBasischeck)}${ciVerlaufSVG(meinBasischeck)?`<div class="ci-verlauf"><b>Dein Verlauf</b>${ciVerlaufSVG(meinBasischeck)}</div>`:""}<button type="button"class="secondary"onclick="ciWiederholen('${wocheId}')">${ceIstEnde(wocheId)?"Noch einmal machen":"Wissen erneut prüfen"}</button>`}
  const anz=basischeckFragen.length,min=Math.max(3,Math.round(anz*1.2));
  const ART={mc:"Auswahl",kprim:"Richtig oder falsch",offen:"Kurzantwort",zuordnung:"Zuordnen",lueckentext:"Lückentext",reihenfolge:"Reihenfolge",frei:"Freitext"};
  return`<div class="ci">
@@ -7646,27 +7648,28 @@ function basischeckPanelHTML(fach,wocheId,basischeckFragen,meinBasischeck,extraS
    </section>`;
   }).join("")}
   <div class="ci-sich"><b>Wie sicher fühlst du dich bei diesem Thema?</b><label><input type="radio"name="ciSich"value="1"> eher unsicher</label><label><input type="radio"name="ciSich"value="2"> teils, teils</label><label><input type="radio"name="ciSich"value="3"> ziemlich sicher</label></div>
-  <button class="primary ci-go"onclick="submitBasischeck('${fach}','${wocheId}')">Wissens-Check abgeben</button>
+  <button class="primary ci-go"onclick="submitBasischeck('${fach}','${wocheId}')">${ceIstEnde(wocheId)?"Wissens-Check am Ende abgeben":"Wissens-Check abgeben"}</button>
  </div>`;
 }
 
 async function openCheckIn(wocheId){
- const fach="paedagogik",lehrer=isTeacher();
- const e=kwThemaById(wocheId)||lehrplanWocheById(fach,wocheId);
+ const fach="paedagogik",lehrer=isTeacher(),ende=ceIstEnde(wocheId),basis=ceBasis(wocheId);
+ const e=kwThemaById(basis)||lehrplanWocheById(fach,basis);
  if(!e){toast("Dieses Thema wurde nicht gefunden.");return}
- const ph=projektPhaseByWoche(wocheId);
+ const ph=projektPhaseByWoche(basis);
  const c=ph?ppFarbe(ph):"#4a90d9";
  const [fragen,mein0]=await Promise.all([getBasischeckFragen(wocheId).catch(()=>[]),lehrer?Promise.resolve(null):getMyBasischeckVersuch(wocheId)]);
  const mein=CI_NEU[wocheId]?null:mein0;
  const lb=ph?`LB ${ph.lbNum}`:(e.lb||"");
  modal(`<button class="modal-close"onclick="closeModal()">×</button>
   <div id="ciAnsicht"class="ci-seite"style="--c:${c}">
-   <div class="kicker"style="color:${c}">${esc(lb)} · Wissens-Check</div>
+   <div class="kicker"style="color:${c}">${esc(lb)} · ${ende?"Wissens-Check am Ende":"Wissens-Check"}</div>
    <h2>${esc(e.thema)}</h2>
-   <p class="ci-intro">${lehrer?"Lehrkraft-Ansicht: Hier bearbeitest du die Fragen. Gespeicherte Fragen ersetzen den Standard-Check-In für alle.":mein?"Dein Ergebnis:":"Was weißt du schon? Kein Test, keine Note. Du siehst danach, wo du stehst."}</p>
-   ${basischeckPanelHTML(fach,wocheId,fragen,mein)}
+   <p class="ci-intro">${lehrer?(ende?"Lehrkraft-Ansicht (Wissens-Check am Ende): Dieselben Lernziele wie am Anfang, anders formuliert und etwas anspruchsvoller. Du kannst alles bearbeiten oder ergänzen. Das Feld Lernziel verbindet die Aufgabe automatisch mit dem Wissens-Check am Anfang. Gespeicherte Fragen ersetzen die Standardfragen für alle.":"Lehrkraft-Ansicht: Hier bearbeitest du die Fragen. Gespeicherte Fragen ersetzen den Standard-Check-In für alle."):mein?"Dein Ergebnis:":(ende?"Was kannst du jetzt? Die Aufgaben prüfen dieselben Lernziele wie am Anfang, nur anders gestellt. Kein Test, keine Note. Danach siehst du deine Lernkurve.":"Was weißt du schon? Kein Test, keine Note. Du siehst danach, wo du stehst.")}</p>
+   ${ende&&!lehrer&&mein?'<div id="ceEntw"></div>':""}${basischeckPanelHTML(fach,wocheId,fragen,mein)}
    <div class="ci-fuss"><button type="button"class="secondary"onclick="closeModal()">Schließen</button></div>
   </div>`);
+ if(ende&&!lehrer&&mein)ceEntwFuellen(basis);
 }
 window.openCheckIn=openCheckIn;
 
@@ -21752,7 +21755,7 @@ function lsThemaUebungenHTML(id){
 async function lsCheckInsLaden(){
  try{
   const snap=kwLehrer()?await getDocs(collection(db,"basischeckVersuche")):await getDocs(query(collection(db,"basischeckVersuche"),where("uid","==",currentUser.uid)));
-  return snap.docs.map(d=>d.data());
+  return snap.docs.map(d=>d.data()).filter(x=>!ceIstEnde(x.wocheId));
  }catch(e){console.warn("Wissens-Checks:",e);return[]}
 }
 function lsThemaName(id){const e=kwThemaById(id);if(!e)return String(id);const lb=e.lbNum||String(e.phase||"").replace("lb","");return`LB ${lb} · ${kwKurz(e)}`}
@@ -22139,6 +22142,142 @@ async function kwTrAus(id,themaId,zurueck){
   await ppmLaden(true);toast(zurueck?"Eingeblendet.":"Ausgeblendet.");render();
  }catch(err){console.error(err);toast("Das hat nicht geklappt.")}
 }
+/* Check-out (Abschluss) F11Sb – parallel zum Wissens-Check am Anfang: gleiche Lernziele (Tags), neue Formulierung/neuer Fall, anspruchsvoller. Erste MC-Antwort = richtig (wird gemischt). */
+const CHECKOUT_11={
+pp01:[
+["Welche Aussage beschreibt den Gegenstand der Psychologie am genauesten?","Die Wissenschaft vom Erleben und Verhalten des Menschen","Die Wissenschaft von der Erziehung","Die Lehre vom Aufbau des Gehirns"],
+["Ein Schüler sagt: „Ich bin nervös.“ Wie lässt sich dieses Erleben erfassen?","Nur indirekt, etwa durch Befragung oder Beobachtung seines Verhaltens","Direkt von außen mit bloßem Auge","Gar nicht"],
+["Z","Ordne jedes Beispiel zu.",["Erleben=Ein Kind freut sich innerlich auf den Ausflug","Verhalten=Ein Kind hüpft und klatscht in die Hände","Psychologie=Untersucht, wie beides zusammenhängt"]],
+["K","Jonas starrt auf die Tafel, kaut an seinem Stift und sagt: „Ich habe keine Angst vor dem Test.“",["+Das Starren und Kauen sind beobachtbares Verhalten.","-Seine Angst ist direkt beobachtbar.","+Sein Erleben kann nur über Befragung oder Deutung erschlossen werden."]],
+["F","Begründe an einem eigenen Beispiel, warum Psychologie sowohl Erleben als auch Verhalten betrachten muss.","Wer nur das Verhalten beobachtet (z. B. Schweigen im Unterricht), weiß nicht, ob es an Angst, Langeweile oder Müdigkeit liegt. Erst das Erleben (Befragung) liefert die Erklärung."]],
+pp02:[
+["Warum gilt „Das habe ich schon immer so erlebt“ nicht als wissenschaftlicher Beleg?","Einzelerfahrungen sind nicht systematisch überprüft und nicht verallgemeinerbar.","Weil nur Experten Erfahrungen machen","Weil Erfahrungen immer falsch sind"],
+["Was bedeutet Objektivität einer wissenschaftlichen Untersuchung?","Das Ergebnis hängt nicht von der durchführenden Person ab.","Das Ergebnis ist angenehm für alle.","Das Ergebnis bestätigt die Vermutung."],
+["L","Eine wissenschaftliche Aussage ist ___, gilt für ___ Fälle und wird mit ___ Methoden gewonnen.",["überprüfbar","viele","systematischen"],["einzelne","zufälligen"]],
+["K","Eine Lehrerin sagt: „Meiner Erfahrung nach sind Kinder mit Brille schlauer.“",["+Das ist eine alltagspsychologische Aussage.","-Sie ist wissenschaftlich gesichert.","+Man müsste sie systematisch und mit vielen Fällen überprüfen."]],
+["F","Formuliere eine alltagspsychologische Aussage und erkläre, wie man sie wissenschaftlich überprüfen könnte.","Aussage: „Wer viel Kaffee trinkt, ist aufmerksamer.“ Überprüfung: zwei Gruppen mit und ohne Kaffee bilden und danach in einem standardisierten Test die Aufmerksamkeit messen und vergleichen."]],
+pp03:[
+["Was kennzeichnet eine gute Hypothese?","Sie ist eindeutig formuliert und überprüfbar.","Sie ist ein bereits bewiesenes Ergebnis.","Sie ist eine Meinung ohne Bezug zu Daten."],
+["Was ist die abhängige Variable (AV)?","Das Merkmal, das gemessen wird und sich durch die UV verändern könnte","Die Bedingung, die der Versuchsleiter verändert","Die Zahl der Versuchspersonen"],
+["R","Bringe die Schritte eines Experiments in die richtige Reihenfolge.",["Hypothese formulieren","Versuchspersonen auf Gruppen verteilen","UV verändern und AV messen","Ergebnisse auswerten und Hypothese prüfen"]],
+["K","Eine Forscherin lässt eine Gruppe vor dem Test 10 Minuten Atemübungen machen, die Kontrollgruppe nicht, und vergleicht die Punktzahl.",["+Atemübungen sind die unabhängige Variable.","+Die Punktzahl ist die abhängige Variable.","-Die Kontrollgruppe erhält die Atemübungen."]],
+["F","Entwirf ein kurzes Experiment zu der Hypothese „Musik beim Lernen verbessert das Behalten“: nenne UV, AV und Kontrollgruppe.","UV: Lernen mit bzw. ohne Musik. AV: Anzahl behaltener Vokabeln im Test. Kontrollgruppe: lernt ohne Musik unter sonst gleichen Bedingungen."]],
+pp1a1:[
+["Welche Aussage über Erziehungswissenschaft ist richtig?","Sie untersucht Erziehung systematisch und stellt Wissen darüber bereit.","Sie führt täglich Erziehungshandlungen aus.","Sie ersetzt die Erziehungspraxis."],
+["Was meint Erziehungswirklichkeit?","Das tatsächliche Zusammenwirken von Erziehenden und zu Erziehenden","Die Vorschriften des Gesetzes","Eine reine Theorie"],
+["Z","Ordne jedes Beispiel zu.",["Erziehungspraxis=Eine Erzieherin tröstet ein weinendes Kind","Erziehungswissenschaft=Eine Studie untersucht Wirkungen von Lob","Erziehungswirklichkeit=Wie Mutter und Kind im Alltag tatsächlich miteinander umgehen"]],
+["K","Ein Erzieher liest eine Studie über Konfliktlösung und verändert danach sein Vorgehen im Gruppenraum.",["+Die Wissenschaft beeinflusst die Praxis.","-Praxis und Wissenschaft haben nichts miteinander zu tun.","+Der Erzieher handelt in der Erziehungspraxis."]],
+["F","Erkläre mit einem Beispiel, wie Erfahrungen aus der Praxis die Erziehungswissenschaft anregen können.","Eine Erzieherin beobachtet, dass Kinder nach Bewegungspausen konzentrierter sind. Das regt eine Untersuchung an, die den Zusammenhang systematisch prüft und das Ergebnis wieder der Praxis zur Verfügung stellt."]],
+pp1a2:[
+["Woher stammen Erziehungsziele häufig?","Aus den Werten und Normen der Gesellschaft","Aus Zufall","Aus der Körpergröße des Kindes"],
+["Welche Aufgabe haben Erziehungsziele?","Sie geben dem erzieherischen Handeln eine Richtung.","Sie bestrafen Fehlverhalten.","Sie ersetzen Erziehungsmaßnahmen."],
+["R","Ordne vom Allgemeinen zum Konkreten.",["Gesellschaftliche Werte (z. B. Verantwortung)","Erziehungsziel (z. B. Verlässlichkeit)","Erziehungsmaßnahme (z. B. Ämterplan)","Beobachtbares Verhalten (z. B. Kind erledigt sein Amt)"]],
+["K","Eltern wollen, dass ihre Tochter hilfsbereit wird, und lassen sie beim Tischdecken mithelfen.",["+Hilfsbereitschaft ist das Erziehungsziel.","+Das Mithelfen ist die Erziehungsmaßnahme.","-Das Mithelfen ist das Ziel."]],
+["F","Nenne ein Erziehungsziel für die Kita, eine passende Maßnahme und begründe, wie die Maßnahme zum Ziel führt.","Ziel: Selbstständigkeit. Maßnahme: Kinder decken selbst den Mittagstisch. Begründung: Durch eigenes Tun erleben sie, dass sie Aufgaben bewältigen können."]],
+pp1a3:[
+["Welches Verhalten stärkt eine pädagogische Beziehung?","Zuverlässig sein und Interesse am Kind zeigen","Versprechen nicht einhalten","Das Kind ignorieren"],
+["Wer ist an der pädagogischen Beziehung beteiligt?","Erziehende und zu Erziehende","Nur die Eltern","Nur Fachkräfte"],
+["Z","Ordne jedes Verhalten dem Merkmal zu.",["Wertschätzung=Das Kind wird mit seinen Stärken gesehen","Verlässlichkeit=Zusagen werden eingehalten","Aufmerksames Zuhören=Die Erzieherin hört dem Kind zu und fragt nach"]],
+["K","Ein Erzieher verspricht dem Kind einen Ausflug, sagt ihn kurzfristig ab und erklärt nichts.",["+Das kann das Vertrauen belasten.","-Das fördert die Beziehung.","+Verlässlichkeit ist ein Merkmal förderlicher Beziehung."]],
+["F","Erkläre, wie eine Erzieherin nach einem Streit die Beziehung zu einem Kind wieder stärken kann.","Sie nimmt das Kind ernst, hört zu, spricht ruhig über das Geschehene und macht deutlich, dass das Kind weiterhin angenommen ist. Dadurch entsteht wieder Vertrauen."]],
+pp1a4:[
+["Was unterscheidet familienergänzende von familienersetzenden Einrichtungen?","Familienergänzende unterstützen die Familie, familienersetzende übernehmen die Erziehung dauerhaft.","Es gibt keinen Unterschied.","Familienersetzende arbeiten nur nachmittags."],
+["Welche Einrichtung betreut Schulkinder nach dem Unterricht?","Der Hort","Die Krippe","Das Kinderheim"],
+["Z","Ordne jede Einrichtung zu.",["Kindergarten=Familienergänzende Einrichtung für Kinder bis zur Einschulung","Hort=Familienergänzende Betreuung von Schulkindern nach dem Unterricht","Kinderheim=Familienersetzende Einrichtung mit dauerhaftem Wohnen"]],
+["K","Ein Kind lebt dauerhaft in einer Wohngruppe der Jugendhilfe, weil die Eltern die Erziehung nicht leisten können.",["+Das ist eine familienersetzende Einrichtung.","-Das ist eine familienergänzende Einrichtung.","+Die Einrichtung übernimmt längerfristig Erziehungsaufgaben."]],
+["F","Begründe, ob ein Hort familienergänzend oder familienersetzend ist, und nenne eine Aufgabe.","Ein Hort ist familienergänzend: Er betreut Schulkinder nur zeitweise und die Familie bleibt Lebensmittelpunkt. Aufgabe: Hausaufgabenbetreuung und Freizeitangebote."]],
+pp04:[
+["Welche Aussage zu Erziehung stimmt?","Sie ist ein bewusstes, zielgerichtetes Handeln zur Unterstützung des Lernens.","Sie geschieht nur zufällig.","Sie besteht allein aus Versorgung."],
+["Was unterscheidet Erziehung von Betreuung?","Erziehung verfolgt Ziele, Betreuung sichert vor allem Versorgung und Aufsicht.","Beides ist identisch.","Betreuung hat immer Erziehungsziele."],
+["L","Erziehung ist ___ Handeln, das Kinder beim ___ unterstützt. Sie geschieht in ___ zwischen Menschen.",["zielgerichtetes","Lernen","Interaktion"],["zufälliges","Wachsen"]],
+["K","Eine Erzieherin sitzt nur daneben, damit nichts passiert, und greift nicht ein.",["+Das ist Betreuung, aber noch keine zielgerichtete Erziehung.","-Das ist Erziehung im pädagogischen Sinn.","+Erziehung braucht Absicht und Ziel."]],
+["F","Beschreibe eine Situation, in der aus Betreuung Erziehung wird.","Beim Mittagessen sorgt die Erzieherin nicht nur für Essen (Versorgung), sondern übt mit den Kindern, Bitte und Danke zu sagen und aufeinander zu warten. Sie verfolgt ein Ziel."]],
+pp05:[
+["Welchen Stil zeigt eine Mutter, die klare Regeln setzt, Gründe erklärt und auf Wünsche eingeht?","Autoritativ","Autoritär","Vernachlässigend"],
+["Welche Merkmale hat der permissive Stil?","Wenig Lenkung, viel Zuwendung","Viel Lenkung, wenig Zuwendung","Viel Lenkung, viel Zuwendung"],
+["Z","Ordne jede Aussage dem Stil zu.",["Autoritär=„Weil ich es sage!“","Autoritativ=„Wir besprechen, warum die Regel wichtig ist.“","Permissiv=„Mach, was du willst, Hauptsache du bist glücklich.“","Vernachlässigend=Die Eltern kümmern sich kaum um das Kind"]],
+["K","Ein Vater bestraft jede Abweichung hart, ohne mit dem Kind zu sprechen.",["+Das ist ein autoritärer Stil.","-Das ist ein autoritativer Stil.","+Die Zuwendung ist gering, die Lenkung hoch."]],
+["F","Beurteile, welche Wirkung ein autoritativer Stil im Vergleich zu einem autoritären Stil auf das Kind haben kann.","Autoritativ: Das Kind erlebt Orientierung und Wertschätzung, entwickelt Selbstvertrauen und Verantwortung. Autoritär: Das Kind passt sich aus Angst an und kann unsicher oder trotzig werden."]],
+pp06:[
+["Was bedeutet Mündigkeit?","Selbstständig und verantwortlich handeln zu können","Immer zu gehorchen","Möglichst viel zu wissen"],
+["Welche Kompetenz meint, Verantwortung gegenüber anderen zu übernehmen?","Sozialkompetenz","Sachkompetenz","Selbstkompetenz"],
+["Z","Ordne jedes Beispiel der Kompetenz zu.",["Selbstkompetenz=Ein Kind packt seine Tasche selbst","Sachkompetenz=Ein Kind erklärt, warum Pflanzen Wasser brauchen","Sozialkompetenz=Ein Kind teilt Material mit anderen"]],
+["K","Ein Kind lernt, bei Streit zuzuhören und gemeinsam eine Lösung zu suchen.",["+Das stärkt die Sozialkompetenz.","-Das gehört nicht zur Mündigkeit.","+Es lernt, Verantwortung gegenüber anderen zu übernehmen."]],
+["F","Nenne ein Beispiel für eine Aufgabe in der Kita, die Selbst-, Sach- und Sozialkompetenz zugleich fördert, und begründe.","Gemeinsam ein Beet anlegen: Die Kinder übernehmen eigene Aufgaben (Selbst), lernen Pflanzen kennen (Sach) und arbeiten im Team (Sozial)."]],
+pp07:[
+["Welche Funktion hat der BayBEP?","Er gibt Orientierung für Bildung und Erziehung in Kindertageseinrichtungen.","Er regelt Prüfungen der Oberstufe.","Er ist eine Gehaltsordnung."],
+["Welcher Bildungsbereich gehört zur Naturbegegnung?","Umwelt","Mathematik","Musik"],
+["Z","Ordne jedes Angebot dem Bildungsbereich zu.",["Gesundheit=Gemeinsame Bewegungsstunde","Umwelt=Ein Spaziergang im Wald mit Beobachtungsaufträgen","Digitale Medien=Ein Kurzfilm wird gemeinsam gedreht"]],
+["K","Eine Kita richtet ein Projekt „Wasser“ ein, bei dem die Kinder experimentieren und Fragen stellen.",["+Das setzt den Bildungsbereich Umwelt um.","-Das widerspricht dem BayBEP.","+Es knüpft an Neugier und Selbsttätigkeit an."]],
+["F","Plane ein kurzes Angebot für einen Bildungsbereich des BayBEP und begründe, was die Kinder lernen.","Angebot: Kinder pflanzen Kresse und beobachten sie (Umwelt). Sie lernen Wachstum kennen, übernehmen Verantwortung fürs Gießen und tauschen Beobachtungen aus."]],
+pp09:[
+["Welche Aussage über Wahrnehmung stimmt?","Sie ist ein aktiver, deutender Prozess und kein einfaches Abbild.","Sie ist immer objektiv.","Sie entsteht nur im Auge."],
+["Was ist ein Reiz?","Ein Ereignis, das ein Sinnesorgan erregt","Ein Gedanke","Eine Antwort im Test"],
+["R","Ordne den Wahrnehmungsprozess.",["Reiz trifft ein Sinnesorgan","Information wird weitergeleitet und verarbeitet","Deutung und Bewertung","Reaktion"]],
+["K","Zwei Lehrerinnen beurteilen denselben Aufsatz sehr unterschiedlich, weil die eine auf Rechtschreibung, die andere auf Inhalt achtet.",["+Persönliche Erwartungen beeinflussen die Wahrnehmung.","-Wahrnehmung ist völlig objektiv.","+Soziale und individuelle Einflüsse wirken zusammen."]],
+["F","Erkläre an einem Beispiel aus der Kita, wie Wahrnehmungsfehler zu Fehlurteilen führen können.","Eine Erzieherin erwartet vom „lauten“ Kind Ärger und deutet ein zufälliges Anstoßen als Absicht. Die Erwartung färbt die Wahrnehmung und führt zu einem ungerechten Urteil."]],
+pp2p2:[
+["Welche Aufgabe hat das Kurzzeitgedächtnis?","Informationen kurz festhalten und bearbeiten","Informationen dauerhaft speichern","Reize bereits vor dem Sinnesorgan filtern"],
+["Was ist Elaboration?","Informationen mit Vorwissen verknüpfen und ausschmücken","Informationen wortgleich wiederholen","Informationen löschen"],
+["R","Ordne den Informationsweg.",["Ultrakurzzeitgedächtnis","Aufmerksamkeit wählt aus","Kurzzeitgedächtnis","Langzeitgedächtnis nach Kontrollprozessen"]],
+["K","Du ordnest Lernstoff nach Oberbegriffen, bildest Beispiele und erklärst ihn jemandem.",["+Das sind Organisation und Elaboration.","-Das ist ausschließlich Wiederholung.","+So gelangt der Stoff leichter ins Langzeitgedächtnis."]],
+["F","Beschreibe, wie du mit den Kontrollprozessen Wiederholung, Organisation und Elaboration eine Lernstunde planst.","Erst Karteikarten (Wiederholung), dann eine Mindmap der Themen (Organisation), danach eigene Beispiele und Erklärung für einen Mitschüler (Elaboration)."]],
+pp12:[
+["Welche Lernstrategie gehört zur Elaboration?","Eigene Beispiele zu Begriffen bilden","Mehrfaches Abschreiben","Gliederung erstellen"],
+["Warum nutzt man Lernstrategien?","Um Informationen effektiver zu verarbeiten und zu behalten","Um weniger zu lernen","Um Lehrkräfte zufriedenzustellen"],
+["Z","Ordne jede Strategie zu.",["Wiederholung=Karteikarten abfragen","Organisation=Tabelle mit Oberbegriffen anlegen","Elaboration=Eine Eselsbrücke oder Analogie bilden"]],
+["K","Du lernst ein Kapitel und fasst es in einer Gliederung mit Überschriften zusammen.",["+Das ist Organisation.","-Das ist reine Wiederholung.","+Organisation macht Zusammenhänge sichtbar."]],
+["F","Beurteile eine eigene Lernstrategie: Ordne sie einem Prozess zu und nenne eine Verbesserungsidee.","Beispiel: Ich schreibe Karteikarten (Wiederholung). Verbesserung: Ich erkläre jede Karte mit einem eigenen Beispiel (Elaboration)."]],
+pp2a1:[
+["Welche Aussage über das prozedurale Gedächtnis stimmt?","Es speichert Fertigkeiten, die man ausführt, ohne bewusst nachzudenken.","Es speichert Fakten und Wissen.","Es speichert Lebensgeschichten."],
+["Was speichert das episodisch-autobiographische Gedächtnis?","Persönlich erlebte Ereignisse","Allgemeinwissen","Bewegungsabläufe"],
+["Z","Ordne jedes Beispiel zu.",["Prozedurales Gedächtnis=Schwimmen","Episodisch-autobiographisch=Erinnerung an die erste Klassenfahrt","Wissenssystem=Hauptstadt von Frankreich"]],
+["K","Eine ältere Frau erkennt ihre Enkel nicht mehr, kann aber noch Strickmuster aus dem Gedächtnis stricken.",["+Das prozedurale Gedächtnis ist hier erhalten.","-Alle Gedächtnissysteme sind gleich betroffen.","+Deklaratives und nicht-deklaratives Gedächtnis können unabhängig beeinträchtigt sein."]],
+["F","Erkläre, warum man Fahrradfahren kaum verlernt, aber Vokabeln vergisst, und ordne die Gedächtnissysteme zu.","Fahrradfahren ist prozedural gespeichert und durch Übung automatisiert. Vokabeln gehören zum deklarativen Wissenssystem und müssen immer wieder aktiv abgerufen werden."]],
+pp10:[
+["Welche drei Komponenten gehören zur Emotion?","Subjektives Erleben, körperliche Reaktion, Ausdruck","Denken, Lernen, Erinnern","Reiz, Reaktion, Verstärkung"],
+["Was ist eine reaktionsfokussierte Regulation?","Die Emotion wird erst nach ihrer Entstehung beeinflusst, etwa durch Unterdrückung.","Die Situation wird vorab verändert.","Die Bewertung der Situation wird neu gedeutet."],
+["Z","Ordne jede Strategie zu.",["Neu bewerten=Eine Prüfung als Herausforderung deuten (antezedenzfokussiert)","Unterdrücken=Das Zittern der Hände verbergen (reaktionsfokussiert)","Situation wählen=Eine stressige Situation vermeiden (antezedenzfokussiert)"]],
+["K","Vor dem Referat atmest du bewusst ruhig, nachdem dein Herz bereits rast.",["+Das ist eine reaktionsfokussierte Strategie.","-Das ist eine antezedenzfokussierte Strategie.","+Sie setzt nach der Entstehung der Emotion an."]],
+["F","Erkläre mit den drei Komponenten, wie sich Wut in einem Streit zeigt, und nenne eine Möglichkeit der Regulation.","Erleben: Ärger und Anspannung. Körper: Herzklopfen, Hitze. Ausdruck: lautes Sprechen, ballende Fäuste. Regulation: kurz Abstand nehmen und die Situation neu bewerten (antezedenzfokussiert)."]],
+pp11:[
+["Was besagt die Lokationsdimension nach Weiner?","Ob die Ursache in der Person (internal) oder außerhalb (external) liegt","Ob die Ursache lange oder kurz anhält","Ob die Ursache kontrollierbar ist"],
+["Welche Ursache ist internal-variabel?","Anstrengung","Begabung","Aufgabenschwierigkeit"],
+["Z","Ordne jede Ursache zu.",["Internal-stabil=Begabung","Internal-variabel=Anstrengung","External-stabil=Schwierigkeit der Aufgabe","External-variabel=Zufall"]],
+["K","Nach einer schlechten Note denkt Paul: „Ich war nicht gut vorbereitet. Beim nächsten Mal lerne ich mehr.“",["+Das ist eine internal-variable Ursache.","+Das fördert die Erfolgserwartung.","-Das ist eine external-stabile Ursache."]],
+["F","Vergleiche, wie sich die Erklärungen „zu wenig gelernt“ und „keine Begabung“ auf Motivation und Erfolgserwartung auswirken.","„Zu wenig gelernt“ ist internal-variabel: Man kann es ändern, die Erfolgserwartung bleibt hoch. „Keine Begabung“ ist internal-stabil: Man glaubt, nichts ändern zu können, die Erfolgserwartung sinkt und Motivation geht verloren."]],
+pp4p1:[
+["Welche Veränderung ist Lernen?","Ein Kind meidet nach schlechter Erfahrung heiße Herdplatten.","Ein Kind wird durch Wachstum größer.","Ein Kind ist müde."],
+["Warum ist Lernen nicht direkt beobachtbar?","Es findet im Inneren statt und wird nur an Verhalten erschlossen.","Es ist immer sichtbar.","Es kommt nur bei Tieren vor."],
+["L","Lernen ist eine relativ ___ Veränderung des ___ aufgrund von ___. Reifung ist von ___ Entwicklung abhängig.",["dauerhafte","Verhaltens","Erfahrung","körperlicher"],["kurzfristige","Alters"]],
+["K","Ein Baby beginnt mit etwa einem Jahr zu laufen, ohne dass jemand es trainiert hat.",["+Das ist überwiegend Reifung.","-Das ist ausschließlich Lernen.","+Lernen verändert dagegen Verhalten durch Erfahrung."]],
+["F","Grenze Lernen und Reifung an einem Beispiel zum Spracherwerb voneinander ab.","Reifung: Die Sprechorgane und das Gehirn entwickeln sich. Lernen: Das Kind übernimmt Wörter und Sätze durch Erfahrung mit den Bezugspersonen."]],
+pp13:[
+["Was ist ein konditionierter Reiz (CS)?","Ein ursprünglich neutraler Reiz, der durch Kopplung eine Reaktion auslöst","Ein Reiz, der von Natur aus Reaktion auslöst","Eine Belohnung"],
+["Was bedeutet Reizgeneralisierung?","Auch ähnliche Reize lösen die konditionierte Reaktion aus.","Die Reaktion wird gelöscht.","Der Reiz verliert Wirkung."],
+["R","Ordne die Phasen der klassischen Konditionierung.",["Vor der Konditionierung: NS löst keine Reaktion aus, UCS löst UCR aus","Während: NS und UCS werden gekoppelt","Nach der Konditionierung: NS wird zum CS","CS löst die CR aus"]],
+["K","Ein Kind, das von einem Hund gebissen wurde, fürchtet nun auch andere Hunde und Katzen.",["+Hier zeigt sich Reizgeneralisierung.","-Hier zeigt sich Löschung.","+Der Biss war der unkonditionierte Reiz."]],
+["F","Erkläre, wie man eine konditionierte Angst vor dem Zahnarzt wieder abbauen könnte.","Durch Löschung: Der CS (Praxis) wird wiederholt ohne UCS (Schmerz) erlebt. Zusätzlich können positive Erlebnisse und langsames Heranführen helfen."]],
+pp14:[
+["Was ist negative Verstärkung?","Ein unangenehmer Reiz entfällt nach dem Verhalten, das Verhalten nimmt zu.","Ein unangenehmer Reiz folgt auf das Verhalten.","Ein Verhalten wird bestraft."],
+["Was zeigt die Relativität von Verstärkern?","Dasselbe Ereignis kann für verschiedene Personen unterschiedlich verstärkend wirken.","Verstärker wirken bei allen gleich.","Verstärker gibt es nur als Geld."],
+["Z","Ordne jeden Fall zu.",["Positive Verstärkung=Lob für gutes Verhalten","Negative Verstärkung=Das laute Geräusch hört auf, wenn das Kind den Raum aufräumt","Bestrafung=Ein Kind verliert sein Spielzeug nach Fehlverhalten"]],
+["K","Ein Kind hilft im Haushalt und darf deshalb später ins Bett. Es hilft danach öfter.",["+Das ist positive Verstärkung.","-Das ist Bestrafung.","+Verhalten, das angenehme Folgen hat, tritt häufiger auf."]],
+["F","Beurteile, warum Lob nicht bei jedem Kind als Verstärker wirkt, und gib ein Beispiel.","Verstärker sind subjektiv: Ein schüchternes Kind empfindet öffentliches Lob als unangenehm, ein anderes freut sich darüber. Deshalb muss man herausfinden, was für das einzelne Kind verstärkend wirkt."]],
+pp15:[
+["Was ist stellvertretende Bekräftigung?","Das Beobachten, dass ein Modell für sein Verhalten belohnt wird","Eine eigene Belohnung","Eine Bestrafung des Beobachters"],
+["Was geschieht im Gedächtnisprozess beim Modelllernen?","Das beobachtete Verhalten wird gespeichert und innerlich repräsentiert.","Das Verhalten wird sofort nachgeahmt.","Die Aufmerksamkeit richtet sich auf das Modell."],
+["R","Ordne die Prozesse nach Bandura.",["Aufmerksamkeit","Behalten","Motorische Reproduktion","Motivation / Bekräftigung"]],
+["K","Ein Kind sieht, wie ein Klassenkamerad für das Teilen gelobt wird, und beginnt selbst zu teilen.",["+Das ist Modelllernen mit stellvertretender Bekräftigung.","-Das ist klassisches Konditionieren.","+Das Kind lernt durch Beobachtung."]],
+["F","Erkläre, warum ein Kind eine beobachtete Handlung nicht immer sofort nachahmt, und beziehe dich auf zwei Prozesse nach Bandura.","Es kann sein, dass es das Verhalten nicht behalten oder nicht motorisch ausführen kann oder dass die Motivation fehlt, weil es keine Belohnung erwartet oder Strafe befürchtet. Lernen ist möglich, Ausführung ist davon unabhängig."]],
+pp16:[
+["Warum sind Medienvorbilder für Lernen relevant?","Kinder und Jugendliche beobachten und übernehmen Verhalten von Medienfiguren.","Medien haben nie Einfluss.","Medien wirken nur im Schlaf."],
+["Welche Rolle spielen Likes bei Social Media nach dem operanten Konditionieren?","Sie wirken als positive Verstärker für das Posten.","Sie sind neutrale Reize.","Sie sind Bestrafungen."],
+["Z","Ordne jedes Beispiel zu.",["Modelllernen=Ein Kind ahmt einen Tanz aus einem Video nach","Operante Verstärkung=Viele Likes für ein Foto, danach häufiger Fotos","Pädagogische Begleitung=Eltern besprechen Videos mit dem Kind"]],
+["K","Eine Jugendliche postet immer häufiger, weil ihre Beiträge viele Reaktionen erhalten.",["+Die Reaktionen wirken als positive Verstärkung.","-Das ist ausschließlich klassisches Konditionieren.","+Medien können Verhalten also beeinflussen."]],
+["F","Nenne eine Chance und ein Risiko von Medien beim Lernen und eine pädagogische Konsequenz.","Chance: Lernvideos erklären Abläufe anschaulich. Risiko: Gewalt- oder Risikoverhalten kann nachgeahmt werden. Konsequenz: Medienangebote begleiten, besprechen und altersgerecht auswählen."]]
+};
+
 /* ---- Klassenstufen-Einstellungen F11Sb ---- */
 const LX_CFG={
  app:"F11Sb",klasse:11,fpa:true,
@@ -22257,7 +22396,8 @@ function lxUbTitel(sid){return(LXT.ub&&LXT.ub[sid])||sid}
 function lxMetrik(uid,themaId,D){
  const c=D.ci.find(x=>x.uid===uid&&x.wocheId===themaId)||null;
  const v=c?ciVerlauf(c):[];
- const wcErst=v.length?v[0].r/v[0].g:null,wcLetzt=v.length?v[v.length-1].r/v[v.length-1].g:null;
+ const ceD=D.ci.find(x=>x.uid===uid&&x.wocheId===themaId+"@ende"),ceV=ceD?ciVerlauf(ceD):[];
+ const wcErst=v.length?v[0].r/v[0].g:null,wcLetzt=ceV.length?ceV[ceV.length-1].r/ceV[ceV.length-1].g:(v.length?v[v.length-1].r/v[v.length-1].g:null);
  const st={};
  D.ub.filter(x=>x.uid===uid&&x.wocheId===themaId&&x.max>0).sort((a,b)=>lxMs(a)-lxMs(b)).forEach(x=>{(st[x.stationId]=st[x.stationId]||[]).push(x)});
  const listen=Object.values(st);
@@ -22272,7 +22412,7 @@ function lxMetrik(uid,themaId,D){
  if(faQ!=null)teile.push([faQ,0.75]);
  if(selbst)teile.push([(selbst-1)/3,0.5]);
  const sw=teile.reduce((s,t)=>s+t[1],0),q=sw?teile.reduce((s,t)=>s+t[0]*t[1],0)/sw:null;
- return{c,wcErst,wcLetzt,wcAnz:v.length,ubN:listen.length,ubErst,ubLetzt,faN:fas.length,faQ,selbst,q,ampel:lxAmpel(q),messungen:teile.length-(selbst?1:0),erledigt:!!f.abgeschlossen};
+ return{c,ende:!!ceD,wcErst,wcLetzt,wcAnz:v.length,ubN:listen.length,ubErst,ubLetzt,faN:fas.length,faQ,selbst,q,ampel:lxAmpel(q),messungen:teile.length-(selbst?1:0),erledigt:!!f.abgeschlossen};
 }
 // Konkrete Übungs-Hinweise für ein Thema (Schüler:innen)
 function lxHinweise(m){
@@ -22412,13 +22552,13 @@ async function lxLernstandThemaSchueler(e,ph){
  const D={ci:Object.values(L.ci),ub:L.ub,fa:L.fa,fort:{[currentUser.uid]:KW.fort||{}}};
  const m=lxMetrik(currentUser.uid,e.id,D);
  const zeilen=[];
- zeilen.push(`<div class="lx-ls-z"><span>Wissens-Check</span><b>${m.c?(m.wcAnz>1?`${lxProz(m.wcErst)} → ${lxProz(m.wcLetzt)}`:lxProz(m.wcLetzt)):"noch nicht gemacht"}</b><small>${m.c?(m.wcAnz>1?`${m.wcAnz} Versuche, Start und aktueller Stand`:"nach dem Üben noch einmal machen"):""}</small></div>`);
+ zeilen.push(`<div class="lx-ls-z"><span>Wissens-Check</span><b>${m.c?(m.ende?`${lxProz(m.wcErst)} → ${lxProz(m.wcLetzt)}`:(m.wcAnz>1?`${lxProz(m.wcErst)} → ${lxProz(m.wcLetzt)}`:lxProz(m.wcLetzt))):(m.ende?lxProz(m.wcLetzt):"noch nicht gemacht")}</b><small>${m.ende?"Start und Check-out":(m.c?(m.wcAnz>1?`${m.wcAnz} Versuche, Start und aktueller Stand`:"nach dem Üben den Wissens-Check am Ende machen"):"")}</small></div>`);
  zeilen.push(`<div class="lx-ls-z"><span>Übungsaufgaben</span><b>${m.ubN?`${lxProz(m.ubErst)} beim 1. Versuch`:"noch keine gemacht"}</b><small>${m.ubN?`${m.ubN} ${m.ubN===1?"Übung":"Übungen"}, zuletzt Ø ${lxProz(m.ubLetzt)}`:""}</small></div>`);
  zeilen.push(`<div class="lx-ls-z"><span>Fachaufsatz-Training</span><b>${m.faN?`Ø ${lxProz(m.faQ)} (Selbsteinschätzung)`:"noch keines gemacht"}</b><small>${m.faN?`${m.faN} ${m.faN===1?"Aufsatz":"Aufsätze"}`:""}</small></div>`);
  const hin=lxHinweise(m);
  const ampel=m.ampel?lxPunkt(m.ampel,LX_AMP[m.ampel][1]):"";
  const box=hin.length?`<div class="lx-ueben"><b>Das solltest du noch üben</b><ul>${hin.map(t=>`<li>${esc(t)}</li>`).join("")}</ul></div>`:`<div class="lx-ueben ok"><b>Dieses Thema sitzt.</b> Mach weiter mit dem nächsten.</div>`;
- return lxSek(7,LXF[7].n,"Wo du stehst und was du noch üben solltest",`<div class="lx-ls">${m.ampel?`<div class="lx-ls-z"><span>Gesamteindruck</span><b>${ampel} ${LX_AMP[m.ampel][1]}</b><small>aus allen Messungen zu diesem Thema</small></div>`:""}${zeilen.join("")}</div>${lxSelbstHTML(e.id,m.selbst)}${box}`);
+ return lxSek(7,LXF[7].n,"Wo du stehst und was du noch üben solltest",`<div class="lx-ls">${m.ampel?`<div class="lx-ls-z"><span>Gesamteindruck</span><b>${ampel} ${LX_AMP[m.ampel][1]}</b><small>aus allen Messungen zu diesem Thema</small></div>`:""}${zeilen.join("")}</div>${ceThemaBlockHTML(e,D,currentUser.uid)}${lxSelbstHTML(e.id,m.selbst)}${box}`);
 }
 async function lxLernstandThemaLehrer(e){
  const K=await lxKlasseLaden();
@@ -22435,6 +22575,7 @@ async function lxLernstandThemaLehrer(e){
    <div class="lx-ls-z"><span>Selbsteinschätzung</span><b>${sel.reduce((a,b)=>a+b,0)} von ${N}</b><small>unsicher oder ein bisschen: ${sicher}</small></div>
   </div>
   ${(g("rot")+g("orange")>=Math.max(2,Math.ceil(N*0.3))||sicher>=Math.max(2,Math.ceil(N*0.3)))?`<div class="lx-ueben"><b>Hier haben viele noch Schwierigkeiten</b><ul><li>${g("rot")+g("orange")} von ${N} liegen im gelben oder roten Bereich${sicher?`, ${sicher} schätzen sich unsicher ein`:""}. Plane eine Wiederholung oder eine Übungsstunde ein.</li></ul></div>`:""}
+  ${ceKlasseThemaHTML(e,K)}
   <div class="kw-aktionen"><button class="secondary" data-ls="thema" data-id="${esc(e.id)}">Wer braucht Hilfe? (Einzelergebnisse)</button><button class="secondary" onclick="go('lernstaende')">Alle Lernstände</button></div>`);
 }
 async function renderKwThema(){
@@ -22472,7 +22613,7 @@ async function renderKwThema(){
   // 1 Wissens-Check zu Beginn
   const s1=(lehrer||hat("checkin")||ciFr.length)?(()=>{
    const inner=(lehrer||hat("checkin"))?`<div class="kw-dateien">${liste("checkin")}</div>`:"";
-   const akt=`<div class="kw-aktionen"><button class="primary" data-kw="checkin" data-id="${esc(e.id)}">Wissens-Check ${lehrer?"ansehen":"starten"}</button>${lehrer?add("checkin"):""}</div>`;
+   const akt=`<div class="kw-aktionen"><button class="primary" data-kw="checkin" data-id="${esc(e.id)}">Wissens-Check ${lehrer?"ansehen":"starten"}</button>${lehrer?`<button class="secondary" data-ce="co" data-id="${esc(e.id)}">Wissens-Check am Ende bearbeiten</button>`:""}${lehrer?add("checkin"):""}</div>`;
    return lxSek(1,LXF[1].n,"Zuerst: Was weißt du schon? Kein Test, keine Note.",inner,akt);
   })():"";
   teile.push(s1);
@@ -22676,6 +22817,7 @@ async function lxHinweisBox(){
 async function renderLernstaendeLx(){
  const h=await renderKwCheckouts();
  let box="";try{box=await lxHinweisBox()}catch(e){console.warn("Hinweise:",e)}
+ box+=await ceLernstandBox();
  const m='<div class="ls-navwrap">',i=h.indexOf(m);
  return i<0?h:h.slice(0,i)+box+h.slice(i);
 }
@@ -23009,6 +23151,172 @@ function lxMatSort(){Object.keys(KW.mat||{}).forEach(k=>KW.mat[k].sort((a,b)=>lx
   }catch(e){console.warn("Reihenfolge:",e);toast("Reihenfolge konnte nicht gespeichert werden.");render()}
  });
 })();
+
+/* ================= Check-out (Wissens-Check am Ende) und Lernentwicklungskurve =================
+   Der Check-out ist ein zweiter Wissens-Check mit der Kennung "<themaId>@ende". Er prüft dieselben Lernziele
+   (Tags) wie der Wissens-Check am Anfang, anders formuliert. Die Verknüpfung läuft automatisch über das Lernziel. */
+function ceIstEnde(id){return/@ende$/.test(String(id||""))}
+function ceBasis(id){return String(id||"").replace(/@ende$/,"")}
+function ciEndeText(a){return a==="gruen"?"Grün – das Lernziel sitzt":a==="orange"?"Gelb – das meiste sitzt, wiederhole gezielt":a==="rot"?"Rot – übe das Thema noch einmal":"Noch nicht bearbeitet"}
+function ceFarbe(q){return q==null?"#9aa5b1":q>=0.75?"#2E7D57":q>=0.4?"#E0A800":"#C0392B"}
+// Messpunkte einer Person zu einem Thema: erster Versuch Start-Check, letzter Versuch Check-out
+function ceMess(uid,themaId,D){
+ const s=D.ci.find(x=>x.uid===uid&&x.wocheId===themaId)||null,e=D.ci.find(x=>x.uid===uid&&x.wocheId===themaId+"@ende")||null;
+ const vs=s?ciVerlauf(s):[],ve=e?ciVerlauf(e):[];
+ const a=vs.length?vs[0].r/vs[0].g:null,b=ve.length?ve[ve.length-1].r/ve[ve.length-1].g:null;
+ return{s,e,vs,ve,a,b,d:a!=null&&b!=null?b-a:null};
+}
+function ceTags(doc_,id){
+ if(doc_&&Array.isArray(doc_.tg)&&doc_.tg.length)return doc_.tg;
+ try{return checkinAusBank(id).map(q=>q.tag||"")}catch(e){return[]}
+}
+// Ergebnis je Lernziel: {tag:{a:1|0|null,b:1|0|null}}
+function ceZiele(M,themaId){
+ const out={},reihe=[];
+ const ra=M.vs.length&&M.vs[0].rf?String(M.vs[0].rf):"",rb=M.ve.length&&M.ve[M.ve.length-1].rf?String(M.ve[M.ve.length-1].rf):"";
+ const ta=ceTags(M.s,themaId),tb=ceTags(M.e,themaId+"@ende");
+ const eintrag=t=>{if(!out[t]){out[t]={a:null,b:null};reihe.push(t)}return out[t]};
+ const wert=c=>c==="1"?1:c==="0"?0:null;
+ ta.forEach((t,i)=>{if(t&&ra[i]&&ra[i]!=="x")eintrag(t).a=wert(ra[i])});
+ tb.forEach((t,i)=>{if(t&&rb[i]&&rb[i]!=="x")eintrag(t).b=wert(rb[i])});
+ return reihe.map(t=>({t,a:out[t].a,b:out[t].b}));
+}
+function ceChip(w){return w==null?`<i class="ce-c n" title="noch offen">–</i>`:w?`<i class="ce-c ja" title="richtig">✓</i>`:`<i class="ce-c nein" title="noch nicht sicher">✗</i>`}
+function ceZieleHTML(z){
+ if(!z.length)return"";
+ return`<div class="ce-ziele"><b>Lernziele im Vergleich</b>${z.map(x=>`<div class="ce-z"><span>${esc(x.t)}</span><span class="ce-zv">${ceChip(x.a)}<em>→</em>${ceChip(x.b)}</span></div>`).join("")}</div>`;
+}
+let ceSvgN=0;
+// Kurve durch die Messpunkte: pts=[{p:0..1|null,l:"Start",s:"25 %"}]
+function ceKurveSVG(pts,delta){
+ const v=pts.filter(x=>x.p!=null);if(!v.length)return"";
+ const W=360,H=210,L=46,R=330,T=30,B=146,n=pts.length,id="ceg"+(++ceSvgN);
+ const px=i=>n===1?(L+R)/2:L+(R-L)*(0.12+0.76*i/(n-1)),py=q=>B-(B-T)*q;
+ const P=pts.map((x,i)=>x.p==null?null:[px(i),py(x.p),x]).filter(Boolean);
+ const band=(a,b,c)=>`<rect x="${L}" y="${py(b).toFixed(1)}" width="${R-L}" height="${(py(a)-py(b)).toFixed(1)}" fill="${c}"/>`;
+ let d="",area="";
+ if(P.length>1){
+  d=`M${P[0][0].toFixed(1)},${P[0][1].toFixed(1)}`;
+  for(let i=1;i<P.length;i++){const m=((P[i-1][0]+P[i][0])/2).toFixed(1);d+=` C${m},${P[i-1][1].toFixed(1)} ${m},${P[i][1].toFixed(1)} ${P[i][0].toFixed(1)},${P[i][1].toFixed(1)}`}
+  area=d+` L${P[P.length-1][0].toFixed(1)},${B} L${P[0][0].toFixed(1)},${B} Z`;
+ }
+ const ticks=[0,50,100].map(q=>`<text x="${L-6}" y="${(py(q/100)+3.5).toFixed(1)}" text-anchor="end" font-size="10" fill="#7a8794">${q}</text>`).join("");
+ const lab=P.map(([x,y,o],i)=>`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="6" fill="${ceFarbe(o.p)}" stroke="#fff" stroke-width="2.5"/>`
+  +`<text x="${x.toFixed(1)}" y="${(y-12).toFixed(1)}" text-anchor="middle" font-size="12" font-weight="700" fill="#1f2d3d">${esc(o.s)}</text>`
+  +`<text x="${x.toFixed(1)}" y="${B+18}" text-anchor="middle" font-size="11" fill="#3a4a5a">${esc(o.l)}</text>`).join("");
+ let badge="";
+ if(delta!=null&&P.length>1){
+  const dp=Math.round(delta*100),txt=(dp>0?"+":dp<0?"−":"±")+Math.abs(dp)+" Prozentpunkte",col=dp>0?"#2E7D57":dp<0?"#C0392B":"#5b6b7b";
+  badge=`<g><rect x="${(W/2-62).toFixed(1)}" y="${B+30}" width="124" height="22" rx="11" fill="${col}"/><text x="${W/2}" y="${B+45}" text-anchor="middle" font-size="11.5" font-weight="700" fill="#fff">${txt}</text></g>`;
+ }
+ return`<svg viewBox="0 0 ${W} ${H}" width="100%" class="ce-svg" role="img" aria-label="Lernentwicklung: ${pts.map(x=>x.l+" "+x.s).join(" → ")}">
+  <defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1F3A60" stop-opacity=".28"/><stop offset="1" stop-color="#1F3A60" stop-opacity="0"/></linearGradient></defs>
+  ${band(0,.4,"#F7E3E3")}${band(.4,.75,"#FAF2DC")}${band(.75,1,"#E1EEE6")}${ticks}
+  ${area?`<path d="${area}" fill="url(#${id})"/>`:""}${d?`<path d="${d}" fill="none" stroke="#1F3A60" stroke-width="3" stroke-linecap="round"/>`:""}${lab}${badge}</svg>`;
+}
+function ceSchuelerPunkte(M){
+ const pts=[];
+ if(M.vs.length)pts.push({p:M.a,l:"Start",s:lxProz(M.a)});
+ M.ve.forEach((x,i)=>{pts.push({p:x.r/x.g,l:M.ve.length>1&&i<M.ve.length-1?"Ende "+(i+1):"Ende",s:lxProz(x.r/x.g)})});
+ return pts;
+}
+function ceThemaBlockHTML(e,D,uid){
+ const M=ceMess(uid,e.id,D),hat=checkinAusBank(e.id+"@ende").length>0;
+ let inner="";
+ if(M.e){
+  const pts=ceSchuelerPunkte(M);
+  inner=ceKurveSVG(pts,M.d)+(M.a==null?`<p class="ce-hint">Den Start-Wissens-Check hast du nicht gemacht. Deshalb fehlt der Vergleich.</p>`:"")+ceZieleHTML(ceZiele(M,e.id));
+ }else{
+  inner=`<p class="ce-hint">${M.s?"Du hast am Anfang "+lxProz(M.a)+" erreicht. ":""}Wenn du das Thema bearbeitet hast, mach den Wissens-Check am Ende. Er fragt dieselben Lernziele noch einmal ab, und du siehst deine Lernkurve.</p>`;
+ }
+ const btn=hat?`<button type="button" class="primary" data-ce="co" data-id="${esc(e.id)}">${M.e?"Wissens-Check am Ende wiederholen":"Wissens-Check am Ende starten"}</button>`:"";
+ return`<div class="ce-box"><div class="ce-kopf"><b>Deine Lernentwicklung</b><small>Start → Ende</small></div>${inner}${btn?`<div class="kw-aktionen">${btn}</div>`:""}</div>`;
+}
+// Klassenwerte (Lehrkräfte): nur Personen mit beiden Messpunkten
+function ceKlasseThema(K,e){
+ const mm=K.schueler.map(u=>ceMess(u.uid,e.id,K));
+ const beide=mm.filter(m=>m.d!=null);
+ const a=lxMittel(beide.map(m=>m.a)),b=lxMittel(beide.map(m=>m.b));
+ const z={};
+ mm.forEach(m=>ceZiele(m,e.id).forEach(x=>{const o=z[x.t]=z[x.t]||{a:[],b:[]};if(x.a!=null)o.a.push(x.a);if(x.b!=null)o.b.push(x.b)}));
+ const ziele=Object.keys(z).map(t=>({t,a:lxMittel(z[t].a),b:lxMittel(z[t].b),na:z[t].a.length,nb:z[t].b.length}));
+ return{mm,n:beide.length,nStart:mm.filter(m=>m.s).length,nEnde:mm.filter(m=>m.e).length,a,b,d:a!=null&&b!=null?b-a:null,ziele};
+}
+function ceKlasseThemaHTML(e,K){
+ const k=ceKlasseThema(K,e);
+ const kurve=k.n?ceKurveSVG([{p:k.a,l:"Ø Start",s:lxProz(k.a)},{p:k.b,l:"Ø Ende",s:lxProz(k.b)}],k.d):`<p class="ce-hint">Noch keine Person hat Wissens-Check und Check-out gemacht.</p>`;
+ const zl=k.ziele.filter(x=>x.a!=null||x.b!=null).map(x=>`<div class="ce-z"><span>${esc(x.t)}</span><span class="ce-zv"><b style="color:${ceFarbe(x.a)}">${lxProz(x.a)}</b><em>→</em><b style="color:${ceFarbe(x.b)}">${lxProz(x.b)}</b></span></div>`).join("");
+ return`<div class="ce-box"><div class="ce-kopf"><b>Lernzuwachs der Klasse</b><small>Start → Ende · ${k.nStart} Start, ${k.nEnde} Ende, ${k.n} mit beiden</small></div>${kurve}${zl?`<div class="ce-ziele"><b>Lernziele, Anteil richtig</b>${zl}</div>`:""}</div>`;
+}
+// Schüler:innen: Lernentwicklung nach dem Abgeben des Check-outs
+async function ceEntwFuellen(themaId){
+ const el=document.getElementById("ceEntw");if(!el)return;
+ try{
+  const L=await lxMeinLaden(true);
+  const e=kwThemaById(themaId);if(!e)return;
+  const M=ceMess(currentUser.uid,themaId,{ci:Object.values(L.ci).map(x=>({...x,uid:currentUser.uid}))});
+  if(!M.e){el.innerHTML="";return}
+  el.innerHTML=`<div class="ce-box"><div class="ce-kopf"><b>Deine Lernkurve</b><small>${esc(kwKurz(e))}</small></div>${ceKurveSVG(ceSchuelerPunkte(M),M.d)}${M.a==null?`<p class="ce-hint">Den Start-Wissens-Check hast du nicht gemacht. Deshalb fehlt der Vergleich.</p>`:""}${ceZieleHTML(ceZiele(M,themaId))}</div>`;
+ }catch(err){console.warn("Lernkurve:",err)}
+}
+// Lernbereich-Übersicht: je Thema Start und Check-out
+function ceLbSVG(rows){
+ const n=rows.length;if(!n)return"";
+ const W=Math.max(340,60+n*52),H=220,L=40,R=W-14,T=22,B=156,id="ceg"+(++ceSvgN);
+ const px=i=>n===1?(L+R)/2:L+(R-L)*(0.06+0.88*i/(n-1)),py=q=>B-(B-T)*q;
+ const band=(a,b,c)=>`<rect x="${L}" y="${py(b).toFixed(1)}" width="${R-L}" height="${(py(a)-py(b)).toFixed(1)}" fill="${c}"/>`;
+ const pfad=k=>{const P=rows.map((r,i)=>r[k]==null?null:[px(i),py(r[k])]);let d="",run=false;P.forEach(p=>{if(!p){run=false;return}if(!run){d+=`M${p[0].toFixed(1)},${p[1].toFixed(1)}`;run=true;return}const q=d.match(/(-?[\d.]+),(-?[\d.]+)$/);const m=((+q[1]+p[0])/2).toFixed(1);d+=` C${m},${q[2]} ${m},${p[1].toFixed(1)} ${p[0].toFixed(1)},${p[1].toFixed(1)}`});return d};
+ const ticks=[0,50,100].map(q=>`<text x="${L-6}" y="${(py(q/100)+3.5).toFixed(1)}" text-anchor="end" font-size="10" fill="#7a8794">${q}</text>`).join("");
+ const dA=pfad("a"),dB=pfad("b");
+ const bind=rows.map((r,i)=>r.a!=null&&r.b!=null?`<line x1="${px(i).toFixed(1)}" y1="${py(r.a).toFixed(1)}" x2="${px(i).toFixed(1)}" y2="${py(r.b).toFixed(1)}" stroke="${r.b>=r.a?"#2E7D57":"#C0392B"}" stroke-opacity=".45" stroke-width="5" stroke-linecap="round"/>`:"").join("");
+ const pk=rows.map((r,i)=>(r.a!=null?`<circle cx="${px(i).toFixed(1)}" cy="${py(r.a).toFixed(1)}" r="4.5" fill="#7a8794" stroke="#fff" stroke-width="2"/>`:"")+(r.b!=null?`<circle cx="${px(i).toFixed(1)}" cy="${py(r.b).toFixed(1)}" r="5.5" fill="${ceFarbe(r.b)}" stroke="#fff" stroke-width="2"/>`:"")
+  +`<text x="${px(i).toFixed(1)}" y="${B+16}" text-anchor="middle" font-size="10.5" fill="#3a4a5a"><title>${esc(r.titel)}</title>${esc(r.nr)}</text>`).join("");
+ return`<svg viewBox="0 0 ${W} ${H}" width="${W}" style="max-width:100%;height:auto" class="ce-svg" role="img" aria-label="Lernentwicklung im Lernbereich">
+  ${band(0,.4,"#F7E3E3")}${band(.4,.75,"#FAF2DC")}${band(.75,1,"#E1EEE6")}${ticks}${bind}
+  ${dA?`<path d="${dA}" fill="none" stroke="#7a8794" stroke-width="2.4" stroke-dasharray="5 4" stroke-linecap="round"/>`:""}${dB?`<path d="${dB}" fill="none" stroke="#1F3A60" stroke-width="3" stroke-linecap="round"/>`:""}${pk}
+  <g font-size="11" fill="#3a4a5a"><circle cx="${L+8}" cy="${H-16}" r="4.5" fill="#7a8794"/><text x="${L+18}" y="${H-12}">Start</text><circle cx="${L+78}" cy="${H-16}" r="5.5" fill="#1F3A60"/><text x="${L+90}" y="${H-12}">Ende</text></g></svg>`;
+}
+function ceLbKarte(ph,rows){
+ const F=kwFarbe(ph.lbNum),b=rows.filter(r=>r.a!=null&&r.b!=null);
+ const a=lxMittel(b.map(r=>r.a)),e=lxMittel(b.map(r=>r.b));
+ const kopf=b.length?`<span class="ce-sum">Ø ${lxProz(a)} → ${lxProz(e)} <b style="color:${e>=a?"#2E7D57":"#C0392B"}">${e>=a?"+":"−"}${Math.abs(Math.round((e-a)*100))}</b></span>`:`<span class="ce-sum">noch kein Vergleich</span>`;
+ const liste=rows.map(r=>`<li><em>${esc(r.nr)}</em> ${esc(r.titel)}: <b>${lxProz(r.a)}</b> → <b>${lxProz(r.b)}</b></li>`).join("");
+ return`<div class="ce-lb" style="--c:${F.c}"><div class="ce-lbk"><b>LB ${ph.lbNum} · ${esc(ph.lbTitel)}</b>${kopf}</div><div class="ce-lbs">${ceLbSVG(rows)}</div><details class="ce-det"><summary>Zahlen zu den Themen</summary><ul>${liste}</ul></details></div>`;
+}
+async function ceLernstandBox(){
+ try{
+  await kwLaden();
+  const lehrer=isTeacher()&&kwLehrer();
+  let D,uids;
+  if(lehrer){const K=await lxKlasseLaden();D=K;uids=K.schueler.map(u=>u.uid)}
+  else{const L=await lxMeinLaden();D={ci:Object.values(L.ci)};uids=[currentUser.uid]}
+  const karten=[];let nAlle=0;
+  LX_CFG.phasen().slice().sort((a,b)=>a.lbNum-b.lbNum).forEach(ph=>{
+   const rows=[];
+   kwThemenVonPhase(ph).forEach(e=>{
+    if(!lehrer&&!lxThemaSichtbar(e))return;
+    const ms=uids.map(u=>ceMess(u,e.id,D));
+    const beide=ms.filter(m=>m.d!=null);
+    let a=null,b=null;
+    if(lehrer){a=lxMittel(beide.map(m=>m.a));b=lxMittel(beide.map(m=>m.b))}
+    else{a=ms[0].a;b=ms[0].b}
+    if(a==null&&b==null)return;
+    rows.push({nr:e.nr,titel:kwKurz(e),a,b});
+   });
+   if(rows.length){nAlle+=rows.filter(r=>r.a!=null&&r.b!=null).length;karten.push(ceLbKarte(ph,rows))}
+  });
+  const ein=lehrer?"Durchschnitt der Klasse je Thema (nur Personen, die Start und Ende gemacht haben).":"Grau gestrichelt: dein Start. Dunkel: dein Wissens-Check am Ende. Je höher die Kurve rechts liegt, desto mehr hast du dazugelernt.";
+  return`<section class="ce-lern card"><h3>${lehrer?"Lernentwicklung der Klasse":"Deine Lernentwicklung"}</h3><p class="ce-hint">${ein}</p>${karten.length?karten.join(""):`<div class="ce-leer">Hier erscheint die Lernkurve, sobald zu einem Thema der Wissens-Check am Anfang und am Ende gemacht wurden.</div>`}</section>`;
+ }catch(err){console.warn("Lernentwicklung:",err);return""}
+}
+document.addEventListener("click",async ev=>{
+ const t=ev.target.closest&&ev.target.closest('[data-ce="co"]');if(!t||!currentUser)return;
+ const id=t.dataset.id;
+ try{
+  if(!(await getBasischeckFragen(id+"@ende")).length){toast("Für dieses Thema ist noch kein Wissens-Check am Ende hinterlegt.");return}
+  window.__eaRueck=null;await openCheckIn(id+"@ende");
+ }catch(err){console.error(err);toast("Der Wissens-Check am Ende konnte nicht geöffnet werden.")}
+});
 
 
 document.addEventListener("click",async e=>{const t=e.target.closest&&e.target.closest("[data-kw]");if(!t||!currentUser)return;const n=t.dataset.kw,i=t.dataset.id;try{if(n==="thema")activeKwThema=i,go("kw-thema");else if(n==="projekt")activeKwLb=Number(t.dataset.lb),go("kw-projekt");else if(n==="wand")go("start");else if(n==="checkouts")go("lernstaende");else if(n==="fortschritt")go("kw-fortschritt");else if(n==="matadd")kwMatForm(t.dataset.kat);else if(n==="faueb")kwFaUebungOeffnen(i);else if(n==="ubopen")ubOeffnen(t.dataset.url,t.dataset.w,t.dataset.t);else if(n==="matweg"){if(!confirm("Diese Datei wirklich entfernen?"))return;await deleteDoc(doc(db,"lehrplanMaterialien",i)),toast("Entfernt."),render()}else if(n==="board")if(wbVonKw=!0,kwLehrer())openWhiteboard(i);else{const r=await getDoc(doc(db,"whiteboards",i));r.exists()&&r.data().lernVorlage?await lbMeineKopie(i,String(r.data().title||"").replace(/\s*–\s*Lernübersicht$/,"")):openWhiteboard(i)}else if(n==="checkin"){const r=kwThemaById(i);if(!(await getBasischeckFragen(i)).length){toast("F\xFCr dieses Thema ist noch kein Wissens-Check hinterlegt.");return}window.__eaRueck=null,openCheckIn(i)}else if(n==="alt")kwThemaById(i).typ==="apt"?openAptDetail(i):openWocheDetail("paedagogik",i);else if(n==="ea")window.__eaRueck=async()=>{await render()},openEinarbeitung(i);else if(n==="modul")ppmOeffnen(i);else if(n==="modulneu"){const r=kwThemaById(i),a=PROJEKT_PHASEN.find(s=>s.id===r.phase);window.__kwThemaNeu=i,kwBausteinWahl(i)}else if(n==="modulwahl")kwModulWaehlen(i);else if(n==="trweg")await kwTrAus(i,t.dataset.thema,!1);else if(n==="trzurueck")await kwTrAus(null,i,!0);else if(n==="modulweg")await kwModulEntfernen(i,t.dataset.thema);else if(n==="projektstart"){const r=kwPhase(t.dataset.lb),a=PPM.liste.find(s=>s.modul==="projekt"&&Number(s.lb)===r.lbNum&&!s.projektId);a?ppmOeffnen(a.id):(activePPModul=null,activeFach="paedagogik",activePhaseDetail=r.id+":projekt",go("fach"))}else if(n==="exp")activeFach="paedagogik",openExperimentStunde(null);else if(n==="fertig"){const r=!kwErledigt(i);await setDoc(doc(db,"lehrplanFortschritt",`${currentUser.uid}_${i}`),{uid:currentUser.uid,wocheId:i,fach:"paedagogik",abgeschlossen:r,updatedAt:serverTimestamp()},{merge:!0}),r&&showMotivationsBild(!0,"abgabe"),render()}}catch(r){console.error("Kachelwand:",r),toast("Das hat nicht geklappt. Bitte erneut versuchen.")}}),init(),(function(){window.__CampusInteractionBridgeInstalled||(window.__CampusInteractionBridgeInstalled=!0,document.addEventListener("click",async function(e){const t=e.target.closest("[data-calendar-add],[data-calendar-day],[data-impulse-id],[data-open-impulse]");if(t){e.preventDefault(),e.stopPropagation();try{if(t.hasAttribute("data-calendar-add")){typeof window.openCalendarForm=="function"?window.openCalendarForm():typeof openCalendarForm=="function"&&openCalendarForm();return}if(t.hasAttribute("data-calendar-day")){const r=t.getAttribute("data-calendar-day").split("-").map(Number);r.length===3&&typeof window.openCalendarDay=="function"&&window.openCalendarDay(r[0],r[1],r[2]);return}const n=t.getAttribute("data-impulse-id")||t.getAttribute("data-open-impulse");if(n)if(typeof window.openImpulse=="function")window.openImpulse(n);else if(typeof window.openImpuls=="function")window.openImpuls(n);else if(typeof window.openImpulseModal=="function")window.openImpulseModal(n);else{const r=(window._campusImpulses||window.impulses||[]).find(a=>String(a.id)===String(n));if(r){const a=r.title||r.name||"Impuls",s=r.text||r.content||r.description||"";typeof window.modal=="function"&&window.modal(`<button class="modal-close"onclick="closeModal()">\xD7</button><div class="kicker">IMPULS</div><h2>${esc(a)}</h2><p>${esc(s)}</p>`)}}}catch(n){console.error("Campus Interaction:",n)}}},!0))})(),typeof window.openCalendarForm!="function"&&typeof openCalendarForm=="function"&&(window.openCalendarForm=openCalendarForm),typeof window.addCalendar!="function"&&typeof addCalendar=="function"&&(window.addCalendar=addCalendar),typeof window.openCalendarDay!="function"&&typeof openCalendarDay=="function"&&(window.openCalendarDay=openCalendarDay),typeof window.openImpulse!="function"&&typeof openImpulse=="function"&&(window.openImpulse=openImpulse),typeof window.openImpuls!="function"&&typeof openImpuls=="function"&&(window.openImpuls=openImpuls),typeof window.openImpulseModal!="function"&&typeof openImpulseModal=="function"&&(window.openImpulseModal=openImpulseModal);
