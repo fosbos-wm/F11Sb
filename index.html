@@ -8,7 +8,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' data:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebasestorage.app wss://*.firebaseio.com; frame-src 'self' https: blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="modulepreload" href="firebase-local.js?v=20261016a">
-<link rel="stylesheet" href="styles.css?v=20261116a">
+<link rel="stylesheet" href="styles.css?v=20261117q">
 
 <!-- App-Icon fürs Homescreen (Handy/iPad) -->
 <link rel="manifest" href="manifest.json">
@@ -51,6 +51,37 @@
       <small>Unser Lernraum. Unser Projekt. Unser Weg.</small>
     </div>
   </a>
+    <aside class="sidebar" id="sidebar">
+      <nav>
+        <div class="nav-area nav-area-l lx-lehrer" hidden>
+          <div class="nav-bereich"><b>Bereich Lehrkräfte</b><small>Planen, prüfen, abstimmen</small></div>
+          <a href="#news" data-page="news-l" class="nav-link">Übersicht</a>
+          <a href="#lk-unterricht" data-page="lk-unterricht" class="nav-link">Unterricht und Inhalte</a>
+          <a href="#lernstaende" data-page="lernstaende" class="nav-link">Lernstände</a>
+          <a href="#wochenauftrag" data-page="wochenauftrag" class="nav-link">Woche</a>
+          <a href="#live" data-page="live" class="nav-link">Live</a>
+          <a href="#team" data-page="team" class="nav-link">Klassenteam</a>
+        </div>
+        <div class="nav-area nav-area-s">
+          <div class="nav-bereich"><b>Bereich Schüler:innen</b><small>Lernen, üben, testen</small></div>
+          <a href="#news" data-page="news-s" class="nav-link active">Start</a>
+          <a href="#unterricht" data-page="unterricht" class="nav-link">Individueller Lernpfad</a>
+          <a href="#lernstaende" data-page="lernstaende" class="nav-link lx-schueler">Mein Lernstand</a>
+          <details class="nav-mehr">
+            <summary>Mehr</summary>
+            <div class="nav-pop">
+            <a href="#lernwerkstatt" data-page="lernwerkstatt" class="nav-link">Lernwerkstatt<small>Übungen, Training für die Abschlussprüfung, Lernjournal, Unterrichtstools.</small></a>
+            <a href="#kompetenz" data-page="kompetenz" class="nav-link">Kompetenzwerkstatt<small>Tests, Check-outs und Kompetenznetzwerk.</small></a>
+            <a href="#praktikum" data-page="praktikum" class="nav-link">fpA<small>Fachpraktische Ausbildung: Praktikum, Aufträge, Nachweise.</small></a>
+            <a href="#resilienz" data-page="resilienz" class="nav-link">Resilienz &amp; Respressi<small>Mini-Übungen, Schatzkiste und Resilienz-Woche.</small></a>
+            <a href="#klassenteam" data-page="klassenteam" class="nav-link">Klassenteam und Forum<small>Steckbriefe, Geburtstage, Nachrichten und Campus hilft.</small></a>
+            <a href="#kalender" data-page="kalender" class="nav-link">Kalender<small>Termine, Schulaufgaben (SA) und Kurzarbeiten (KU).</small></a>
+            <button type="button" id="helpQuick" class="nav-link nav-hilfe">Hilfe anbieten<small>Wobei kannst du anderen helfen?</small></button>
+            </div>
+          </details>
+        </div>
+      </nav>
+    </aside>
   <div class="user-area">
     <span id="userName" class="user-name"></span>
     <button class="ghost-icon" id="motivBtn" hidden type="button" title="Motivations-Hinweise ein oder aus">✨</button>
@@ -125,36 +156,7 @@
 
 <div id="app" hidden>
   <div class="app-shell">
-    <aside class="sidebar" id="sidebar">
-      <div class="side-title">CAMPUS</div>
-      <nav>
-        <div class="nav-area nav-area-l lx-lehrer" hidden>
-          <div class="nav-bereich"><b>Bereich Lehrkräfte</b><small>Planen, prüfen, abstimmen</small></div>
-          <a href="#news" data-page="news-l" class="nav-link">Startseite</a>
-          <a href="#lk-unterricht" data-page="lk-unterricht" class="nav-link">Unterricht planen</a>
-          <a href="#lernstaende" data-page="lernstaende" class="nav-link">Lernstände prüfen</a>
-          <a href="#team" data-page="team" class="nav-link">Lehrkräfte Klassenteam</a>
-        </div>
-        <div class="nav-area nav-area-s">
-          <div class="nav-bereich"><b>Bereich Schüler:innen</b><small>Lernen, üben, testen</small></div>
-          <a href="#news" data-page="news-s" class="nav-link active">Startseite</a>
-          <a href="#unterricht" data-page="unterricht" class="nav-link">Unterrichtsfächer</a>
-          <a href="#lernstaende" data-page="lernstaende" class="nav-link lx-schueler">Lernstände</a>
-          <a href="#lernwerkstatt" data-page="lernwerkstatt" class="nav-link">Lernwerkstatt</a>
-          <a href="#kompetenz" data-page="kompetenz" class="nav-link">Kompetenzwerkstatt</a>
-          <a href="#praktikum" data-page="praktikum" class="nav-link">fpA</a>
-          <a href="#klassenteam" data-page="klassenteam" class="nav-link">Unser Klassenteam</a>
-          <a href="#resilienz" data-page="resilienz" class="nav-link">Resilienz & Respressi</a>
-          <a href="#kalender" data-page="kalender" class="nav-link">Campus-Kalender</a>
-        </div>
-      </nav>
-      <div class="side-card">
-        <b>Campus hilft</b>
-        <p>Wobei kannst du anderen helfen?</p>
-        <button id="helpQuick">Hilfe anbieten →</button>
-      </div>
-      <div class="side-footer">Gemeinsam · offen · respektvoll</div>
-    </aside>
+
     <main id="content" tabindex="-1"></main>
   </div>
 </div>
@@ -162,6 +164,45 @@
 <div class="modal-backdrop" id="modalBackdrop" hidden><div class="modal" id="modal"></div></div>
 <div class="toast" id="toast"></div>
 
-<script type="module" src="app.js?v=20261116a"></script>
+<!-- umbauHinweis: zeigt Baustellen-Banner, wenn umbau.json "aktiv": true enthält -->
+<script>
+(function(){
+ var URL_="umbau.json",INTERVALL=120000,KEY="umbauWeg",el=null,pill=null,lastKey="";
+ var SVG='<svg viewBox="0 0 64 56" width="44" height="38" aria-hidden="true"><path d="M32 4 61 54H3z" fill="#f7c600" stroke="#17324B" stroke-width="4" stroke-linejoin="round"/><circle cx="32" cy="22" r="4" fill="#17324B"/><path d="M32 28v12" stroke="#17324B" stroke-width="5" stroke-linecap="round"/><path d="M22 47h20" stroke="#17324B" stroke-width="4" stroke-linecap="round"/></svg>';
+ var CSS='.ub-bar{position:relative;z-index:30;display:flex;align-items:center;gap:14px;padding:10px 18px;background:#fff3b0;border-bottom:4px solid transparent;border-image:repeating-linear-gradient(135deg,#f7c600 0 14px,#17324B 14px 28px) 1;color:#17324B;font:15px/1.4 Arial,Helvetica,sans-serif}.ub-bar b{font-size:16px}.ub-bar .ub-t{flex:1;min-width:0}.ub-bar button{border:1px solid #17324B;background:#fff;color:#17324B;border-radius:8px;padding:6px 12px;font:700 13px Arial,sans-serif;cursor:pointer}.ub-pill{position:fixed;right:14px;bottom:14px;z-index:99990;display:flex;align-items:center;gap:6px;background:#f7c600;color:#17324B;border:2px solid #17324B;border-radius:999px;padding:4px 14px 4px 8px;font:700 13px Arial,sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.22)}.ub-pill svg{width:26px;height:23px}.ub-voll{position:fixed;inset:0;z-index:100000;background:repeating-linear-gradient(135deg,#f7c600 0 28px,#17324B 28px 56px);display:flex;align-items:center;justify-content:center;padding:20px}.ub-voll>div{background:#fff;border:4px solid #17324B;border-radius:18px;max-width:520px;padding:28px 26px;text-align:center;color:#17324B;font:16px/1.5 Arial,Helvetica,sans-serif}.ub-voll h2{margin:8px 0 10px;font-size:24px}.ub-voll p{margin:0 0 8px}@media print{.ub-bar,.ub-pill,.ub-voll{display:none!important}}';
+ function esc(t){return String(t==null?"":t).replace(/[&<>"']/g,function(m){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]})}
+ function weg(){if(el&&el.parentNode)el.parentNode.removeChild(el);if(pill&&pill.parentNode)pill.parentNode.removeChild(pill);el=pill=null;lastKey=""}
+ function gewaehlt(){try{return sessionStorage.getItem(KEY)==="1"}catch(e){return false}}
+ function zeige(d){
+  var key=JSON.stringify([d.sperren,d.text]);
+  if(key===lastKey&&el)return;
+  weg();lastKey=key;
+  if(!document.getElementById("ubCss")){var st=document.createElement("style");st.id="ubCss";st.textContent=CSS;document.head.appendChild(st)}
+  var text=esc(d.text||"Die App wird gerade umgebaut. Es kann sein, dass etwas kurz nicht funktioniert.");
+  if(d.sperren){
+   el=document.createElement("div");el.className="ub-voll";el.setAttribute("role","alertdialog");
+   el.innerHTML="<div>"+SVG.replace('width="44" height="38"','width="84" height="74"')+"<h2>Baustelle: Umbau läuft</h2><p>"+text+"</p><p><small>Bitte versuche es später noch einmal.</small></p></div>";
+   document.body.appendChild(el);return;
+  }
+  pill=document.createElement("div");pill.className="ub-pill";pill.innerHTML=SVG+"<span>Umbau</span>";
+  document.body.appendChild(pill);
+  if(gewaehlt())return;
+  el=document.createElement("div");el.className="ub-bar";el.setAttribute("role","status");
+  el.innerHTML=SVG+'<div class="ub-t"><b>Baustelle – die App wird gerade umgebaut.</b><br>'+text+'</div><button type="button">Ausblenden</button>';
+  el.querySelector("button").onclick=function(){try{sessionStorage.setItem(KEY,"1")}catch(e){}if(el&&el.parentNode)el.parentNode.removeChild(el);el=null};
+  document.body.insertBefore(el,document.body.firstChild);
+ }
+ function pruefe(){
+  if(/[?&]umbau=aus/.test(location.search))return;
+  fetch(URL_+"?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(d){
+   if(d&&d.aktiv===true)zeige(d);else weg();
+  }).catch(function(){});
+ }
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",pruefe);else pruefe();
+ setInterval(pruefe,INTERVALL);
+})();
+</script>
+
+<script type="module" src="app.js?v=20261117q"></script>
 </body>
 </html>
