@@ -4028,6 +4028,7 @@ async function lxStartNeu(wp){
  themen.forEach((e,i)=>{const {ci,co}=V[i],f=KW.fort[e.id]||{},fertig=!!f.abgeschlossen;const nxs=fertig?"geschafft":(!ci?"Check-in":(!f.info?"Infotext":(!co?"Check-out":"Üben oder Check-out")));const o={e,fertig,nxs,begonnen:!!(ci||f.info)};if(!fertig&&!weiter)weiter=o;rest.push(o)});
  const zeile=rest.filter(o=>!weiter||o.e!==weiter.e).map(o=>`<article class="lxs-t lxs-t1"><div class="lxs-th"><div><h3>${esc(kwKurz(o.e))}</h3><small>${o.fertig?"✓ geschafft":"Nächster Schritt: "+esc(o.nxs)}</small></div><button type="button" class="${o.begonnen&&!o.fertig?"primary":"secondary"}" data-kw="thema" data-id="${esc(o.e.id)}">${o.fertig?"Ansehen":(o.begonnen?"Weiter":"Starten")}</button></div></article>`).join("");
  const weiterK=weiter?`<div class="lxs-weiter"><div><small>${weiter.begonnen?"WEITER MIT":"ALS NÄCHSTES"}</small><h2>${esc(kwKurz(weiter.e))}</h2><p>Nächster Schritt: ${esc(weiter.nxs)}</p></div><button type="button" class="primary" data-kw="thema" data-id="${esc(weiter.e.id)}">${weiter.begonnen?"Weiter":"Starten"}</button></div>`:`<div class="lxs-weiter"><div><small>ALLES ERLEDIGT</small><h2>Du bist mit dieser Woche durch.</h2><p>Such dir im Individuellen Lernpfad ein weiteres Thema.</p></div><button type="button" class="primary" onclick="go('unterricht')">Zum Lernpfad</button></div>`;
+ const gesch=rest.filter(o=>o.fertig).length,prog=ids.length?`<div class="lxs-prog"><b>${gesch} von ${rest.length} ${rest.length===1?"Thema":"Themen"} geschafft</b><div class="lxs-bar"><i style="width:${rest.length?Math.round(gesch/rest.length*100):0}%"></i></div><small>Du organisierst dich selbst: Check-in, Infotext, bei Bedarf üben, Check-out.</small></div>`:"";
  const auftrag=waPP.filter(w=>w.text).map(w=>`<p class="lxs-wa"><b>Arbeitsauftrag bis ${esc(lxTagKurz(w.bis))}:</b> ${esc(w.text)}</p>`).join("");
  const andere=waAnd.length?`<div class="lxs-fach">${waAnd.map(w=>`<article class="lxs-f"><small>${esc(w.fach||"")}</small><b>${esc(w.text||"Arbeitsauftrag")}</b><span>bis ${esc(lxTagKurz(w.bis))}</span></article>`).join("")}</div>`:"";
  let woche="";
@@ -4036,12 +4037,12 @@ async function lxStartNeu(wp){
   const ptH=PT.slice(0,5).map(t=>`<div class="lxs-wz pf"><small>${esc(lxTagKurz(t.datum))}${t.zeit?" · "+esc(t.zeit):""} · VERPFLICHTEND</small><b>${esc((t.art||"")+(t.titel?": "+t.titel:""))}${t.fach?" ("+esc(t.fach)+")":""}</b></div>`).join("");
   const Z=(wp||[]).filter(w=>!w.done&&w.dueDate&&w.dueDate<=lxPlus(7)).slice(0,3);
   const eigen=Z.map(w=>`<div class="lxs-wz"><small>${esc(fmtKurz(w.dueDate))} · ${w.dueDate<heute?"überfällig":"fällig"}</small><b>${esc(w.title)}</b></div>`).join("");
-  woche=ptH+eigen||`<div class="lxs-wz"><small>Alles erledigt</small><b>Keine Termine und Aufgaben in den nächsten Tagen</b></div>`;
+  woche=ptH+eigen||`<div class="lxs-wz"><small>Keine Pflichttermine</small><b>Du organisierst deine Woche selbst.</b></div>`;
  }catch(e){}
  const bis=WA.length?lxTagKurz(WA[0].bis).toUpperCase():"FREITAG, "+I.fr;
  return`<div class="lxs"><div class="lxs-kopf"><div><small>KW ${I.kw} · FÄLLIG BIS ${esc(bis)}</small><h1>Hallo${name?" "+esc(name):""}, das ist deine Woche.</h1></div></div>
- <div class="lxs-raster"><section class="lxs-main"><div class="lxs-mk"><h2>Pädagogik / Psychologie</h2><small>LB ${ph.lbNum} · ${esc(ph.lbTitel||"")}</small><a class="lxs-link" href="#" onclick="go('unterricht');return false">Individueller Lernpfad →</a></div>${auftrag}${weiterK}${rest.length>(weiter?1:0)?`<h3 class="lxs-h3">Weitere Themen dieser Woche</h3>${zeile}`:""}</section>
- <aside class="lxs-seite"><section class="lxs-wo"><h3>Diese Woche</h3>${woche}<a class="lxs-link" href="#kalender">Ganze Woche ansehen</a></section><section class="lxs-fr"><h3>Fachliche Frage?</h3><p>Stelle sie im Forum. Deine Lehrkräfte lesen mit.</p><button type="button" class="secondary" onclick="go('forum-board')">Zum Forum</button></section></aside></div>${andere}</div>`;
+ <div class="lxs-raster"><section class="lxs-main"><div class="lxs-mk"><h2>Pädagogik / Psychologie</h2><small>LB ${ph.lbNum} · ${esc(ph.lbTitel||"")}</small><a class="lxs-link" href="#" onclick="go('unterricht');return false">Individueller Lernpfad →</a></div>${prog}${auftrag}${weiterK}${rest.length>(weiter?1:0)?`<h3 class="lxs-h3">Weitere Themen dieser Woche</h3>${zeile}`:""}</section>
+ <aside class="lxs-seite"><section class="lxs-wo"><h3>Feste Termine</h3>${woche}<a class="lxs-link" href="#kalender">Ganze Woche ansehen</a></section><section class="lxs-fr"><h3>Fachliche Frage?</h3><p>Stelle sie im Forum. Deine Lehrkräfte lesen mit.</p><button type="button" class="secondary" onclick="go('forum-board')">Zum Forum</button></section></aside></div>${andere}</div>`;
 }
 async function lxThemaHub(e,lehrer){
  let ci=null,co=null;
@@ -22619,11 +22620,11 @@ function lxLandkarteNeu(){
  const akt=phasen.find(p=>p.start<=heute&&heute<=p.end)||phasen.find(p=>p.start>heute)||phasen[phasen.length-1];
  const spalte=ph=>{
   const th=kwThemenSicht(ph).filter(e=>e.typ!=="projekt"),pr=PP_EINHEITEN_PROJEKT(ph),cur=ph===akt;
-  const rows=th.map(e=>{const f=KW.fort[e.id]||{},z=f.abgeschlossen?"f":(f.info?"h":"");return`<button type="button" class="lxl-th" data-kw="thema" data-id="${esc(e.id)}" title="${z==="f"?"geschafft":(z==="h"?"begonnen":"noch offen")}"><em>${esc(e.nr)}</em><span>${esc(kwKurz(e))}</span><span class="lxl-pk"><i class="${z} t"></i></span></button>`}).join("");
+  const rows=th.map(e=>{const f=KW.fort[e.id]||{},z=f.abgeschlossen?"f":(f.info?"h":"");return`<button type="button" class="lxl-th" data-kw="thema" data-id="${esc(e.id)}" title="${z==="f"?"geschafft":(z==="h"?"begonnen":"noch offen")}"><em>${esc(e.nr)}</em><span>${esc(kwKurz(e))}${(LXWA.d||[]).some(w=>(w.themen||[]).includes(e.id)&&(w.bis||"")>=heute)?`<b class="lxl-wa">Diese Woche</b>`:""}</span><span class="lxl-pk"><i class="${z} t"></i></span></button>`}).join("");
   return`<section class="lxl-lb"><header class="lxl-kopf"><small>LB ${ph.lbNum}</small>${cur?`<span class="lxl-akt">AKTUELL</span>`:""}<h3>${esc(ph.lbTitel||"")}</h3><span class="lxl-n">${th.length} Themen</span>${pr}</header><div class="lxl-liste">${rows||`<div class="kw-leer">Noch keine Themen freigeschaltet.</div>`}</div></section>`;
  };
  const first=kwThemenSicht(akt).find(e=>e.typ!=="projekt");
- return`${kwSchuelerBanner()}<div class="lxl"><div class="lxl-tabs">${FACH.map((f,i)=>`<button type="button" class="lxl-tab${i?"":" an"}" data-lxf="${i}">${esc(f)}</button>`).join("")}</div><h1>Individueller Lernpfad</h1><p class="lxl-h">Tippe auf ein Thema. Der Punkt zeigt: offen, begonnen oder geschafft.</p>
+ return`${kwSchuelerBanner()}<div class="lxl"><div class="lxl-tabs">${FACH.map((f,i)=>`<button type="button" class="lxl-tab${i?"":" an"}" data-lxf="${i}">${esc(f)}</button>`).join("")}</div><h1>Individueller Lernpfad</h1><p class="lxl-h">Deine Bibliothek: Alle Themen mit Infotext, Übungen und Check-out. Du entscheidest, womit du anfängst. Der Punkt zeigt: offen, begonnen oder geschafft.</p>
  <div class="lxl-spalten">${phasen.map(spalte).join("")}</div><div class="lxl-folgt kw-leer" hidden>Dieses Fach folgt. Themen und Material kommen aus deinen Unterlagen.</div></div>${footer()}`;
 }
 function PP_EINHEITEN_PROJEKT(ph){
@@ -22642,7 +22643,7 @@ document.addEventListener("click",ev=>{const b=ev.target.closest&&ev.target.clos
 async function renderKachelwand(){
  await kwLaden();
  const lehrer=kwLehrer();
- if(!lehrer)return lxLandkarteNeu();
+ if(!lehrer){await lxWaLaden().catch(()=>{});return lxLandkarteNeu()}
  const alle=LX_CFG.phasen().flatMap(kwThemenSicht);
  const fertig=lehrer?alle.filter(e=>(KW.mat[e.id]||[]).length||kwModuleThema(e.id).length).length:alle.filter(e=>kwErledigt(e.id)).length;
  const p=alle.length?Math.round(fertig/alle.length*100):0;
@@ -22842,13 +22843,14 @@ async function lxThemaPfadSeite(e,ph,F){
  let ubN=0;try{if(L)ubN=lxMetrik(uid,e.id,{ci:Object.values(L.ci),ub:L.ub,fa:L.fa,fort:{[uid]:KW.fort||{}}}).ubN||0}catch(x){}
  const hatCo=checkinAusBank(e.id+"@ende").length>0;
  const selbst=Number(fort.selbst)||0;
+ if(co&&!fort.abgeschlossen&&!isTeacher()){fort.abgeschlossen=true;KW.fort[e.id]={...fort,abgeschlossen:true};setDoc(doc(db,"lehrplanFortschritt",`${uid}_${e.id}`),{uid,wocheId:e.id,fach:"paedagogik",abgeschlossen:true,abgeschlossenAt:serverTimestamp()},{merge:true}).catch(()=>{});LXM.t=0}
  /* Infotext */
  const lesen=["lernsituation","lehrtext","arbeitsblatt"].flatMap(k=>mats.filter(m=>m.kategorie===k));
  const hoeren=mats.filter(m=>m.kategorie==="audio");
  const sehen=["video","einfuehrung","tafel","lernuebersicht"].flatMap(k=>mats.filter(m=>m.kategorie===k));
   const dl=lesen[0]&&lesen[0].url?`<a class="secondary lxq-dl" href="${esc(lesen[0].url)}" target="_blank" rel="noopener" download>Infotext herunterladen</a>`:"";
  const hatInfo=lesen.length||hoeren.length||sehen.length;
- const infoIn=hatInfo?lxInfoListe(lesen,"")+(hoeren.length?`<h3 class="lxq-h3">Zum Hören</h3>${lxInfoListe(hoeren,"")}`:"")+(sehen.length?`<h3 class="lxq-h3">Zum Sehen</h3>${lxInfoListe(sehen,"")}`:"")+(hatCo?`<div class="kw-aktionen"><button type="button" class="primary" data-lx="pfad" data-s="checkout">Gelesen: weiter zum Check-out</button></div>`:""):`<div class="kw-leer">Der Infotext zu diesem Thema folgt.</div>`;
+ const infoIn=hatInfo?lxInfoListe(lesen,"")+(hoeren.length?`<h3 class="lxq-h3">Zum Hören</h3>${lxInfoListe(hoeren,"")}`:"")+(sehen.length?`<h3 class="lxq-h3">Zum Sehen</h3>${lxInfoListe(sehen,"")}`:"")+(hatCo?`<div class="lxq-frage"><b>Kommst du schon klar?</b><div class="kw-aktionen"><button type="button" class="primary" data-ce="co" data-id="${esc(e.id)}">Ja, weiter zum Check-out</button><button type="button" class="secondary" data-lx="pfad" data-s="ueben">Noch nicht, ich übe erst</button></div></div>`:""):`<div class="kw-leer">Der Infotext zu diesem Thema folgt.</div>`;
  /* Üben und Vertiefen: Basis, Plus, Vertieft × Begriffe, Theorie, Anwendung */
  const mod=kwModuleThema(e.id);
  const faMod=mod.filter(m=>m.modul==="fachaufsatz"||m.modul==="apt"),restMod=mod.filter(m=>!(m.modul==="fachaufsatz"||m.modul==="apt"));
@@ -22870,16 +22872,15 @@ async function lxThemaPfadSeite(e,ph,F){
  const hatUeb=items.length||sl.length||zus.length;
  const uebIn=hatUeb?`<div class="lxq-3">${spalten}</div>${zus.length?`<h3 class="lxq-h3">Weitere Trainings</h3><div class="lxq-zg">${zus.join("")}</div>`:""}`:`<div class="kw-leer">Zu diesem Thema sind noch keine Übungen eingestellt.</div>`;
  /* Check-out mit Selbsteinschätzung */
- const nxt=co||selbst?lxNaechstesThema(e):null;
+ const nxt=co?lxNaechstesThema(e):null;
  let coIn;
  if(!hatCo)coIn=`<div class="kw-leer">Zu diesem Thema ist noch kein Check-out hinterlegt.</div>`;
  else{
   const start=`<div class="kw-aktionen"><button class="primary" data-ce="co" data-id="${esc(e.id)}">${co?"Check-out wiederholen":"Check-out starten"}</button></div>${co?`<p class="lxq-erg">Dein Ergebnis: <b>${co.richtig} von ${co.gesamt}</b></p>`:""}`;
   let folge="";
-  if(co||selbst){
-   folge=lxSelbstHTML(e.id,selbst);
-   if(selbst>=3)folge+=`<div class="lxq-ok"><b>Super, das sitzt.</b><span>Du kannst das nächste Thema angehen.</span>${nxt?`<button type="button" class="primary" data-kw="thema" data-id="${esc(nxt.id)}">Weiter: ${esc(kwKurz(nxt))}</button>`:`<button type="button" class="secondary" data-kw="wand">Zum Individuellen Lernpfad</button>`}</div>`;
-   else if(selbst)folge+=`<div class="lxq-nok"><b>Das sitzt noch nicht ganz.</b><span>Übe gezielt, von Basis bis Vertieft. Danach machst du den Check-out noch einmal.</span><button type="button" class="primary" data-lx="pfad" data-s="ueben">Zu Üben und Vertiefen</button></div>`;
+  if(co){
+   const schwach=co.gesamt&&co.richtig/co.gesamt<.6;
+   folge=`<div class="lxq-ok"><b>Thema abgeschlossen.</b><span>${schwach?"Dein Ergebnis zeigt noch Lücken. Du kannst noch üben und den Check-out wiederholen.":"Gut gemacht."}</span>${nxt?`<button type="button" class="primary" data-kw="thema" data-id="${esc(nxt.id)}">Weiter: ${esc(kwKurz(nxt))}</button>`:`<button type="button" class="secondary" data-kw="wand">Zum Individuellen Lernpfad</button>`}${schwach?`<button type="button" class="secondary" data-lx="pfad" data-s="ueben">Noch üben</button>`:""}</div>`;
   }
   coIn=start+folge;
  }
@@ -22893,14 +22894,12 @@ async function lxThemaPfadSeite(e,ph,F){
  let nx;
  if(ciFr.length&&!ci)nx={s:"checkin",t:"Check-in starten",h:"Finde heraus, was du schon weißt. Etwa 10 Minuten, keine Note.",b:"Starten",a:`data-kw="checkin" data-id="${esc(e.id)}"`};
  else if(!fort.info&&hatInfo2)nx={s:"infotext",t:"Infotext lesen",h:"Lies, hör oder schau dir das Thema an.",b:"Infotext öffnen",a:`data-lx="pfad" data-s="infotext"`};
- else if(hatCo&&!co)nx={s:"checkout",t:"Check-out machen",h:"Zeig, was du kannst. Danach schätzt du dich selbst ein.",b:"Starten",a:`data-ce="co" data-id="${esc(e.id)}"`};
- else if(co&&!selbst)nx={s:"checkout",t:"Wie sicher fühlst du dich?",h:"Schätze dich nach dem Check-out kurz selbst ein.",b:"Einschätzen",a:`data-lx="pfad" data-s="checkout"`};
- else if(selbst&&selbst<3)nx={s:"ueben",t:"Üben und Vertiefen",h:"Übe gezielt, was noch nicht sitzt. Danach den Check-out wiederholen.",b:"Üben",a:`data-lx="pfad" data-s="ueben"`};
- else nx=nxt2?{s:"",t:"Nächstes Thema: "+kwKurz(nxt2),h:"Dieses Thema ist geschafft.",b:"Weiter",a:`data-kw="thema" data-id="${esc(nxt2.id)}"`}:{s:"",t:"Dieses Thema ist geschafft.",h:"Such dir im Individuellen Lernpfad das nächste aus.",b:"Zum Lernpfad",a:`data-kw="wand"`};
+ else if(hatCo&&!co)nx=ubN>0?{s:"checkout",t:"Bereit für den Check-out?",h:"Wenn du dich sicher fühlst, schließt du das Thema jetzt ab.",b:"Check-out",a:`data-ce="co" data-id="${esc(e.id)}"`}:{s:"",t:"Kommst du schon klar?",h:"Wenn ja, mach den Check-out. Wenn nicht, übe erst.",b:"Ja, Check-out",a:`data-ce="co" data-id="${esc(e.id)}"`,b2:"Noch nicht, üben",a2:`data-lx="pfad" data-s="ueben"`};
+ else nx=nxt2?{s:"",t:"Nächstes Thema: "+kwKurz(nxt2),h:co?"Dieses Thema ist abgeschlossen.":"Dieses Thema ist geschafft.",b:"Weiter",a:`data-kw="thema" data-id="${esc(nxt2.id)}"`}:{s:"",t:"Dieses Thema ist geschafft.",h:"Such dir im Individuellen Lernpfad das nächste aus.",b:"Zum Lernpfad",a:`data-kw="wand"`};
  window.__lxPfadWahl[e.id]=s;
  lxLive("Thema",{themaId:e.id,thema:kwKurz(e),schritt:s||nx.s,detail:(LX_PFAD.find(x=>x[0]===(s||nx.s))||[])[1]||""});
  const stepper=`<ol class="lxp-st lxp-klein">${LX_PFAD.map((x,i)=>`<li><button type="button" data-lx="pfad" data-s="${x[0]}" class="${OK[x[0]]?"ok ":""}${s===x[0]?"on":""}"><i>${OK[x[0]]?"✓":i+1}</i><b>${x[1]}</b>${SUB[x[0]]?`<em>${SUB[x[0]]}</em>`:""}</button></li>`).join("")}</ol>`;
- const weiter=`<div class="lxn" data-s="${nx.s}"${s&&s===nx.s?" hidden":""}><div><small>ALS NÄCHSTES</small><b>${esc(nx.t)}</b><span>${esc(nx.h)}</span></div><button type="button" class="primary" ${nx.a}>${esc(nx.b)}</button></div>`;
+ const weiter=`<div class="lxn" data-s="${nx.s}"${s&&s===nx.s?" hidden":""}><div><small>${nx.s===""&&!nx.b2&&co?"THEMA ABGESCHLOSSEN":"ALS NÄCHSTES"}</small><b>${esc(nx.t)}</b><span>${esc(nx.h)}</span></div><div class="lxn-b"><button type="button" class="primary" ${nx.a}>${esc(nx.b)}</button>${nx.b2?`<button type="button" class="secondary" ${nx.a2}>${esc(nx.b2)}</button>`:""}</div></div>`;
  const pan=(k,titel,text,inner)=>`<section class="lxq-p" data-s="${k}"${s===k?"":" hidden"}><header><h2>${titel}</h2><p>${text}</p></header>${inner}</section>`;
  const WAt=(LXWA.d||[]).filter(w=>(w.themen||[]).includes(e.id)&&(w.bis||"")>=lxHeute());
  const waBox=WAt.length?`<div class="lxq-wa"><b>Dein Arbeitsauftrag</b>${WAt.map(w=>`<span>${esc(w.fach||"")}${w.text?": "+esc(w.text):""} · bis ${esc(lxTagKurz(w.bis))}</span>`).join("")}</div>`:"";
@@ -22923,8 +22922,9 @@ async function renderWocheL(){
  if(!isTeacher())return`<div class="card"><p>Diese Seite ist für Lehrkräfte.</p></div>`;
  await kwLaden().catch(()=>{});await lxWaLaden(true);
  setTimeout(lxLiveStart,0);
- const heute=lxHeute(),fr=lxFreitag(),phasen=[...LX_CFG.phasen()].sort((a,b)=>a.lbNum-b.lbNum);
- const themen=phasen.map(ph=>`<div class="lxw-lb"><b>LB ${ph.lbNum} · ${esc(ph.lbTitel||"")}</b><div class="lxw-chips">${kwThemenVonPhase(ph).filter(e=>e.typ!=="projekt").map(e=>`<label class="lxw-chip"><input type="checkbox" name="waThema" value="${esc(e.id)}"><span>${esc(kwKurz(e))}</span></label>`).join("")}</div></div>`).join("");
+ const heute=lxHeute(),fr=lxFreitag(lxPlus(1)),phasen=[...LX_CFG.phasen()].sort((a,b)=>a.lbNum-b.lbNum);
+ const KL=await lxKlasseLaden().catch(()=>({schueler:[],fort:{}})),gesch=id=>(KL.schueler||[]).filter(u=>((KL.fort[u.uid]||{})[id]||{}).abgeschlossen).length;
+ const themen=phasen.map(ph=>`<details class="lxw-lb" open><summary><b>LB ${ph.lbNum} · ${esc(ph.lbTitel||"")}</b></summary><div class="lxw-chips">${kwThemenVonPhase(ph).filter(e=>e.typ!=="projekt").map(e=>`<label class="lxw-chip"><input type="checkbox" name="waThema" value="${esc(e.id)}"><span>${esc(kwKurz(e))}</span></label>`).join("")}</div></details>`).join("");
  const fo=LXW_FAECHER.map(f=>`<option>${esc(f)}</option>`).join("");
  const WA=LXWA.d.filter(w=>(w.bis||"")>=lxPlus(-7)).sort((a,b)=>(a.bis||"")<(b.bis||"")?-1:1);
  const PT=LXWA.pt.filter(t=>(t.datum||"")>=heute).sort((a,b)=>((a.datum||"")+(a.zeit||""))<((b.datum||"")+(b.zeit||""))?-1:1);
@@ -22934,10 +22934,12 @@ async function renderWocheL(){
  <div class="lxw-raster"><section class="lxw-k"><h3>Arbeitsauftrag für die Woche</h3>
   <div class="lxw-row"><label>Fach<select id="waFach">${fo}</select></label>
   <label>Fällig bis<input type="date" id="waBis" value="${fr}"></label></div>
-  <label>Arbeitsauftrag (Text)<textarea id="waText" rows="3" placeholder="Was sollen die Schüler:innen bis Freitag tun?"></textarea></label>
-  <details class="lxw-th"><summary>Themen auswählen <small>optional, Check-in, Infotext und Check-out</small></summary>${themen}</details>
+  <div class="lxw-fr"><button type="button" class="secondary" data-wa="fr0">Dieser Freitag</button><button type="button" class="secondary" data-wa="fr1">Nächster Freitag</button></div>
+  <div class="lxw-sub"><b>Diese Themen müssen bis dahin bearbeitet sein</b> <span id="waZahl" class="lxw-zahl">0 gewählt</span></div>
+  <p class="lxw-hint">Die Schüler:innen gehen selbst in die Bibliothek: Check-in, Infotext, bei Bedarf Übungen, dann Check-out.</p>${themen}
+  <label>Hinweis (optional)<textarea id="waText" rows="2" placeholder="Nur wenn nötig, sonst reichen die Themen."></textarea></label>
   <div class="kw-aktionen"><button class="primary" data-wa="save">Veröffentlichen</button></div>
-  <div class="lxw-liste"><h4>Aktuelle Aufträge</h4>${WA.map(w=>`<div class="lxw-z"><div><b>${esc(w.fach||"")}</b> · bis ${esc(lxTagKurz(w.bis))}<small>${esc(w.text||"")}${(w.themen||[]).length?` · ${(w.themen||[]).map(x=>esc(titel(x))).join(", ")}`:""}</small></div><button class="secondary" data-wa="del" data-id="${esc(w.id)}">Löschen</button></div>`).join("")||`<div class="kw-leer">Noch kein Arbeitsauftrag.</div>`}</div></section>
+  <div class="lxw-liste"><h4>Aktuelle Aufträge</h4>${WA.map(w=>`<div class="lxw-z"><div><b>${esc(w.fach||"")}</b> · bis ${esc(lxTagKurz(w.bis))}<small>${esc(w.text||"")}${(w.themen||[]).map(x=>`<span class="lxw-th1">${esc(titel(x))}: <b>${gesch(x)} von ${(KL.schueler||[]).length}</b> geschafft</span>`).join("")}</small></div><button class="secondary" data-wa="del" data-id="${esc(w.id)}">Löschen</button></div>`).join("")||`<div class="kw-leer">Noch kein Arbeitsauftrag.</div>`}</div></section>
  <section class="lxw-k lxw-g"><h3>Pflichttermin einplanen</h3>
   <p class="lxw-hint">Verpflichtend, erscheint den Schüler:innen auf der Startseite.</p>
   <div class="lxw-row"><label>Datum<input type="date" id="ptDatum" value="${lxFreitag(lxPlus(3))}"></label>
@@ -22947,14 +22949,16 @@ async function renderWocheL(){
   <div class="kw-aktionen"><button class="primary" data-wa="ptsave">Termin ansetzen</button></div>
   <div class="lxw-liste"><h4>Geplante Pflichttermine</h4>${PT.map(t=>`<div class="lxw-z"><div><b>${esc(lxTagKurz(t.datum))}${t.zeit?" · "+esc(t.zeit):""}</b> · ${esc(t.art||"")}<small>${t.fach?esc(t.fach)+(t.titel?": ":""):""}${esc(t.titel||"")}</small></div><button class="secondary" data-wa="ptdel" data-id="${esc(t.id)}">Löschen</button></div>`).join("")||`<div class="kw-leer">Noch keine Termine.</div>`}</div></section></div></div>${footer()}`;
 }
+document.addEventListener("change",ev=>{if(!ev.target.matches||!ev.target.matches('input[name="waThema"]'))return;const z=document.getElementById("waZahl");if(z)z.textContent=document.querySelectorAll('input[name="waThema"]:checked').length+" gewählt"});
 document.addEventListener("click",async ev=>{
  const b=ev.target.closest&&ev.target.closest("[data-wa]");if(!b||!currentUser||!isTeacher())return;
  const a=b.dataset.wa,v=id=>($(id)||{}).value||"";
  try{
+  if(a==="fr0"||a==="fr1"){const el=$("waBis");if(el)el.value=lxFreitag(lxPlus(a==="fr0"?1:8));return}
   if(a==="save"){
    const themen=[...document.querySelectorAll('input[name="waThema"]:checked')].map(x=>x.value),text=v("waText").trim(),bis=v("waBis");
    if(!bis)return toast("Bitte ein Datum wählen.");
-   if(!text&&!themen.length)return toast("Bitte Themen wählen oder einen Text schreiben.");
+   if(!text&&!themen.length)return toast("Bitte mindestens ein Thema wählen.");
    await addDoc(collection(db,"wochenauftraege"),{fach:v("waFach"),bis,text:text.slice(0,600),themen,von:currentUser.uid,vonName:anzeigeName(profile,currentUser),createdAt:serverTimestamp()});
    LXWA.t=0;toast("Arbeitsauftrag veröffentlicht.");render();
   }else if(a==="del"){

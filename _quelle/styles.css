@@ -828,3 +828,17 @@ button.primary:hover{background:#0F2539}
 .lxw-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .lxw-live{background:#fff;border:1px solid #DAE5EE;border-top:3px solid #469BDC;border-radius:16px;padding:16px 20px;margin:0 0 22px}.lxw-live h3{margin:0 0 10px}
 .lxw-th{margin:10px 0;border:1px solid #DAE5EE;border-radius:12px;padding:8px 12px;background:#F5F9FD}.lxw-th>summary{cursor:pointer;font-weight:700;color:#17324B}.lxw-th small{font-weight:500;color:#55697B;margin-left:6px}
+
+/* ---------- Selbstorganisiert plakativ (neu9) ---------- */
+.lxn-b{display:flex;gap:10px;flex-wrap:wrap}
+.lxn .secondary{padding:14px 22px;border-radius:12px;font-weight:700}
+.lxq-frage{margin-top:22px;padding:18px 20px;background:#F3F8E8;border:1px solid #DDE9C4;border-radius:14px}.lxq-frage>b{display:block;font-size:19px;color:#17324B;margin-bottom:10px}
+.lxs-prog{background:#fff;border:1px solid #DDE9C4;border-radius:14px;padding:14px 18px;margin:0 0 14px}.lxs-prog b{font-size:20px;color:#17324B}.lxs-prog small{display:block;margin-top:8px;color:#55697B}
+.lxs-bar{height:12px;border-radius:999px;background:#E3ECD2;margin-top:8px;overflow:hidden}.lxs-bar i{display:block;height:100%;background:#9BBF41;border-radius:999px}
+.lxs-wo{border-top-color:#E08A00}
+.lxl-wa{display:inline-block;margin-left:8px;padding:1px 8px;border-radius:999px;background:#E08A00;color:#fff;font-size:11px;font-weight:800;vertical-align:middle}
+.lxw-fr{display:flex;gap:8px;margin:-4px 0 10px}
+.lxw-sub{margin:14px 0 4px;font-size:16px;color:#17324B}.lxw-zahl{margin-left:8px;padding:2px 10px;border-radius:999px;background:#17324B;color:#fff;font-size:12px;font-weight:800}
+details.lxw-lb>summary{cursor:pointer;list-style:none}.lxw-lb{margin-bottom:6px}
+.lxw-chip input:checked+span{background:#17324B;color:#fff;border-color:#17324B}
+.lxw-th1{display:block;margin-top:2px;color:#55697B}.lxw-th1 b{color:#17324B}
