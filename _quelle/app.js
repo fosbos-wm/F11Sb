@@ -21858,7 +21858,7 @@ async function renderKwProjekt(){
 function kwDateiHTML(titel,url,id,wid){
  const del=kwLehrer()&&id?`<button type="button" class="kw-del" data-kw="matweg" data-id="${esc(id)}" data-w="${esc(wid)}" aria-label="Löschen">×</button>`:"";
  let a;
- if(/^lb3-erziehung\/[a-z0-9\/-]+\.html$/.test(String(url||""))){a=kwLehrer()?`<a class="kw-datei" href="${esc(url)}#embed&l" target="_blank" rel="noopener"><span>${esc(titel)}</span><small>Übung und Lösung öffnen</small></a>`:`<button type="button" class="kw-datei" data-kw="ubopen" data-url="${esc(url)}" data-w="${esc(wid||"")}" data-t="${esc(titel)}"><span>${esc(titel)}</span><small>Übung starten (der erste Versuch zählt)</small></button>`}
+ if(/^lb\d+-[a-z0-9-]+\/[a-z0-9\/_-]+\.html$/.test(String(url||""))){a=kwLehrer()?`<a class="kw-datei" href="${esc(url)}#embed&l" target="_blank" rel="noopener"><span>${esc(titel)}</span><small>Übung und Lösung öffnen</small></a>`:`<button type="button" class="kw-datei" data-kw="ubopen" data-url="${esc(url)}" data-w="${esc(wid||"")}" data-t="${esc(titel)}"><span>${esc(titel)}</span><small>Übung starten (der erste Versuch zählt)</small></button>`}
  else if(/^uebungsbausteine\/station\.html\?s=/.test(String(url||""))&&!kwLehrer())a=`<button type="button" class="kw-datei" data-kw="ubopen" data-url="${esc(url)}" data-w="${esc(wid||"")}" data-t="${esc(titel)}"><span>${esc(titel)}</span><small>Übung starten (Ergebnis wird gespeichert)</small></button>`;
  else if(/^(uebungsbausteine|karteikarten)\//.test(String(url||"")))a=`<a class="kw-datei" href="${esc(url)}" target="_blank" rel="noopener"><span>${esc(titel)}</span><small>${/^karteikarten/.test(url)?"Karteikarten öffnen":"Übung starten"}</small></a>`;
  else if(String(url||"").startsWith("fa:"))a=`<button type="button" class="kw-datei" data-kw="faueb" data-id="${esc(url.slice(3))}"><span>${esc(titel)}</span><small>Übung öffnen</small></button>`;
@@ -21906,7 +21906,7 @@ function ubZeilenHTML(uid,wid){
  mine.forEach(x=>{(g[x.stationId]=g[x.stationId]||[]).push(x)});
  return Object.entries(g).map(([sid,l])=>{
   const last=l[0],amp=ubAmpel(last.punkte/last.max),v={verlauf:l.map(e=>({r:e.punkte,g:e.max,t:evMs(e)}))};
-  return`<div class="ls-ub">${lsAmpelPunkt(amp,LS_AMP[amp][1])}<span>${esc(ubTitel(sid))}</span><small>1. Versuch: ${last.punkte} von ${last.max}${l.length>1?" · "+l.length+" Versuche":""}</small></div>${ciVerlaufSVG(v)?`<details class="ls-verlauf"><summary>Verlauf: ${ciVerlaufTxt(v)}</summary>${ciVerlaufSVG(v)}</details>`:""}`;
+  return`<div class="ls-ub">${lsAmpelPunkt(amp,LS_AMP[amp][1])}<span>${esc((l[0]&&l[0].titel)||ubTitel(sid))}</span><small>1. Versuch: ${last.punkte} von ${last.max}${l.length>1?" · "+l.length+" Versuche":""}</small></div>${ciVerlaufSVG(v)?`<details class="ls-verlauf"><summary>Verlauf: ${ciVerlaufTxt(v)}</summary>${ciVerlaufSVG(v)}</details>`:""}`;
  }).join("");
 }
 // Übersicht je Übung für die ganze Klasse (letzter Stand je Person)
@@ -21915,7 +21915,7 @@ function lsThemaUebungenHTML(id){
  ub.forEach(x=>{const o=(nach[x.stationId]=nach[x.stationId]||{});if(!o[x.uid])o[x.uid]=x});
  const z=Object.entries(nach).map(([sid,pro])=>{
   const l=Object.values(pro),g=k=>l.filter(x=>ubAmpel(x.punkte/x.max)===k).length,avg=Math.round(l.reduce((s,x)=>s+x.punkte/x.max,0)/l.length*100);
-  return`<tr><th scope="row">${esc(ubTitel(sid))}</th><td>${l.length} von ${LT.schueler.length}</td><td><b style="color:#2E7D57">${g("gruen")}</b> · <b style="color:#B38600">${g("orange")}</b> · <b style="color:#C0392B">${g("rot")}</b></td><td>Ø ${avg} %</td></tr>`}).join("");
+  return`<tr><th scope="row">${esc((l[0]&&l[0].titel)||ubTitel(sid))}</th><td>${l.length} von ${LT.schueler.length}</td><td><b style="color:#2E7D57">${g("gruen")}</b> · <b style="color:#B38600">${g("orange")}</b> · <b style="color:#C0392B">${g("rot")}</b></td><td>Ø ${avg} %</td></tr>`}).join("");
  return z?`<h3 style="margin:16px 0 6px;font-size:14px">Übungen und Fachaufsatz zu diesem Thema</h3><div class="kw-tabwrap"><table class="kw-tab"><thead><tr><th>Übung</th><th>Gemacht</th><th>grün · gelb · rot</th><th>Stand</th></tr></thead><tbody>${z}</tbody></table></div>`:"";
 }
 async function lsCheckInsLaden(){
@@ -21969,7 +21969,7 @@ function lsThemaDetail(id){
 let UB_CTX=null;
 function ubOeffnen(url,wid,titel){
  UB_CTX={wid:wid||"",titel:titel||""};
- const u=String(url||"");const lb3=/^lb3-erziehung\/[a-z0-9\/-]+\.html$/.test(u);if(!lb3&&!/^uebungsbausteine\/station\.html\?s=[A-Za-z0-9_-]+/.test(u))return;
+ const u=String(url||"");const lb3=/^lb\d+-[a-z0-9-]+\/[a-z0-9\/_-]+\.html$/.test(u);if(!lb3&&!/^uebungsbausteine\/station\.html\?s=[A-Za-z0-9_-]+/.test(u))return;
  modal(`<button class="modal-close"onclick="closeModal()">×</button><div class="kicker">ÜBUNG</div><h2>${esc(titel||"Übung")}</h2><iframe class="ub-frame"src="${esc(lb3?u+"#embed":u+"&app=1")}"title="Übung"allow="fullscreen"></iframe><small>Dein Ergebnis wird gespeichert und hilft deiner Lehrkraft einzuschätzen, wo du stehst. Keine Note.</small>`);
 }
 window.addEventListener("message",async e=>{
@@ -21977,7 +21977,7 @@ window.addEventListener("message",async e=>{
  const r=e.data&&e.data.ubErgebnis;if(!r||!UB_CTX||!currentUser||kwLehrer())return;
  const sid=String(r.sid||"").replace(/[^A-Za-z0-9_-]/g,"").slice(0,80);if(!sid)return;
  const max=Math.max(1,Math.round(+r.max||1)),punkte=Math.max(0,Math.min(max,Math.round(+r.punkte||0)));
- try{await addDoc(collection(db,"ubErgebnisse"),{uid:currentUser.uid,wocheId:UB_CTX.wid,stationId:sid,versuch:Math.max(0,Math.round(+r.versuch||0)),punkte,max,zuege:Math.max(0,Math.round(+r.zuege||0)),sekunden:Math.max(0,Math.round(+r.sekunden||0)),createdAt:serverTimestamp()});toast("Ergebnis gespeichert.")}catch(err){console.warn("Übungsergebnis:",err)}
+ try{await addDoc(collection(db,"ubErgebnisse"),{uid:currentUser.uid,wocheId:UB_CTX.wid,titel:String(UB_CTX.titel||"").slice(0,120),stationId:sid,versuch:Math.max(0,Math.round(+r.versuch||0)),punkte,max,zuege:Math.max(0,Math.round(+r.zuege||0)),sekunden:Math.max(0,Math.round(+r.sekunden||0)),createdAt:serverTimestamp()});toast("Ergebnis gespeichert.")}catch(err){console.warn("Übungsergebnis:",err)}
 });
 // ---- Evidenz-Lernstand je Person × Thema ----
 const EV_ALT_TAGE=28;
