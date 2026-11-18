@@ -1,1 +1,116 @@
-{"material":[]}
+{
+ "material": [
+  {
+   "id": "lb3-1-1-karteikarten",
+   "wocheId": "pp04",
+   "kategorie": "uebung",
+   "titel": "Karteikarten",
+   "url": "lb3-erziehung/ebene-1-begriffe/1-1-karteikarten.html",
+   "ord": 11
+  },
+  {
+   "id": "lb3-1-2-zuordnen",
+   "wocheId": "pp04",
+   "kategorie": "uebung",
+   "titel": "Zuordnen",
+   "url": "lb3-erziehung/ebene-1-begriffe/1-2-zuordnen.html",
+   "ord": 12
+  },
+  {
+   "id": "lb3-1-3-lueckentext",
+   "wocheId": "pp04",
+   "kategorie": "uebung",
+   "titel": "Lückentext",
+   "url": "lb3-erziehung/ebene-1-begriffe/1-3-lueckentext.html",
+   "ord": 13
+  },
+  {
+   "id": "lb3-1-4-beispiel-detektiv",
+   "wocheId": "pp04",
+   "kategorie": "uebung",
+   "titel": "Beispiel-Detektiv",
+   "url": "lb3-erziehung/ebene-1-begriffe/1-4-beispiel-detektiv.html",
+   "ord": 14
+  },
+  {
+   "id": "lb3-2-1-struktur-legen",
+   "wocheId": "pp05",
+   "kategorie": "vertiefung2",
+   "titel": "Struktur legen",
+   "url": "lb3-erziehung/ebene-2-theorie/2-1-struktur-legen.html",
+   "ord": 21
+  },
+  {
+   "id": "lb3-2-2-fall-diagnose",
+   "wocheId": "pp05",
+   "kategorie": "vertiefung2",
+   "titel": "Fall-Diagnose",
+   "url": "lb3-erziehung/ebene-2-theorie/2-2-fall-diagnose.html",
+   "ord": 22
+  },
+  {
+   "id": "lb3-2-3-einordnen",
+   "wocheId": "pp05",
+   "kategorie": "vertiefung2",
+   "titel": "Einordnen mit Reglern",
+   "url": "lb3-erziehung/ebene-2-theorie/2-3-einordnen.html",
+   "ord": 23
+  },
+  {
+   "id": "lb3-2-4-folgen-zuordnen",
+   "wocheId": "pp05",
+   "kategorie": "vertiefung2",
+   "titel": "Folgen zuordnen",
+   "url": "lb3-erziehung/ebene-2-theorie/2-4-folgen-zuordnen.html",
+   "ord": 24
+  },
+  {
+   "id": "lb3-2-5-fehler-detektiv",
+   "wocheId": "pp05",
+   "kategorie": "vertiefung2",
+   "titel": "Fehler-Detektiv",
+   "url": "lb3-erziehung/ebene-2-theorie/2-5-fehler-detektiv.html",
+   "ord": 25
+  },
+  {
+   "id": "lb3-3-1-rollenspiel-stil-raten",
+   "wocheId": "pp05",
+   "kategorie": "vertiefung3",
+   "titel": "Rollenspiel: Stil-Raten",
+   "url": "lb3-erziehung/ebene-3-anwendung/3-1-rollenspiel-stil-raten.html",
+   "ord": 31
+  },
+  {
+   "id": "lb3-3-2-rollenspiel-elternabend",
+   "wocheId": "pp05",
+   "kategorie": "vertiefung3",
+   "titel": "Rollenspiel: Elternabend",
+   "url": "lb3-erziehung/ebene-3-anwendung/3-2-rollenspiel-elternabend.html",
+   "ord": 32
+  },
+  {
+   "id": "lb3-3-3-baybep-rallye",
+   "wocheId": "pp07",
+   "kategorie": "vertiefung3",
+   "titel": "BayBEP-Rallye",
+   "url": "lb3-erziehung/ebene-3-anwendung/3-3-baybep-rallye.html",
+   "ord": 33
+  },
+  {
+   "id": "lb3-3-4-projekt-gemuesegarten",
+   "wocheId": "pp07",
+   "kategorie": "vertiefung3",
+   "titel": "Kurzprojekt: Gemüsegarten",
+   "url": "lb3-erziehung/ebene-3-anwendung/3-4-projekt-gemuesegarten.html",
+   "ord": 34
+  },
+  {
+   "id": "lb3-3-5-praxis-check",
+   "wocheId": "pp05",
+   "kategorie": "vertiefung3",
+   "titel": "Praxis-Check",
+   "url": "lb3-erziehung/ebene-3-anwendung/3-5-praxis-check.html",
+   "ord": 35
+  }
+ ]
+}

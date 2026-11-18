@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ebene 1 (Begriffe) · Zuordnen – LB3 Erziehung</title>
+<style>
+:root{
+  --rot:#d23c3c; --rot-d:#a82626; --rot-l:#fbe4e2;
+  --blau:#1f6fb8; --blau-d:#14508a; --blau-l:#dcebf8;
+  --gruen:#2c8a52; --gruen-d:#1d6a3c; --gruen-l:#dcf1e3;
+  --ok:#2c8a52; --ok-l:#dcf1e3; --no:#c4362c; --no-l:#fbe2df;
+  --ink:#1f2a33; --mut:#5d6b77; --bg:#f5f6f8; --line:#e0e4e9;
+  --lv:#33414d; --lv-d:#1f2a33; --lv-l:#eef1f4;
+}
+body.rot{--lv:var(--rot);--lv-d:var(--rot-d);--lv-l:var(--rot-l)}
+body.blau{--lv:var(--blau);--lv-d:var(--blau-d);--lv-l:var(--blau-l)}
+body.gruen{--lv:var(--gruen);--lv-d:var(--gruen-d);--lv-l:var(--gruen-l)}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45}
+header{background:var(--lv);color:#fff;padding:16px 18px 14px}
+header .top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+header h1{margin:0;font-size:1.25rem}
+header p{margin:4px 0 0;opacity:.95;font-size:.95rem}
+.home-btn{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:999px;padding:5px 12px;font-size:.85rem;cursor:pointer}
+.lvnav{display:flex;gap:6px;padding:10px 14px 0;background:#fff;flex-wrap:wrap}
+.lvnav button{flex:1;min-width:110px;border:0;border-radius:10px 10px 0 0;padding:9px 8px;font-weight:700;font-size:.9rem;cursor:pointer;color:#fff;opacity:.55}
+.lvnav button.on{opacity:1}
+.lvnav .r{background:var(--rot)}.lvnav .b{background:var(--blau)}.lvnav .g{background:var(--gruen)}
+.sub{display:flex;gap:6px;flex-wrap:wrap;padding:10px 14px;background:#fff;border-bottom:3px solid var(--lv);position:sticky;top:0;z-index:5}
+.sub button{border:2px solid var(--lv);background:#fff;color:var(--lv-d);border-radius:999px;padding:7px 12px;font-size:.9rem;font-weight:600;cursor:pointer}
+.sub button.on{background:var(--lv);color:#fff}
+main{max-width:800px;margin:0 auto;padding:16px 14px 70px}
+.intro{color:var(--mut);margin:0 0 12px}
+.box{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:5px 11px;font-size:.84rem;cursor:pointer;color:var(--ink)}
+.chip.on{border-color:var(--lv);background:var(--lv);color:#fff}
+.btn{border:0;border-radius:10px;padding:11px 16px;font-size:1rem;font-weight:600;cursor:pointer;background:var(--lv);color:#fff}
+.btn.ok{background:var(--ok)}.btn.no{background:var(--no)}
+.btn.ghost{background:#fff;border:1.5px solid var(--line);color:var(--ink)}
+.btn.out{background:#fff;border:2px solid var(--lv);color:var(--lv-d)}
+.btn:disabled{opacity:.45;cursor:default}
+.bar{height:8px;background:var(--line);border-radius:6px;overflow:hidden;margin:10px 0 4px}
+.bar>i{display:block;height:100%;background:var(--lv);transition:width .3s}
+.small{font-size:.84rem;color:var(--mut)}
+.tag{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:var(--lv-l);color:var(--lv-d)}
+.fb{margin-top:12px;border-radius:12px;padding:12px 14px;display:none}
+.fb.ok{display:block;background:var(--ok-l);border-left:5px solid var(--ok)}
+.fb.no{display:block;background:var(--no-l);border-left:5px solid var(--no)}
+.done{text-align:center;padding:24px 10px}
+.done .big{font-size:2.3rem;font-weight:800;color:var(--lv)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid2 .btn{padding:14px 8px;font-size:.95rem}
+
+/* Startseite */
+.stairs{display:grid;gap:12px;margin-top:6px}
+.tile{display:flex;gap:14px;align-items:stretch;background:#fff;border-radius:16px;border:1px solid var(--line);overflow:hidden;cursor:pointer;text-align:left;padding:0;font:inherit;color:inherit;width:100%}
+.tile .num{width:74px;flex:none;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:1.8rem}
+.tile .num small{font-size:.68rem;font-weight:700;opacity:.9}
+.tile .txt{padding:14px 14px 14px 0}
+.tile h3{margin:0 0 3px;font-size:1.1rem}
+.tile p{margin:0;font-size:.9rem;color:var(--mut)}
+.tile.r .num{background:var(--rot)}.tile.b .num{background:var(--blau)}.tile.g .num{background:var(--gruen)}
+.tile.r h3{color:var(--rot-d)}.tile.b h3{color:var(--blau-d)}.tile.g h3{color:var(--gruen-d)}
+.tile.b{margin-left:18px}.tile.g{margin-left:36px}
+.legend{margin-top:18px;font-size:.9rem;color:var(--mut)}
+
+/* Karteikarten */
+.flip{perspective:1200px;margin:12px 0;cursor:pointer;user-select:none}
+.flip-in{position:relative;min-height:230px;transition:transform .5s;transform-style:preserve-3d}
+.flip.turned .flip-in{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:16px;padding:20px;display:flex;flex-direction:column;justify-content:center;gap:10px}
+.front{background:#fff;border:3px solid var(--lv)}
+.front .q{font-size:1.22rem;font-weight:700;text-align:center}
+.back{background:var(--lv-l);border:3px solid var(--lv);transform:rotateY(180deg);font-size:1.03rem}
+.face .tag{align-self:center}
+.hint{text-align:center;font-size:.84rem;color:var(--mut)}
+
+.stmt{font-size:1.15rem;font-weight:600;text-align:center;padding:22px 14px;border:2px dashed var(--line);border-radius:14px;margin:10px 0;background:#fff}
+.case{background:#fff;border-left:6px solid var(--lv);border-radius:10px;padding:14px 16px;margin:10px 0;font-size:1.05rem}
+.opts{display:grid;gap:8px}
+.opt{text-align:left;border:2px solid var(--line);background:#fff;border-radius:10px;padding:11px 14px;font-size:.98rem;cursor:pointer;color:var(--ink)}
+.opt:hover:not(:disabled){border-color:var(--lv)}
+.opt.ok{border-color:var(--ok);background:var(--ok-l)}.opt.no{border-color:var(--no);background:var(--no-l)}
+.opt:disabled{cursor:default}
+.step{font-weight:700;color:var(--lv-d);margin:14px 0 6px}
+
+.gap-s{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:0 0 10px;font-size:1.03rem;line-height:2.1}
+.gap-s select{font:inherit;font-size:.95rem;padding:2px 6px;border-radius:8px;border:2px solid var(--lv);background:#fff;max-width:100%}
+.gap-s select.ok{border-color:var(--ok);background:var(--ok-l)}.gap-s select.no{border-color:var(--no);background:var(--no-l)}
+.gap-s .src{display:block;font-size:.78rem;color:var(--mut);line-height:1.3;margin-top:3px}
+
+/* Matrix */
+.mx{display:grid;grid-template-columns:auto 1fr 1fr;gap:6px;margin:12px 0}
+.mx .ax{font-size:.8rem;font-weight:700;color:var(--lv-d);display:flex;align-items:center;justify-content:center;text-align:center;padding:4px}
+.mx .cell{min-height:120px;border:2px dashed var(--lv);border-radius:12px;background:#fff;padding:8px;display:flex;flex-direction:column;gap:5px;cursor:pointer}
+.mx .cell.flash{background:var(--no-l);border-color:var(--no)}
+.mx .cell .in{background:var(--lv-l);border-radius:8px;padding:4px 8px;font-size:.85rem}
+.mx .cell .in.st{background:var(--lv);color:#fff;font-weight:700;text-align:center}
+.pool{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.pool button{border:2px solid var(--lv);background:#fff;border-radius:10px;padding:7px 10px;font-size:.9rem;cursor:pointer;color:var(--ink)}
+.pool button.sel{background:var(--lv);color:#fff}
+.pool button.st{font-weight:800}
+
+/* Regler */
+.sl{margin:12px 0}
+.sl label{display:flex;justify-content:space-between;font-weight:600}
+.sl input{width:100%;accent-color:var(--lv)}
+
+/* Fehlerdetektiv */
+.eh p{margin:0 0 8px;padding:8px 10px;border-radius:8px;border:2px solid transparent;cursor:pointer;background:#fff}
+.eh p.mark{border-color:var(--lv);background:var(--lv-l)}
+.eh p.hit{border-color:var(--ok);background:var(--ok-l)}
+.eh p.miss{border-color:var(--no);background:var(--no-l)}
+.eh p.wrong{border-color:#e0a800;background:#fff6d6}
+.eh .corr{display:block;font-size:.88rem;margin-top:4px;color:var(--ink)}
+
+/* Auftragskarten */
+.task{background:#fff;border:1px solid var(--line);border-top:6px solid var(--lv);border-radius:14px;padding:16px;margin-bottom:14px}
+.task h3{margin:0 0 6px;color:var(--lv-d)}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.meta span{background:var(--lv-l);color:var(--lv-d);border-radius:999px;padding:3px 10px;font-size:.8rem;font-weight:600}
+.task ol{margin:6px 0 10px;padding-left:22px}.task li{margin-bottom:4px}
+.task .goal{background:var(--lv-l);border-radius:10px;padding:8px 12px;font-size:.95rem}
+.task .prod{font-size:.93rem;margin-top:8px}
+
+/* Check-out */
+.checkout{margin-top:28px;background:#fff;border:2px solid var(--lv);border-radius:14px;padding:14px 16px}
+.checkout h3{margin:0 0 8px;color:var(--lv-d);font-size:1rem}
+.checkout label{display:flex;gap:8px;align-items:flex-start;margin-bottom:6px;cursor:pointer}
+.checkout input{accent-color:var(--lv);margin-top:4px}
+@media (max-width:540px){.grid2{grid-template-columns:1fr}.tile.b{margin-left:9px}.tile.g{margin-left:18px}.mx .cell{min-height:100px}}
+
+header .kick{font-size:.76rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;opacity:.95}
+header h1{font-size:1.45rem;margin:2px 0 0}
+.pnav{margin-top:26px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.pnav h3{margin:0 0 8px;font-size:.95rem;color:var(--lv-d)}
+.pnav a{display:inline-block;margin:0 6px 6px 0;padding:6px 12px;border-radius:999px;border:2px solid var(--lv);color:var(--lv-d);text-decoration:none;font-weight:600;font-size:.9rem}
+.pnav a.on{background:var(--lv);color:#fff}
+.pnav .home{display:block;margin-top:8px;border:0;padding:0;color:var(--mut);font-weight:500}
+.dl{display:inline-flex;gap:8px;align-items:center;margin-top:6px;background:var(--lv);color:#fff;text-decoration:none;font-weight:700;border-radius:10px;padding:10px 14px}
+body.embed .pnav{display:none}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+const PAGE = {"lv": "begriffe", "file": "1-2-zuordnen.html", "title": "Zuordnen", "siblings": [["1-1-karteikarten.html", "Karteikarten"], ["1-2-zuordnen.html", "Zuordnen"], ["1-3-lueckentext.html", "Lückentext"], ["1-4-beispiel-detektiv.html", "Beispiel-Detektiv"]], "home": "../index.html", "fmt": "sort"};
+
+/* =====================================================================
+   DATEN – Lernbereich 3 (für LB 2 und LB 4 nur diesen Block austauschen)
+   ===================================================================== */
+const LB = {
+ title:"Lernbereich 3: Erziehung",
+ levels:{
+ /* ---------------- EBENE 1 · ROT · BEGRIFFE ---------------- */
+ begriffe:{
+  color:"rot", nr:1, name:"Begriffe klären", afb:"AFB I · Wissen",
+  texts:"Texte 01–04: Merkmale und Definition von Erziehung",
+  teaser:"Was bedeutet „Erziehung“ genau? Die sechs Merkmale und die Definition sicher kennen.",
+  cats:{LH:"Beabsichtigte Lernhilfe",ZI:"Zielgerichtet",SH:"Soziales Handeln",IA:"Soziale Interaktion",SB:"Soziale Beziehung",KO:"Soziale Kommunikation",DEF:"Gesamtdefinition"},
+  sortCats:["LH","ZI","SH","IA","SB","KO"],
+  cards:[
+   {c:"LH",q:"Was bedeutet: Erziehung ist beabsichtigte Lernhilfe?",a:"Der Erzieher will <b>bewusst und absichtlich</b> Lernprozesse herbeiführen, auslösen oder unterstützen, die der zu Erziehende bewältigen muss."},
+   {c:"LH",q:"Zwischen welchen drei Größen geschieht Erziehung?",a:"Zwischen dem <b>zu Erziehenden</b> (bewältigt Lernprozesse), dem <b>Erzieher</b> (führt sie absichtlich herbei) und dem <b>Erziehungsziel</b>, das der Erzieher vor Augen hat."},
+   {c:"ZI",q:"Warum ist Erziehung ohne Erziehungsziel undenkbar?",a:"Hätte der Erzieher <b>kein Ziel</b> mehr vor Augen, würde er auch <b>nicht mehr</b> auf den zu Erziehenden <b>einwirken</b>."},
+   {c:"ZI",q:"Was heißt: Erziehung ist wertorientiertes Handeln?",a:"Erzieherische Handlungen sind immer bestimmten <b>Werten und Normen</b> verpflichtet."},
+   {c:"ZI",q:"Welche Art von Veränderung strebt Erziehung an?",a:"Eine <b>relativ dauerhafte</b> Änderung des <b>Verhaltens und Erlebens</b> des zu Erziehenden."},
+   {c:"SH",q:"Was meint „Handeln“?",a:"Jede menschliche Aktivität, mit der <b>bewusst und überlegt</b> eine bestimmte Absicht, ein bestimmtes Ziel verfolgt wird."},
+   {c:"SH",q:"Was ist soziales Handeln (Brezinka)?",a:"Handeln, das <b>bewusst und willentlich auf andere Menschen bezogen</b> ist und sich sinnhaft am vergangenen, gegenwärtigen oder künftig erwarteten Verhalten anderer orientiert."},
+   {c:"SH",q:"Ist jedes Lernen eines Kindes Erziehung?",a:"<b>Nein.</b> Erziehung ist nur, was <b>bewusst und planvoll</b> zum Zweck der kindlichen Entwicklung organisiert wird (Giesecke)."},
+   {c:"SH",q:"Warum heißt pädagogisches Handeln „Versuchshandeln“?",a:"Weil sein <b>Ausgang offen</b> ist und sich nicht vorhersagen lässt."},
+   {c:"SH",q:"Warum trägt der Erzieher pädagogische Verantwortung?",a:"Das Verhältnis zwischen Erzieher und zu Erziehendem ist meist <b>ungleich</b>. Deshalb muss er sich ständig fragen, <b>welche Folgen</b> sein Handeln hat."},
+   {c:"IA",q:"Was versteht man unter sozialer Interaktion?",a:"Das <b>wechselseitig aufeinander bezogene Verhalten</b> zwischen Menschen: Sie agieren und reagieren aufeinander und <b>beeinflussen und steuern</b> sich gegenseitig."},
+   {c:"IA",q:"Warum ist Erziehung ein „Wechselspiel“?",a:"Erziehung besteht aus <b>Aktionen und Reaktionen</b>. Der Erzieher orientiert sich an Alter, Interessen, Fähigkeiten und Bedürfnissen des zu Erziehenden und passt sich ständig an."},
+   {c:"IA",q:"Wen verändert der Erziehungsprozess?",a:"<b>Beide</b>: den zu Erziehenden <b>und</b> den Erzieher selbst (vgl. Koller)."},
+   {c:"IA",q:"Warum ist das Wort „Selbsterziehung“ verwirrend?",a:"Erziehung geschieht immer im <b>Wechselspiel zweier Personen</b>. Lernt jemand mit Absicht selbst etwas, spricht man von <b>intentionalem Lernen</b>."},
+   {c:"SB",q:"Wer gehört mindestens zur Erziehung?",a:"<b>Zwei Personen</b>: der Erzieher, der Lernprozesse herbeiführen will, und der zu Erziehende, der sie vollbringen soll."},
+   {c:"SB",q:"Welche Rolle spielt die emotionale Beziehung?",a:"Der zu Erziehende ist auf eine <b>positive emotionale Beziehung</b> angewiesen. Von ihr hängt der <b>Erfolg der Erziehung</b> ab: „Wo die Beziehung nicht stimmt, hat die Erziehung wenig Chancen.“"},
+   {c:"SB",q:"Ist Erziehung auch bei einer schlechten Beziehung eine soziale Beziehung?",a:"<b>Ja.</b> Wie auch immer die Beziehung geartet ist: Erziehung ist <b>immer auch soziale Beziehung</b>."},
+   {c:"KO",q:"Was ist soziale Kommunikation?",a:"Der <b>Teil der sozialen Interaktion</b>, in dem <b>Informationen</b> zwischen zwei oder mehreren Personen <b>vermittelt, aufgenommen und ausgetauscht</b> werden."},
+   {c:"KO",q:"Kann man in einer Beziehung „nichts mitteilen“?",a:"<b>Nein.</b> <b>Jedes Verhalten hat Mitteilungscharakter</b> – auch Abwenden oder Schweigen."},
+   {c:"KO",q:"Was bedeutet „symbolischer Interaktionismus“?",a:"Eine <b>Theorie über die Wechselbeziehungen</b> zwischen Personen (Mollenhauer, nach G. H. Mead). „Symbolisch“, weil soziales Handeln immer über ein <b>Medium</b> läuft: Sprache, Mimik, Gestik, Körperkontakt, Musik."},
+   {c:"KO",q:"Was sind Symbole – und welche Bedingung müssen sie erfüllen?",a:"Zeichen, Sinnbilder oder Begriffe, die <b>für einen Sachverhalt stehen</b> (z. B. Fingerzeig = Belehrung). Sie müssen für <b>alle Beteiligten die gleiche Bedeutung</b> haben."},
+   {c:"KO",q:"Was passiert ständig zwischen Sender und Empfänger?",a:"Ein <b>wechselseitiger Interpretationsprozess</b>: Handlungen müssen gedeutet und entschlüsselt werden. Erziehung ist „symbolisch vermitteltes kommunikatives Handeln“ (Mollenhauer)."},
+   {c:"DEF",q:"Wie lautet die Gesamtdefinition von Erziehung?",a:"Erziehung ist ein <b>soziales Handeln</b>, welches bestimmte <b>Lernprozesse bewusst und absichtlich</b> herbeiführen und unterstützen will, um <b>relativ dauerhafte Veränderungen</b> des Verhaltens und Erlebens zu erreichen, die bestimmten <b>Erziehungszielen</b> entsprechen."}
+  ],
+  sort:[
+   {t:"Die Erzieherin zeigt dem Kind absichtlich, wie man eine Schleife bindet.",c:"LH",e:"Sie führt bewusst einen Lernprozess herbei."},
+   {t:"Lernprozesse werden absichtlich herbeigeführt, ausgelöst oder unterstützt.",c:"LH",e:"Kern der beabsichtigten Lernhilfe."},
+   {t:"Erzieherische Handlungen sind Werten und Normen verpflichtet.",c:"ZI",e:"Erziehung ist wertorientiertes, zielgerichtetes Handeln."},
+   {t:"Angestrebt wird eine relativ dauerhafte Änderung des Verhaltens und Erlebens.",c:"ZI",e:"Das ist das Ziel jeder Erziehung."},
+   {t:"Ohne Ziel würde der Erzieher nicht mehr einwirken.",c:"ZI",e:"Erziehung ist ohne Erziehungsziel undenkbar."},
+   {t:"Pädagogisches Handeln ist „Versuchshandeln“ – der Ausgang ist offen.",c:"SH",e:"Merkmal des pädagogischen (sozialen) Handelns."},
+   {t:"Erziehung ist nur, was bewusst und planvoll geschieht.",c:"SH",e:"Giesecke: Erziehung ist bewusstes, planvolles Handeln."},
+   {t:"Weil das Verhältnis ungleich ist, trägt der Erzieher Verantwortung.",c:"SH",e:"Pädagogische Verantwortung beim sozialen Handeln."},
+   {t:"Erzieher und zu Erziehender beeinflussen und steuern sich gegenseitig.",c:"IA",e:"Wechselseitige Beeinflussung = soziale Interaktion."},
+   {t:"Der Erzieher verändert sich durch die Erziehung auch selbst.",c:"IA",e:"Im Wechselspiel verändern sich beide."},
+   {t:"Der Erzieher passt sich an Alter, Interessen und Bedürfnisse des Kindes an.",c:"IA",e:"Aktion und Reaktion – Wechselspiel."},
+   {t:"Wo die Beziehung nicht stimmt, hat die Erziehung wenig Chancen.",c:"SB",e:"Die emotionale Beziehung entscheidet mit über den Erfolg."},
+   {t:"„Bindung ist emotionale Nahrung.“ (Brisch)",c:"SB",e:"Zitat zur Bedeutung der emotionalen Beziehung."},
+   {t:"Der zu Erziehende ist auf eine positive emotionale Beziehung angewiesen.",c:"SB",e:"Kernaussage zur sozialen Beziehung."},
+   {t:"Ein Daumen nach oben bedeutet „gut gemacht“.",c:"KO",e:"Eine Geste ist ein Symbol – Informationsaustausch."},
+   {t:"Auch wer schweigt, teilt etwas mit.",c:"KO",e:"Jedes Verhalten hat Mitteilungscharakter."},
+   {t:"Symbole müssen für alle Beteiligten die gleiche Bedeutung haben.",c:"KO",e:"Bedingung des symbolischen Interaktionismus."},
+   {t:"Informationen werden vermittelt, aufgenommen und ausgetauscht.",c:"KO",e:"Definition der sozialen Kommunikation."}
+  ],
+  gaps:[
+   {s:"Erziehung ist ein soziales [Handeln], welches bestimmte [Lernprozesse] bewusst und absichtlich herbeiführen und unterstützen will, um relativ [dauerhafte] Veränderungen des Verhaltens und [Erlebens] zu erreichen, die bestimmten [Erziehungszielen] entsprechen.",x:["kurzfristige","Strafen"],src:"Gesamtdefinition (Text 04)"},
+   {s:"Erziehung ist [wertorientiertes] Handeln – erzieherische Handlungen sind immer bestimmten [Werten] und [Normen] verpflichtet.",x:["zufälliges","Wünschen"],src:"Text 03"},
+   {s:"Pädagogisches Handeln ist eine [beabsichtigte] Aktivität in einer Erziehungssituation, welche ein bestimmtes [Ziel] erreichen will. Sein Ergebnis ist [offen].",x:["zufällige","sicher"],src:"Text 04"},
+   {s:"Soziale Interaktion beschreibt das [wechselseitig] aufeinander bezogene Verhalten zwischen Menschen, die sich gegenseitig [beeinflussen] und [steuern].",x:["einseitig","bestrafen"],src:"Text 01"},
+   {s:"Der Prozess der Erziehung verändert sowohl den [zu Erziehenden] als auch den [Erzieher] selbst.",x:["Lehrplan"],src:"Text 01"},
+   {s:"Wo die [Beziehung] nicht stimmt, hat die Erziehung wenig [Chancen].",x:["Kommunikation","Regeln"],src:"Text 01"},
+   {s:"Soziale Kommunikation ist derjenige Teil einer sozialen [Interaktion], in welchem [Informationen] zwischen zwei oder mehreren Personen vermittelt, aufgenommen und [ausgetauscht] werden.",x:["Beziehung","versteckt"],src:"Text 02"},
+   {s:"Der Informationsaustausch erfolgt mithilfe von [Symbolen], die für alle Beteiligten die gleiche [Bedeutung] haben.",x:["Regeln","Lautstärke"],src:"Text 02"}
+  ],
+  detect:[
+   {t:"Eine Erzieherin schimpft, weil Lena ein Glas fallen lässt. Lena weint. Die Erzieherin nimmt sie in den Arm – Lena hört auf zu weinen.",k:"IA",e:"Jede Handlung ist Reaktion und zugleich Anlass für die nächste: wechselseitige Beeinflussung."},
+   {t:"Eine Mutter macht ein grimmiges Gesicht, als ihr Kind auf den Kochtopf trommelt. Ohne ein Wort legt das Kind den Löffel weg.",k:"KO",e:"Das grimmige Gesicht ist ein Symbol, das beide gleich verstehen."},
+   {t:"Paul ist beleidigt, dreht sich weg und sagt nichts mehr. Der Erzieher denkt: „Aha, er ist sauer.“",k:"KO",e:"Auch Schweigen und Abwenden haben Mitteilungscharakter."},
+   {t:"Ein Praktikant merkt nach einigen Wochen in der Kita, dass er viel geduldiger geworden ist.",k:"IA",e:"Der Erziehungsprozess verändert auch den Erzieher."},
+   {t:"Mia vertraut der neuen Erzieherin nicht und nimmt ihre Hinweise kaum an. Bei ihrer Lieblingserzieherin klappt es sofort.",k:"SB",e:"Wo die Beziehung nicht stimmt, hat Erziehung wenig Chancen."},
+   {t:"Die Mutter spricht mit ihrer Tochter, lobt oder ermahnt sie und stellt eine Belohnung in Aussicht – damit sie in der Schule mitlernt.",k:"SH",e:"Bewusstes, überlegtes Handeln, das auf einen anderen Menschen bezogen ist (Beispiel aus Text 04)."},
+   {t:"Ein Baby kann noch nicht laufen. Die Eltern wollen, dass es das später kann, und unterstützen es dabei.",k:"ZI",e:"Die Eltern haben ein Erziehungsziel vor Augen (Beispiel aus Text 03)."},
+   {t:"Die Erzieherin übt mit Ben gezielt das Händewaschen und zeigt ihm jeden Schritt.",k:"LH",e:"Sie führt bewusst und absichtlich einen Lernprozess herbei."},
+   {t:"Ein Erzieher probiert eine neue Methode zur Streitschlichtung aus. Ob sie wirkt, weiß er vorher nicht.",k:"SH",e:"Pädagogisches Handeln ist „Versuchshandeln“ – der Ausgang ist offen."},
+   {t:"Die Eltern wollen ihr Kind zur Ehrlichkeit erziehen, weil ihnen dieser Wert wichtig ist.",k:"ZI",e:"Erziehung ist wertorientiert und an Zielen ausgerichtet."},
+   {t:"Eine Erzieherin erklärt einem 3-Jährigen eine Regel ganz einfach, einer 6-Jährigen ausführlicher.",k:"IA",e:"Der Erzieher orientiert sich am Gegenüber und passt sein Handeln an."}
+  ],
+  checkout:["die sechs Merkmale von Erziehung nennen","die Gesamtdefinition von Erziehung wiedergeben","soziale Interaktion und soziale Kommunikation unterscheiden","erklären, warum pädagogisches Handeln „Versuchshandeln“ ist","Alltagsbeispiele einem Merkmal von Erziehung zuordnen"]
+ },
+
+ /* ---------------- EBENE 2 · BLAU · THEORIE ---------------- */
+ theorie:{
+  color:"blau", nr:2, name:"Theorie verstehen", afb:"AFB II · Verstehen & Anwenden",
+  texts:"Text 05: Erziehungsstile nach Baumrind",
+  teaser:"Zwei Dimensionen, vier Stile, typische Folgen: die Theorie durchschauen und auf Fälle übertragen.",
+  styles:{AV:"Autoritativ",AR:"Autoritär",PE:"Permissiv",VE:"Vernachlässigend"},
+  /* Zellen: Zeilen = Anforderung hoch/niedrig, Spalten = Wärme hoch/niedrig */
+  cells:{AV:"Anforderung hoch · Wärme hoch",AR:"Anforderung hoch · Wärme niedrig",PE:"Anforderung niedrig · Wärme hoch",VE:"Anforderung niedrig · Wärme niedrig"},
+  matrix:[
+   {t:"Autoritativ",k:"AV",st:1},{t:"Autoritär",k:"AR",st:1},{t:"Permissiv",k:"PE",st:1},{t:"Vernachlässigend",k:"VE",st:1},
+   {t:"„Weil ich es sage!“",k:"AR"},{t:"Entscheidungen werden erklärt",k:"AV"},{t:"Konflikte werden vermieden",k:"PE"},{t:"kaum Anteilnahme am Leben des Kindes",k:"VE"},
+   {t:"Kind wird in Entscheidungen einbezogen",k:"AV"},{t:"Gehorsam wird eingefordert",k:"AR"},{t:"Kind hat weitgehend freie Hand",k:"PE"},{t:"keine Fragen, keine Regeln",k:"VE"}
+  ],
+  diagnose:[
+   {t:"Beim Aufräumen sagt Frau K.: „Ich weiß, du willst weiterbauen. Wir räumen trotzdem auf, weil gleich Mittagessen ist. Dein Turm darf aber bis morgen stehen bleiben.“",k:"AV",
+    r:["Sie zeigt Verständnis, begründet die Regel und setzt sie trotzdem durch.","Sie lässt das Kind selbst entscheiden, ob es aufräumt.","Sie verlangt Gehorsam, ohne etwas zu erklären."],rk:0},
+   {t:"Herr M. ruft durch den Raum: „Schluss jetzt! Sofort aufräumen, sonst gibt’s morgen keinen Bauteppich. Diskussion beendet.“",k:"AR",
+    r:["Er erklärt geduldig, warum Aufräumen wichtig ist.","Er setzt eine strenge Regel mit Drohung durch, ohne Erklärung und ohne auf die Kinder einzugehen.","Ihm ist egal, ob aufgeräumt wird."],rk:1},
+   {t:"Leons Mutter zur Erzieherin: „Wenn er kein Gemüse mag, kocht ihm halt jeden Tag Nudeln. Ich will nicht, dass er traurig ist.“",k:"PE",
+    r:["Sie ist zugewandt, vermeidet aber Konflikte und stellt keine Anforderungen.","Sie stellt hohe Anforderungen an Leons Ernährung.","Sie interessiert sich nicht für Leons Bedürfnisse."],rk:0},
+   {t:"Die Erzieherin erzählt Sophies Vater beim Abholen von einem Streit. Er schaut aufs Handy: „Mhm. Hauptsache, sie ist versorgt.“",k:"VE",
+    r:["Er setzt klare Grenzen und begründet sie.","Er ist sehr warmherzig, will aber keinen Streit.","Er zeigt weder Interesse an Sophies Erleben noch stellt er Anforderungen."],rk:2},
+   {t:"Ayla (16) will auf eine Party. Ihre Eltern fragen, wer dabei ist, und vereinbaren mit ihr: Abholung um 23 Uhr. Als sie zu spät kommt, gilt die vereinbarte Konsequenz.",k:"AV",
+    r:["Die Eltern lassen Ayla alles selbst entscheiden.","Die Eltern beziehen Ayla ein und setzen die Regel konsequent durch.","Die Eltern verbieten die Party ohne Begründung."],rk:1},
+   {t:"Jonas hat einen festen Wochenplan. Fragt er nach dem Sinn, heißt es: „Weil wir es sagen.“ Für gute Noten gibt es kein Lob – das wird erwartet.",k:"AR",
+    r:["Hohe Anforderungen, aber wenig Wärme und keine Begründungen.","Viel Wärme und viele Erklärungen.","Wenige Regeln und viel Lob."],rk:0},
+   {t:"Mila (8) darf zocken, so lange sie will. Die Eltern: „Wir wollen keinen Streit, Hauptsache, sie hat Spaß.“ Abends kuscheln sie viel mit ihr.",k:"PE",
+    r:["Wenig Wärme, viele Regeln.","Viel Wärme, aber kaum Regeln und Grenzen.","Weder Wärme noch Regeln."],rk:1},
+   {t:"Tom (10) kommt nach der Schule in eine leere Wohnung und macht sich Essen in der Mikrowelle. Niemand fragt nach seinem Tag oder den Hausaufgaben.",k:"VE",
+    r:["Die Eltern setzen strenge Regeln durch.","Die Eltern sind warmherzig, aber nachgiebig.","Die Eltern nehmen kaum Anteil und stellen keine Anforderungen."],rk:2}
+  ],
+  slider:[
+   {t:"„Erklär mir, warum du das willst – dann finden wir gemeinsam eine Lösung. Aber die Hausaufgaben werden vorher gemacht.“",w:1,a:1},
+   {t:"„In diesem Haus gelten meine Regeln. Punkt.“",w:0,a:1},
+   {t:"„Ach Schatz, du musst nicht aufräumen, wenn du keine Lust hast.“",w:1,a:0},
+   {t:"„Mach, was du willst. Ich hab keine Zeit für so was.“",w:0,a:0},
+   {t:"„Ich sehe, dass du traurig bist. Komm her. Morgen besprechen wir in Ruhe, welche Handyregel ab jetzt gilt.“",w:1,a:1},
+   {t:"„Heul nicht rum! Wer zu spät kommt, hat zwei Wochen Hausarrest.“",w:0,a:1},
+   {t:"„Natürlich bestellen wir heute wieder Pizza – du hattest einen harten Tag.“",w:1,a:0},
+   {t:"„Wo du warst? Keine Ahnung, ist doch deine Sache.“",w:0,a:0}
+  ],
+  folgen:[
+   {t:"gelten häufig als selbstbewusst",c:"AV",e:"Folge des autoritativen Stils."},
+   {t:"gelten als sozial kompetent und leistungsbereit",c:"AV",e:"Folge des autoritativen Stils."},
+   {t:"gilt als besonders günstig für die kindliche Entwicklung",c:"AV",e:"Der autoritative Stil verbindet Wärme und klare Regeln."},
+   {t:"zeigen häufiger Unsicherheit und ein geringeres Selbstwertgefühl",c:"AR",e:"Folge des autoritären Stils."},
+   {t:"je nach Temperament: trotzig-aggressives Verhalten",c:"AR",e:"Ebenfalls eine mögliche Folge des autoritären Stils."},
+   {t:"fällt es schwerer, sich an Regeln zu halten",c:"PE",e:"Folge des permissiven Stils – es fehlen Grenzen."},
+   {t:"können Frustration schlechter aushalten und Impulse schwerer steuern",c:"PE",e:"Folge des permissiven Stils."},
+   {t:"geringes Selbstwertgefühl, Schulprobleme, Verhaltensauffälligkeiten",c:"VE",e:"Folgen des vernachlässigenden Stils."},
+   {t:"gilt als am stärksten mit negativen Entwicklungsfolgen verbunden",c:"VE",e:"Der vernachlässigende Stil gilt als am ungünstigsten."},
+   {t:"wurde später von Maccoby und Martin ergänzt",c:"VE",e:"Baumrind beschrieb zuerst drei Stile; den vierten ergänzten Maccoby und Martin."}
+  ],
+  errors:[
+   {title:"Lisas Zusammenfassung",s:[
+    {t:"Diana Baumrind war eine amerikanische Entwicklungspsychologin."},
+    {t:"Sie unterschied Erziehungsstile anhand der Dimensionen Wärme und Strafe.",c:"Die zweite Dimension heißt Anforderung bzw. Kontrolle (Regeln, Erwartungen, Konsequenz) – nicht Strafe."},
+    {t:"Aus der Kombination der beiden Dimensionen ergeben sich vier Erziehungsstile."},
+    {t:"Alle vier Stile hat Baumrind selbst in den 1960er-Jahren beschrieben.",c:"Baumrind beschrieb drei Stile; den vernachlässigenden ergänzten Maccoby und Martin."},
+    {t:"Autoritative Eltern zeigen viel Wärme und stellen klare Regeln, die sie begründen."},
+    {t:"Autoritäre Eltern zeigen viel Wärme, verlangen aber Gehorsam.",c:"Autoritäre Eltern zeigen wenig Wärme."},
+    {t:"Permissive Eltern vermeiden Konflikte und setzen kaum Grenzen."},
+    {t:"Der permissive Stil gilt als am ungünstigsten für die Entwicklung.",c:"Am ungünstigsten gilt der vernachlässigende Stil."},
+    {t:"Autoritativ erzogene Kinder gelten häufig als selbstbewusst und sozial kompetent."}
+   ]},
+   {title:"Tims Fallanalyse zur Aussage „Weil ich es sage. Ab ins Bett.“",s:[
+    {t:"Die Mutter antwortet auf die Bitte, länger aufzubleiben, nur: „Weil ich es sage. Ab ins Bett.“"},
+    {t:"Das ist typisch für den autoritativen Stil, weil sie eine klare Regel setzt.",c:"Es ist der autoritäre Stil: Eine klare Regel allein reicht nicht – es fehlen Begründung und Wärme."},
+    {t:"Die Anforderung ist hoch, weil die Schlafenszeit durchgesetzt wird."},
+    {t:"Die Wärme ist hoch, weil sich die Mutter um den Schlaf ihres Kindes kümmert.",c:"Die Wärme ist niedrig: Die Mutter hört nicht zu und erklärt nichts."},
+    {t:"Eine autoritative Mutter würde erklären, warum Schlaf wichtig ist, und dem Kind zuhören."},
+    {t:"Autoritär erzogene Kinder zeigen laut Studien häufiger Unsicherheit."},
+    {t:"Deshalb sollte die Mutter am besten gar keine Schlafenszeit mehr festlegen.",c:"Das wäre permissiv. Besser: die Regel beibehalten, aber begründen und dem Kind zuhören (autoritativ)."}
+   ]}
+  ],
+  checkout:["die zwei Dimensionen nach Baumrind erklären","die vier Erziehungsstile in die Matrix einordnen","einen Fall einem Stil zuordnen und mit Belegen begründen","typische Folgen der Stile für die Entwicklung erläutern","Fehler in Aussagen zur Theorie erkennen und korrigieren"]
+ },
+
+ /* ---------------- EBENE 3 · GRÜN · ANWENDUNG ---------------- */
+ anwendung:{
+  color:"gruen", nr:3, name:"Anwenden in der Praxis", afb:"AFB III · Übertragen & Beurteilen",
+  texts:"Texte 06–07: Kindergarten, BayBEP (+ Text 05 in der Praxis)",
+  teaser:"Mit dem Wissen in echten oder realistischen Situationen handeln: spielen, planen, erkunden.",
+  tasks:[
+   {icon:"🎭",title:"Rollenspiel: Stil-Raten in der Kita",meta:["Gruppen à 4–5","ca. 35 Min.","Text 05"],
+    goal:"Ihr erkennt Erziehungsstile in Kita-Situationen und entwickelt eine fachlich gute Reaktion.",
+    steps:["Eure Gruppe zieht verdeckt eine <b>Stilkarte</b> und eine <b>Situationskarte</b> (z. B. „Kind will die Jacke nicht anziehen“).","Bereitet eine Szene von höchstens 2 Minuten vor. Rollen: Fachkraft, Kind(er), evtl. Elternteil. Verratet den Stil nicht!","Spielt vor. Das Publikum notiert: Welcher Stil? Woran erkennt man Wärme und Anforderung (konkrete Sätze, Gesten)?","Auflösung. Danach spielt eine Person die Szene noch einmal <b>autoritativ</b>."],
+    prod:"<b>Ergebnis:</b> Beobachtungsnotizen mit Begründung über beide Dimensionen."},
+   {icon:"🗣️",title:"Rollenspiel: Elternabend – Tablets im Kindergarten?",meta:["ganze Klasse","ca. 45 Min.","Text 07 · M1"],
+    goal:"Ihr vertretet in einer realistischen Situation begründet die Position des BayBEP zu digitalen Medien.",
+    steps:["Jede/r erhält eine <b>Rollenkarte</b> (Kita-Leitung, Fachkraft, skeptischer Vater, begeisterte Mutter, Elternbeirat Datenschutz, weitere Eltern, Beobachter/-innen).","10 Minuten Vorbereitung: Sucht in Text 07 Argumente für eure Rolle.","15 Minuten Elternabend, die Kita-Leitung moderiert.","Die Beobachter/-innen berichten: Welche Argumente waren fachlich (BayBEP), welche nur Meinung?","Zum Abschluss schreibt jede/r eine begründete Stellungnahme aus Sicht des BayBEP (Aufgabe 3, M1)."],
+    prod:"<b>Ergebnis:</b> schriftliche Stellungnahme (ca. ½ Seite)."},
+   {icon:"🧭",title:"BayBEP-Rallye",meta:["3er-Teams","ca. 45 Min.","Texte 06 + 07"],
+    goal:"Ihr wendet euer Wissen zu Kita, Trägern und BayBEP-Bereichen auf kurze Praxisaufgaben an.",
+    steps:["Holt euch einen <b>Laufzettel</b>.","Besucht die 8 Stationen in beliebiger Reihenfolge. Die Texte 06 und 07 dürft ihr benutzen.","An jeder Station: Aufgabe lösen, den Buchstaben der richtigen Antwort eintragen. An manchen Stationen gibt es eine kleine Aktion.","Tragt die Buchstaben in der Reihenfolge der Stationsnummern ein – es entsteht ein Lösungswort.","Gebt den Laufzettel ab, wenn das Lösungswort fertig ist."],
+    prod:"<b>Ergebnis:</b> Laufzettel mit Lösungswort und Aktionsergebnissen."},
+   {icon:"🌱",title:"Kurzprojekt: Unser Gemüsegarten",meta:["Gruppen à 3–4","2 × 45 Min.","Text 07 · M4"],
+    goal:"Ihr plant ein Kita-Projekt, das die Bildungsbereiche Umwelt, Gesundheit und digitale Medien verbindet, und begründet es mit dem BayBEP.",
+    steps:["Lest den Fall „Kita Sonnenblume“ (Text 07, M4).","Plant im <b>Planungsraster</b> zu jedem Bildungsbereich eine konkrete Aktivität: Was machen die Kinder? Welches Material? Welches Ziel laut BayBEP?","Gestaltet ein Plakat (1 Seite).","Präsentiert in einem 3-Minuten-Pitch vor dem „Kita-Team“ (der Klasse). Das Team gibt Feedback nach den Kriterien.","Schreibt eine kurze Reflexion: Wo hat das Projekt Grenzen (Zeit, Ausstattung, Datenschutz bei Fotos)?"],
+    prod:"<b>Ergebnis:</b> Plakat, Pitch, Reflexion. <b>Bonus:</b> Probiert eine Aktivität im Praktikum aus und berichtet."},
+   {icon:"🔎",title:"Praxis-Check: Meine Praktikumsstelle unter der Lupe",meta:["Einzelarbeit im Praktikum","+ 45 Min. Galeriegang","Texte 06 + 07 (+ 05)"],
+    goal:"Ihr vergleicht die Theorie aus den Texten mit eurer echten Einrichtung.",
+    steps:["Findet heraus: Wer ist der <b>Träger</b> eurer Einrichtung? Zu welcher <b>Trägergruppe</b> gehört er? Welche Einrichtungsart ist es (Krippe, Kindergarten, Hort)?","Führt ein <b>Kurzinterview</b> mit einer Fachkraft (Leitfragen auf dem Steckbrief).","Beobachtet ein Bildungsangebot und ordnet es einem BayBEP-Bereich zu (Medien, Umwelt, Gesundheit oder ein anderer).","Füllt den <b>Steckbrief</b> aus (1 Seite). Keine Namen und keine Fotos von Kindern!","In der Schule: Galeriegang. Wir erstellen eine Klassenstatistik zu den Trägern und vergleichen sie mit dem Text (ca. 30 % öffentliche Träger)."],
+    prod:"<b>Ergebnis:</b> Steckbrief + Klassenstatistik."}
+  ],
+  checkout:["die Aufgaben und Merkmale eines Kindergartens erklären","Trägergruppen und das Subsidiaritätsprinzip erklären","BayBEP-Ziele zu Medien, Umwelt und Gesundheit auf Kita-Situationen anwenden","eine Kita-Aktivität planen und mit dem BayBEP begründen","Erziehungsstile in Praxissituationen erkennen und eine bessere Reaktion entwickeln"]
+ }
+ }
+};
+
+/* =====================================================================
+   SYSTEM – gleiche Formate in jedem Lernbereich
+   ===================================================================== */
+const FORMATS = {
+ begriffe:[["karten","🃏 Karteikarten"],["sort","↔️ Zuordnen"],["luecke","✏️ Lückentext"],["detektiv","🔍 Beispiel-Detektiv"]],
+ theorie:[["matrix","🧩 Struktur legen"],["diagnose","🩺 Fall-Diagnose"],["regler","🎚️ Einordnen"],["folgen","🔗 Folgen zuordnen"],["fehler","🕵️ Fehler-Detektiv"]],
+ anwendung:[["auftraege","📋 Aufträge"]]
+};
+const HELP = {
+ karten:"Lies die Frage, überlege dir die Antwort und tippe auf die Karte. Karten, die du noch nicht kannst, kommen später wieder.",
+ sort:"Zu welchem Merkmal gehört die Aussage?",
+ luecke:"Wähle in jeder Lücke das passende Wort. Achtung: Es sind auch falsche Wörter dabei.",
+ detektiv:"Lies das Beispiel. Welches Merkmal wird hier besonders deutlich?",
+ matrix:"Tippe ein Kärtchen an und dann das passende Feld. Zuerst die vier Stile, dann die Merkmale.",
+ diagnose:"Schritt 1: Welcher Stil liegt vor? Schritt 2: Woran erkennst du das?",
+ regler:"Stelle ein, wie viel Wärme und wie viel Anforderung in der Aussage stecken. Dann prüfen.",
+ folgen:"Welche Folge oder welche Aussage gehört zu welchem Erziehungsstil?",
+ fehler:"Diese Schülerantwort enthält Fehler. Tippe alle Sätze an, die du für falsch hältst, und prüfe dann.",
+ auftraege:"Diese Aufträge setzt ihr im Unterricht oder im Praktikum praktisch um. Eure Lehrkraft gibt euch das Material dazu."
+};
+
+/* ---------- Hilfsfunktionen ---------- */
+const $=s=>document.querySelector(s);
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const bar=(n,t)=>`<div class="bar"><i style="width:${t?Math.round(n/t*100):0}%"></i></div>`;
+const store={get(k){try{return JSON.parse(localStorage.getItem(k)||"null")}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let VIEW={lv:null,fmt:null};
+let area;
+
+/* ---------- Rahmen ---------- */
+function render(){
+ const root=$("#root");
+ if(!VIEW.lv){
+  document.body.className="";
+  root.innerHTML=`<header><div class="top"><h1>${LB.title}</h1></div><p>Drei Ebenen – der Anspruch steigt von Stufe zu Stufe.</p></header>
+  <main><p class="intro">Arbeite dich von unten nach oben: Erst die Begriffe sicher klären, dann die Theorie verstehen, dann das Wissen in der Praxis anwenden.</p>
+  <div class="stairs">${["begriffe","theorie","anwendung"].map(id=>{const L=LB.levels[id];const cl={rot:"r",blau:"b",gruen:"g"}[L.color];
+   return `<button class="tile ${cl}" onclick="go('${id}')"><div class="num">${L.nr}<small>${L.afb.split(" · ")[0]}</small></div><div class="txt"><h3>${L.name}</h3><p>${L.teaser}</p><p class="small" style="margin-top:4px">${L.texts} · ${FORMATS[id].length>1?FORMATS[id].length+" Übungsformate":"praktische Aufträge"}</p></div></button>`}).join("")}</div>
+  <p class="legend">🔴 Rot = Begriffe (Wissen) · 🔵 Blau = Theorie (Verstehen) · 🟢 Grün = Anwendung (Übertragen)</p></main>`;
+  return;
+ }
+ const L=LB.levels[VIEW.lv];
+ document.body.className=L.color;
+ const fm=FORMATS[VIEW.lv];
+ if(!VIEW.fmt) VIEW.fmt=fm[0][0];
+ root.innerHTML=`<header><div class="top"><button class="home-btn" onclick="go('')">← Übersicht</button><h1>Ebene ${L.nr} · ${L.name}</h1></div><p>${L.afb} — ${L.texts}</p></header>
+ <div class="lvnav">${["begriffe","theorie","anwendung"].map(id=>{const X=LB.levels[id];return `<button class="${{rot:"r",blau:"b",gruen:"g"}[X.color]} ${id===VIEW.lv?"on":""}" onclick="go('${id}')">${X.nr} · ${X.name.split(" ")[0]}</button>`}).join("")}</div>
+ ${fm.length>1?`<div class="sub">${fm.map(([k,l])=>`<button class="${k===VIEW.fmt?"on":""}" onclick="setFmt('${k}')">${l}</button>`).join("")}</div>`:`<div class="sub" style="padding:4px"></div>`}
+ <main><div id="area"></div>${checkoutHTML(VIEW.lv)}</main>`;
+ area=$("#area");
+ ENGINES[VIEW.fmt]();
+ window.scrollTo(0,0);
+}
+function go(id){VIEW={lv:id||null,fmt:null};try{history.replaceState(null,"",id?"#"+id:location.pathname)}catch(e){}render();}
+function setFmt(k){VIEW.fmt=k;render();}
+function intro(k){return `<p class="intro">${HELP[k]}</p>`;}
+function checkoutHTML(id){
+ const L=LB.levels[id],saved=store.get("lb3-co-"+id)||[];
+ return `<div class="checkout"><h3>✅ Check-out: Ich kann …</h3>${L.checkout.map((t,i)=>`<label><input type="checkbox" ${saved[i]?"checked":""} onchange="saveCO('${id}',${i},this.checked)"> ${t}</label>`).join("")}</div>`;
+}
+function saveCO(id,i,v){const s=store.get("lb3-co-"+id)||[];s[i]=v;store.set("lb3-co-"+id,s);}
+function doneBox(score,total,label,again){area.innerHTML=`<div class="box done"><div class="big">${score} / ${total}</div><p>${label}</p><button class="btn" onclick="${again}">Nochmal</button></div>`;}
+
+/* ---------- Formate ---------- */
+const ENGINES={};
+
+/* Karteikarten */
+let K={};
+ENGINES.karten=(f)=>{const L=LB.levels.begriffe;K.filter=f||K.filter||"all";K.stack=shuffle(L.cards.filter(c=>K.filter==="all"||c.c===K.filter));K.total=K.stack.length;K.known=0;kRender();};
+function kRender(){
+ const L=LB.levels.begriffe;
+ const filt=`<div class="row">${[["all","Alle"],...Object.entries(L.cats)].map(([k,l])=>`<button class="chip ${K.filter===k?"on":""}" onclick="ENGINES.karten('${k}')">${l}</button>`).join("")}</div>`;
+ if(!K.stack.length){area.innerHTML=intro("karten")+filt+`<div class="box done" style="margin-top:12px"><div class="big">🎉</div><p><b>Alle ${K.total} Karten gewusst!</b></p><button class="btn" onclick="ENGINES.karten()">Nochmal</button></div>`;return;}
+ const c=K.stack[0];
+ area.innerHTML=intro("karten")+filt+`${bar(K.known,K.total)}<div class="small">${K.known} von ${K.total} gewusst · noch ${K.stack.length} im Stapel</div>
+ <div class="flip" id="flip" onclick="this.classList.toggle('turned')"><div class="flip-in">
+  <div class="face front"><span class="tag">${L.cats[c.c]}</span><div class="q">${c.q}</div><div class="hint">Tippen zum Umdrehen</div></div>
+  <div class="face back"><div>${c.a}</div></div></div></div>
+ <div class="grid2"><button class="btn no" onclick="kNext(false)">🔁 Noch nicht sicher</button><button class="btn ok" onclick="kNext(true)">✅ Wusste ich</button></div>`;
+ fitCard();
+}
+function fitCard(){const f=$("#flip");if(!f)return;let h=230;f.querySelectorAll(".face").forEach(el=>{el.style.position="relative";h=Math.max(h,el.offsetHeight);el.style.position="";});f.querySelector(".flip-in").style.minHeight=h+"px";}
+function kNext(ok){const c=K.stack.shift();if(ok)K.known++;else K.stack.splice(Math.min(K.stack.length,2+Math.floor(Math.random()*3)),0,c);kRender();}
+window.addEventListener("resize",fitCard);
+
+/* Zuordnen (generisch: items, Kategorien) */
+let S={};
+function sorter(items,cats,keys,help,againFn){
+ S={list:shuffle(items),i:0,ok:0,cats,keys,help,againFn,lock:false};sRender();
+}
+function sRender(){
+ if(S.i>=S.list.length){doneBox(S.ok,S.list.length,"richtig zugeordnet",S.againFn);return;}
+ const it=S.list[S.i];
+ area.innerHTML=intro(S.help)+`${bar(S.i,S.list.length)}<div class="small">Aussage ${S.i+1} von ${S.list.length} · ${S.ok} richtig</div>
+ <div class="stmt">${it.t}</div><div class="grid2">${S.keys.map(k=>`<button class="btn out" data-k="${k}" onclick="sAns('${k}')">${S.cats[k]}</button>`).join("")}</div><div class="fb" id="fb"></div>`;
+ S.lock=false;
+}
+function sAns(k){
+ if(S.lock)return;S.lock=true;const it=S.list[S.i],ok=k===it.c;if(ok)S.ok++;
+ document.querySelectorAll(".grid2 .btn").forEach(b=>{b.disabled=true;if(b.dataset.k===it.c){b.className="btn ok";b.disabled=false;b.style.opacity=1}});
+ const fb=$("#fb");fb.className="fb "+(ok?"ok":"no");
+ fb.innerHTML=`<b>${ok?"Richtig!":"Leider falsch."}</b> Gehört zu: <b>${S.cats[it.c]}</b>. ${it.e}<div style="margin-top:10px"><button class="btn ghost" onclick="S.i++;sRender()">Weiter →</button></div>`;
+}
+ENGINES.sort=()=>{const L=LB.levels.begriffe;sorter(L.sort,L.cats,L.sortCats,"sort","ENGINES.sort()");};
+ENGINES.folgen=()=>{const L=LB.levels.theorie;sorter(L.folgen,L.styles,Object.keys(L.styles),"folgen","ENGINES.folgen()");};
+
+/* Lückentext */
+ENGINES.luecke=()=>{
+ const L=LB.levels.begriffe;let h=intro("luecke");
+ L.gaps.forEach((g,gi)=>{const ans=[...g.s.matchAll(/\[(.+?)\]/g)].map(m=>m[1]);const pool=shuffle([...ans,...g.x]);
+  h+=`<div class="gap-s"><b>${gi+1}.</b> ${g.s.replace(/\[(.+?)\]/g,(_,w)=>`<select data-a="${w}" onchange="this.className=''"><option value="">…</option>${pool.map(p=>`<option>${p}</option>`).join("")}</select>`)}<span class="src">${g.src}</span></div>`;});
+ h+=`<div class="row"><button class="btn" onclick="lCheck()">Prüfen</button><button class="btn ghost" onclick="ENGINES.luecke()">Neu mischen</button><span id="lres" class="small"></span></div>`;
+ area.innerHTML=h;
+};
+function lCheck(){const s=[...document.querySelectorAll(".gap-s select")];let ok=0;s.forEach(x=>{const r=x.value===x.dataset.a;x.className=r?"ok":"no";if(r)ok++;});$("#lres").innerHTML=` <b>${ok} von ${s.length}</b> richtig${ok===s.length?" 🎉":" – korrigiere die roten Felder."}`;}
+
+/* Beispiel-Detektiv */
+let D={};
+ENGINES.detektiv=()=>{D={list:shuffle(LB.levels.begriffe.detect),i:0,ok:0};dRender();};
+function dRender(){
+ const L=LB.levels.begriffe;
+ if(D.i>=D.list.length){doneBox(D.ok,D.list.length,"Fälle gelöst","ENGINES.detektiv()");return;}
+ const c=D.list[D.i];
+ area.innerHTML=intro("detektiv")+`${bar(D.i,D.list.length)}<div class="small">Fall ${D.i+1} von ${D.list.length} · ${D.ok} gelöst</div>
+ <div class="case">${c.t}</div><div class="opts">${L.sortCats.map(k=>`<button class="opt" data-k="${k}" onclick="dAns('${k}')">${L.cats[k]}</button>`).join("")}</div><div class="fb" id="fb"></div>`;
+}
+function dAns(k){const c=D.list[D.i],ok=k===c.k;if(ok)D.ok++;
+ document.querySelectorAll(".opt").forEach(b=>{b.disabled=true;if(b.dataset.k===c.k)b.classList.add("ok");else if(b.dataset.k===k)b.classList.add("no");});
+ const fb=$("#fb");fb.className="fb "+(ok?"ok":"no");fb.innerHTML=`<b>${ok?"Gut erkannt!":"Nicht ganz."}</b> ${c.e}<div style="margin-top:10px"><button class="btn ghost" onclick="D.i++;dRender()">Weiter →</button></div>`;}
+
+/* Struktur legen (Matrix) */
+let M={};
+ENGINES.matrix=()=>{const L=LB.levels.theorie;M={items:[...L.matrix.filter(x=>x.st),...shuffle(L.matrix.filter(x=>!x.st))].map((x,i)=>({...x,id:i})),placed:{},sel:null,err:0};mRender();};
+function mRender(){
+ const L=LB.levels.theorie;
+ const left=M.items.filter(x=>!M.placed[x.id]);
+ const stylesLeft=left.some(x=>x.st);
+ const pool=left.filter(x=>stylesLeft?x.st:true);
+ const cell=k=>`<div class="cell" id="c-${k}" onclick="mDrop('${k}')">${M.items.filter(x=>M.placed[x.id]===k).sort((a,b)=>(b.st||0)-(a.st||0)).map(x=>`<div class="in ${x.st?"st":""}">${x.t}</div>`).join("")}</div>`;
+ area.innerHTML=intro("matrix")+`
+ <div class="pool">${pool.map(x=>`<button class="${x.st?"st":""} ${M.sel===x.id?"sel":""}" onclick="M.sel=${x.id};mRender()">${x.t}</button>`).join("")||"<b>Fertig! 🎉</b>"}</div>
+ <div class="small">${stylesLeft?"Runde 1: Ordne zuerst die vier Stile ein.":"Runde 2: Ordne jetzt die Merkmale den Stilen zu."} · Fehlversuche: ${M.err}</div>
+ <div class="mx">
+  <div></div><div class="ax">Wärme hoch</div><div class="ax">Wärme niedrig</div>
+  <div class="ax" style="writing-mode:vertical-rl;transform:rotate(180deg)">Anforderung hoch</div>${cell("AV")}${cell("AR")}
+  <div class="ax" style="writing-mode:vertical-rl;transform:rotate(180deg)">Anforderung niedrig</div>${cell("PE")}${cell("VE")}
+ </div>
+ ${!left.length?`<div class="fb ok">Alles richtig eingeordnet – mit ${M.err} Fehlversuch(en). Merke: <b>Wärme</b> = Zuwendung, Unterstützung · <b>Anforderung</b> = Regeln, Kontrolle, Konsequenz.</div><button class="btn" style="margin-top:10px" onclick="ENGINES.matrix()">Nochmal</button>`:""}`;
+}
+function mDrop(k){
+ if(M.sel===null)return;const it=M.items[M.sel];
+ if(it.k===k){M.placed[it.id]=k;M.sel=null;mRender();}
+ else{M.err++;const c=$("#c-"+k);c.classList.add("flash");setTimeout(()=>{M.sel=null;mRender();},450);}
+}
+
+/* Fall-Diagnose (zweistufig) */
+let G={};
+ENGINES.diagnose=()=>{G={list:shuffle(LB.levels.theorie.diagnose),i:0,ok:0,s1:null};gRender();};
+function gRender(){
+ const L=LB.levels.theorie;
+ if(G.i>=G.list.length){doneBox(G.ok,G.list.length*2,"Punkte (Stil + Begründung)","ENGINES.diagnose()");return;}
+ const c=G.list[G.i];
+ area.innerHTML=intro("diagnose")+`${bar(G.i,G.list.length)}<div class="small">Fall ${G.i+1} von ${G.list.length} · ${G.ok} Punkte</div>
+ <div class="case">${c.t}</div>
+ <div class="step">Schritt 1: Welcher Erziehungsstil?</div>
+ <div class="opts" id="s1">${Object.entries(L.styles).map(([k,l])=>`<button class="opt" data-k="${k}" onclick="g1('${k}')">${l}</button>`).join("")}</div>
+ <div id="s2"></div><div class="fb" id="fb"></div>`;
+}
+function g1(k){
+ const c=G.list[G.i],ok=k===c.k;if(ok)G.ok++;
+ document.querySelectorAll("#s1 .opt").forEach(b=>{b.disabled=true;if(b.dataset.k===c.k)b.classList.add("ok");else if(b.dataset.k===k)b.classList.add("no");});
+ $("#s2").innerHTML=`<div class="step">Schritt 2: Woran erkennst du das?</div><div class="opts">${c.r.map((r,i)=>`<button class="opt" data-i="${i}" onclick="g2(${i})">${r}</button>`).join("")}</div>`;
+}
+function g2(i){
+ const c=G.list[G.i],ok=i===c.rk;if(ok)G.ok++;
+ document.querySelectorAll("#s2 .opt").forEach(b=>{b.disabled=true;const j=+b.dataset.i;if(j===c.rk)b.classList.add("ok");else if(j===i)b.classList.add("no");});
+ const L=LB.levels.theorie,fb=$("#fb");fb.className="fb "+(ok?"ok":"no");
+ fb.innerHTML=`<b>Lösung:</b> ${L.styles[c.k]} – ${L.cells[c.k]}.<div style="margin-top:10px"><button class="btn ghost" onclick="G.i++;gRender()">Weiter →</button></div>`;
+}
+
+/* Einordnen mit Reglern */
+let R={};
+ENGINES.regler=()=>{R={list:shuffle(LB.levels.theorie.slider),i:0,ok:0};rRender();};
+function rRender(){
+ if(R.i>=R.list.length){doneBox(R.ok,R.list.length,"Aussagen richtig eingeordnet","ENGINES.regler()");return;}
+ const c=R.list[R.i];
+ area.innerHTML=intro("regler")+`${bar(R.i,R.list.length)}<div class="small">Aussage ${R.i+1} von ${R.list.length} · ${R.ok} richtig</div>
+ <div class="case" style="font-size:1.15rem">${c.t}</div>
+ <div class="box">
+  <div class="sl"><label>❤️ Wärme / Responsivität <span id="wv">5</span></label><input type="range" min="0" max="10" value="5" id="w" oninput="$('#wv').textContent=this.value"><div class="row small" style="justify-content:space-between"><span>niedrig</span><span>hoch</span></div></div>
+  <div class="sl"><label>📏 Anforderung / Kontrolle <span id="av">5</span></label><input type="range" min="0" max="10" value="5" id="a" oninput="$('#av').textContent=this.value"><div class="row small" style="justify-content:space-between"><span>niedrig</span><span>hoch</span></div></div>
+  <button class="btn" id="rb" onclick="rCheck()">Prüfen</button>
+ </div><div class="fb" id="fb"></div>`;
+}
+function rCheck(){
+ const w=+$("#w").value,a=+$("#a").value,fb=$("#fb");
+ if(w===5||a===5){fb.className="fb no";fb.innerHTML="Entscheide dich bei beiden Reglern: eher hoch (über 5) oder eher niedrig (unter 5).";return;}
+ const c=R.list[R.i],L=LB.levels.theorie,key=c.w?(c.a?"AV":"PE"):(c.a?"AR":"VE");
+ const okW=(w>5)===!!c.w,okA=(a>5)===!!c.a,ok=okW&&okA;if(ok)R.ok++;
+ $("#rb").disabled=true;$("#w").disabled=$("#a").disabled=true;
+ fb.className="fb "+(ok?"ok":"no");
+ fb.innerHTML=`<b>${ok?"Richtig eingeordnet!":"Nicht ganz."}</b> Wärme: <b>${c.w?"hoch":"niedrig"}</b>${okW?"":" (falsch)"} · Anforderung: <b>${c.a?"hoch":"niedrig"}</b>${okA?"":" (falsch)"} → <b>${L.styles[key]}</b>.<div style="margin-top:10px"><button class="btn ghost" onclick="R.i++;rRender()">Weiter →</button></div>`;
+}
+
+/* Fehler-Detektiv */
+let E={};
+ENGINES.fehler=(n)=>{E={n:n||0,mark:{},checked:false};eRender();};
+function eRender(){
+ const L=LB.levels.theorie,T=L.errors[E.n];
+ area.innerHTML=intro("fehler")+`<div class="row" style="margin-bottom:10px">${L.errors.map((x,i)=>`<button class="chip ${i===E.n?"on":""}" onclick="ENGINES.fehler(${i})">${x.title}</button>`).join("")}</div>
+ <div class="box eh"><div class="small" style="margin-bottom:8px">${T.title}</div>${T.s.map((s,i)=>{let cl="";if(E.checked){cl=s.c?(E.mark[i]?"hit":"miss"):(E.mark[i]?"wrong":"");}else if(E.mark[i])cl="mark";
+  return `<p class="${cl}" onclick="eTog(${i})">${s.t}${E.checked&&s.c?`<span class="corr">✏️ ${s.c}</span>`:""}${E.checked&&!s.c&&E.mark[i]?`<span class="corr">Dieser Satz ist richtig.</span>`:""}</p>`}).join("")}</div>
+ <div class="row" style="margin-top:10px"><button class="btn" onclick="eCheck()" ${E.checked?"disabled":""}>Prüfen</button><button class="btn ghost" onclick="ENGINES.fehler(${E.n})">Zurücksetzen</button></div><div class="fb" id="fb"></div>`;
+ if(E.checked){const errs=T.s.filter(s=>s.c).length,hits=T.s.filter((s,i)=>s.c&&E.mark[i]).length,wrong=T.s.filter((s,i)=>!s.c&&E.mark[i]).length;
+  const fb=$("#fb");fb.className="fb "+(hits===errs&&!wrong?"ok":"no");
+  fb.innerHTML=`Du hast <b>${hits} von ${errs}</b> Fehlern gefunden${wrong?` und <b>${wrong}</b> richtige(n) Satz/Sätze fälschlich markiert`:""}. 🟩 gefunden · 🟥 übersehen · 🟨 war eigentlich richtig. Lies die Korrekturen ✏️ genau.`;}
+}
+function eTog(i){if(E.checked)return;E.mark[i]=!E.mark[i];eRender();}
+function eCheck(){E.checked=true;eRender();}
+
+/* Aufträge (Anwendung) */
+ENGINES.auftraege=()=>{
+ const L=LB.levels.anwendung;
+ area.innerHTML=intro("auftraege")+L.tasks.map(t=>`<div class="task"><h3>${t.icon} ${t.title}</h3><div class="meta">${t.meta.map(m=>`<span>${m}</span>`).join("")}</div>
+ <div class="goal">🎯 ${t.goal}</div><ol>${t.steps.map(s=>`<li>${s}</li>`).join("")}</ol><div class="prod">${t.prod}</div></div>`).join("");
+};
+
+
+
+const DOT={rot:"🔴",blau:"🔵",gruen:"🟢"};
+function navHTML(){
+ const L=LB.levels[PAGE.lv];
+ return `<nav class="pnav"><h3>Weitere Übungen auf Ebene ${L.nr} · ${L.name}</h3>${PAGE.siblings.map(([f,l])=>`<a href="${f}" class="${f===PAGE.file?"on":""}">${l}</a>`).join("")}<a class="home" href="${PAGE.home}">← Übersicht aller Ebenen</a></nav>`;
+}
+function taskSingle(i){
+ const t=LB.levels.anwendung.tasks[i];
+ area.innerHTML=intro("auftraege")+`<div class="task"><h3>${t.icon} ${t.title}</h3><div class="meta">${t.meta.map(m=>`<span>${m}</span>`).join("")}</div>
+ <div class="goal">🎯 ${t.goal}</div><ol>${t.steps.map(s=>`<li>${s}</li>`).join("")}</ol><div class="prod">${t.prod}</div>
+ ${PAGE.pdf?`<a class="dl" href="${PAGE.pdf}" download>📄 Druckvorlage (PDF) herunterladen</a>`:""}</div>`;
+}
+function render(){
+ const L=LB.levels[PAGE.lv];
+ document.body.className=L.color+(location.hash==="#embed"?" embed":"");
+ document.getElementById("root").innerHTML=`<header><div class="kick">${DOT[L.color]} Ebene ${L.nr} · ${L.name} · ${L.afb}</div><h1>${PAGE.title}</h1><p>${L.texts}</p></header>
+ <main><div id="area"></div>${checkoutHTML(PAGE.lv)}${navHTML()}</main>`;
+ area=$("#area");
+ if(PAGE.task!=null) taskSingle(PAGE.task); else ENGINES[PAGE.fmt]();
+}
+render();
+/* Links auf nicht hochgeladene Dateien ausblenden */
+(function(){ if(location.protocol.indexOf("http")!==0) return;
+ document.querySelectorAll(".pnav a:not(.home), a.dl").forEach(a=>{
+  fetch(a.href,{method:"HEAD"}).then(r=>{ if(!r.ok) a.style.display="none"; }).catch(()=>{});
+ });
+})();
+
+</script>
+<script>window.LB3_LOES="<h2>2 · Zuordnen<\/h2><table><tr><th style='width:48%'>Aussage<\/th><th style='width:20%'>Merkmal<\/th><th>Erklärung<\/th><\/tr><tr><td>Die Erzieherin zeigt dem Kind absichtlich, wie man eine Schleife bindet.<\/td><td class='sol'>Beabsichtigte Lernhilfe<\/td><td>Sie führt bewusst einen Lernprozess herbei.<\/td><\/tr><tr><td>Lernprozesse werden absichtlich herbeigeführt, ausgelöst oder unterstützt.<\/td><td class='sol'>Beabsichtigte Lernhilfe<\/td><td>Kern der beabsichtigten Lernhilfe.<\/td><\/tr><tr><td>Erzieherische Handlungen sind Werten und Normen verpflichtet.<\/td><td class='sol'>Zielgerichtet<\/td><td>Erziehung ist wertorientiertes, zielgerichtetes Handeln.<\/td><\/tr><tr><td>Angestrebt wird eine relativ dauerhafte Änderung des Verhaltens und Erlebens.<\/td><td class='sol'>Zielgerichtet<\/td><td>Das ist das Ziel jeder Erziehung.<\/td><\/tr><tr><td>Ohne Ziel würde der Erzieher nicht mehr einwirken.<\/td><td class='sol'>Zielgerichtet<\/td><td>Erziehung ist ohne Erziehungsziel undenkbar.<\/td><\/tr><tr><td>Pädagogisches Handeln ist „Versuchshandeln“ – der Ausgang ist offen.<\/td><td class='sol'>Soziales Handeln<\/td><td>Merkmal des pädagogischen (sozialen) Handelns.<\/td><\/tr><tr><td>Erziehung ist nur, was bewusst und planvoll geschieht.<\/td><td class='sol'>Soziales Handeln<\/td><td>Giesecke: Erziehung ist bewusstes, planvolles Handeln.<\/td><\/tr><tr><td>Weil das Verhältnis ungleich ist, trägt der Erzieher Verantwortung.<\/td><td class='sol'>Soziales Handeln<\/td><td>Pädagogische Verantwortung beim sozialen Handeln.<\/td><\/tr><tr><td>Erzieher und zu Erziehender beeinflussen und steuern sich gegenseitig.<\/td><td class='sol'>Soziale Interaktion<\/td><td>Wechselseitige Beeinflussung = soziale Interaktion.<\/td><\/tr><tr><td>Der Erzieher verändert sich durch die Erziehung auch selbst.<\/td><td class='sol'>Soziale Interaktion<\/td><td>Im Wechselspiel verändern sich beide.<\/td><\/tr><tr><td>Der Erzieher passt sich an Alter, Interessen und Bedürfnisse des Kindes an.<\/td><td class='sol'>Soziale Interaktion<\/td><td>Aktion und Reaktion – Wechselspiel.<\/td><\/tr><tr><td>Wo die Beziehung nicht stimmt, hat die Erziehung wenig Chancen.<\/td><td class='sol'>Soziale Beziehung<\/td><td>Die emotionale Beziehung entscheidet mit über den Erfolg.<\/td><\/tr><tr><td>„Bindung ist emotionale Nahrung.“ (Brisch)<\/td><td class='sol'>Soziale Beziehung<\/td><td>Zitat zur Bedeutung der emotionalen Beziehung.<\/td><\/tr><tr><td>Der zu Erziehende ist auf eine positive emotionale Beziehung angewiesen.<\/td><td class='sol'>Soziale Beziehung<\/td><td>Kernaussage zur sozialen Beziehung.<\/td><\/tr><tr><td>Ein Daumen nach oben bedeutet „gut gemacht“.<\/td><td class='sol'>Soziale Kommunikation<\/td><td>Eine Geste ist ein Symbol – Informationsaustausch.<\/td><\/tr><tr><td>Auch wer schweigt, teilt etwas mit.<\/td><td class='sol'>Soziale Kommunikation<\/td><td>Jedes Verhalten hat Mitteilungscharakter.<\/td><\/tr><tr><td>Symbole müssen für alle Beteiligten die gleiche Bedeutung haben.<\/td><td class='sol'>Soziale Kommunikation<\/td><td>Bedingung des symbolischen Interaktionismus.<\/td><\/tr><tr><td>Informationen werden vermittelt, aufgenommen und ausgetauscht.<\/td><td class='sol'>Soziale Kommunikation<\/td><td>Definition der sozialen Kommunikation.<\/td><\/tr><\/table>";</script>
+<script src="../versuch.js"></script>
+</body>
+</html>
