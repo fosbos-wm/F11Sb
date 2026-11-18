@@ -8,17 +8,17 @@ Eintrag je Datei, Dateien liegen im Repo (z. B. in `infotexte/` und `aufgaben/`)
 
     {"material":[
       {"id":"info01","wocheId":"pp01","kategorie":"lehrtext","titel":"Gegenstand der Psychologie","url":"infotexte/LB1-01_Gegenstand-der-Psychologie.pdf","ord":10},
-      {"id":"ueb01b","wocheId":"pp01","kategorie":"uebung","titel":"Basis: Alltagsaussagen prüfen","url":"aufgaben/LB1-01_Basis_Alltagsaussagen.pdf","ord":20}
+      {"id":"ueb01b","wocheId":"pp01","kategorie":"uebung","titel":"AFB I: Alltagsaussagen prüfen","url":"aufgaben/LB1-01_Basis_Alltagsaussagen.pdf","ord":20}
     ]}
 
 - `wocheId` = Kennung des Themas (Liste unten)
-- `kategorie`: `lehrtext` (Infotext), `uebung` (Basis), `vertiefung2` (Plus), `vertiefung3` (Vertieft)
+- `kategorie`: `lehrtext` (Infotext), `uebung` (AFB I), `vertiefung2` (AFB II), `vertiefung3` (AFB III)
 - Dateinamen bitte ohne Umlaute und Leerzeichen
 - Interaktive Übungen: `"url":"uebungsbausteine/station.html?s=<Stations-ID>"`
 
 ## Selbstlernkurse
 
-`einarbeitung/inhalte/<Thema-Kennung>.json` (Basis), `<Kennung>-plus.json`, `<Kennung>-vertieft.json`. Mit `"themen":["<Kennung>"]` im Kurs zuordnen.
+`einarbeitung/inhalte/<Thema-Kennung>.json` (AFB I), `<Kennung>-plus.json` (AFB II), `<Kennung>-vertieft.json` (AFB III). Mit `"themen":["<Kennung>"]` im Kurs zuordnen.
 
 ## Interaktive Übungen (Stationen)
 
