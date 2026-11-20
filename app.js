@@ -5047,6 +5047,7 @@ Er bleibt in der App erhalten und kann hier wieder eingeblendet werden.`))return
   <p class="lxw-hint">Erscheint den Sch\xFCler:innen auf der Startseite, je nach Auswahl als verpflichtend oder optional.</p>
   <div class="lxw-row"><label>Datum<input type="date" id="ptDatum" value="${lxFreitag(lxPlus(3))}"></label><label>bis Datum (optional, z. B. Projekt)<input type="date" id="ptDatumBis"></label>
   </div><div class="lxw-row"><label>Uhrzeit von<input type="time" id="ptZeit"></label><label>bis (optional)<input type="time" id="ptZeitBis"></label></div>
+  <label>Fach<select id="ptFach">${l}</select></label>
   <label>Art<select id="ptArt"><option>Unterrichtsstunde</option><option>\xDCbung</option><option>Rollenspiel</option><option>Lernrallye</option><option>Selbstlernkurs</option><option>Fachaufsatztraining</option><option>K-Prim-Test</option><option>Projekt</option><option>Lernstandsgespr\xE4ch</option><option>Test</option><option>R\xFCckgabe Kurzarbeit/Schulaufgabe</option><option>Sonstiges</option></select></label>${e}<div id="ptTrWrap" class="lxw-tr" hidden></div>
   <label>Verbindlichkeit<select id="ptPflicht"><option value="pflicht">Verpflichtend</option><option value="optional">Optional (freiwillig)</option></select></label>
   <label>Titel<input type="text" id="ptTitel" maxlength="90" placeholder="z. B. Instruktion P\xE4dagogik/Psychologie"></label>
@@ -5076,6 +5077,7 @@ Hier beginnt dein Kurs.`},{id:"s2",typ:"abschluss",titel:"Geschafft",text:"Du ha
   <div class="kw-aktionen"><button class="primary" data-wa="save">Einplanen</button></div></details>
  <details class="lxp-d"><summary>+ Termin ansetzen</summary>
   <div class="lxw-row" style="margin-top:10px"><label>Datum<input type="date" id="ptDatum" value="${n}" min="${n}" max="${s}"></label><label>bis Datum (optional, mehrt\xE4gig)<input type="date" id="ptDatumBis" min="${n}"></label></div><div class="lxw-row"><label>Uhrzeit von<input type="time" id="ptZeit"></label><label>bis (optional)<input type="time" id="ptZeitBis"></label></div>
+  <label>Fach<select id="ptFach">${c}</select></label>
   <label>Art<select id="ptArt"><option>Unterrichtsstunde</option><option>\xDCbung</option><option>Rollenspiel</option><option>Lernrallye</option><option>Selbstlernkurs</option><option>Fachaufsatztraining</option><option>K-Prim-Test</option><option>Projekt</option><option>Lernstandsgespr\xE4ch</option><option>Test</option><option>R\xFCckgabe Kurzarbeit/Schulaufgabe</option><option>Sonstiges</option></select></label>${e}<div id="ptTrWrap" class="lxw-tr" hidden></div>
   <label>Verbindlichkeit<select id="ptPflicht"><option value="pflicht">Verpflichtend</option><option value="optional">Optional (freiwillig)</option></select></label>
   <label>Titel<input type="text" id="ptTitel" maxlength="90" placeholder="z. B. Projektstart LB 1"></label>
