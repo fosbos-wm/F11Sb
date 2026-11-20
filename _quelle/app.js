@@ -4119,7 +4119,7 @@ async function lxStartNeu(wp){
    let fo=null;try{fo=ppmFort(m)}catch(e){}
    const lbl=fo&&fo.done?"Ansehen":(fo&&fo.frac>0?"Weiter":"Starten");
    let st="";try{st=ppmStatus(m)||""}catch(e){}
-   return`<div class="lxs-tz" style="background:${ppmFarbe(m)}33;border-left:6px solid ${ppmFarbe(m)};border-radius:10px;padding:10px 12px;margin:8px 0"><span><b>\uD83D\uDCCC Projekt: ${esc(ppmTitel(m)||m.titel||"Projekt")}</b><small>${esc(z)} ${st}</small></span><button type="button" class="${lbl==="Weiter"||lbl==="Starten"?"primary":"secondary"}" data-kw="modul" data-id="${esc(m.id)}">${lbl}</button></div>`}).join("");
+   return`<div class="lxs-str pr" style="display:flex;align-items:center;gap:8px;margin:6px 0;white-space:nowrap" data-kw="modul" data-id="${esc(m.id)}" role="button" tabindex="0" title="Projekt \u00F6ffnen"><b style="display:inline;overflow:hidden;text-overflow:ellipsis;flex:1 1 auto;min-width:0">\uD83D\uDCCC Projekt: ${esc(lbModulTitelX(m))}</b><small style="flex:0 0 auto">${esc(z)}${z?" \u00B7 ":""}${lbl}</small></div>`}).join("");
   if(pjH){const k=auf.indexOf("<b>"+esc(PJ_FACH)+"</b>");const e0=k>-1?auf.indexOf("</div>",k):-1;
    if(e0>-1)auf=auf.slice(0,e0+6)+pjH+auf.slice(e0+6);
    else auf=`<article class="lxs-a"><div class="lxs-ak"><b>${esc(PJ_FACH)}</b></div>${pjH}</article>`+auf}
@@ -23675,6 +23675,7 @@ document.addEventListener("click",async ev=>{
  const n=ev.target.closest&&ev.target.closest("[data-pjneu]");
  if(n&&isTeacher()){ev.preventDefault();ev.stopPropagation();try{await ppmDialog(null,"projekt",lxPtWoche(new Date().toISOString().slice(0,10)),{lb:Number(n.dataset.pjneu)||1})}catch(x){console.error(x)}}
 },true);
+function lbModulTitelX(m){try{return(typeof ppmTitel==="function"?ppmTitel(m):m.titel)||m.titel||"Projekt"}catch(e){return m.titel||"Projekt"}}
 function lxLegende(){return`<div class="lx-legende">${LX_LEG.map(n=>`<span><i class="lx-pt an" style="--k:${LXF[n].c}"></i>${LXF[n].d} ${esc(LXF[n].n)}</span>`).join("")}</div>`}
 const LX_PT_ARB={"Unterrichtsstunde":"stunde","Rollenspiel":"stunde","Lernrallye":"rallye"};
 function lxPtArbBtn(t){
