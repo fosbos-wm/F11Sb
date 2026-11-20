@@ -96,8 +96,7 @@
  ],
  "einrichtungen": [
   "Krippe",
-  "Kindergarten",
-  "Hort"
+  "Kindergarten"
  ],
  "meilensteine": [
   {
@@ -439,37 +438,37 @@
   }
  ],
  "ausarbeitung": {
-  "umfang": "2–3 Seiten Text (Schrift 11–12 pt, Zeilenabstand 1,5), dazu ein Anhang mit Material, Fotos und Werken der Kinder.",
+  "umfang": "2–3 Seiten Text insgesamt (Schrift 11–12 pt, Zeilenabstand 1,5), dazu ein Anhang mit Material, Fotos und Werken der Kinder. Fasse dich kurz und konkret. Die Umfänge unten ergeben zusammen etwa 2½ Seiten: Du darfst den Rahmen von 2–3 Seiten nutzen, aber nicht überschreiten.",
   "teile": [
    {
     "teil": "1 Einleitung",
-    "inhalt": "Welcher Bildungsbereich? Warum diese Idee? Kurze Beschreibung der Einrichtung und der Gruppe (anonymisiert).",
-    "umfang": "½ S."
+    "inhalt": "Welcher Bildungsbereich? Warum diese Idee? Kurze Beschreibung der Gruppe (anonymisiert).",
+    "umfang": "¼ S."
    },
    {
     "teil": "2 BEP-Bezug",
-    "inhalt": "Kernstück! Leitgedanken des Bereichs mit eigenen Worten. Welche Bildungs- und Erziehungsziele verfolgt Ihr Angebot, mit Seitenangabe aus dem BayBEP? Welche Basiskompetenzen (Kap. 5) werden gestärkt? Welche Querverbindungen zu anderen Bereichen gibt es?",
-    "umfang": "1½–2 S."
+    "inhalt": "Kernstück! Leitgedanken mit eigenen Worten. Welche Bildungs- und Erziehungsziele verfolgt dein Angebot (mit Seitenangabe)? Welche Basiskompetenzen (Kap. 5) werden gestärkt? Welche Querverbindungen gibt es?",
+    "umfang": "ca. 1 S."
    },
    {
     "teil": "3 Bedarfsanalyse",
-    "inhalt": "Was haben Sie bei den Kindern beobachtet (Interessen, Entwicklungsstand)? Wie wurden die Kinder an der Idee beteiligt (Partizipation)?",
-    "umfang": "½–1 S."
+    "inhalt": "Was hast du beobachtet (Interessen, Entwicklungsstand)? Wie wurden die Kinder beteiligt (Partizipation)?",
+    "umfang": "¼ S."
    },
    {
     "teil": "4 Planung",
-    "inhalt": "Rahmen: Datum, Dauer, Ort, Kinderzahl, Alter. Ziele des Angebots (Grob- und Feinziele). Ablauf in Phasen: Einstieg – Hauptteil – Abschluss, mit Begründung. Material, Sicherheit, Plan B.",
-    "umfang": "1½ S."
+    "inhalt": "Rahmen (Datum, Dauer, Ort, Kinderzahl, Alter) und Ziele des Angebots. Ablauf: Einstieg – Hauptteil – Abschluss, mit Begründung. Material, Sicherheit, Plan B.",
+    "umfang": "½ S."
    },
    {
     "teil": "5 Durchführung",
-    "inhalt": "Was ist tatsächlich passiert? Wie haben die Kinder reagiert? Was lief anders als geplant? (sachlich beschreiben)",
-    "umfang": "1 S."
+    "inhalt": "Was ist tatsächlich passiert? Wie haben die Kinder reagiert? Was lief anders?",
+    "umfang": "¼ S."
    },
    {
     "teil": "6 Reflexion",
-    "inhalt": "Wurden die Ziele erreicht? Woran erkennen Sie das? Was würden Sie beim nächsten Mal ändern, und warum? Rückmeldung der Praxisanleitung. Was haben Sie gelernt? Wie hat Ihnen der BayBEP geholfen?",
-    "umfang": "1–1½ S."
+    "inhalt": "Wurden die Ziele erreicht, und woran erkennst du das? Was würdest du ändern? Rückmeldung der Praxisanleitung; dein Lernzuwachs durch den BayBEP.",
+    "umfang": "½ S."
    },
    {
     "teil": "7 Quellen & Anhang",
