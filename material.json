@@ -111,6 +111,22 @@
    "titel": "Praxis-Check",
    "url": "lb3-erziehung/ebene-3-anwendung/3-5-praxis-check.html",
    "ord": 35
+  },
+  {
+   "id": "info-kindergarten",
+   "wocheId": "pp1a4",
+   "kategorie": "lehrtext",
+   "titel": "Der Kindergarten als Erziehungs- und Bildungseinrichtung",
+   "url": "infotexte/LB1-06_Der-Kindergarten_Erziehungs-und-Bildungseinrichtung.pdf",
+   "ord": 10
+  },
+  {
+   "id": "info-baybep-digital",
+   "wocheId": "pp07",
+   "kategorie": "lehrtext",
+   "titel": "BayBEP: Digitale Medien, Umwelt und Gesundheit",
+   "url": "infotexte/LB3-07_BayBEP_Digitale-Medien-Umwelt-Gesundheit.pdf",
+   "ord": 10
   }
  ]
 }

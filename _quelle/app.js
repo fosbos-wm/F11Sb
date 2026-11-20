@@ -5154,7 +5154,7 @@ function ppmZeitleiste(){
 }
 function ppmFuerTeil(lb,teil){return PPM.liste.find(m=>m.modul===teil&&Number(m.lb)===Number(lb));}
 function ppmById(id){return PPM.liste.find(m=>m.id===id)||null;}
-function ppmFarbe(m){return PP_FARBEN[m.lb]||"#8a99a3";}
+function ppmFarbe(m){if(m&&m.modul==="projekt")return"#6a3f9a";return PP_FARBEN[m.lb]||"#8a99a3";}
 function ppmMd(t){
  const zeilen=String(t||"").split("\n");let html="",liste=false;
  const inl=x=>esc(x).replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");
@@ -5563,7 +5563,7 @@ async function ppmDialog(e,t,n,i){i=i||{};const r=e?ppmById(e):null,a=r?r.modul:
    <label>Teambildung<select id="ppmTeamModus"><option value="frei">Die Klasse bildet die Teams selbst</option><option value="lehrkraft">Ich teile die Teams ein</option><option value="zufall">Zufallsteams (per Knopf auf der Projektseite)</option><option value="lb">Teams und Meilensteine des Lernbereichs (bisheriges Verfahren)</option></select></label>
    <label>Meilensteine (ein Schritt pro Zeile)<textarea id="ppmMeil" rows="6" maxlength="900">${esc(pjMsListe(r).map(x=>x.titel).join("\n"))}</textarea></label>
    <label id="ppmTeamGrWrap">H\xF6chstens so viele Personen pro Team<select id="ppmTeamGr">${[2,3,4,5,6].map(x=>`<option value="${x}"${(r&&r.teamGroesse||4)===x?" selected":""}>${x}</option>`).join("")}</select></label></div><div id="ppmAltBox" hidden><label>Beim Aufrufen \xF6ffnet sich<select id="ppmDirekt"><option value="experiment"${A?" selected":""}>direkt \u201EDas Experiment\u201C (interaktive Stunde)</option><option value="projekt"${A?"":" selected"}>die Projektseite mit Teams und Meilensteinen</option></select></label></div>
-   ${v.length?`<label>Projektvorlage<select id="ppmVorlage"><option value="">Keine: Standardprojekt des Lernbereichs</option>${v.map(H=>`<option value="${esc(H.id)}"${r&&r.vorlage===H.id?" selected":""}>${esc(H.titel)}</option>`).join("")}</select></label>
+   ${v.length?`<label>Projektvorlage<select id="ppmVorlage"><option value="">Keine: Standardprojekt des Lernbereichs</option>${v.map(H=>`<option value="${esc(H.id)}"${(r&&r.vorlage===H.id)||(!r&&window.__ptVl===H.id)?" selected":""}>${esc(H.titel)}</option>`).join("")}</select></label>
    <p style="font-size:13px;color:var(--muted);margin:0">Mit Vorlage entsteht eine eigene Projektseite mit Teamwahl, Zeitplan, Fristen, Material und Team\xFCbersicht. Empfohlen: Dauer 2 Wochen (Schulwoche, dann der Praktikumsblock, dann Schulwoche).</p>`:""}
    <p style="font-size:13px;color:var(--muted);margin:0">Team-Projekt mit Meilensteinen anlegen: Das Projekt nutzt die Meilensteine und die Teams des Lernbereichs.</p>`}if(a==="fachaufsatz"){const A=await faLaden(),H=ce=>(PROJEKT_PHASEN.find(ie=>ie.lbNum===ce)||{}).lbTitel||"",re=ce=>{const ie=A.filter(je=>je.lb===ce),de=ie.filter(je=>!je.zusatz),ue=ie.filter(je=>je.zusatz),Se=[...new Set(ie.map(je=>je.thema))],tt=je=>{const U=ie.filter(D=>D.thema===je),B=U.filter(D=>!D.zusatz),M=kwThemaById(je);return`<div class="fa-th"><b>${M?`Nr. ${esc(M.nr)} \xB7 ${esc(kwKurz(M))}`:`Weiteres Thema: ${esc(U[0].zusatz||je)}`}</b><small>${B.length?B.length+" \xDCbung"+(B.length===1?"":"en"):""}${B.length&&U.length>B.length?" + ":""}${U.length>B.length?U.length-B.length+" zus\xE4tzlich":""}</small><span>${U.map(D=>esc(D.titel)+(D.zusatz?" ("+esc(D.zusatz)+")":"")).join(" \xB7 ")}</span></div>`};return`<details class="fa-lbgr" data-lb="${ce}"${ce===k?" open":""}><summary><b>Lernbereich ${ce}</b> ${esc(H(ce))}<small>${de.length} Kern\xFCbungen${ue.length?" \xB7 "+ue.length+" zus\xE4tzlich":""}</small></summary>${Se.map(tt).join("")}</details>`};Ne=`<div class="fa-uebers"><b>\xDCbungen nach Lernbereich</b><p>Mit dem gew\xE4hlten Lernbereich stehen die Kern\xFCbungen automatisch bereit. Vertiefungen und weitere Themen erscheinen f\xFCr die Klasse unter \u201EMehr \xFCben\u201C. Willst du nur bestimmte Themen einplanen, kreuze sie unten bei den Lehrplan-Themen an.</p>${[1,2,3,4].map(re).join("")}</div>`}if(a==="apt"&&(Ne='<p style="font-size:13px;color:var(--muted);margin:0">Die Frage aus der Abschlusspr\xFCfung, den relevanten Inhalt und die L\xF6sung gestaltest du danach direkt auf der Modulseite.</p>'),a==="stunde"&&(Ne=`<label>Phase im Deeper-Learning-Konzept<select id="ppmPhase">${[1,2,3].map(A=>`<option value="${A}"${(r?r.phase:2)===A?" selected":""}>${PP12_PHASEN[A].kurz} \xB7 ${esc(PP12_PHASEN[A].name)}</option>`).join("")}</select></label>
   ${r?"":'<p style="font-size:13px;color:var(--muted);margin:0">Zu jeder Stunde wird automatisch eine Digitale Tafel angelegt.</p>'}`),a==="einfuehrung"){const A=r&&r.thema||"gegenstand";Ne=`<label>Thema<select id="ppmThema"${r?" disabled":""}>${Object.entries(PPM_EINF_THEMEN).map(([H,re])=>`<option value="${H}"${H===A?" selected":""}>${esc(re.titel)}</option>`).join("")}</select></label>
@@ -6231,6 +6231,19 @@ async function bepLehrerHTML(m,v,d){
   <details class="ppm-details" style="margin-top:12px"><summary>Termine festlegen</summary><div style="margin-top:8px"><p class="bep-klein">Die Fristen ergeben sich aus der Lage des Moduls im Plan. Hier kannst du sie überschreiben. Leer lassen = Standard.</p><div class="bep-termine">${termine}</div>
    <div class="ppm-zeile" style="border:0"><button type="button" class="ppm-btn primaer" onclick="bepTermineSpeichern('${m.id}')">Termine speichern</button><button type="button" class="ppm-btn" onclick="bepTermineSpeichern('${m.id}',true)">Alle auf Standard zurücksetzen</button></div></div></details></div>`;
 }
+async function bepGrundlagenHTML(m,v,lehrer){
+ try{await kwLaden().catch(()=>{});
+  const ids=(m.themen&&m.themen.length?m.themen:(v.themen||[])),th=ids.map(kwThemaById).filter(Boolean);
+  if(!th.length)return"";
+  const fort=e=>!!((KW.fort[e.id]||{}).abgeschlossen);
+  const eigen={};if(!lehrer)await Promise.all(th.map(async e=>{eigen[e.id]={ci:await getMyBasischeckVersuch(e.id).catch(()=>null),co:await getMyBasischeckVersuch(e.id+"@ende").catch(()=>null)}}));
+  const pz=x=>x&&x.gesamt?Math.round(x.richtig/x.gesamt*100):null,gesch=lehrer?0:th.filter(fort).length;
+  const kopf=lehrer?"":`<div class="lxs-prog"><b>${gesch} von ${th.length} ${th.length===1?"Thema":"Themen"} geschafft</b><div class="lxs-bar"><i style="width:${Math.round(gesch/th.length*100)}%"></i></div><small>So gehst du vor: Check-in, Infotext, bei Bedarf \u00FCben, Check-out.</small></div>`;
+  const zeilen=th.map(e=>{const f=KW.fort[e.id]||{},x=eigen[e.id]||{},fe=fort(e),nxs=fe?"\u2713 geschafft":(!x.ci?"Als N\u00E4chstes: Check-in":(!f.info?"Als N\u00E4chstes: Infotext":(!x.co?"Als N\u00E4chstes: Check-out":"\u00DCben oder Check-out"))),erg=[x.ci?"Check-in "+pz(x.ci)+" %":"",x.co?"Check-out "+pz(x.co)+" %":""].filter(Boolean).join(" \u00B7 "),beg=!!(x.ci||f.info);
+   return`<div class="lxs-tz"><span><b>${esc(kwKurz(e))}</b><small>${lehrer?"Infotext, Check-in, \u00DCbungen und Check-out":esc(nxs)+(erg?" \u00B7 "+esc(erg):"")}</small></span><button type="button" class="${fe?"secondary":"primary"}" data-kw="thema" data-id="${esc(e.id)}">${lehrer?"Vorbereiten":(fe?"Ansehen":(beg?"Weiter":"Starten"))}</button></div>`}).join("");
+  return`<div class="ppm-box"><h2>Arbeitsgrundlagen: erst erarbeiten, dann loslegen</h2><p style="color:var(--muted);font-size:13px;margin:0 0 8px">Diese Inhalte des Lehrplans sind die Basisinfo zum Projekt. Bearbeite sie wie die Themenseiten: Check-in, Infotext, \u00DCbung, Check-out.</p>${kopf}${zeilen}</div>`;
+ }catch(e){console.error(e);return""}
+}
 async function ppmProjektVorlageSeite(m,v){
  const lehrer=isTeacher();
  const d=(await bepLaden(m))||{v,teams:[],beitraege:[],team:null};
@@ -6238,15 +6251,23 @@ async function ppmProjektVorlageSeite(m,v){
  const aufg=meinK.bepAufg||{},chk=meinK.bepCheck||{};
  const kopf=ppmKopf(m,`<p class="bep-sub">${esc(v.untertitel)}</p>`);
  const mitMaterial=(m.material||[]).length;
+ const nr=(h,n)=>String(h||"").replace("<h2>","<h2>"+n+" \u00B7 ");
+ const nMs=(v.meilensteine||[]).length,fr=nMs?bepFrist(m,v,nMs):null,fr1=nMs>1?bepFrist(m,v,nMs-1):null;
+ const ziel=`<div class="ppm-box"><h2>2 \u00B7 Ziel und Produkt</h2><p>${esc(v.ziel||"Du entwickelst ein eigenes, kreatives Angebot, f\u00FChrst es durch, wertest es aus und stellst es der Klasse vor.")}</p>${(v.abgabe||[]).length?`<p><b>Produkte und Abgaben:</b></p><ul style="margin:4px 0 0 18px">${v.abgabe.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}</div>`;
+ const praes=`<div class="ppm-box"><h2>6 \u00B7 Pr\u00E4sentationstermin</h2><p><b>Pr\u00E4sentation:</b> ${fr?esc(bepTagText?bepTagText(fr):fr):"Termin folgt (die Lehrkraft tr\u00E4gt ihn im Zeitplan ein)"}${fr1?` \u00B7 <b>Abgabe der Ausarbeitung bis:</b> ${esc(bepTagText?bepTagText(fr1):fr1)}`:""}</p>${v.messe&&v.messe.text?`<p style="white-space:pre-wrap">${esc(v.messe.text)}</p>`:""}</div>`;
+ const teamTeil=lehrer?await bepLehrerHTML(m,v,d):(d.team?bepWoStehIchHTML(m,v,d):bepTeamWahlHTML(m,v,d));
  return`${kopf}
  ${bepBlickHTML(v)}
- ${lehrer?await bepLehrerHTML(m,v,d):(d.team?bepWoStehIchHTML(m,v,d):bepTeamWahlHTML(m,v,d))}
+ ${nr(bepAuftragHTML(v).replace("Dein Auftrag","Projektauftrag"),1)}
+ ${ziel}
+ ${nr((await bepGrundlagenHTML(m,v,lehrer)).replace("Arbeitsgrundlagen: erst erarbeiten, dann loslegen","Basisinfo zum Projekt"),3)}
+ ${nr(teamTeil,4)}
  ${!lehrer&&d.team?bepTeamBoxHTML(m,v,d,lehrer):""}
- ${bepAuftragHTML(v)}
- ${bepZeitplanHTML(m,v,d,lehrer,aufg)}
+ ${nr(bepZeitplanHTML(m,v,d,lehrer,aufg),5)}
+ ${praes}
  ${bepDatenschutzHTML(v)}
  ${bepMaterialHTML(v)}
- ${mitMaterial?"":(lehrer?`<p class="bep-klein">Tipp: Das Projektblatt (Word oder PDF) kannst du unter „Modul bearbeiten“ → 5 Material anhängen. Es erscheint dann oben auf dieser Seite.</p>`:"")}
+ ${mitMaterial?"":(lehrer?`<p class="bep-klein">Tipp: Das Projektblatt (Word oder PDF) kannst du unter \u201EModul bearbeiten\u201C \u2192 5 Material anh\u00E4ngen. Es erscheint dann oben auf dieser Seite.</p>`:"")}
  ${bepWerHTML(v)}
  ${bepReferenzHTML(v,lehrer,chk,m)}
  ${footer()}`;
@@ -23651,7 +23672,7 @@ async function lxJournalHeuteOffen(){
 
 /* ---------- Lehrkräfte: Unterricht erstellen · Inhalte einstellen ---------- */
 // Projektstreifen im farbigen Kopf eines Lernbereichs: Projekt öffnen; Lehrkraft: bearbeiten (Auftrag, Material, Meilensteine) oder anlegen
-(function(){const st=document.createElement("style");st.textContent=".kw-th{flex-wrap:wrap}.kw-pjb{flex:1 1 100%;display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.kw-pjb .kw-pj{display:inline-flex;align-items:center;gap:6px;background:#17324a;color:#fff;border:0;border-radius:999px;padding:7px 13px;font-size:12px;font-weight:800;cursor:pointer;max-width:100%}.kw-pjb .kw-pj small{font-weight:700;color:#fff!important;letter-spacing:0;opacity:.9}.kw-pjb .kw-pje.weg{color:#b32b32;border-color:rgba(179,43,50,.4)}.kw-pjb .kw-pje{background:rgba(255,255,255,.75);color:#17324a;border:1px solid rgba(23,50,74,.25);border-radius:999px;padding:6px 11px;font-size:12px;font-weight:800;cursor:pointer}";document.head.appendChild(st)})();
+(function(){const st=document.createElement("style");st.textContent=".kw-th{flex-wrap:wrap}.kw-pjb{flex:1 1 100%;display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.kw-pjb .kw-pj{display:inline-flex;align-items:center;gap:6px;background:#6a3f9a;color:#fff;border:0;border-radius:999px;padding:7px 13px;font-size:12px;font-weight:800;cursor:pointer;max-width:100%}.kw-pjb .kw-pj small{font-weight:700;color:#fff!important;letter-spacing:0;opacity:.9}.kw-pjb .kw-pje.weg{color:#b32b32;border-color:rgba(179,43,50,.4)}.kw-pjb .kw-pje{background:rgba(255,255,255,.75);color:#17324a;border:1px solid rgba(23,50,74,.25);border-radius:999px;padding:6px 11px;font-size:12px;font-weight:800;cursor:pointer}";document.head.appendChild(st)})();
 // Projekt aus der Vorlage (projekte/<id>.json) mit einem Klick anlegen und optional mit einem Termin verkn\u00FCpfen
 async function lxProjektAusVorlage(vid,lb,ptId){
  try{
@@ -23663,7 +23684,7 @@ async function lxProjektAusVorlage(vid,lb,ptId){
   if(m&&!confirm("Das Projekt \u201E"+v.titel+"\u201C gibt es schon. Trotzdem ein weiteres anlegen?"))return closeModal(),ppmOeffnen(m.id);
   if(!m||true){
    const dauer=v.dauerEmpfohlen||"w2",start=lxPtWoche(t&&t.datum?t.datum:new Date().toISOString().slice(0,10));
-   const r=await addDoc(collection(db,"ppModule"),{modul:"projekt",lb:Number(lb)||Number(v.lb)||2,titel:v.titel,start,dauer,wochen:Number(String(dauer).slice(1))||2,notiz:"",themen:[],vorlage:v.id,einheiten:[],createdBy:currentUser.uid,createdAt:serverTimestamp()});
+   const r=await addDoc(collection(db,"ppModule"),{modul:"projekt",lb:Number(lb)||Number(v.lb)||2,titel:v.titel,start,dauer,wochen:Number(String(dauer).slice(1))||2,notiz:"",themen:(v.themen||[]).slice(),vorlage:v.id,einheiten:[],createdBy:currentUser.uid,createdAt:serverTimestamp()});
    id=r.id;
   }
   if(t&&t.id){await updateDoc(doc(db,"pflichttermine",t.id),{modulId:id});t.modulId=id}
@@ -23696,8 +23717,9 @@ function lxPtAutoLink(){
  const N=x=>String(x||"").toLowerCase().replace(/[^a-z0-9\u00E4\u00F6\u00FC\u00DF ]/g," ").replace(/\s+/g," ").trim();
  const L=(typeof PPM!=="undefined"&&PPM.liste)||[];if(!L.length)return;
  (LXWA.pt||[]).forEach(t=>{
-  if(t.modulId&&ppmById(t.modulId))return;
-  const typ=LX_PT_DLG[t.art]||LX_PT_ARB[t.art]||(t.art==="Projekt"?"projekt":"");if(!typ)return;
+  const typ=LX_PT_DLG[t.art]||LX_PT_ARB[t.art]||(t.art==="Projekt"?"projekt":"");
+  if(t.modulId&&ppmById(t.modulId)){if(!typ||typ!=="projekt"||ppmById(t.modulId).modul==="projekt")return;t.modulId=""}
+  if(!typ)return;
   const q=N(t.titel);if(q.length<3)return;
   const K=L.filter(m=>m.modul===typ&&!m.projektId).filter(m=>{const n=N(lbModulTitelX(m));return n.includes(q)||q.includes(n)});
   if(!K.length)return;
@@ -23729,8 +23751,8 @@ function lxPtWoche(datum){
 }
 async function lxPtAusarbeiten(id){
  const t=(LXWA.pt||[]).find(x=>x.id===id);if(!t)return;
- if(LX_PT_DLG[t.art]){window.__kwThemaNeu=lxPtThemen(t.titel);window.__ptLink={id:t.id,typ:LX_PT_DLG[t.art],t:Date.now()};await ppmDialog(null,LX_PT_DLG[t.art],lxPtWoche(t.datum),{lb:Number(t.lb)||1});return}
- if(t.modulId){await ppmLaden(true);if(ppmById(t.modulId)){ppmOeffnen(t.modulId);return}}
+ if(LX_PT_DLG[t.art]){window.__kwThemaNeu=lxPtThemen(t.titel);window.__ptVl=null;if(t.art==="Projekt"){const q=String(t.titel||"").toLowerCase();window.__ptVl=(typeof BEP_VORLAGEN_IDS!=="undefined"?BEP_VORLAGEN_IDS:[]).find(id=>q.replace(/[^a-z]/g,"").includes(id.replace(/[^a-z]/g,"")))||null}window.__ptLink={id:t.id,typ:LX_PT_DLG[t.art],t:Date.now()};await ppmDialog(null,LX_PT_DLG[t.art],lxPtWoche(t.datum),{lb:Number(t.lb)||1});return}
+ if(t.modulId){await ppmLaden(true);const mm=ppmById(t.modulId);if(mm&&(t.art!=="Projekt"||mm.modul==="projekt")){ppmOeffnen(t.modulId);return}}
  if(t.art==="Projekt"){activeKwLb=Number(t.lb)||1;go("kw-projekt");return}
  if(t.art==="\xDCbung"){
   const typen=["selbstlern","blockfall","apt"].map(k=>[k,PPM_TYPEN[k]]);
@@ -23754,7 +23776,7 @@ function lxPtModulOptionen(t){
  const N=x=>String(x||"").toLowerCase().replace(/[^a-z0-9\u00E4\u00F6\u00FC\u00DF ]/g," ").replace(/\s+/g," ").trim();
  const typ=LX_PT_DLG[t.art]||LX_PT_ARB[t.art]||(t.art==="Projekt"?"projekt":"");
  let L=((typeof PPM!=="undefined"&&PPM.liste)||[]).slice();
- const gleich=L.filter(m=>!typ||m.modul===typ);if(gleich.length)L=gleich;
+ if(typ){const gleich=L.filter(m=>m.modul===typ);L=(typ==="projekt"||gleich.length)?gleich:L}
  const q=N(t.titel);
  const treffer=t.modulId||(q.length>=3?(L.find(m=>{const n=N(ppmTitel(m)||m.titel);return n.includes(q)||q.includes(n)})||{}).id:"")||"";
  return`<option value="">Kein Modul</option>`+L.map(m=>`<option value="${esc(m.id)}"${m.id===treffer?" selected":""}>${esc(ppmTitel(m)||m.titel||"Modul")}</option>`).join("");
