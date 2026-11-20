@@ -4112,6 +4112,18 @@ async function lxStartNeu(wp){
  try{await ppmLaden().catch(()=>{});const dw=(new Date().getDay()||7),frI=lxPlus(Math.max(0,5-dw)),uid0=currentUser&&currentUser.uid,PW=(LXWA.pt||[]).filter(x=>lxPtBis(x)>=heute&&((x.datum||"")<=frI||(x.optional&&(x.datum||"")<=lxPlus(28)))&&(!x.uid||x.uid===uid0)).sort((a,b)=>((a.datum||"")+(a.zeit||""))<((b.datum||"")+(b.zeit||""))?-1:1);
   const bauPT=(PW,tit,em,cl)=>PW.length?`<article class="lxs-a lxs-pt${cl}"><div class="lxs-ak"><b>${tit}</b><em>${em}</em></div>${PW.map(x=>`<div class="lxs-tz"><span><b>${esc((x.art||"")+(x.titel?": "+x.titel:""))}</b><small>${esc(lxPtDat(x))}${x.zeit?" \u00B7 "+esc(lxZ(x)):""}${x.fach?" \u00B7 "+esc(x.fach):""}</small></span>${x.modulId&&ppmById(x.modulId)?`<button type="button" class="primary" data-kw="modul" data-id="${esc(x.modulId)}">\u00D6ffnen</button>`:""}${isTeacher()?`<button type="button" class="secondary" data-wa="ptdel" data-id="${esc(x.id||"")}" title="Termin l\u00F6schen">L\u00F6schen</button>`:""}</div>${(x.trainings||[]).filter(t=>ppmById(t.id)).map(t=>`<div class="lxs-tz lxs-tr"><span><b>${esc(t.titel)}</b><small>Selbstlernkurs zur R\xFCckgabe</small></span><button type="button" class="primary" data-kw="modul" data-id="${esc(t.id)}">Starten</button></div>`).join("")}`).join("")}</article>`:"";const PJ=PW.filter(x=>x.art==="Projekt"&&x.modulId&&ppmById(x.modulId)),PW2=PW.filter(x=>!PJ.includes(x)),pjK=await lxProjektKarten(PJ);auf=pjK+bauPT(PW2.filter(x=>!x.optional),"Pflichttermine","verpflichtend","")+bauPT(PW2.filter(x=>x.optional),"Optionale Termine","freiwillig"," lxs-opt")+auf}catch(e){}
  if(!waPP.length&&rest.length)auf=`<article class="lxs-a"><div class="lxs-ak"><b>Pädagogik / Psychologie</b></div>${rest.map(tz).join("")}</article>`+auf;
+ try{
+  const idsP=new Set((LXWA.pt||[]).filter(x=>x.modulId&&lxPtBis(x)>=heute&&(x.datum||"")<=lxPlus(7)&&(!x.uid||x.uid===(currentUser&&currentUser.uid))).map(x=>x.modulId));
+  const LP=((typeof PPM!=="undefined"&&PPM.liste)||[]).filter(m=>{if(m.modul!=="projekt")return false;if(idsP.has(m.id))return true;try{const w=ppmWochen(m);return w.length&&w[0].start<=lxPlus(7)&&w[w.length-1].end>=heute}catch(e){return false}});
+  const pjH=LP.map(m=>{let z="";try{const w=ppmWochen(m);if(w.length)z=fmtKurz(w[0].start)+"\u2013"+fmtKurz(w[w.length-1].end)}catch(e){}
+   let fo=null;try{fo=ppmFort(m)}catch(e){}
+   const lbl=fo&&fo.done?"Ansehen":(fo&&fo.frac>0?"Weiter":"Starten");
+   let st="";try{st=ppmStatus(m)||""}catch(e){}
+   return`<div class="lxs-tz" style="background:${ppmFarbe(m)}33;border-left:6px solid ${ppmFarbe(m)};border-radius:10px;padding:10px 12px;margin:8px 0"><span><b>\uD83D\uDCCC Projekt: ${esc(ppmTitel(m)||m.titel||"Projekt")}</b><small>${esc(z)} ${st}</small></span><button type="button" class="${lbl==="Weiter"||lbl==="Starten"?"primary":"secondary"}" data-kw="modul" data-id="${esc(m.id)}">${lbl}</button></div>`}).join("");
+  if(pjH){const k=auf.indexOf("<b>"+esc(PJ_FACH)+"</b>");const e0=k>-1?auf.indexOf("</div>",k):-1;
+   if(e0>-1)auf=auf.slice(0,e0+6)+pjH+auf.slice(e0+6);
+   else auf=`<article class="lxs-a"><div class="lxs-ak"><b>${esc(PJ_FACH)}</b></div>${pjH}</article>`+auf}
+ }catch(e){console.error("Projekte in Auftr\u00E4gen:",e)}
  if(!auf)auf=`<p class="lxs-leer">Diese Woche gibt es keine Aufträge.</p>`;
  const bis=WA.length?lxTagKurz(WA[0].bis).toUpperCase():"FREITAG, "+I.fr;
  return`<div class="lxs"><div class="lxs-kopf"><div><small>KW ${I.kw} · FÄLLIG BIS ${esc(bis)}</small><h1>Hallo${name?" "+esc(name):""}, das ist deine Woche.</h1></div></div>
