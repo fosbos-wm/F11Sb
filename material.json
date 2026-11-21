@@ -239,6 +239,86 @@
    "titel": "Fallarbeit: Projekt „Wasser“ in der Kita",
    "url": "uebungsbausteine/station.html?s=ub-pp07-afb3",
    "ord": 30
+  },
+  {
+   "id": "info-lb101-0",
+   "wocheId": "pp01",
+   "kategorie": "lehrtext",
+   "titel": "Gegenstand der Psychologie",
+   "url": "infotexte/LB1-01_Gegenstand-der-Psychologie.pdf",
+   "ord": 1
+  },
+  {
+   "id": "info-lb102-1",
+   "wocheId": "pp1a1",
+   "kategorie": "lehrtext",
+   "titel": "Gegenstand der Pädagogik",
+   "url": "infotexte/LB1-02_Gegenstand-der-Paedagogik.pdf",
+   "ord": 2
+  },
+  {
+   "id": "info-lb103-2",
+   "wocheId": "pp02",
+   "kategorie": "lehrtext",
+   "titel": "Alltagstheorie",
+   "url": "infotexte/LB1-03_Alltagstheorie.pdf",
+   "ord": 3
+  },
+  {
+   "id": "info-lb104-3",
+   "wocheId": "pp02",
+   "kategorie": "lehrtext",
+   "titel": "Merkmale wissenschaftlicher Pädagogik",
+   "url": "infotexte/LB1-04_Merkmale-wissenschaftlicher-Paedagogik.pdf",
+   "ord": 4
+  },
+  {
+   "id": "info-lb105-4",
+   "wocheId": "pp03",
+   "kategorie": "lehrtext",
+   "titel": "Das Experiment",
+   "url": "infotexte/LB1-05_Das-Experiment.pdf",
+   "ord": 5
+  },
+  {
+   "id": "info-lb301-5",
+   "wocheId": "pp04",
+   "kategorie": "lehrtext",
+   "titel": "Erziehung als soziale Beziehung",
+   "url": "infotexte/LB3-01_Erziehung-als-soziale-Beziehung.pdf",
+   "ord": 6
+  },
+  {
+   "id": "info-lb302-6",
+   "wocheId": "pp04",
+   "kategorie": "lehrtext",
+   "titel": "Erziehung als Austausch von Informationen",
+   "url": "infotexte/LB3-02_Erziehung-als-Austausch-von-Informationen.pdf",
+   "ord": 7
+  },
+  {
+   "id": "info-lb303-7",
+   "wocheId": "pp04",
+   "kategorie": "lehrtext",
+   "titel": "Erziehung als beabsichtigte Lernhilfe",
+   "url": "infotexte/LB3-03_Erziehung-als-beabsichtigte-Lernhilfe.pdf",
+   "ord": 8
+  },
+  {
+   "id": "info-lb304-8",
+   "wocheId": "pp04",
+   "kategorie": "lehrtext",
+   "titel": "Erziehung als soziales Handeln",
+   "url": "infotexte/LB3-04_Erziehung-als-soziales-Handeln.pdf",
+   "ord": 9
+  },
+  {
+   "id": "info-lb306-9",
+   "wocheId": "pp05",
+   "kategorie": "lehrtext",
+   "titel": "Erziehungsstile nach Baumrind",
+   "url": "infotexte/LB3-06_Erziehungsstile-nach-Baumrind.pdf",
+   "ord": 10
   }
  ]
 }
