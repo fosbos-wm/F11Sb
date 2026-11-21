@@ -267,7 +267,7 @@ function showDatenschutz(){
  <div class="kicker">RECHTLICHES</div>
  <h2>Datenschutzerklärung</h2>
  <div class="form"style="gap:12px;font-size:.95em;line-height:1.5">
- <div class="notice"><strong>Entwurf</strong><p style="margin-bottom:0">Diese Erklärung wird vom Datenschutzbeauftragten der Schule geprüft und kann sich noch ändern.</p></div>
+ <div class="notice"><strong>Abgestimmt</strong><p style="margin-bottom:0">Die Nutzung der App ist mit dem Datenschutzbeauftragten der Schule abgestimmt.</p></div>
 
  <p><strong>1. Verantwortlicher</strong><br>
  Staatliche Fachoberschule und Berufsoberschule Weilheim, Kerschensteinerstraße 2, 82362 Weilheim i.OB, vertreten durch den Schulleiter Christian Dick, OStD. Telefon +49 881 9239-43, E-Mail 0897.Sekretariat@schule.bayern.de.</p>
