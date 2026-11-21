@@ -117,7 +117,7 @@
    "wocheId": "pp1a4",
    "kategorie": "lehrtext",
    "titel": "Der Kindergarten als Erziehungs- und Bildungseinrichtung",
-   "url": "infotexte/LB1-06_Der-Kindergarten_Erziehungs-und-Bildungseinrichtung.pdf",
+   "url": "infotexte/07_Der-Kindergarten_Erziehungs-und-Bildungseinrichtung.pdf",
    "ord": 10
   },
   {
@@ -125,7 +125,7 @@
    "wocheId": "pp07",
    "kategorie": "lehrtext",
    "titel": "BayBEP: Digitale Medien, Umwelt und Gesundheit",
-   "url": "infotexte/LB3-07_BayBEP_Digitale-Medien-Umwelt-Gesundheit.pdf",
+   "url": "infotexte/08_BayBEP_Digitale-Medien-Umwelt-Gesundheit.pdf",
    "ord": 10
   },
   {
@@ -133,24 +133,8 @@
    "wocheId": "pp06",
    "kategorie": "lehrtext",
    "titel": "Pädagogische Mündigkeit nach Roth",
-   "url": "infotexte/LB3-08_Paedagogische-Muendigkeit.pdf",
+   "url": "infotexte/05_Paedagogische-Muendigkeit.pdf",
    "ord": 12
-  },
-  {
-   "id": "info-entwicklungsgespraeche",
-   "wocheId": "pp06",
-   "kategorie": "lehrtext",
-   "titel": "Entwicklungsgespräche mit Eltern",
-   "url": "infotexte/LB3-09_Entwicklungsgespraeche-mit-Eltern.pdf",
-   "ord": 13
-  },
-  {
-   "id": "lb3-3-6-entwicklungsgespraech",
-   "wocheId": "pp06",
-   "kategorie": "vertiefung3",
-   "titel": "Entwicklungsgespräch führen (AFB III)",
-   "url": "lb3-erziehung/ebene-3-anwendung/3-6-entwicklungsgespraech.html",
-   "ord": 36
   }
  ]
 }
