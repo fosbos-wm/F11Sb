@@ -1,0 +1,54 @@
+{
+ "titel": "LB 1 · Das Experiment · Zuordnung (AFB I)",
+ "anleitung": "Ordne jedem Begriff die passende Erklärung zu. Ziehe einen Begriff auf seine Erklärung oder tippe beide nacheinander an.",
+ "paare": [
+  [
+   "Experiment",
+   "Absichtliches, planmäßiges Herbeiführen eines Vorgangs, um ihn gezielt zu beobachten."
+  ],
+  [
+   "Beobachtung",
+   "Eine vorhandene Situation wird nur betrachtet, nicht herbeigeführt."
+  ],
+  [
+   "Laborexperiment",
+   "Findet unter kontrollierten Bedingungen im Labor statt."
+  ],
+  [
+   "Feldexperiment",
+   "Findet in der natürlichen Umgebung statt."
+  ],
+  [
+   "Vorteil Laborexperiment",
+   "Bessere Kontrolle von Störfaktoren."
+  ],
+  [
+   "Vorteil Feldexperiment",
+   "Genauere Vorhersage für echtes Alltagsverhalten."
+  ],
+  [
+   "Willkürlichkeit",
+   "Forscher bestimmt Bedingungen, Situation, Ort und Zeit selbst."
+  ],
+  [
+   "Variierbarkeit",
+   "Forscher kann die Bedingungen verändern, deren Wirkung er beobachten will."
+  ],
+  [
+   "Wiederholbarkeit",
+   "Der Vorgang kann beliebig oft durchgeführt werden."
+  ],
+  [
+   "Kategoriensystem",
+   "Legt fest, welche Merkmale beobachtet werden."
+  ],
+  [
+   "Skala",
+   "Macht die Werte einer Untersuchung vergleichbar."
+  ],
+  [
+   "Kausalzusammenhang",
+   "Ursache-Wirkung-Zusammenhang, den nur das Experiment aufdecken kann."
+  ]
+ ]
+}

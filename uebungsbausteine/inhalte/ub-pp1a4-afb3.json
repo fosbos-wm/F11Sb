@@ -1,0 +1,157 @@
+{
+ "titel": "Fallarbeit: Elternabend in der Kita",
+ "anleitung": "Drei Teile: entscheiden, beurteilen und selbst formulieren.",
+ "fall": "Beim Elternabend sagt Herr Bauer: „Im Kindergarten wird mein Sohn doch nur abgegeben. Erziehung ist Sache der Familie. Und der Besuch ist ja ohnehin Pflicht, oder?“ Frau Demir, alleinerziehend und berufstätig, entgegnet: „Ohne Kita könnte ich nicht arbeiten. Und hier findet Emre Freunde, die er an unserer Hauptstraße nicht hat.“ Die Kita gehört zum Diakonischen Werk.",
+ "schritte": [
+  {
+   "t": "Pflicht",
+   "q": "Ist der Kindergartenbesuch Pflicht?",
+   "o": [
+    [
+     "Nur im letzten Jahr vor der Schule.",
+     0,
+     "Auch dann ist er nicht verpflichtend."
+    ],
+    [
+     "Ja, wie die Schulpflicht.",
+     0,
+     "Für die Schule gilt die Schulpflicht, für den Kindergarten nicht."
+    ],
+    [
+     "Ja, ab dem dritten Geburtstag.",
+     0,
+     "Das ist falsch. Auch ab drei Jahren ist der Besuch freiwillig."
+    ],
+    [
+     "Nein, der Besuch ist freiwillig. Die Eltern entscheiden nach dem Entwicklungsstand ihres Kindes.",
+     1,
+     "Richtig: Anders als die Schule gibt es keine gesetzliche Pflicht."
+    ]
+   ]
+  },
+  {
+   "t": "Aufgabe",
+   "q": "Was ist die Aufgabe der Kita gegenüber der Familie?",
+   "o": [
+    [
+     "Sie ist familienergänzend: Sie unterstützt und ergänzt die Erziehung, ersetzt sie aber nicht.",
+     1,
+     "Richtig: Die Eltern bleiben erziehungsverantwortlich."
+    ],
+    [
+     "Sie ersetzt die Familie.",
+     0,
+     "Sie ersetzt die Familie nicht."
+    ],
+    [
+     "Sie übernimmt die Erziehung vollständig.",
+     0,
+     "Sie ergänzt, sie übernimmt nicht alles."
+    ],
+    [
+     "Sie ist nur eine Aufbewahrung.",
+     0,
+     "Sie hat einen Erziehungs- und Bildungsauftrag."
+    ]
+   ]
+  },
+  {
+   "t": "Gründe",
+   "q": "Welche Gründe für die wachsende Bedeutung der Kita nennt Frau Demir?",
+   "o": [
+    [
+     "Weil Kinder nicht mehr zu Hause erzogen werden müssen.",
+     0,
+     "Die Familie bleibt wichtig."
+    ],
+    [
+     "Berufstätigkeit und fehlende Spiel- und Sozialerfahrungen in der Stadt (Mollenhauer).",
+     1,
+     "Richtig: Das sind zwei Gründe aus dem Text."
+    ],
+    [
+     "Weil Kinder keine Freunde brauchen.",
+     0,
+     "Gleichaltrige sind für Kinder wichtig."
+    ],
+    [
+     "Weil Kitas billiger als Schulen sind.",
+     0,
+     "Das steht nicht im Text."
+    ]
+   ]
+  },
+  {
+   "t": "Träger",
+   "q": "Welche Trägergruppe ist das Diakonische Werk und warum gibt es so viele davon?",
+   "o": [
+    [
+     "Ein sonstiger Träger wie ein Betrieb.",
+     0,
+     "Es gehört zu den freien Trägern."
+    ],
+    [
+     "Ein privater Träger, weil Eltern zahlen.",
+     0,
+     "Das Zahlen der Eltern ist kein Merkmal der Trägergruppe."
+    ],
+    [
+     "Ein freier Träger. Es gibt viele wegen des Subsidiaritätsprinzips: Öffentliche Träger gründen erst, wenn kein freier bereitsteht.",
+     1,
+     "Richtig: Freie Träger sind meist kirchliche Wohlfahrtsverbände."
+    ],
+    [
+     "Ein öffentlicher Träger, weil es eine Einrichtung der Gemeinde ist.",
+     0,
+     "Das Diakonische Werk ist ein kirchlicher Wohlfahrtsverband."
+    ]
+   ]
+  }
+ ],
+ "auszug": {
+  "aufgabe": "Aus Frau Demirs Notizen: Welche Aussagen sind fachlich falsch? Markiere drei.",
+  "zeilen": [
+   [
+    "Kita ist der Oberbegriff für Krippe, Kindergarten und Hort.",
+    0,
+    "Das ist richtig."
+   ],
+   [
+    "Der Kindergarten ist für Kinder von etwa 6 bis 10 Jahren.",
+    1,
+    "Er ist für Kinder von ca. 3 bis 6 Jahren, bis zur Einschulung."
+   ],
+   [
+    "Kitas sind außerschulische, freiwillige und familienergänzende Einrichtungen.",
+    0,
+    "Das ist richtig."
+   ],
+   [
+    "Die meisten Kindergärten haben öffentliche Träger.",
+    1,
+    "Die meisten haben freie Träger (vor allem Caritas und Diakonie), ca. 30 % öffentliche."
+   ],
+   [
+    "Die frühere Berufsbezeichnung „Kindergärtner/-in“ wurde durch „Erzieher/-in“ ersetzt.",
+    0,
+    "Das ist richtig."
+   ],
+   [
+    "Die Kita ersetzt die Familie, damit Eltern nicht mehr erziehen müssen.",
+    1,
+    "Die Kita ergänzt die Familie und ersetzt sie nicht."
+   ]
+  ]
+ },
+ "werkstatt": {
+  "titel": "Selbst formulieren",
+  "aufgabe": "Antworte Herrn Bauer in drei bis vier Sätzen so, dass er die Aufgabe der Kita versteht, ohne ihm Vorwürfe zu machen.",
+  "muster": "„Ich verstehe Ihre Sorge. Die Kita ersetzt die Familie nicht, sie ergänzt sie. Der Besuch ist freiwillig, und Sie entscheiden, wann Ihr Sohn bereit ist. Viele Eltern schätzen, dass Kinder hier Gleichaltrige, einen Garten und viele Spielideen finden, was zu Hause oft fehlt.“",
+  "kriterien": [
+   "Ich zeige Verständnis für seine Sorge.",
+   "Ich erkläre, dass die Kita die Familie ergänzt und nicht ersetzt.",
+   "Ich nenne die Freiwilligkeit des Besuchs.",
+   "Ich begründe mit einem Nutzen für das Kind (z. B. Spiel- und Sozialerfahrungen)."
+  ]
+ }
+}

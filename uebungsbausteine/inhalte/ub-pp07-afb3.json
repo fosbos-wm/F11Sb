@@ -1,0 +1,157 @@
+{
+ "titel": "Fallarbeit: Projekt „Wasser“ in der Kita",
+ "anleitung": "Drei Teile: entscheiden, beurteilen und selbst formulieren.",
+ "fall": "Die Kita „Regenbogen“ plant ein Projekt zum Thema Wasser. Die Kinder untersuchen einen Bach, filmen Wassertiere mit dem Tablet und gestalten daraus einen kurzen Film. Beim Aktionstag trinken alle Wasser statt Saft und besprechen, wie sich der Körper nach dem Trinken fühlt. Ein Vater kritisiert beim Elternabend: „Tablets haben im Kindergarten nichts verloren.“",
+ "schritte": [
+  {
+   "t": "Bildungsbereich",
+   "q": "Die Kinder untersuchen einen Bach und beobachten Wassertiere. Was fördert das vor allem?",
+   "o": [
+    [
+     "Umweltbildung: Natur mit allen Sinnen erleben (Naturbegegnung).",
+     1,
+     "Richtig: Das ist die erste Stufe der Umweltbildung."
+    ],
+    [
+     "Digitale Medien",
+     0,
+     "Das Tablet kommt erst im nächsten Schritt."
+    ],
+    [
+     "Keinen Bildungsbereich",
+     0,
+     "Der BayBEP sieht Naturbegegnung ausdrücklich vor."
+    ],
+    [
+     "Gesundheitsbildung",
+     0,
+     "Der Schwerpunkt liegt auf der Natur."
+    ]
+   ]
+  },
+  {
+   "t": "Bildungsbereich",
+   "q": "Die Kinder filmen mit dem Tablet und gestalten einen Film. Welcher Grundsatz zeigt sich?",
+   "o": [
+    [
+     "Medienkonsum zur Beschäftigung",
+     0,
+     "Der BayBEP will gerade keinen Medienkonsum."
+    ],
+    [
+     "Gestalten statt Konsumieren: Bildung mit Medien, Technik im Dienst der Pädagogik.",
+     1,
+     "Richtig: Kinder gestalten selbst und sprechen später darüber, wie Medien wirken."
+    ],
+    [
+     "Die Technik bestimmt die Pädagogik",
+     0,
+     "Der Primat liegt bei der Pädagogik."
+    ],
+    [
+     "Ersatz für das Draußenerleben",
+     0,
+     "Das Digitale ergänzt, ersetzt aber nicht."
+    ]
+   ]
+  },
+  {
+   "t": "Bildungsbereich",
+   "q": "Wasser statt Saft und Gespräch über das Körpergefühl: Was zeigt sich?",
+   "o": [
+    [
+     "Umweltbildung allein",
+     0,
+     "Der Schwerpunkt liegt beim eigenen Wohlergehen."
+    ],
+    [
+     "Sprachbildung",
+     0,
+     "Die Bildungsbereiche sind hier nicht gemeint."
+    ],
+    [
+     "Gesundheitsbildung: Verantwortung für das eigene Wohlergehen, Ernährung und Körperbewusstsein.",
+     1,
+     "Richtig: Gesundheit ist ganzheitliches Wohlbefinden."
+    ],
+    [
+     "Digitale Bildung",
+     0,
+     "Es geht um Körper und Ernährung."
+    ]
+   ]
+  },
+  {
+   "t": "Stellung nehmen",
+   "q": "Wie lässt sich dem Vater aus Sicht des BayBEP antworten?",
+   "o": [
+    [
+     "Der BayBEP äußert sich nicht zu Medien.",
+     0,
+     "Er behandelt Digitale Medien und Technologien ausführlich."
+    ],
+    [
+     "Er hat recht, denn Kinder sollten nie digitale Medien nutzen.",
+     0,
+     "Der BayBEP sieht digitale Kompetenz als vierte Kulturtechnik."
+    ],
+    [
+     "Tablets ersetzen am besten alle anderen Angebote.",
+     0,
+     "Das Digitale ergänzt und ersetzt nicht."
+    ],
+    [
+     "Digitales ergänzt das Analoge. Die Kita nutzt Chancen und managt Risiken. Kinder gestalten selbst, mit klaren Regeln für Datenschutz und Fotos.",
+     1,
+     "Richtig: Kinderrechte auf Teilhabe, Schutz und Befähigung stützen das."
+    ]
+   ]
+  }
+ ],
+ "auszug": {
+  "aufgabe": "Aus dem Elternbrief der Kita: Welche Aussagen sind fachlich falsch? Markiere drei.",
+  "zeilen": [
+   [
+    "Der BayBEP ist ein Orientierungsrahmen und kein Stundenplan.",
+    0,
+    "Das ist richtig."
+   ],
+   [
+    "Digitale Medien ersetzen im BayBEP das Analoge.",
+    1,
+    "Das Digitale ergänzt, unterstützt und bereichert das Analoge, ersetzt es aber nicht."
+   ],
+   [
+    "Umweltbildung ist ein Querschnittsbereich, der sich mit anderen Bereichen überschneidet.",
+    0,
+    "Das ist richtig."
+   ],
+   [
+    "Gesundheit bedeutet nach der WHO nur das Fehlen von Krankheit.",
+    1,
+    "Gesundheit ist körperliches, seelisches, geistiges und soziales Wohlbefinden."
+   ],
+   [
+    "Suchtprävention im Kindergarten ist suchtmittelunspezifisch und stärkt Lebenskompetenzen.",
+    0,
+    "Das ist richtig."
+   ],
+   [
+    "Kinder sollen bei Umweltthemen vor allem Angst vor Problemen lernen.",
+    1,
+    "Ziel sind Zuversicht, Hoffnung und das Erleben „Ich kann etwas tun“."
+   ]
+  ]
+ },
+ "werkstatt": {
+  "titel": "Selbst formulieren",
+  "aufgabe": "Entwickle für ein Projekt „Unser Frühstück“ je eine Aktivität zu Umwelt, Gesundheit und Digitalen Medien und nenne jeweils das BayBEP-Ziel.",
+  "muster": "Umwelt: Kinder bauen Kräuter an und trennen Abfälle. Ziel: Verantwortung für die Umwelt, „Ich kann etwas tun“.\nGesundheit: Gemeinsam Frühstück vorbereiten, Unterschied Hunger und Appetit besprechen. Ziel: selbstbestimmt Verantwortung für das eigene Wohlergehen.\nDigitale Medien: Die Kinder fotografieren das Frühstück und gestalten ein Rezeptbuch. Ziel: Gestalten statt Konsumieren, Datenschutz bei Fotos beachten.",
+  "kriterien": [
+   "Ich habe zu allen drei Bereichen eine Aktivität.",
+   "Jede Aktivität ist konkret und alltagsnah.",
+   "Ich begründe jede mit einem Ziel aus dem BayBEP.",
+   "Ich beachte Grenzen wie Datenschutz oder Zeit."
+  ]
+ }
+}

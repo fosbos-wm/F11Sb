@@ -1,0 +1,446 @@
+{
+ "titel": "Pädagogische Mündigkeit nach Roth",
+ "modulart": "selbstlern",
+ "lb": 3,
+ "nr": "19",
+ "einleitung": "Geschätzte Dauer: 45 Minuten.",
+ "abschnitte": [
+  {
+   "kicker": "Lernziele und Einstieg",
+   "titel": "Einstieg",
+   "bloecke": [
+    {
+     "typ": "text",
+     "text": "Wozu erzieht man eigentlich?"
+    },
+    {
+     "typ": "text",
+     "text": "**Lernziele:**"
+    },
+    {
+     "typ": "text",
+     "text": "- Sie können den Begriff **pädagogische Mündigkeit** nach Heinrich Roth erklären.\n- Sie können **Selbst-, Sozial- und Sachkompetenz** unterscheiden und Beispiele zuordnen.\n- Sie können **Qualifikation und Schlüsselqualifikation** abgrenzen.\n- Sie können Möglichkeiten zeigen, wie Erziehungsmaßnahmen Mündigkeit fördern."
+    },
+    {
+     "typ": "situation",
+     "label": "Einstieg: Leas Alltag",
+     "text": "Im Kindergarten räumt die vierjährige Lea ihre Spielsachen jetzt selbst auf, fragt Freunde um Hilfe und wundert sich, warum der Käfer im Garten bei Regen verschwindet.\n**Überlegen Sie:** Was soll aus Lea einmal werden? Was soll sie können?"
+    },
+    {
+     "typ": "frei",
+     "frage": "Notieren Sie in zwei bis drei Sätzen, was ein Kind Ihrer Meinung nach können sollte, wenn es erwachsen ist.",
+     "hinweis": "Schreiben Sie in ganzen Sätzen.",
+     "muster": "Es sollte für sich selbst sorgen und entscheiden können, mit anderen Menschen gut umgehen und sich in der Welt von Beruf, Gesellschaft und Umwelt zurechtfinden. Genau das fasst Roth im Begriff Mündigkeit zusammen."
+    }
+   ]
+  },
+  {
+   "kicker": "Erarbeitung · Schritt 1",
+   "titel": "Der Begriff Mündigkeit",
+   "bloecke": [
+    {
+     "typ": "text",
+     "text": "Die Pädagogik kann nicht allgemeingültig festlegen, wie ein Mensch werden soll. Sie kann aber **übergreifende Erziehungsziele** formulieren, die im Alltag mit konkreten Inhalten gefüllt werden. Ein solches Leitziel ist die **pädagogische Mündigkeit**."
+    },
+    {
+     "typ": "merke",
+     "label": "Merke",
+     "text": "Pädagogische Mündigkeit bedeutet nach **Heinrich Roth** „Kompetenz in einem dreifachen Sinn“: **Selbstkompetenz, Sozialkompetenz und Sachkompetenz**. Ein mündiger Mensch ist bereit und fähig, sein eigenes Leben, das Leben mit anderen und die Sachwelt zu bewältigen."
+    },
+    {
+     "typ": "text",
+     "text": "**Mündigkeit** war ursprünglich ein **Rechtsbegriff**: die Berechtigung, die eigenen Interessen selbst wahrzunehmen, verbindliche Rechtsgeschäfte abzuschließen und politische Bürgerrechte auszuüben. In der Pädagogik wird der Begriff erweitert und über **Kompetenzen** konkretisiert."
+    },
+    {
+     "typ": "merke",
+     "label": "Merke",
+     "text": "Kompetenz ist die Fähigkeit, das Vermögen und die Fertigkeit, Aufgaben und Probleme in einem bestimmten Bereich fachkundig zu bewältigen."
+    },
+    {
+     "typ": "mc",
+     "frage": "Was meint „Mündigkeit“ in der Pädagogik nach Roth?",
+     "optionen": [
+      "Kompetenz in einem dreifachen Sinn",
+      "nur das Erreichen der Volljährigkeit",
+      "Gehorsam gegenüber Erwachsenen",
+      "ein Zeugnis über Fachwissen"
+     ],
+     "richtig": 0,
+     "erklaerung": "Mündigkeit ist ein Leitziel, das durch Kompetenzen konkretisiert wird."
+    },
+    {
+     "typ": "kprim",
+     "stamm": "Richtig oder falsch?",
+     "aussagen": [
+      {
+       "text": "Mündigkeit war ursprünglich ein Rechtsbegriff.",
+       "richtig": true,
+       "erklaerung": ""
+      },
+      {
+       "text": "Die Pädagogik kann genau festlegen, wie jeder Mensch werden muss.",
+       "richtig": false,
+       "erklaerung": "Sie formuliert übergreifende Ziele, die im Alltag mit Inhalten gefüllt werden."
+      },
+      {
+       "text": "Roth beschreibt Mündigkeit als Kompetenz in einem dreifachen Sinn.",
+       "richtig": true,
+       "erklaerung": ""
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kicker": "Erarbeitung · Schritt 2",
+   "titel": "Die drei Kompetenzbereiche",
+   "bloecke": [
+    {
+     "typ": "aufbau",
+     "zeilen": [
+      {
+       "label": "Mündigkeit",
+       "text": "ein Prozess, der drei Bereiche umfasst",
+       "farbe": "gelb"
+      },
+      {
+       "label": "Selbstkompetenz",
+       "text": "Umgang mit sich selbst (Ich-Fähigkeit)",
+       "farbe": "pfirsich"
+      },
+      {
+       "label": "Sozialkompetenz",
+       "text": "Umgang mit anderen Menschen (Du-Fähigkeit)",
+       "farbe": "blau"
+      },
+      {
+       "label": "Sachkompetenz",
+       "text": "Umgang mit der Sachwelt (Welt-Fähigkeit)",
+       "farbe": "gruen"
+      }
+     ],
+     "beschriftung": "Schaubild: Kompetenz in einem dreifachen Sinn"
+    },
+    {
+     "typ": "merke",
+     "label": "Selbstkompetenz",
+     "text": "**Selbstkompetenz** ist die Fähigkeit, mit sich und dem eigenen Leben umgehen zu können: das eigene Leben gestalten, sich selbst bestimmen und Verantwortung für das eigene Handeln übernehmen.\nBeispiel: Eine Jugendliche plant ihre Lernzeiten selbst, hält sie ein und trägt die Folgen, wenn sie zu spät beginnt."
+    },
+    {
+     "typ": "merke",
+     "label": "Sozialkompetenz",
+     "text": "**Sozialkompetenz** ist die Fähigkeit, mit anderen Menschen umzugehen: Kooperation, Kommunikation und Konfliktlösung.\nBeispiel: In einer Projektgruppe verteilt ein Schüler die Aufgaben fair, hört zu und spricht einen Streit offen an."
+    },
+    {
+     "typ": "merke",
+     "label": "Sachkompetenz",
+     "text": "**Sachkompetenz** beschreibt die Fähigkeiten im Umgang mit der dinglichen Welt in Beruf, Politik und Umwelt. Nach Hastenteufel gehört dazu, die Welt so zu nutzen, dass sie der Menschheit dient, ohne ihre Gesetzmäßigkeiten zu zerstören.\nBeispiel: Eine Auszubildende arbeitet sich in neue Software und betriebliche Abläufe ein."
+    },
+    {
+     "typ": "sortieren",
+     "titel": "Ordne die Beispiele dem richtigen Bereich zu.",
+     "kategorien": [
+      {
+       "name": "Selbstkompetenz",
+       "items": [
+        "Ein Kind entscheidet selbst, womit es spielt, und räumt danach auf.",
+        "Eine Jugendliche übernimmt Verantwortung für ihr Lernen."
+       ]
+      },
+      {
+       "name": "Sozialkompetenz",
+       "items": [
+        "Zwei Kinder lösen einen Streit durch Zuhören und Einigung.",
+        "Eine Gruppe verteilt Aufgaben fair."
+       ]
+      },
+      {
+       "name": "Sachkompetenz",
+       "items": [
+        "Kinder pflegen ein Gemüsebeet und lernen, wie Pflanzen wachsen.",
+        "Eine Auszubildende lernt die Abläufe im Betrieb."
+       ]
+      }
+     ]
+    },
+    {
+     "typ": "lueckentext",
+     "titel": "Ergänze.",
+     "text": "Selbstkompetenz ist die {{Ich}}-Fähigkeit, Sozialkompetenz die {{Du}}-Fähigkeit und Sachkompetenz die {{Welt}}-Fähigkeit.",
+     "woerter": [
+      "Ich",
+      "Du",
+      "Welt",
+      "Wir",
+      "Sie"
+     ],
+     "erklaerung": ""
+    }
+   ]
+  },
+  {
+   "kicker": "Erarbeitung · Schritt 3",
+   "titel": "Mündigkeit als Prozess und Schlüsselqualifikationen",
+   "bloecke": [
+    {
+     "typ": "text",
+     "text": "Mündigkeit ist aus pädagogischer Sicht **nie abgeschlossen**. Wer mündig bleiben will, muss ein Leben lang weiter- und umlernen. Das Leitziel ist ein **Prozess** und kein Zustand."
+    },
+    {
+     "typ": "text",
+     "text": "Weil „Mündigkeit“ abstrakt ist, muss man es konkretisieren: Welche **Qualifikationen** braucht ein mündiger Mensch?"
+    },
+    {
+     "typ": "merke",
+     "label": "Merke",
+     "text": "Eine **Qualifikation** ist eine erworbene Befähigung zu einer bestimmten, meist beruflichen Tätigkeit. Sie wird oft durch Nachweise oder Zeugnisse belegt. **Schlüsselqualifikationen** sind Kenntnisse, Fähigkeiten und Fertigkeiten, die in vielen Situationen gebraucht werden."
+    },
+    {
+     "typ": "sortieren",
+     "titel": "Ordne die Schlüsselqualifikationen dem Kompetenzbereich zu.",
+     "kategorien": [
+      {
+       "name": "Selbstkompetenz",
+       "items": [
+        "Ausdauer",
+        "Entscheidungsfähigkeit"
+       ]
+      },
+      {
+       "name": "Sozialkompetenz",
+       "items": [
+        "Teamfähigkeit",
+        "Einfühlungsvermögen"
+       ]
+      },
+      {
+       "name": "Sachkompetenz",
+       "items": [
+        "Computerkenntnisse",
+        "Kenntnisse von Arbeitsabläufen"
+       ]
+      }
+     ]
+    },
+    {
+     "typ": "mc",
+     "frage": "Welche Aussage zur Mündigkeit trifft zu?",
+     "optionen": [
+      "Sie ist ein lebenslanger Prozess.",
+      "Sie ist mit 18 Jahren abgeschlossen.",
+      "Sie besteht nur aus Fachwissen.",
+      "Sie wird durch ein Zeugnis bewiesen."
+     ],
+     "richtig": 0,
+     "erklaerung": "Wer mündig bleiben will, lernt ein Leben lang weiter."
+    }
+   ]
+  },
+  {
+   "kicker": "Erarbeitung · Schritt 4",
+   "titel": "Umsetzung durch Erziehungsmaßnahmen",
+   "bloecke": [
+    {
+     "typ": "text",
+     "text": "Mündigkeit entsteht nicht von allein. Erziehende fördern sie durch **Erziehungsmaßnahmen**, die dem Kind Schritt für Schritt mehr Verantwortung und Selbstbestimmung zutrauen. Das gelingt am besten im **autoritativen Erziehungsstil**: Wärme und Anerkennung verbinden sich mit klaren, begründeten Regeln."
+    },
+    {
+     "typ": "sortieren",
+     "titel": "Ordne die Maßnahmen dem Kompetenzbereich zu, den sie vor allem fördern.",
+     "kategorien": [
+      {
+       "name": "Selbstkompetenz",
+       "items": [
+        "Entscheidungsspielräume geben",
+        "Fehler zulassen und zur Selbsteinschätzung anregen"
+       ]
+      },
+      {
+       "name": "Sozialkompetenz",
+       "items": [
+        "Gemeinsam Regeln aufstellen",
+        "Klassen- oder Kinderrat"
+       ]
+      },
+      {
+       "name": "Sachkompetenz",
+       "items": [
+        "Selbstständig erforschen und experimentieren",
+        "Lerntechniken vermitteln, Praktika und Projekte"
+       ]
+      }
+     ]
+    },
+    {
+     "typ": "merke",
+     "label": "Merke",
+     "text": "Erziehungsmaßnahmen fördern Mündigkeit, wenn sie Selbstständigkeit zulassen. Wer alles abnimmt oder streng vorschreibt, verhindert sie."
+    },
+    {
+     "typ": "kprim",
+     "stamm": "Richtig oder falsch?",
+     "aussagen": [
+      {
+       "text": "Wer dem Kind alles abnimmt, fördert seine Mündigkeit am besten.",
+       "richtig": false,
+       "erklaerung": "Das verhindert Selbstständigkeit."
+      },
+      {
+       "text": "Gemeinsame Gruppenregeln fördern die Sozialkompetenz.",
+       "richtig": true,
+       "erklaerung": ""
+      },
+      {
+       "text": "Mündigkeit gelingt am besten im autoritären Stil.",
+       "richtig": false,
+       "erklaerung": "Am besten gelingt sie im autoritativen Stil."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kicker": "Transfer",
+   "titel": "Fall: Selbstständig werden im Hort",
+   "bloecke": [
+    {
+     "typ": "situation",
+     "label": "Fall",
+     "text": "Erzieherin Frau Weber lässt Viertklässler ihre Hausaufgabenzeit selbst planen, die Gruppenregeln gemeinsam aufstellen und ein Hochbeet pflegen. Eine Kollegin sagt: „Zu viel Freiheit. Ich nehme den Kindern lieber alles ab.“"
+    },
+    {
+     "typ": "zuordnung",
+     "titel": "Ordne die Maßnahmen zu.",
+     "paare": [
+      [
+       "Hausaufgabenzeit selbst planen",
+       "Selbstkompetenz"
+      ],
+      [
+       "Gruppenregeln gemeinsam aufstellen",
+       "Sozialkompetenz"
+      ],
+      [
+       "Hochbeet pflegen",
+       "Sachkompetenz"
+      ]
+     ]
+    },
+    {
+     "typ": "frei",
+     "frage": "Nehmen Sie begründet Stellung zur Aussage der Kollegin (drei bis vier Sätze).",
+     "hinweis": "Schreiben Sie in ganzen Sätzen.",
+     "muster": "Wer den Kindern alles abnimmt, verhindert Mündigkeit. Mündigkeit entsteht, wenn Kinder Schritt für Schritt Verantwortung übernehmen und Entscheidungen treffen. Frau Weber fördert Selbst-, Sozial- und Sachkompetenz. Wichtig sind klare Regeln und Wärme, also ein autoritativer Stil, damit die Freiheit nicht zu viel verlangt."
+    }
+   ]
+  },
+  {
+   "kicker": "Abschluss",
+   "titel": "Abschlusstest",
+   "bloecke": [
+    {
+     "typ": "text",
+     "text": "Zum Abschluss prüfen Sie Ihr Wissen. Offene Aufgaben vergleichen Sie selbst mit der Musterlösung."
+    },
+    {
+     "typ": "mc",
+     "frage": "Was meint pädagogische Mündigkeit nach Roth?",
+     "optionen": [
+      "Kompetenz in einem dreifachen Sinn",
+      "nur Volljährigkeit",
+      "bloßen Gehorsam",
+      "Fachwissen aus Büchern"
+     ],
+     "richtig": 0,
+     "erklaerung": ""
+    },
+    {
+     "typ": "kprim",
+     "stamm": "Richtig oder falsch?",
+     "aussagen": [
+      {
+       "text": "Selbstkompetenz ist die Ich-Fähigkeit.",
+       "richtig": true,
+       "erklaerung": ""
+      },
+      {
+       "text": "Sachkompetenz bezieht sich vor allem auf andere Menschen.",
+       "richtig": false,
+       "erklaerung": "Sie bezieht sich auf die Sachwelt."
+      },
+      {
+       "text": "Schlüsselqualifikationen werden in vielen Situationen gebraucht.",
+       "richtig": true,
+       "erklaerung": ""
+      }
+     ]
+    },
+    {
+     "typ": "zuordnung",
+     "titel": "Ordnen Sie zu.",
+     "paare": [
+      [
+       "Selbstkompetenz",
+       "Verantwortung für das eigene Handeln"
+      ],
+      [
+       "Sozialkompetenz",
+       "Kooperation, Kommunikation, Konfliktlösung"
+      ],
+      [
+       "Sachkompetenz",
+       "Beruf, Politik und Umwelt bewältigen"
+      ]
+     ]
+    },
+    {
+     "typ": "lueckentext",
+     "titel": "Ergänzen Sie.",
+     "text": "Mündigkeit ist ein {{Prozess}} und kein Zustand. Erziehungsmaßnahmen sollen {{Selbstständigkeit}} zulassen.",
+     "woerter": [
+      "Prozess",
+      "Selbstständigkeit",
+      "Zustand",
+      "Gehorsam"
+     ],
+     "erklaerung": ""
+    },
+    {
+     "typ": "mc",
+     "frage": "Welche Maßnahme fördert vor allem die Sozialkompetenz?",
+     "optionen": [
+      "Gemeinsam Gruppenregeln aufstellen",
+      "Selbst ein Beet pflegen",
+      "Alleine Hausaufgaben planen",
+      "Die Software lernen"
+     ],
+     "richtig": 0,
+     "erklaerung": ""
+    }
+   ]
+  },
+  {
+   "kicker": "Reflexion",
+   "titel": "Auf den Punkt gebracht",
+   "bloecke": [
+    {
+     "typ": "merke",
+     "label": "Auf den Punkt gebracht",
+     "text": "Pädagogische **Mündigkeit** ist ein übergreifendes Erziehungsziel (Leitziel). Nach Roth umfasst sie **Selbstkompetenz (Ich)**, **Sozialkompetenz (Du)** und **Sachkompetenz (Welt)**. Sie ist ein **lebenslanger Prozess**. **Schlüsselqualifikationen** konkretisieren die Bereiche. **Erziehungsmaßnahmen** wie Entscheidungsspielräume, gemeinsame Regeln, Projekte und Experimente setzen sie um, am besten im **autoritativen Stil**."
+    },
+    {
+     "typ": "text",
+     "text": "**Das kann ich jetzt:**"
+    },
+    {
+     "typ": "text",
+     "text": "- Ich kann Mündigkeit nach Roth erklären.\n- Ich kann Selbst-, Sozial- und Sachkompetenz an Beispielen unterscheiden.\n- Ich kann Schlüsselqualifikationen zuordnen.\n- Ich kann Erziehungsmaßnahmen zur Förderung der Mündigkeit nennen."
+    },
+    {
+     "typ": "fussnote",
+     "text": "Quelle: Lehrtext 05 „Pädagogische Mündigkeit nach Roth“ (LB 3)."
+    }
+   ]
+  }
+ ]
+}

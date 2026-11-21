@@ -1,0 +1,157 @@
+{
+ "titel": "Fallarbeit: Hausaufgaben im Hort",
+ "anleitung": "Drei Teile: entscheiden, beurteilen und selbst formulieren.",
+ "fall": "Im Hort bringt Jonas (9) zum dritten Mal seine Hausaufgaben nicht mit. Du sprichst mit seinen Eltern und anderen Eltern über Hausaufgaben.\nMutter A: „Wir haben mit Jonas eine feste Zeit vereinbart. Wenn er etwas nicht versteht, setzen wir uns zusammen hin.“\nVater B: „Mir ist egal, ob er sie macht. Er ist alt genug.“\nMutter C: „Er hat zu gehorchen. Wer nicht macht, was ich sage, bekommt Hausarrest, fertig.“\nMutter D: „Ich will keinen Streit. Dann macht er sie halt später oder gar nicht.“",
+ "schritte": [
+  {
+   "t": "Stil bestimmen",
+   "q": "Welcher Stil zeigt sich bei Mutter A?",
+   "o": [
+    [
+     "Autoritär",
+     0,
+     "Hier fehlt das Gehorsam-Ohne-Erklärung."
+    ],
+    [
+     "Vernachlässigend",
+     0,
+     "Die Mutter ist beteiligt."
+    ],
+    [
+     "Autoritativ: viel Wärme, klare vereinbarte Anforderung.",
+     1,
+     "Richtig: Sie begründet, vereinbart und unterstützt."
+    ],
+    [
+     "Permissiv",
+     0,
+     "Es gibt klare Regeln."
+    ]
+   ]
+  },
+  {
+   "t": "Stil bestimmen",
+   "q": "Welcher Stil zeigt sich bei Vater B?",
+   "o": [
+    [
+     "Permissiv",
+     0,
+     "Permissiv wäre warmherzig, aber ohne Regeln."
+    ],
+    [
+     "Autoritär",
+     0,
+     "Es werden keine hohen Anforderungen gestellt."
+    ],
+    [
+     "Autoritativ",
+     0,
+     "Es gibt weder Wärme noch Regeln."
+    ],
+    [
+     "Vernachlässigend: weder Wärme noch Anforderung.",
+     1,
+     "Richtig: Er nimmt kaum Anteil am Leben seines Kindes."
+    ]
+   ]
+  },
+  {
+   "t": "Stil bestimmen",
+   "q": "Welcher Stil zeigt sich bei Mutter C?",
+   "o": [
+    [
+     "Autoritär: hohe Anforderung, wenig Wärme, Gehorsam ohne Begründung.",
+     1,
+     "Richtig: Mögliche Folgen sind Unsicherheit und geringes Selbstwertgefühl."
+    ],
+    [
+     "Vernachlässigend",
+     0,
+     "Die Mutter kümmert sich, aber streng."
+    ],
+    [
+     "Permissiv",
+     0,
+     "Es werden hohe Anforderungen gestellt."
+    ],
+    [
+     "Autoritativ",
+     0,
+     "Es fehlen Wärme und Begründung."
+    ]
+   ]
+  },
+  {
+   "t": "Stil bestimmen",
+   "q": "Welcher Stil zeigt sich bei Mutter D?",
+   "o": [
+    [
+     "Autoritativ",
+     0,
+     "Es fehlt die klare Anforderung."
+    ],
+    [
+     "Permissiv: Zuwendung, aber wenige Regeln, Konflikte werden vermieden.",
+     1,
+     "Richtig: Mögliche Folge sind Schwierigkeiten mit Regeln und Frustration."
+    ],
+    [
+     "Autoritär",
+     0,
+     "Es gibt keine strengen Regeln."
+    ],
+    [
+     "Vernachlässigend",
+     0,
+     "Mutter D ist zugewandt, setzt aber kaum Grenzen."
+    ]
+   ]
+  }
+ ],
+ "auszug": {
+  "aufgabe": "Aus deinem Praktikumsbericht: Welche Aussagen sind fachlich falsch? Markiere drei.",
+  "zeilen": [
+   [
+    "Baumrind unterscheidet die Stile anhand von Wärme (Responsivität) und Anforderung (Kontrolle).",
+    0,
+    "Das ist richtig."
+   ],
+   [
+    "Der autoritäre Stil verbindet hohe Wärme mit hohen Anforderungen.",
+    1,
+    "Das ist der autoritative Stil. Der autoritäre hat hohe Anforderung, aber wenig Wärme."
+   ],
+   [
+    "Den vierten Stil ergänzten später Maccoby und Martin.",
+    0,
+    "Das ist richtig."
+   ],
+   [
+    "Der permissive Stil bedeutet: wenig Wärme und wenige Regeln.",
+    1,
+    "Permissiv bedeutet hohe Wärme, aber wenige Regeln."
+   ],
+   [
+    "Der vernachlässigende Stil gilt als am ungünstigsten für die Entwicklung.",
+    0,
+    "Das ist richtig."
+   ],
+   [
+    "Autoritär erzogene Kinder sind laut Forschung immer selbstbewusst.",
+    1,
+    "Sie zeigen häufiger Unsicherheit, ein geringeres Selbstwertgefühl oder trotzig-aggressives Verhalten."
+   ]
+  ]
+ },
+ "werkstatt": {
+  "titel": "Selbst formulieren",
+  "aufgabe": "Wie würdest du Mutter C beim Elterngespräch begegnen? Formuliere zwei Sätze, mit denen du ihre Anforderung respektierst, aber mehr Wärme und Begründung anregst.",
+  "muster": "„Es ist gut, dass Sie klare Erwartungen haben, das gibt Jonas Orientierung. Probieren Sie doch, ihm kurz zu erklären, warum die Hausaufgaben wichtig sind, und ihm zuzuhören, was ihm schwerfällt. So bleibt die Regel, und er fühlt sich verstanden.“",
+  "kriterien": [
+   "Ich würdige ihre klare Anforderung.",
+   "Ich rege Begründung und Zuhören an.",
+   "Ich nenne die Wirkung auf das Kind.",
+   "Mein Ton ist wertschätzend und nicht belehrend."
+  ]
+ }
+}

@@ -1,0 +1,157 @@
+{
+ "titel": "Fallarbeit: Noahs Abschied am Morgen",
+ "anleitung": "Drei Teile: entscheiden, beurteilen und selbst formulieren.",
+ "fall": "In der Kita-Gruppe „Regenbogen“ weint Noah (3) jeden Morgen beim Abschied. Erzieherin Frau Aydin hockt sich auf seine Höhe, spricht leise und zeigt ihm das Fotobuch seiner Familie. Noah beruhigt sich und nimmt ihre Hand. Frau Aydin merkt: Wenn sie langsamer spricht, weint er weniger. Ihr Ziel: Noah soll sich nach und nach allein von seiner Mutter lösen können.",
+ "schritte": [
+  {
+   "t": "Interaktion",
+   "q": "Frau Aydin passt ihr Verhalten an Noahs Reaktion an, und Noah reagiert darauf. Welches Merkmal zeigt das?",
+   "o": [
+    [
+     "Soziale Interaktion: Beide beeinflussen sich wechselseitig.",
+     1,
+     "Richtig: Aktion und Reaktion. Dabei verändert sich auch die Erzieherin."
+    ],
+    [
+     "Erziehung als reines Wissen vermitteln",
+     0,
+     "Es geht um Beeinflussung im Kontakt."
+    ],
+    [
+     "Erziehung als Zufall",
+     0,
+     "Frau Aydin handelt bewusst."
+    ],
+    [
+     "Erziehung als einseitige Anweisung",
+     0,
+     "Erziehung ist keine Einbahnstraße."
+    ]
+   ]
+  },
+  {
+   "t": "Kommunikation",
+   "q": "Leise Stimme, Hocken und Fotobuch: Was zeigt das?",
+   "o": [
+    [
+     "Ein Experiment",
+     0,
+     "Es wird nichts methodisch überprüft."
+    ],
+    [
+     "Soziale Kommunikation über Symbole, also Sprache, Mimik und Körpersprache, die Noah deuten kann.",
+     1,
+     "Richtig: Informationen werden über Symbole ausgetauscht. Auch Schweigen teilt etwas mit."
+    ],
+    [
+     "Soziale Beziehung ohne Kommunikation",
+     0,
+     "Beziehung und Kommunikation gehören zusammen."
+    ],
+    [
+     "Nur Zufall ohne Bedeutung",
+     0,
+     "Jedes Verhalten teilt etwas mit."
+    ]
+   ]
+  },
+  {
+   "t": "Beziehung",
+   "q": "Wovon hängt der Erfolg von Frau Aydins Bemühen vor allem ab?",
+   "o": [
+    [
+     "Davon, dass Noah nichts fühlt.",
+     0,
+     "Es kommt auf die emotionale Beziehung an."
+    ],
+    [
+     "Nur davon, wie alt Noah ist.",
+     0,
+     "Das Alter allein entscheidet nicht."
+    ],
+    [
+     "Von der positiven emotionalen Beziehung zwischen ihr und Noah.",
+     1,
+     "Richtig: Wo die Beziehung nicht stimmt, hat Erziehung wenig Chancen."
+    ],
+    [
+     "Davon, dass sie möglichst streng ist.",
+     0,
+     "Strenge ersetzt keine Beziehung."
+    ]
+   ]
+  },
+  {
+   "t": "Ziel",
+   "q": "Warum ist es Erziehung und nicht bloß Trösten?",
+   "o": [
+    [
+     "Weil Noah ruhig wird.",
+     0,
+     "Entscheidend ist das Ziel, nicht der momentane Erfolg."
+    ],
+    [
+     "Weil die Mutter dabei ist.",
+     0,
+     "Das ist kein Kriterium."
+    ],
+    [
+     "Weil Noah weint.",
+     0,
+     "Weinen allein macht nichts zu Erziehung."
+    ],
+    [
+     "Sie handelt bewusst und zielgerichtet, um eine dauerhafte Veränderung zu erreichen: Noah soll sich lösen können.",
+     1,
+     "Richtig: beabsichtigte Lernhilfe, zielgerichtetes soziales Handeln mit offenem Ausgang."
+    ]
+   ]
+  }
+ ],
+ "auszug": {
+  "aufgabe": "Aus dem Teamgespräch: Welche Aussagen sind fachlich falsch? Markiere drei.",
+  "zeilen": [
+   [
+    "Erziehung meint nur das, was bewusst und planvoll geschieht.",
+    0,
+    "Erziehung ist beabsichtigt und planmäßig organisiert."
+   ],
+   [
+    "Wenn ein Kind zufällig beim Zuschauen lernt, ist das schon Erziehung.",
+    1,
+    "Erziehung meint nicht jedes Lernen, sondern nur das, was bewusst zu diesem Zweck organisiert wird."
+   ],
+   [
+    "Durch den Prozess der Erziehung verändert sich nur das Kind.",
+    1,
+    "Auch der Erzieher verändert sich, weil er sein Verhalten abstimmt."
+   ],
+   [
+    "Auch Schweigen oder Wegschauen teilt dem anderen etwas mit.",
+    0,
+    "Jedes Verhalten in einer Beziehung sagt etwas aus."
+   ],
+   [
+    "Pädagogisches Handeln führt immer zum gewünschten Ergebnis.",
+    1,
+    "Es ist ein „Versuchshandeln“ mit offenem Ausgang."
+   ],
+   [
+    "Wo die Beziehung nicht stimmt, hat Erziehung wenig Chancen.",
+    0,
+    "Das ist richtig."
+   ]
+  ]
+ },
+ "werkstatt": {
+  "titel": "Selbst formulieren",
+  "aufgabe": "Beschreibe eine Situation aus deinem Praktikum und zeige daran drei Merkmale von Erziehung (z. B. Interaktion, Kommunikation, Ziel).",
+  "muster": "Situation: „Ein Kind will die Jacke nicht anziehen. Ich hocke mich hin und frage freundlich. Es zieht sie an.“\nInteraktion: Wir reagieren aufeinander. Kommunikation: Stimme, Blickkontakt und Gestik teilen Absichten mit. Ziel: Das Kind soll die Jacke künftig selbst anziehen (dauerhafte Änderung).",
+  "kriterien": [
+   "Meine Situation stammt aus einer Erziehungssituation.",
+   "Ich nenne mindestens drei Merkmale von Erziehung.",
+   "Ich belege jedes Merkmal mit einem Detail aus der Situation.",
+   "Ich erkläre das Ziel als dauerhafte Änderung von Verhalten oder Erleben."
+  ]
+ }
+}

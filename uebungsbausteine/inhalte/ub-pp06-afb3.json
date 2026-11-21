@@ -1,0 +1,157 @@
+{
+ "titel": "Fallarbeit: Selbstständig werden im Hort",
+ "anleitung": "Drei Teile: entscheiden, beurteilen und selbst formulieren.",
+ "fall": "Erzieherin Frau Weber im Hort will, dass die Viertklässler selbstständig werden. Sie lässt die Kinder ihre Hausaufgabenzeit selbst planen, stellt mit ihnen gemeinsam die Gruppenregeln auf und lässt sie ein Hochbeet pflegen. Eine Kollegin sagt: „Das ist zu viel Freiheit. Ich nehme den Kindern lieber alles ab, dann gibt es keinen Stress.“",
+ "schritte": [
+  {
+   "t": "Kompetenz",
+   "q": "Die Kinder planen ihre Hausaufgabenzeit selbst und tragen die Folgen. Welche Kompetenz wird gefördert?",
+   "o": [
+    [
+     "Sozialkompetenz",
+     0,
+     "Hier steht nicht der Umgang mit anderen im Mittelpunkt."
+    ],
+    [
+     "Selbstkompetenz: das eigene Leben gestalten und Verantwortung übernehmen.",
+     1,
+     "Richtig: Das ist die Ich-Fähigkeit."
+    ],
+    [
+     "Sachkompetenz",
+     0,
+     "Es geht nicht um Umgang mit der Sachwelt."
+    ],
+    [
+     "Qualifikation für den Beruf",
+     0,
+     "Es geht um Selbstbestimmung und Verantwortung."
+    ]
+   ]
+  },
+  {
+   "t": "Kompetenz",
+   "q": "Die Kinder stellen gemeinsam Gruppenregeln auf und besprechen Konflikte. Was wird gefördert?",
+   "o": [
+    [
+     "Keine Kompetenz, nur Spielen",
+     0,
+     "Gemeinsame Regeln üben Sozialkompetenz."
+    ],
+    [
+     "Selbstkompetenz",
+     0,
+     "Der Umgang mit anderen steht im Vordergrund."
+    ],
+    [
+     "Sozialkompetenz: Kooperation, Kommunikation und Konfliktlösung.",
+     1,
+     "Richtig: Das ist die Du-Fähigkeit."
+    ],
+    [
+     "Sachkompetenz",
+     0,
+     "Es geht nicht um die dingliche Welt."
+    ]
+   ]
+  },
+  {
+   "t": "Kompetenz",
+   "q": "Die Kinder pflegen ein Hochbeet und lernen, wie Pflanzen wachsen. Was wird gefördert?",
+   "o": [
+    [
+     "Rechtliche Mündigkeit",
+     0,
+     "Das ist ein anderer Begriff."
+    ],
+    [
+     "Sozialkompetenz",
+     0,
+     "Das Hochbeet betrifft zunächst den Umgang mit Sachen."
+    ],
+    [
+     "Selbstkompetenz",
+     0,
+     "Der Umgang mit der Sachwelt steht im Mittelpunkt."
+    ],
+    [
+     "Sachkompetenz: verantwortlich mit der dinglichen Welt und der Umwelt umgehen.",
+     1,
+     "Richtig: Welt-Fähigkeit, hier in Bezug auf Natur und Umwelt."
+    ]
+   ]
+  },
+  {
+   "t": "Beurteilen",
+   "q": "Wie ist der Satz der Kollegin zu beurteilen?",
+   "o": [
+    [
+     "Wer alles abnimmt, verhindert Mündigkeit. Erziehungsmaßnahmen müssen Selbstständigkeit zulassen, am besten im autoritativen Stil mit Wärme und klaren Regeln.",
+     1,
+     "Richtig: Mündigkeit entsteht, wenn dem Kind Schritt für Schritt Verantwortung zugetraut wird."
+    ],
+    [
+     "Richtig, denn weniger Stress ist wichtiger als Selbstständigkeit.",
+     0,
+     "Das widerspricht dem Leitziel Mündigkeit."
+    ],
+    [
+     "Richtig, weil Kinder nie Verantwortung tragen können.",
+     0,
+     "Verantwortung wird Schritt für Schritt aufgebaut."
+    ],
+    [
+     "Falsch, weil Kinder gar keine Regeln brauchen.",
+     0,
+     "Klare Regeln gehören zum autoritativen Stil."
+    ]
+   ]
+  }
+ ],
+ "auszug": {
+  "aufgabe": "Aus Frau Webers Fortbildungsmaterial: Welche Aussagen sind fachlich falsch? Markiere drei.",
+  "zeilen": [
+   [
+    "Mündigkeit war ursprünglich ein Rechtsbegriff.",
+    0,
+    "Das ist richtig."
+   ],
+   [
+    "Mit der Volljährigkeit ist Mündigkeit abgeschlossen.",
+    1,
+    "Mündigkeit ist ein lebenslanger Prozess, kein Zustand."
+   ],
+   [
+    "Kooperation, Kommunikation und Konfliktlösung gehören zur Sozialkompetenz.",
+    0,
+    "Das ist richtig."
+   ],
+   [
+    "Fremdsprachenkenntnisse gehören zur Selbstkompetenz.",
+    1,
+    "Sie gehören zur Sachkompetenz."
+   ],
+   [
+    "Erziehungsmaßnahmen sollen Selbstständigkeit zulassen.",
+    0,
+    "Das fördert Mündigkeit."
+   ],
+   [
+    "Ein streng vorschreibender Erziehungsstil fördert Mündigkeit am besten.",
+    1,
+    "Am besten gelingt es im autoritativen Stil mit Wärme und begründeten Regeln."
+   ]
+  ]
+ },
+ "werkstatt": {
+  "titel": "Selbst formulieren",
+  "aufgabe": "Plane für deine Praktikumseinrichtung je eine Erziehungsmaßnahme für Selbst-, Sozial- und Sachkompetenz und begründe kurz.",
+  "muster": "Selbstkompetenz: Die Kinder wählen ihr Spielangebot selbst und räumen es auf. Sie üben Entscheidungen und Verantwortung.\nSozialkompetenz: Im Kinderrat stimmen sie über Gruppenregeln ab. Sie üben Kooperation und Konfliktlösung.\nSachkompetenz: Sie pflegen ein Gemüsebeet. Sie lernen, verantwortlich mit Natur und Material umzugehen.",
+  "kriterien": [
+   "Ich nenne drei Maßnahmen, eine je Kompetenzbereich.",
+   "Jede Maßnahme lässt dem Kind Selbstständigkeit.",
+   "Ich begründe, welche Kompetenz gefördert wird.",
+   "Meine Beispiele passen zu meiner Einrichtung und zum Alter der Kinder."
+  ]
+ }
+}

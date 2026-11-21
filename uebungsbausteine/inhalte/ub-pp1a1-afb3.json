@@ -1,0 +1,157 @@
+{
+ "titel": "Fallarbeit: Praktikum im Jugendzentrum",
+ "anleitung": "Drei Teile: entscheiden, beurteilen und selbst formulieren.",
+ "fall": "Marie (16) macht Praktikum in einem Jugendzentrum. Der Leiter erzählt: „Wir lassen die Jugendlichen die Hausregeln mitbestimmen. Manche Kollegen halten das für falsch, junge Menschen müssten streng angeleitet werden.“ Außerdem berichtet er, dass Jugendliche mit viel Stress zu Hause öfter fehlen. Marie schreibt abends in ihr Praktikumsheft.",
+ "schritte": [
+  {
+   "t": "Bereiche zuordnen",
+   "q": "Der Streit im Team, ob man junge Menschen streng anleiten oder sich entfalten lassen soll, gehört zu welchem Gegenstandsbereich?",
+   "o": [
+    [
+     "Voraussetzungen und Bedingungen",
+     0,
+     "Hier geht es nicht um Bedingungen, sondern um Grundüberzeugungen."
+    ],
+    [
+     "Vorstellungen über Erziehung (Menschenbild)",
+     1,
+     "Richtig: Die Positionen beruhen auf unterschiedlichen Menschenbildern."
+    ],
+    [
+     "Einrichtungen der Erziehung",
+     0,
+     "Das Jugendzentrum ist zwar eine Einrichtung, der Streit betrifft aber die Vorstellung davon, was Erziehung leisten soll."
+    ],
+    [
+     "Beziehung zwischen Erzieher und zu Erziehendem",
+     0,
+     "Es geht nicht um das Verhältnis, sondern um die Grundüberzeugung."
+    ]
+   ]
+  },
+  {
+   "t": "Bereiche zuordnen",
+   "q": "Die Jugendlichen dürfen Hausregeln mitbestimmen. Wozu passt das vor allem?",
+   "o": [
+    [
+     "Voraussetzungen und Bedingungen der Erziehung",
+     0,
+     "Die Maßnahme folgt einem Ziel, nicht einer Bedingung."
+    ],
+    [
+     "Es hat mit Erziehung nichts zu tun.",
+     0,
+     "Mitbestimmen lassen ist eine erzieherische Handlung."
+    ],
+    [
+     "Ziele und Handlungen der Erziehung: Die Maßnahme passt zum Ziel Verantwortungsbewusstsein.",
+     1,
+     "Richtig: Aus Zielen ergeben sich passende Handlungen."
+    ],
+    [
+     "Einrichtungen der Erziehung",
+     0,
+     "Das sagt nichts über Ziel und Handlung."
+    ]
+   ]
+  },
+  {
+   "t": "Bereiche zuordnen",
+   "q": "Jugendliche mit viel Stress zu Hause fehlen öfter. Welcher Bereich?",
+   "o": [
+    [
+     "Ziele und Handlungen der Erziehung",
+     0,
+     "Die Fehlzeiten sind keine Maßnahme."
+    ],
+    [
+     "Vorstellungen über Erziehung",
+     0,
+     "Hier geht es um Lebensumstände, nicht um Vorstellungen."
+    ],
+    [
+     "Einrichtungen der Erziehung",
+     0,
+     "Es geht nicht um die Einrichtung selbst, sondern um die Lage der Jugendlichen."
+    ],
+    [
+     "Voraussetzungen und Bedingungen der Erziehung (Familiensituation)",
+     1,
+     "Richtig: Erziehung findet unter konkreten Bedingungen statt."
+    ]
+   ]
+  },
+  {
+   "t": "Praxis oder Wissenschaft",
+   "q": "Der Leiter handelt mit den Jugendlichen Regeln aus. Marie denkt in ihrem Heft darüber nach, ob das ihre Entwicklung fördert. Was stimmt?",
+   "o": [
+    [
+     "Der Leiter handelt in der Erziehungspraxis, Marie betreibt mit ihrem Nachdenken wissenschaftliches Denken über Erziehung.",
+     1,
+     "Richtig: Pädagogik umfasst beides."
+    ],
+    [
+     "Nur das Nachdenken gehört zur Pädagogik.",
+     0,
+     "Der Oberbegriff Pädagogik umfasst Praxis und Wissenschaft."
+    ],
+    [
+     "Beides ist Erziehungspraxis.",
+     0,
+     "Das systematische Nachdenken gehört zur Erziehungswissenschaft."
+    ],
+    [
+     "Beides ist Erziehungswissenschaft.",
+     0,
+     "Das konkrete Handeln ist Erziehungspraxis."
+    ]
+   ]
+  }
+ ],
+ "auszug": {
+  "aufgabe": "Aus Maries Praktikumsheft: Welche Sätze sind fachlich falsch? Markiere drei.",
+  "zeilen": [
+   [
+    "Pädagogik umfasst Erziehungspraxis und Erziehungswissenschaft.",
+    0,
+    "Das ist der Oberbegriff."
+   ],
+   [
+    "Erziehung findet nur in der Familie statt.",
+    1,
+    "Erziehung geschieht auch in Kita, Schule, Wohngruppe, Jugendzentrum oder Verein."
+   ],
+   [
+    "In der Erziehung bestimmt der Leiter, die Jugendlichen reagieren nur.",
+    1,
+    "Erziehung ist keine Einbahnstraße. Erwachsene reagieren auch auf Verhalten, Wünsche und Widerstand."
+   ],
+   [
+    "Erziehung verfolgt auch dann Ziele, wenn sie nicht ausgesprochen werden.",
+    0,
+    "Das ist richtig."
+   ],
+   [
+    "Eine Maßnahme ist gut, wenn sie für die Erwachsenen bequem ist.",
+    1,
+    "Sie muss zum Ziel, zur Person und zur Situation passen."
+   ],
+   [
+    "Heute geht man meist von einem Zusammenspiel von Anlagen und Umwelt aus.",
+    0,
+    "Das ist richtig."
+   ]
+  ]
+ },
+ "werkstatt": {
+  "titel": "Selbst formulieren",
+  "aufgabe": "Wähle zwei der fünf Gegenstandsbereiche der Pädagogik und erkläre sie an je einem Beispiel aus deinem Praktikum (je zwei Sätze).",
+  "muster": "Beziehung zwischen Erzieher und zu Erziehendem: „In meiner Kita nimmt ein Kind Kritik von der Erzieherin eher an, weil es ihr vertraut. Bei Angst vor Abwertung blockiert es.“\nEinrichtungen der Erziehung: „Meine Kita ergänzt die Familie, die Schule verbindet Bildung und Erziehung. Beide haben eigene Aufgaben und Regeln.“",
+  "kriterien": [
+   "Ich habe zwei Gegenstandsbereiche richtig benannt.",
+   "Ich erkläre jeden Bereich mit eigenen Worten.",
+   "Ich nenne je ein konkretes Beispiel aus der Praxis.",
+   "Mein Beispiel passt zum gewählten Bereich."
+  ]
+ }
+}

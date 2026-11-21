@@ -1,0 +1,157 @@
+{
+ "titel": "Fallarbeit: Bewegungspausen im Hort",
+ "anleitung": "Drei Teile: entscheiden, beurteilen und selbst formulieren.",
+ "fall": "Hortleiterin Frau Berger möchte wissen, ob Bewegungspausen die Konzentration der Kinder bei den Hausaufgaben verbessern. Sie plant: In Gruppe A gibt es alle 45 Minuten eine Pause, in Gruppe B alle 90 Minuten. Danach beobachtet sie in beiden Gruppen, wie lange die Kinder bei der Aufgabe bleiben.",
+ "schritte": [
+  {
+   "t": "Methode",
+   "q": "Handelt es sich um eine Beobachtung oder ein Experiment?",
+   "o": [
+    [
+     "Eine Beobachtung, weil sie Kinder anschaut.",
+     0,
+     "Beobachten gehört zum Experiment, aber sie führt die Situation selbst herbei."
+    ],
+    [
+     "Eine Beobachtung, weil keine Geräte benutzt werden.",
+     0,
+     "Geräte sind kein Kriterium."
+    ],
+    [
+     "Weder noch, weil es nur ein Gespräch ist.",
+     0,
+     "Sie plant ein gezieltes Vorgehen."
+    ],
+    [
+     "Ein Experiment: Sie führt die Pausen absichtlich und planmäßig herbei.",
+     1,
+     "Richtig: Sie legt die Bedingungen selbst fest, statt nur Vorhandenes zu beobachten."
+    ]
+   ]
+  },
+  {
+   "t": "Art",
+   "q": "Ist es ein Labor- oder ein Feldexperiment?",
+   "o": [
+    [
+     "Ein Feldexperiment: Es findet im Alltag des Horts statt.",
+     1,
+     "Richtig: Natürliche Umgebung, deshalb Feldexperiment. Vorteil: genauere Vorhersage für echtes Alltagsverhalten."
+    ],
+    [
+     "Ein Laborexperiment, weil Kinder beobachtet werden.",
+     0,
+     "Auch im Feld wird beobachtet."
+    ],
+    [
+     "Ein Laborexperiment, weil sie die Pausen festlegt.",
+     0,
+     "Das Festlegen allein macht es nicht zum Laborexperiment. Entscheidend ist der Ort."
+    ],
+    [
+     "Keins von beiden.",
+     0,
+     "Es ist ein Experiment, und zwar im Feld."
+    ]
+   ]
+  },
+  {
+   "t": "Kriterien",
+   "q": "Woran zeigt sich die Variierbarkeit?",
+   "o": [
+    [
+     "Daran, dass sie Ort und Zeit selbst bestimmt.",
+     0,
+     "Das wäre die Willkürlichkeit."
+    ],
+    [
+     "Sie verändert die Bedingung, deren Wirkung sie beobachten will: Pausenabstand 45 oder 90 Minuten.",
+     1,
+     "Richtig: Die Bedingung (Pausenabstand) wird verändert."
+    ],
+    [
+     "Daran, dass sie Kinder beobachtet.",
+     0,
+     "Beobachten ist kein Kriterium."
+    ],
+    [
+     "Daran, dass sie das Experiment beliebig oft durchführen kann.",
+     0,
+     "Das wäre die Wiederholbarkeit."
+    ]
+   ]
+  },
+  {
+   "t": "Planung",
+   "q": "Was muss Frau Berger vor Beginn noch festlegen?",
+   "o": [
+    [
+     "Nichts, die Kinder zeigen ihr schon, was passiert.",
+     0,
+     "Ohne Kategorien und Skala sind die Ergebnisse nicht vergleichbar."
+    ],
+    [
+     "Welche Gruppe gewinnen soll.",
+     0,
+     "Ein Experiment prüft, es steuert kein Ergebnis."
+    ],
+    [
+     "Ein Kategoriensystem, was genau beobachtet wird, und eine Skala, damit die Werte vergleichbar sind.",
+     1,
+     "Richtig: z. B. Blick zur Aufgabe, Unterbrechungen; Skala von sehr häufig bis gar nicht."
+    ],
+    [
+     "Nur, wie viele Kinder sie mag.",
+     0,
+     "Das ist keine Voraussetzung."
+    ]
+   ]
+  }
+ ],
+ "auszug": {
+  "aufgabe": "Aus Frau Bergers Notizen: Welche Aussagen sind fachlich falsch? Markiere drei.",
+  "zeilen": [
+   [
+    "Das Experiment ist die einzige Methode, mit der man Ursache-Wirkung-Zusammenhänge herausfinden kann.",
+    0,
+    "Das ist richtig."
+   ],
+   [
+    "Wenn sie nur beobachtet, wie Kinder in der Pause spielen, ist das ein Experiment.",
+    1,
+    "Das ist eine Beobachtung, weil sie die Situation nicht selbst herbeiführt."
+   ],
+   [
+    "Beim Laborexperiment findet alles in der natürlichen Umgebung statt.",
+    1,
+    "Das Laborexperiment findet unter kontrollierten Bedingungen im Labor statt."
+   ],
+   [
+    "Wiederholbarkeit heißt: Der Vorgang kann beliebig oft durchgeführt werden, so werden Ergebnisse überprüfbar.",
+    0,
+    "Das ist richtig."
+   ],
+   [
+    "Eine Skala legt fest, welche Merkmale beobachtet werden.",
+    1,
+    "Das macht das Kategoriensystem. Die Skala macht Werte vergleichbar."
+   ],
+   [
+    "Willkürlichkeit bedeutet, dass der Forscher Situation, Ort und Zeit selbst bestimmt.",
+    0,
+    "Das ist richtig."
+   ]
+  ]
+ },
+ "werkstatt": {
+  "titel": "Selbst formulieren",
+  "aufgabe": "Plane ein kleines Experiment für deine Praktikumseinrichtung. Nenne Fragestellung, veränderte Bedingung, Beobachtungsmerkmal und Art (Labor oder Feld).",
+  "muster": "Fragestellung: Verbessert ein gemeinsames Vorlesen vor dem Mittagessen die Ruhe am Tisch?\nBedingung: Gruppe A hört vorher 10 Minuten eine Geschichte, Gruppe B nicht (variiert). Die Gruppen werden mehrere Tage getauscht (Wiederholbarkeit).\nBeobachtet wird: Wie oft stehen Kinder auf oder rufen dazwischen (Kategoriensystem), gezählt pro Mahlzeit (Skala).\nArt: Feldexperiment, da es im Gruppenraum stattfindet.",
+  "kriterien": [
+   "Ich habe eine Fragestellung mit Ursache und Wirkung formuliert.",
+   "Ich nenne die Bedingung, die ich selbst verändere.",
+   "Ich lege fest, was genau beobachtet und wie gezählt wird.",
+   "Ich ordne richtig als Labor- oder Feldexperiment ein."
+  ]
+ }
+}

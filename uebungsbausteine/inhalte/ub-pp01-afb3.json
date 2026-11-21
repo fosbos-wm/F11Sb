@@ -1,0 +1,157 @@
+{
+ "titel": "Fallarbeit: Emil bei den Hausaufgaben",
+ "anleitung": "Drei Teile: entscheiden, beurteilen und selbst formulieren.",
+ "fall": "Du machst Praktikum im Hort. Emil (8) sitzt bei den Hausaufgaben, seufzt, schiebt das Heft weg und verschränkt die Arme. Auf deine Frage, was los ist, sagt er: „Nichts.“ Eine Kollegin meint: „Der ist einfach faul.“",
+ "schritte": [
+  {
+   "t": "Beobachten",
+   "q": "Welche Aussage beschreibt nur Emils Verhalten?",
+   "o": [
+    [
+     "Emil seufzt, schiebt das Heft weg und verschränkt die Arme.",
+     1,
+     "Richtig: Das kann jeder von außen sehen und hören."
+    ],
+    [
+     "Emil hat keine Lust auf die Aufgabe.",
+     0,
+     "Das ist eine Annahme über sein Innenleben, also über Erleben."
+    ],
+    [
+     "Emil denkt, die Aufgabe sei zu schwer.",
+     0,
+     "Gedanken gehören zum Erleben."
+    ],
+    [
+     "Emil ist frustriert.",
+     0,
+     "Frust ist ein Gefühl und gehört zum Erleben. Von außen kannst du es nur vermuten."
+    ]
+   ]
+  },
+  {
+   "t": "Erleben",
+   "q": "Was lässt sich über Emils Erleben sagen?",
+   "o": [
+    [
+     "Man sieht ihm an, dass er sich ärgert. Das lässt sich genau feststellen.",
+     0,
+     "Gefühle sind von außen nicht sicher feststellbar."
+    ],
+    [
+     "Nur Emil selbst kann es wahrnehmen. Ich kann es aus seinem Verhalten vermuten oder ihn danach fragen.",
+     1,
+     "Richtig: Erleben wird nur durch Selbstbeobachtung zugänglich."
+    ],
+    [
+     "Man kann es durch Fremdbeobachtung genau messen.",
+     0,
+     "Fremdbeobachtung erfasst Verhalten, nicht Erleben."
+    ],
+    [
+     "Sein Erleben ist dasselbe wie sein Verhalten.",
+     0,
+     "Verhalten und Erleben sind zwei Seiten, aber nicht dasselbe."
+    ]
+   ]
+  },
+  {
+   "t": "Zusammenhang",
+   "q": "Wie hängen Emils Verhalten und sein Erleben zusammen?",
+   "o": [
+    [
+     "Sie haben nichts miteinander zu tun.",
+     0,
+     "Verhalten ist oft ein Anzeichen für das Erleben."
+    ],
+    [
+     "Erst erlebt er etwas, danach folgt das Verhalten, getrennt voneinander.",
+     0,
+     "Sie laufen nicht nacheinander, sondern gleichzeitig ab."
+    ],
+    [
+     "Sie laufen gleichzeitig ab. Sein Verhalten ist ein Anzeichen dafür, was in ihm vorgeht.",
+     1,
+     "Richtig: Beides sind zwei Seiten desselben psychischen Geschehens."
+    ],
+    [
+     "Sein Verhalten verrät nie etwas über sein Erleben.",
+     0,
+     "Es kann Hinweise geben, ist aber keine Sicherheit."
+    ]
+   ]
+  },
+  {
+   "t": "Vorgehen",
+   "q": "Wie gehst du als Fachkraft vor?",
+   "o": [
+    [
+     "Ich nehme an, dass er sich ärgert, und handle danach.",
+     0,
+     "Eine Vermutung ersetzt keine Nachfrage."
+    ],
+    [
+     "Ich übernehme die Deutung „faul“, weil sie schnell geht.",
+     0,
+     "Das ist ein Urteil über sein Innenleben ohne Grundlage."
+    ],
+    [
+     "Ich beobachte ihn heimlich, bis ich sicher weiß, was er denkt.",
+     0,
+     "Gedanken lassen sich durch Beobachten nicht sicher erfassen."
+    ],
+    [
+     "Ich beschreibe zuerst, was ich sehe, und frage ihn dann, wie er die Aufgabe erlebt.",
+     1,
+     "Richtig: Erst Verhalten beschreiben, dann das Erleben erfragen."
+    ]
+   ]
+  }
+ ],
+ "auszug": {
+  "aufgabe": "Lenas Abend: Welche Sätze verwechseln Verhalten und Erleben oder sind fachlich falsch? Markiere drei.",
+  "zeilen": [
+   [
+    "Lena schlägt die Tür zu und stampft die Treppe hinauf.",
+    0,
+    "Beschreibt nur sichtbares Verhalten."
+   ],
+   [
+    "Sie ist wütend, das sieht man ja an der Tür.",
+    1,
+    "Wut ist Erleben. Von außen lässt sie sich nur vermuten."
+   ],
+   [
+    "Ich habe beobachtet, dass Lena beim Abendessen schweigt.",
+    0,
+    "Eine Beobachtung von Verhalten."
+   ],
+   [
+    "Beim Schweigen denkt Lena an den Streit. Das kann man genau beobachten.",
+    1,
+    "Gedanken sind Erleben und nur durch Selbstbeobachtung zugänglich."
+   ],
+   [
+    "Ob sie sich schämt, erfahren wir nur, wenn sie es uns sagt.",
+    0,
+    "Erleben ist nur der Person selbst zugänglich."
+   ],
+   [
+    "Tiere erleben wie Menschen, und das lässt sich genauso genau erforschen.",
+    1,
+    "Bei Tieren kann Erleben nicht wissenschaftlich erforscht werden. Der Begriff gilt nur für den Menschen."
+   ]
+  ]
+ },
+ "werkstatt": {
+  "titel": "Selbst formulieren",
+  "aufgabe": "Formuliere einen Satz, der das Verhalten eines Kindes in deinem Praktikum nur beschreibt, und eine Frage, mit der du sein Erleben erfragst.",
+  "muster": "Beobachtung: „Mia steht seit zehn Minuten am Rand des Spielplatzes, schaut den anderen zu und hält ihren Rucksack fest.“\nFrage: „Mia, wie ist es für dich, wenn du den anderen beim Spielen zuschaust?“",
+  "kriterien": [
+   "Mein Beobachtungssatz beschreibt nur Sichtbares oder Hörbares (kein „ist traurig“).",
+   "Ich nenne eine konkrete Situation.",
+   "Meine Frage richtet sich auf Gedanken oder Gefühle des Kindes.",
+   "Ich deute das Erleben nicht schon in meiner Frage."
+  ]
+ }
+}

@@ -1,0 +1,451 @@
+{
+ "titel": "Das Experiment als wissenschaftliche Methode",
+ "modulart": "selbstlern",
+ "lb": 1,
+ "nr": "9, 10",
+ "einleitung": "Geschätzte Dauer: 45 Minuten.",
+ "abschnitte": [
+  {
+   "kicker": "Lernziele und Einstieg",
+   "titel": "Dein Auftrag",
+   "bloecke": [
+    {
+     "typ": "text",
+     "text": "Wie findet man heraus, ob etwas wirklich eine **Ursache** hat?"
+    },
+    {
+     "typ": "text",
+     "text": "**Lernziele:**"
+    },
+    {
+     "typ": "text",
+     "text": "- Du kannst erklären, was ein **Experiment** ist, und es von einer Beobachtung abgrenzen.\n- Du kannst **Laborexperiment** und **Feldexperiment** unterscheiden und je einen Vorteil nennen.\n- Du kannst die Kriterien **Willkürlichkeit, Variierbarkeit und Wiederholbarkeit** erklären.\n- Du kannst **Kategoriensystem** und **Skala** erläutern und für ein Beispiel entwerfen."
+    },
+    {
+     "typ": "situation",
+     "label": "Lernsituation",
+     "text": "Eine Hortleiterin vermutet: „Mit Bewegungspausen können sich Kinder bei den Hausaufgaben besser konzentrieren.“ Sie schaut eine Woche lang zu, wie sich die Kinder verhalten. Ihre Kollegin sagt: „Damit weißt du noch nicht, ob die Pausen die Ursache sind.“\n**Überlege:** Was müsste die Hortleiterin anders machen, um das herauszufinden?"
+    },
+    {
+     "typ": "frei",
+     "frage": "Notiere deine spontane Idee in zwei bis drei Sätzen.",
+     "hinweis": "Schreibe in ganzen Sätzen.",
+     "muster": "Sie müsste die Pausen selbst planmäßig einführen, z. B. in einer Gruppe häufiger Pausen machen und in einer anderen seltener, und dann vergleichen. Nur so lässt sich prüfen, ob die Pausen die Ursache sind. Genau das ist ein Experiment."
+    }
+   ]
+  },
+  {
+   "kicker": "Erarbeitung · Schritt 1",
+   "titel": "Beobachtung oder Experiment?",
+   "bloecke": [
+    {
+     "typ": "text",
+     "text": "Ein **Experiment** ist eine besondere Form der Beobachtung: Der Forscher führt die Situation **absichtlich selbst herbei**, statt nur eine vorhandene Situation zu beobachten."
+    },
+    {
+     "typ": "merke",
+     "label": "Beispiel",
+     "text": "Beobachtet ein Forscher nur, wie sich Lehrer und Schüler im Unterricht verhalten, ist das eine **Beobachtung**. Gibt er dem Lehrer genau vor, wie er sich verhalten soll, um die Reaktion der Schüler zu untersuchen, ist das ein **Experiment**."
+    },
+    {
+     "typ": "merke",
+     "label": "Merke",
+     "text": "Ein Experiment ist das absichtliche und planmäßige Herbeiführen eines Vorganges, um ihn gezielt beobachten zu können."
+    },
+    {
+     "typ": "text",
+     "text": "Das Experiment ist die **einzige Methode**, mit der man **Ursache-Wirkung-Zusammenhänge (Kausalzusammenhänge)** herausfinden kann. Außerdem ermöglicht es eine besonders strenge Prüfung."
+    },
+    {
+     "typ": "sortieren",
+     "titel": "Beobachtung oder Experiment? Ordne zu.",
+     "kategorien": [
+      {
+       "name": "Beobachtung",
+       "items": [
+        "Eine Forscherin schaut zu, wie Kinder in der Pause spielen.",
+        "Ein Forscher notiert, wie oft ein Lehrer im Unterricht lobt."
+       ]
+      },
+      {
+       "name": "Experiment",
+       "items": [
+        "Ein Forscher gibt Lehrkräften vor, wie sie loben sollen, und misst die Reaktion der Klasse.",
+        "Eine Forscherin legt Pausenzeiten fest und beobachtet die Wirkung."
+       ]
+      }
+     ]
+    },
+    {
+     "typ": "mc",
+     "frage": "Warum ist das Experiment für Ursache-Wirkung-Fragen besonders geeignet?",
+     "optionen": [
+      "Weil der Forscher die Bedingungen selbst festlegt und die Wirkung gezielt beobachten kann.",
+      "Weil dabei weniger Menschen gebraucht werden.",
+      "Weil es immer im Labor stattfindet.",
+      "Weil man damit Gefühle messen kann."
+     ],
+     "richtig": 0,
+     "erklaerung": "Weil der Forscher den Vorgang selbst herbeiführt, kann er die Wirkung gezielt untersuchen."
+    }
+   ]
+  },
+  {
+   "kicker": "Erarbeitung · Schritt 2",
+   "titel": "Labor oder Feld?",
+   "bloecke": [
+    {
+     "typ": "text",
+     "text": "Man unterscheidet zwei Arten: Das **Laborexperiment** findet unter kontrollierten Bedingungen im Labor statt, das **Feldexperiment** in der natürlichen Umgebung."
+    },
+    {
+     "typ": "aufbau",
+     "zeilen": [
+      {
+       "label": "Experiment",
+       "text": "absichtliches, planmäßiges Herbeiführen eines Vorgangs",
+       "farbe": "gelb"
+      },
+      {
+       "label": "Laborexperiment",
+       "text": "kontrollierte Bedingungen im Labor",
+       "farbe": "pfirsich"
+      },
+      {
+       "label": "Feldexperiment",
+       "text": "natürliche Umgebung, Alltag",
+       "farbe": "blau"
+      }
+     ],
+     "beschriftung": "Schaubild: zwei Arten des Experiments"
+    },
+    {
+     "typ": "merke",
+     "label": "Beispiel",
+     "text": "Untersucht ein Forscher an Schulen, wie sich Pausen aufs Lernen auswirken, ist das ein Feldexperiment. Lädt er Personen ins Labor ein, um ihr Schlafverhalten zu untersuchen, ist das ein Laborexperiment."
+    },
+    {
+     "typ": "text",
+     "text": "**Vorteil Laborexperiment:** bessere Kontrolle von Störfaktoren. **Vorteil Feldexperiment:** genauere Vorhersage für echtes Alltagsverhalten."
+    },
+    {
+     "typ": "sortieren",
+     "titel": "Ordne Vorteil und Beispiel der richtigen Art zu.",
+     "kategorien": [
+      {
+       "name": "Laborexperiment",
+       "items": [
+        "bessere Kontrolle von Störfaktoren",
+        "Schlafverhalten im Labor untersuchen"
+       ]
+      },
+      {
+       "name": "Feldexperiment",
+       "items": [
+        "genauere Vorhersage für echtes Alltagsverhalten",
+        "Pausen an Schulen untersuchen"
+       ]
+      }
+     ]
+    },
+    {
+     "typ": "kprim",
+     "stamm": "Richtig oder falsch?",
+     "aussagen": [
+      {
+       "text": "Ein Feldexperiment findet in der natürlichen Umgebung statt.",
+       "richtig": true,
+       "erklaerung": ""
+      },
+      {
+       "text": "Im Laborexperiment gibt es keine kontrollierten Bedingungen.",
+       "richtig": false,
+       "erklaerung": "Gerade die Kontrolle der Bedingungen ist sein Vorteil."
+      },
+      {
+       "text": "Beide Arten sind Experimente.",
+       "richtig": true,
+       "erklaerung": ""
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kicker": "Erarbeitung · Schritt 3",
+   "titel": "Die drei Kriterien",
+   "bloecke": [
+    {
+     "typ": "text",
+     "text": "Der Forscher legt bestimmte Bedingungen fest und beobachtet, welche Wirkung sie zeigen. Drei Kriterien kennzeichnen ein Experiment."
+    },
+    {
+     "typ": "merke",
+     "label": "Kriterium 1",
+     "text": "**Willkürlichkeit:** Der Forscher bestimmt Bedingungen, Situation, Ort und Zeit der Untersuchung selbst."
+    },
+    {
+     "typ": "merke",
+     "label": "Kriterium 2",
+     "text": "**Variierbarkeit:** Der Forscher kann die Bedingungen, deren Wirkung er beobachten will, verändern, z. B. den Pausenabstand (45 oder 90 Minuten) oder die Pausenlänge (15 oder 30 Minuten)."
+    },
+    {
+     "typ": "merke",
+     "label": "Kriterium 3",
+     "text": "**Wiederholbarkeit:** Der Forscher kann den Vorgang beliebig oft durchführen. So entstehen mehr Daten, und die Ergebnisse werden überprüfbar."
+    },
+    {
+     "typ": "zuordnung",
+     "titel": "Ordne die Beispiele dem Kriterium zu.",
+     "paare": [
+      [
+       "Die Forscherin legt Zeitpunkt und Ort der Pausen selbst fest.",
+       "Willkürlichkeit"
+      ],
+      [
+       "Sie ändert den Pausenabstand von 45 auf 90 Minuten.",
+       "Variierbarkeit"
+      ],
+      [
+       "Sie führt den Versuch an zehn Tagen durch.",
+       "Wiederholbarkeit"
+      ]
+     ]
+    },
+    {
+     "typ": "mc",
+     "frage": "Eine Forscherin ändert nur die Pausenlänge von 15 auf 30 Minuten und lässt alles andere gleich. Welches Kriterium zeigt das?",
+     "optionen": [
+      "Variierbarkeit",
+      "Wiederholbarkeit",
+      "Objektivität",
+      "Zufälligkeit"
+     ],
+     "richtig": 0,
+     "erklaerung": "Die Bedingung, deren Wirkung beobachtet wird, wird verändert."
+    },
+    {
+     "typ": "lueckentext",
+     "titel": "Ergänze die Kriterien.",
+     "text": "Die drei Kriterien des Experiments sind {{Willkürlichkeit}}, {{Variierbarkeit}} und {{Wiederholbarkeit}}.",
+     "woerter": [
+      "Willkürlichkeit",
+      "Variierbarkeit",
+      "Wiederholbarkeit",
+      "Zufälligkeit",
+      "Subjektivität"
+     ],
+     "erklaerung": ""
+    }
+   ]
+  },
+  {
+   "kicker": "Erarbeitung · Schritt 4",
+   "titel": "Kategoriensystem und Skala",
+   "bloecke": [
+    {
+     "typ": "text",
+     "text": "Bevor ein Experiment beginnt, muss der Forscher einiges festlegen:"
+    },
+    {
+     "typ": "text",
+     "text": "- Situation, Ort und Zeit der Untersuchung\n- wie die Bedingungen verändert werden sollen\n- ein **Kategoriensystem** und eine **Skala**"
+    },
+    {
+     "typ": "merke",
+     "label": "Merke",
+     "text": "Ein **Kategoriensystem** fasst zusammen, welche Merkmale beobachtet werden sollen, z. B. für aggressives Verhalten: Erröten/Zittern, Schreien, Trampeln, Umherschlagen, Attackieren von sich selbst, anderen oder Gegenständen."
+    },
+    {
+     "typ": "merke",
+     "label": "Merke",
+     "text": "Eine **Skala** macht die Werte einer Untersuchung vergleichbar, z. B. Zahlen (wie oft ist etwas passiert?) oder eine Ratingskala: sehr häufig, häufig, selten, sehr selten, gar nicht."
+    },
+    {
+     "typ": "sortieren",
+     "titel": "Kategoriensystem oder Skala?",
+     "kategorien": [
+      {
+       "name": "Kategoriensystem",
+       "items": [
+        "Blick zur Aufgabe, Zwischenrufe, Aufstehen vom Platz",
+        "festlegen, welche Verhaltensweisen gezählt werden"
+       ]
+      },
+      {
+       "name": "Skala",
+       "items": [
+        "sehr häufig bis gar nicht",
+        "Anzahl pro Stunde zählen"
+       ]
+      }
+     ]
+    },
+    {
+     "typ": "frei",
+     "frage": "Ein Forscher will die Konzentration beim Lesen untersuchen. Nenne zwei Beobachtungsmerkmale (Kategorien) und eine Skala.",
+     "hinweis": "Schreibe in ganzen Sätzen.",
+     "muster": "Mögliche Kategorien: Blick bleibt auf dem Text, Kind wendet sich ab oder spricht dazwischen. Skala: Wie oft pro Viertelstunde? Oder: sehr häufig, häufig, selten, sehr selten, gar nicht."
+    }
+   ]
+  },
+  {
+   "kicker": "Transfer",
+   "titel": "Ein Experiment planen",
+   "bloecke": [
+    {
+     "typ": "situation",
+     "label": "Fall",
+     "text": "In deiner Praktikumsgruppe fragt eine Erzieherin: „Wirkt es sich auf die Ruhe am Tisch aus, wenn wir vor dem Mittagessen vorlesen?“"
+    },
+    {
+     "typ": "mc",
+     "frage": "Welche Planung ist ein Experiment?",
+     "optionen": [
+      "An zwei Wochen wird in einer Gruppe vorher vorgelesen, in der anderen nicht, und die Ruhe wird beobachtet.",
+      "Die Erzieherin beobachtet einfach, wie ruhig es an den Tischen ist.",
+      "Die Eltern erzählen, was sie über Ruhe denken.",
+      "Die Kinder malen ein Bild zum Mittagessen."
+     ],
+     "richtig": 0,
+     "erklaerung": "Die Bedingung (Vorlesen) wird absichtlich und planmäßig herbeigeführt und verändert."
+    },
+    {
+     "typ": "kprim",
+     "stamm": "Prüfe die Planung:",
+     "aussagen": [
+      {
+       "text": "Es handelt sich um ein Feldexperiment.",
+       "richtig": true,
+       "erklaerung": "Es findet im Alltag der Gruppe statt."
+      },
+      {
+       "text": "Die Variierbarkeit zeigt sich darin, dass die Bedingung (Vorlesen oder nicht) verändert wird.",
+       "richtig": true,
+       "erklaerung": ""
+      },
+      {
+       "text": "Ein Kategoriensystem wird nicht gebraucht.",
+       "richtig": false,
+       "erklaerung": "Man muss festlegen, welche Merkmale von Ruhe beobachtet werden."
+      }
+     ]
+    },
+    {
+     "typ": "frei",
+     "frage": "Plane ein kleines Experiment für deine Praktikumsgruppe: Fragestellung, veränderte Bedingung, Beobachtungsmerkmale, Art.",
+     "hinweis": "Schreibe in ganzen Sätzen.",
+     "muster": "Fragestellung: Fördert ein Bewegungsspiel vor dem Basteln die Ausdauer? Bedingung: Gruppe A spielt vorher, Gruppe B nicht, an mehreren Tagen im Wechsel. Beobachtung: Zeit bei der Aufgabe, Zwischenrufe (Kategorien), Skala: sehr häufig bis gar nicht. Art: Feldexperiment."
+    }
+   ]
+  },
+  {
+   "kicker": "Abschluss",
+   "titel": "Abschlusstest",
+   "bloecke": [
+    {
+     "typ": "text",
+     "text": "Zum Abschluss prüfst du dein Wissen. Offene Aufgaben vergleichst du selbst mit der Musterlösung."
+    },
+    {
+     "typ": "mc",
+     "frage": "Was ist ein Experiment?",
+     "optionen": [
+      "absichtliches und planmäßiges Herbeiführen eines Vorgangs, um ihn gezielt zu beobachten",
+      "jede Form des Zuschauens",
+      "ein Gespräch mit Kindern",
+      "eine Umfrage bei Eltern"
+     ],
+     "richtig": 0,
+     "erklaerung": ""
+    },
+    {
+     "typ": "mc",
+     "frage": "Wofür ist das Experiment die einzige Methode?",
+     "optionen": [
+      "für Ursache-Wirkung-Zusammenhänge",
+      "für Gefühle",
+      "für Meinungen",
+      "für Vorurteile"
+     ],
+     "richtig": 0,
+     "erklaerung": ""
+    },
+    {
+     "typ": "kprim",
+     "stamm": "Richtig oder falsch?",
+     "aussagen": [
+      {
+       "text": "Wiederholbarkeit macht Ergebnisse überprüfbar.",
+       "richtig": true,
+       "erklaerung": ""
+      },
+      {
+       "text": "Ein Laborexperiment findet in der natürlichen Umgebung statt.",
+       "richtig": false,
+       "erklaerung": ""
+      },
+      {
+       "text": "Eine Skala macht Werte vergleichbar.",
+       "richtig": true,
+       "erklaerung": ""
+      }
+     ]
+    },
+    {
+     "typ": "zuordnung",
+     "titel": "Ordne zu.",
+     "paare": [
+      [
+       "Willkürlichkeit",
+       "Forscher bestimmt Bedingungen, Ort und Zeit"
+      ],
+      [
+       "Variierbarkeit",
+       "Bedingungen werden verändert"
+      ],
+      [
+       "Wiederholbarkeit",
+       "Vorgang beliebig oft durchführbar"
+      ]
+     ]
+    },
+    {
+     "typ": "lueckentext",
+     "titel": "Ergänze.",
+     "text": "Das {{Kategoriensystem}} legt fest, welche Merkmale beobachtet werden. Die {{Skala}} macht die Werte vergleichbar.",
+     "woerter": [
+      "Kategoriensystem",
+      "Skala",
+      "Hypothese",
+      "Zufall"
+     ],
+     "erklaerung": ""
+    }
+   ]
+  },
+  {
+   "kicker": "Reflexion",
+   "titel": "Auf den Punkt gebracht",
+   "bloecke": [
+    {
+     "typ": "merke",
+     "label": "Auf den Punkt gebracht",
+     "text": "Ein **Experiment** ist das absichtliche, planmäßige Herbeiführen eines Vorgangs, um ihn gezielt zu beobachten. Es ist die einzige Methode für **Ursache-Wirkung-Zusammenhänge**. Man unterscheidet **Labor-** (kontrollierte Bedingungen) und **Feldexperiment** (natürliche Umgebung). Kriterien sind **Willkürlichkeit, Variierbarkeit und Wiederholbarkeit**. Vorher legt man **Kategoriensystem** und **Skala** fest."
+    },
+    {
+     "typ": "text",
+     "text": "**Das kann ich jetzt:**"
+    },
+    {
+     "typ": "text",
+     "text": "- Ich kann Beobachtung und Experiment unterscheiden.\n- Ich kann Labor- und Feldexperiment mit je einem Vorteil nennen.\n- Ich kann die drei Kriterien erklären.\n- Ich kann Kategoriensystem und Skala für ein Beispiel entwerfen."
+    },
+    {
+     "typ": "fussnote",
+     "text": "Quelle: Lehrtext 05 „Das Experiment“ (LB 1)."
+    }
+   ]
+  }
+ ]
+}

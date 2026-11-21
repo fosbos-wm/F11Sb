@@ -1,0 +1,157 @@
+{
+ "titel": "Fallarbeit: Teambesprechung in der Kita",
+ "anleitung": "Drei Teile: entscheiden, beurteilen und selbst formulieren.",
+ "fall": "In der Teambesprechung sagt Erzieherin Frau Roth: „Ich arbeite seit 20 Jahren hier. Kinder von Alleinerziehenden sind immer schwierig.“ Praktikantin Aylin widerspricht: „Ich habe gelesen, dass mehrere Forscher nach festen Regeln dieselbe Frage untersucht haben. Ein solcher Zusammenhang gilt aber nur mit hoher Wahrscheinlichkeit, nicht für jeden Einzelfall.“",
+ "schritte": [
+  {
+   "t": "Einordnen",
+   "q": "Wie ist Frau Roths Aussage einzuordnen?",
+   "o": [
+    [
+     "Wissenschaftliche Theorie, weil sie 20 Jahre Erfahrung hat.",
+     0,
+     "Dauer der Erfahrung macht eine Aussage nicht wissenschaftlich."
+    ],
+    [
+     "Wahrscheinlichkeitsaussage, weil sie „immer“ sagt.",
+     0,
+     "„Immer“ ist gerade das Gegenteil einer Wahrscheinlichkeitsaussage."
+    ],
+    [
+     "Alltagstheorie mit unzulässiger Verallgemeinerung: Aus ihren Erfahrungen schließt sie auf alle.",
+     1,
+     "Richtig: Persönliche Erfahrung wird zur Regel für alle gemacht."
+    ],
+    [
+     "Objektive Aussage, weil das Team zustimmt.",
+     0,
+     "Zustimmung ersetzt keine Überprüfung."
+    ]
+   ]
+  },
+  {
+   "t": "Begründen",
+   "q": "Warum erfüllt Frau Roths Aussage Merkmale wissenschaftlicher Aussagen nicht?",
+   "o": [
+    [
+     "Weil sie zu kurz ist.",
+     0,
+     "Die Länge spielt keine Rolle."
+    ],
+    [
+     "Weil sie von einer Erzieherin kommt und nicht von einer Forscherin.",
+     0,
+     "Entscheidend ist die Methode, nicht der Beruf."
+    ],
+    [
+     "Weil Alltagstheorien immer falsch sind.",
+     0,
+     "Sie können zutreffen, sind aber nicht überprüft."
+    ],
+    [
+     "Sie ist nicht überprüfbar und nicht systematisch gewonnen. Andere kämen aus eigener Erfahrung zu anderen Schlüssen (subjektiv).",
+     1,
+     "Richtig: Das sind genau die Merkmale der Alltagstheorie."
+    ]
+   ]
+  },
+  {
+   "t": "Anwenden",
+   "q": "Wodurch zeigt Aylins Aussage Merkmale wissenschaftlicher Aussagen?",
+   "o": [
+    [
+     "Mehrere Forscher untersuchten systematisch dieselbe Frage (objektiv, überprüfbar), und es wird nur mit hoher Wahrscheinlichkeit gelten.",
+     1,
+     "Richtig: systematisch, überprüfbar und als Wahrscheinlichkeitsaussage formuliert."
+    ],
+    [
+     "Sie widerspricht Frau Roth.",
+     0,
+     "Widerspruch allein ist kein Merkmal."
+    ],
+    [
+     "Sie ist selbst Praktikantin und hat einen frischen Blick.",
+     0,
+     "Das ist kein Merkmal der Aussage."
+    ],
+    [
+     "Sie benutzt Fachwörter.",
+     0,
+     "Fachwörter machen noch keine wissenschaftliche Aussage."
+    ]
+   ]
+  },
+  {
+   "t": "Beurteilen",
+   "q": "Ist Frau Roths Erfahrungswissen deshalb wertlos?",
+   "o": [
+    [
+     "Ja, nur wissenschaftliche Aussagen haben einen Wert.",
+     0,
+     "Alltagstheorien erfüllen wichtige Aufgaben."
+    ],
+    [
+     "Nein. Alltagstheorien geben Orientierung und Sicherheit. Sie sollten aber geprüft werden, bevor man sie auf alle überträgt.",
+     1,
+     "Richtig: Die Grenze ist nicht absolut. Alltagstheorie ist nützlich, braucht aber Überprüfung."
+    ],
+    [
+     "Nein, denn sie ist dann automatisch wissenschaftlich.",
+     0,
+     "Erfahrung macht nicht wissenschaftlich."
+    ],
+    [
+     "Ja, weil Menschen ohne Alltagstheorie besser zurechtkommen.",
+     0,
+     "Jeder Mensch braucht eine Alltagstheorie."
+    ]
+   ]
+  }
+ ],
+ "auszug": {
+  "aufgabe": "Aus dem Protokoll der Teambesprechung: Welche Aussagen sind fachlich falsch? Markiere drei.",
+  "zeilen": [
+   [
+    "Aus einem Erlebnis im Urlaub darf man nicht auf alle Menschen eines Landes schließen.",
+    0,
+    "Das wäre eine unzulässige Verallgemeinerung."
+   ],
+   [
+    "Eine Alltagstheorie ist objektiv, weil sie aus Erfahrung stammt.",
+    1,
+    "Alltagstheorien sind subjektiv: Verschiedene Personen kommen zu verschiedenen Schlüssen."
+   ],
+   [
+    "Wissenschaftliche Aussagen müssen überprüfbar und wiederholbar sein.",
+    0,
+    "Das ist ein Merkmal."
+   ],
+   [
+    "Allgemeingültig heißt, es gibt nie eine Ausnahme.",
+    1,
+    "Über Menschen sind meist nur Wahrscheinlichkeitsaussagen möglich. Einzelne Ausnahmen bleiben möglich."
+   ],
+   [
+    "Sprichwörter wie „Sage mir, mit wem du umgehst …“ gehören zur Alltagstheorie.",
+    0,
+    "Sie klingen überzeugend, stimmen aber nicht immer."
+   ],
+   [
+    "Die Alltagstheorie ist überflüssig, weil sie keine Aufgabe erfüllt.",
+    1,
+    "Sie gibt Orientierung, liefert Erklärungen und Sicherheit."
+   ]
+  ]
+ },
+ "werkstatt": {
+  "titel": "Selbst formulieren",
+  "aufgabe": "Formuliere eine Alltagstheorie über Erziehung, die du aus eigener Erfahrung kennst. Mache daraus eine Aussage, die man wissenschaftlich überprüfen könnte.",
+  "muster": "Alltagstheorie: „Kinder, die viel streng erzogen werden, sind immer brav.“\nÜberprüfbar: „Mit hoher Wahrscheinlichkeit zeigen streng erzogene Kinder (Gruppe A) mehr angepasstes Verhalten als Kinder, die nach Absprache erzogen werden (Gruppe B). Das wird bei beiden Gruppen mit den gleichen Beobachtungsbögen von mehreren Beobachtern geprüft.“",
+  "kriterien": [
+   "Meine Alltagstheorie stammt aus persönlicher Erfahrung.",
+   "Meine überprüfbare Aussage ist als Wahrscheinlichkeitsaussage formuliert (keine Verallgemeinerung auf alle).",
+   "Ich nenne, wie die Aussage geprüft würde (systematisch, mehrere Beobachter).",
+   "Meine Aussage ist so genau, dass andere sie nachprüfen könnten."
+  ]
+ }
+}

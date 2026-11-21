@@ -1124,5 +1124,599 @@
    "Lückentext (Vertiefung)"
   ],
   "stufe": "vertiefung"
+ },
+ {
+  "id": "ub-pp01-afb1",
+  "titel": "Zuordnung (AFB I): Psychologie",
+  "fach": "Pädagogik/Psychologie",
+  "beschreibung": "10 Begriffe in ihrer Bedeutung verstehen und zuordnen.",
+  "datei": "zuordnung.html?set=ub-pp01-afb1",
+  "ergebnis": true,
+  "parameter": [
+   {
+    "name": "spiel",
+    "label": "Mischung (Nummer)",
+    "typ": "zahl",
+    "min": 1,
+    "max": 99,
+    "standard": 1
+   }
+  ],
+  "thema": "Gegenstand der Psychologie",
+  "pfad": [
+   "LB 1",
+   "Gegenstand der Psychologie",
+   "Zuordnung",
+   "leicht"
+  ],
+  "themen": [
+   "pp01"
+  ]
+ },
+ {
+  "id": "ub-pp01-afb2",
+  "titel": "Lückentext (AFB II): Psychologie",
+  "fach": "Pädagogik/Psychologie",
+  "beschreibung": "Zusammenhänge im Text mit dem Wortspeicher erschließen.",
+  "datei": "luecken.html?set=ub-pp01-afb2",
+  "ergebnis": true,
+  "parameter": [],
+  "thema": "Gegenstand der Psychologie",
+  "pfad": [
+   "LB 1",
+   "Gegenstand der Psychologie",
+   "Lückentext (Vertiefung)",
+   "mittel"
+  ],
+  "themen": [
+   "pp01"
+  ]
+ },
+ {
+  "id": "ub-pp01-afb3",
+  "titel": "Fallarbeit (AFB III): Psychologie",
+  "fach": "Pädagogik/Psychologie",
+  "beschreibung": "Fall durchdenken: entscheiden, Aussagen beurteilen und selbst formulieren.",
+  "datei": "fall.html?set=ub-pp01-afb3",
+  "ergebnis": true,
+  "parameter": [],
+  "thema": "Gegenstand der Psychologie",
+  "pfad": [
+   "LB 1",
+   "Gegenstand der Psychologie",
+   "Fallarbeit",
+   "vertieft"
+  ],
+  "themen": [
+   "pp01"
+  ]
+ },
+ {
+  "id": "ub-pp1a1-afb1",
+  "titel": "Zuordnung (AFB I): Pädagogik",
+  "fach": "Pädagogik/Psychologie",
+  "beschreibung": "10 Begriffe in ihrer Bedeutung verstehen und zuordnen.",
+  "datei": "zuordnung.html?set=ub-pp1a1-afb1",
+  "ergebnis": true,
+  "parameter": [
+   {
+    "name": "spiel",
+    "label": "Mischung (Nummer)",
+    "typ": "zahl",
+    "min": 1,
+    "max": 99,
+    "standard": 1
+   }
+  ],
+  "thema": "Gegenstand der Pädagogik",
+  "pfad": [
+   "LB 1",
+   "Gegenstand der Pädagogik",
+   "Zuordnung",
+   "leicht"
+  ],
+  "themen": [
+   "pp1a1"
+  ]
+ },
+ {
+  "id": "ub-pp1a1-afb2",
+  "titel": "Lückentext (AFB II): Pädagogik",
+  "fach": "Pädagogik/Psychologie",
+  "beschreibung": "Zusammenhänge im Text mit dem Wortspeicher erschließen.",
+  "datei": "luecken.html?set=ub-pp1a1-afb2",
+  "ergebnis": true,
+  "parameter": [],
+  "thema": "Gegenstand der Pädagogik",
+  "pfad": [
+   "LB 1",
+   "Gegenstand der Pädagogik",
+   "Lückentext (Vertiefung)",
+   "mittel"
+  ],
+  "themen": [
+   "pp1a1"
+  ]
+ },
+ {
+  "id": "ub-pp1a1-afb3",
+  "titel": "Fallarbeit (AFB III): Pädagogik",
+  "fach": "Pädagogik/Psychologie",
+  "beschreibung": "Fall durchdenken: entscheiden, Aussagen beurteilen und selbst formulieren.",
+  "datei": "fall.html?set=ub-pp1a1-afb3",
+  "ergebnis": true,
+  "parameter": [],
+  "thema": "Gegenstand der Pädagogik",
+  "pfad": [
+   "LB 1",
+   "Gegenstand der Pädagogik",
+   "Fallarbeit",
+   "vertieft"
+  ],
+  "themen": [
+   "pp1a1"
+  ]
+ },
+ {
+  "id": "ub-pp02-afb1",
+  "titel": "Zuordnung (AFB I): Alltags- und wissenschaftliche Theorie",
+  "fach": "Pädagogik/Psychologie",
+  "beschreibung": "11 Begriffe in ihrer Bedeutung verstehen und zuordnen.",
+  "datei": "zuordnung.html?set=ub-pp02-afb1",
+  "ergebnis": true,
+  "parameter": [
+   {
+    "name": "spiel",
+    "label": "Mischung (Nummer)",
+    "typ": "zahl",
+    "min": 1,
+    "max": 99,
+    "standard": 1
+   }
+  ],
+  "thema": "Alltagstheorie und wissenschaftliche Theorie",
+  "pfad": [
+   "LB 1",
+   "Alltagstheorie und wissenschaftliche Theorie",
+   "Zuordnung",
+   "leicht"
+  ],
+  "themen": [
+   "pp02"
+  ]
+ },
+ {
+  "id": "ub-pp02-afb2",
+  "titel": "Lückentext (AFB II): Alltags- und wissenschaftliche Theorie",
+  "fach": "Pädagogik/Psychologie",
+  "beschreibung": "Zusammenhänge im Text mit dem Wortspeicher erschließen.",
+  "datei": "luecken.html?set=ub-pp02-afb2",
+  "ergebnis": true,
+  "parameter": [],
+  "thema": "Alltagstheorie und wissenschaftliche Theorie",
+  "pfad": [
+   "LB 1",
+   "Alltagstheorie und wissenschaftliche Theorie",
+   "Lückentext (Vertiefung)",
+   "mittel"
+  ],
+  "themen": [
+   "pp02"
+  ]
+ },
+ {
+  "id": "ub-pp02-afb3",
+  "titel": "Fallarbeit (AFB III): Alltags- und wissenschaftliche Theorie",
+  "fach": "Pädagogik/Psychologie",
+  "beschreibung": "Fall durchdenken: entscheiden, Aussagen beurteilen und selbst formulieren.",
+  "datei": "fall.html?set=ub-pp02-afb3",
+  "ergebnis": true,
+  "parameter": [],
+  "thema": "Alltagstheorie und wissenschaftliche Theorie",
+  "pfad": [
+   "LB 1",
+   "Alltagstheorie und wissenschaftliche Theorie",
+   "Fallarbeit",
+   "vertieft"
+  ],
+  "themen": [
+   "pp02"
+  ]
+ },
+ {
+  "id": "ub-pp03-afb1",
+  "titel": "Zuordnung (AFB I): Experiment",
+  "fach": "Pädagogik/Psychologie",
+  "beschreibung": "12 Begriffe in ihrer Bedeutung verstehen und zuordnen.",
+  "datei": "zuordnung.html?set=ub-pp03-afb1",
+  "ergebnis": true,
+  "parameter": [
+   {
+    "name": "spiel",
+    "label": "Mischung (Nummer)",
+    "typ": "zahl",
+    "min": 1,
+    "max": 99,
+    "standard": 1
+   }
+  ],
+  "thema": "Das Experiment",
+  "pfad": [
+   "LB 1",
+   "Das Experiment",
+   "Zuordnung",
+   "leicht"
+  ],
+  "themen": [
+   "pp03"
+  ]
+ },
+ {
+  "id": "ub-pp03-afb2",
+  "titel": "Lückentext (AFB II): Experiment",
+  "fach": "Pädagogik/Psychologie",
+  "beschreibung": "Zusammenhänge im Text mit dem Wortspeicher erschließen.",
+  "datei": "luecken.html?set=ub-pp03-afb2",
+  "ergebnis": true,
+  "parameter": [],
+  "thema": "Das Experiment",
+  "pfad": [
+   "LB 1",
+   "Das Experiment",
+   "Lückentext (Vertiefung)",
+   "mittel"
+  ],
+  "themen": [
+   "pp03"
+  ]
+ },
+ {
+  "id": "ub-pp03-afb3",
+  "titel": "Fallarbeit (AFB III): Experiment",
+  "fach": "Pädagogik/Psychologie",
+  "beschreibung": "Fall durchdenken: entscheiden, Aussagen beurteilen und selbst formulieren.",
+  "datei": "fall.html?set=ub-pp03-afb3",
+  "ergebnis": true,
+  "parameter": [],
+  "thema": "Das Experiment",
+  "pfad": [
+   "LB 1",
+   "Das Experiment",
+   "Fallarbeit",
+   "vertieft"
+  ],
+  "themen": [
+   "pp03"
+  ]
+ },
+ {
+  "id": "ub-pp04-afb1",
+  "titel": "Zuordnung (AFB I): Merkmale von Erziehung",
+  "fach": "Pädagogik/Psychologie",
+  "beschreibung": "11 Begriffe in ihrer Bedeutung verstehen und zuordnen.",
+  "datei": "zuordnung.html?set=ub-pp04-afb1",
+  "ergebnis": true,
+  "parameter": [
+   {
+    "name": "spiel",
+    "label": "Mischung (Nummer)",
+    "typ": "zahl",
+    "min": 1,
+    "max": 99,
+    "standard": 1
+   }
+  ],
+  "thema": "Merkmale der Erziehung",
+  "pfad": [
+   "LB 3",
+   "Merkmale der Erziehung",
+   "Zuordnung",
+   "leicht"
+  ],
+  "themen": [
+   "pp04"
+  ]
+ },
+ {
+  "id": "ub-pp04-afb2",
+  "titel": "Lückentext (AFB II): Merkmale von Erziehung",
+  "fach": "Pädagogik/Psychologie",
+  "beschreibung": "Zusammenhänge im Text mit dem Wortspeicher erschließen.",
+  "datei": "luecken.html?set=ub-pp04-afb2",
+  "ergebnis": true,
+  "parameter": [],
+  "thema": "Merkmale der Erziehung",
+  "pfad": [
+   "LB 3",
+   "Merkmale der Erziehung",
+   "Lückentext (Vertiefung)",
+   "mittel"
+  ],
+  "themen": [
+   "pp04"
+  ]
+ },
+ {
+  "id": "ub-pp04-afb3",
+  "titel": "Fallarbeit (AFB III): Merkmale von Erziehung",
+  "fach": "Pädagogik/Psychologie",
+  "beschreibung": "Fall durchdenken: entscheiden, Aussagen beurteilen und selbst formulieren.",
+  "datei": "fall.html?set=ub-pp04-afb3",
+  "ergebnis": true,
+  "parameter": [],
+  "thema": "Merkmale der Erziehung",
+  "pfad": [
+   "LB 3",
+   "Merkmale der Erziehung",
+   "Fallarbeit",
+   "vertieft"
+  ],
+  "themen": [
+   "pp04"
+  ]
+ },
+ {
+  "id": "ub-pp06-afb1",
+  "titel": "Zuordnung (AFB I): Mündigkeit nach Roth",
+  "fach": "Pädagogik/Psychologie",
+  "beschreibung": "12 Begriffe in ihrer Bedeutung verstehen und zuordnen.",
+  "datei": "zuordnung.html?set=ub-pp06-afb1",
+  "ergebnis": true,
+  "parameter": [
+   {
+    "name": "spiel",
+    "label": "Mischung (Nummer)",
+    "typ": "zahl",
+    "min": 1,
+    "max": 99,
+    "standard": 1
+   }
+  ],
+  "thema": "Pädagogische Mündigkeit nach Roth",
+  "pfad": [
+   "LB 3",
+   "Pädagogische Mündigkeit nach Roth",
+   "Zuordnung",
+   "leicht"
+  ],
+  "themen": [
+   "pp06"
+  ]
+ },
+ {
+  "id": "ub-pp06-afb2",
+  "titel": "Lückentext (AFB II): Mündigkeit nach Roth",
+  "fach": "Pädagogik/Psychologie",
+  "beschreibung": "Zusammenhänge im Text mit dem Wortspeicher erschließen.",
+  "datei": "luecken.html?set=ub-pp06-afb2",
+  "ergebnis": true,
+  "parameter": [],
+  "thema": "Pädagogische Mündigkeit nach Roth",
+  "pfad": [
+   "LB 3",
+   "Pädagogische Mündigkeit nach Roth",
+   "Lückentext (Vertiefung)",
+   "mittel"
+  ],
+  "themen": [
+   "pp06"
+  ]
+ },
+ {
+  "id": "ub-pp06-afb3",
+  "titel": "Fallarbeit (AFB III): Mündigkeit nach Roth",
+  "fach": "Pädagogik/Psychologie",
+  "beschreibung": "Fall durchdenken: entscheiden, Aussagen beurteilen und selbst formulieren.",
+  "datei": "fall.html?set=ub-pp06-afb3",
+  "ergebnis": true,
+  "parameter": [],
+  "thema": "Pädagogische Mündigkeit nach Roth",
+  "pfad": [
+   "LB 3",
+   "Pädagogische Mündigkeit nach Roth",
+   "Fallarbeit",
+   "vertieft"
+  ],
+  "themen": [
+   "pp06"
+  ]
+ },
+ {
+  "id": "ub-pp05-afb1",
+  "titel": "Zuordnung (AFB I): Erziehungsstile",
+  "fach": "Pädagogik/Psychologie",
+  "beschreibung": "11 Begriffe in ihrer Bedeutung verstehen und zuordnen.",
+  "datei": "zuordnung.html?set=ub-pp05-afb1",
+  "ergebnis": true,
+  "parameter": [
+   {
+    "name": "spiel",
+    "label": "Mischung (Nummer)",
+    "typ": "zahl",
+    "min": 1,
+    "max": 99,
+    "standard": 1
+   }
+  ],
+  "thema": "Erziehungsstile nach Baumrind",
+  "pfad": [
+   "LB 3",
+   "Erziehungsstile nach Baumrind",
+   "Zuordnung",
+   "leicht"
+  ],
+  "themen": [
+   "pp05"
+  ]
+ },
+ {
+  "id": "ub-pp05-afb2",
+  "titel": "Lückentext (AFB II): Erziehungsstile",
+  "fach": "Pädagogik/Psychologie",
+  "beschreibung": "Zusammenhänge im Text mit dem Wortspeicher erschließen.",
+  "datei": "luecken.html?set=ub-pp05-afb2",
+  "ergebnis": true,
+  "parameter": [],
+  "thema": "Erziehungsstile nach Baumrind",
+  "pfad": [
+   "LB 3",
+   "Erziehungsstile nach Baumrind",
+   "Lückentext (Vertiefung)",
+   "mittel"
+  ],
+  "themen": [
+   "pp05"
+  ]
+ },
+ {
+  "id": "ub-pp05-afb3",
+  "titel": "Fallarbeit (AFB III): Erziehungsstile",
+  "fach": "Pädagogik/Psychologie",
+  "beschreibung": "Fall durchdenken: entscheiden, Aussagen beurteilen und selbst formulieren.",
+  "datei": "fall.html?set=ub-pp05-afb3",
+  "ergebnis": true,
+  "parameter": [],
+  "thema": "Erziehungsstile nach Baumrind",
+  "pfad": [
+   "LB 3",
+   "Erziehungsstile nach Baumrind",
+   "Fallarbeit",
+   "vertieft"
+  ],
+  "themen": [
+   "pp05"
+  ]
+ },
+ {
+  "id": "ub-pp1a4-afb1",
+  "titel": "Zuordnung (AFB I): Kindergarten",
+  "fach": "Pädagogik/Psychologie",
+  "beschreibung": "12 Begriffe in ihrer Bedeutung verstehen und zuordnen.",
+  "datei": "zuordnung.html?set=ub-pp1a4-afb1",
+  "ergebnis": true,
+  "parameter": [
+   {
+    "name": "spiel",
+    "label": "Mischung (Nummer)",
+    "typ": "zahl",
+    "min": 1,
+    "max": 99,
+    "standard": 1
+   }
+  ],
+  "thema": "Der Kindergarten",
+  "pfad": [
+   "LB 3",
+   "Der Kindergarten",
+   "Zuordnung",
+   "leicht"
+  ],
+  "themen": [
+   "pp1a4"
+  ]
+ },
+ {
+  "id": "ub-pp1a4-afb2",
+  "titel": "Lückentext (AFB II): Kindergarten",
+  "fach": "Pädagogik/Psychologie",
+  "beschreibung": "Zusammenhänge im Text mit dem Wortspeicher erschließen.",
+  "datei": "luecken.html?set=ub-pp1a4-afb2",
+  "ergebnis": true,
+  "parameter": [],
+  "thema": "Der Kindergarten",
+  "pfad": [
+   "LB 3",
+   "Der Kindergarten",
+   "Lückentext (Vertiefung)",
+   "mittel"
+  ],
+  "themen": [
+   "pp1a4"
+  ]
+ },
+ {
+  "id": "ub-pp1a4-afb3",
+  "titel": "Fallarbeit (AFB III): Kindergarten",
+  "fach": "Pädagogik/Psychologie",
+  "beschreibung": "Fall durchdenken: entscheiden, Aussagen beurteilen und selbst formulieren.",
+  "datei": "fall.html?set=ub-pp1a4-afb3",
+  "ergebnis": true,
+  "parameter": [],
+  "thema": "Der Kindergarten",
+  "pfad": [
+   "LB 3",
+   "Der Kindergarten",
+   "Fallarbeit",
+   "vertieft"
+  ],
+  "themen": [
+   "pp1a4"
+  ]
+ },
+ {
+  "id": "ub-pp07-afb1",
+  "titel": "Zuordnung (AFB I): BayBEP",
+  "fach": "Pädagogik/Psychologie",
+  "beschreibung": "12 Begriffe in ihrer Bedeutung verstehen und zuordnen.",
+  "datei": "zuordnung.html?set=ub-pp07-afb1",
+  "ergebnis": true,
+  "parameter": [
+   {
+    "name": "spiel",
+    "label": "Mischung (Nummer)",
+    "typ": "zahl",
+    "min": 1,
+    "max": 99,
+    "standard": 1
+   }
+  ],
+  "thema": "Der Bayerische Bildungs- und Erziehungsplan (BayBEP)",
+  "pfad": [
+   "LB 3",
+   "Der Bayerische Bildungs- und Erziehungsplan (BayBEP)",
+   "Zuordnung",
+   "leicht"
+  ],
+  "themen": [
+   "pp07"
+  ]
+ },
+ {
+  "id": "ub-pp07-afb2",
+  "titel": "Lückentext (AFB II): BayBEP",
+  "fach": "Pädagogik/Psychologie",
+  "beschreibung": "Zusammenhänge im Text mit dem Wortspeicher erschließen.",
+  "datei": "luecken.html?set=ub-pp07-afb2",
+  "ergebnis": true,
+  "parameter": [],
+  "thema": "Der Bayerische Bildungs- und Erziehungsplan (BayBEP)",
+  "pfad": [
+   "LB 3",
+   "Der Bayerische Bildungs- und Erziehungsplan (BayBEP)",
+   "Lückentext (Vertiefung)",
+   "mittel"
+  ],
+  "themen": [
+   "pp07"
+  ]
+ },
+ {
+  "id": "ub-pp07-afb3",
+  "titel": "Fallarbeit (AFB III): BayBEP",
+  "fach": "Pädagogik/Psychologie",
+  "beschreibung": "Fall durchdenken: entscheiden, Aussagen beurteilen und selbst formulieren.",
+  "datei": "fall.html?set=ub-pp07-afb3",
+  "ergebnis": true,
+  "parameter": [],
+  "thema": "Der Bayerische Bildungs- und Erziehungsplan (BayBEP)",
+  "pfad": [
+   "LB 3",
+   "Der Bayerische Bildungs- und Erziehungsplan (BayBEP)",
+   "Fallarbeit",
+   "vertieft"
+  ],
+  "themen": [
+   "pp07"
+  ]
  }
 ]
