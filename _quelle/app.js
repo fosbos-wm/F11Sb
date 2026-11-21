@@ -19213,18 +19213,25 @@ const CAL_TYPEN={
  geburtstag:{label:"Geburtstag",className:"cal-birthday"},
  ferien:{label:"Schulferien Bayern",className:"cal-holiday"}
 };
-// Schulaufgaben (SA) und Kurzarbeiten (KU) der F11Sb, Schuljahr 26/27 (laut Leistungsnachweis-Plan, Stand 05.10.2026).
-// Format: [Datum, Typ, Fach-Kürzel für die Monatsansicht, Fach (voll), Kürzel Lehrkraft]
+// Schulaufgaben (SA) und Kurzarbeiten (KU) der F11Sb, Schuljahr 26/27 (laut Terminliste der Schule, Stand 21.11.2026).
+// Format: [Datum, Typ, Fach-Kürzel für die Monatsansicht, Fach (voll), Lehrkraft]
 function calLeistungsnachweise(){
  const L=[
-  ["2026-10-22","kurzarbeit","D","Deutsch","Hm"],
-  ["2026-10-23","kurzarbeit","P/P","Pädagogik/Psychologie","Rz"],
-  ["2026-12-07","schulaufgabe","D","Deutsch","Hm"],
-  ["2026-12-09","schulaufgabe","E","Englisch","Gf"],
-  ["2027-01-19","kurzarbeit","Ch","Chemie","Me"],
-  ["2027-01-21","schulaufgabe","P/P","Pädagogik/Psychologie","Rz"],
-  ["2027-04-15","schulaufgabe","E","Englisch","Gf"],
-  ["2027-06-09","schulaufgabe","D","Deutsch","Hm"]
+  ["2026-10-21","kurzarbeit","P/P","Pädagogik/Psychologie","Reitz"],
+  ["2026-10-22","kurzarbeit","E","Englisch","Graf"],
+  ["2026-10-23","kurzarbeit","D","Deutsch","Helmes"],
+  ["2026-11-24","kurzarbeit","M","Mathematik","Yurchak"],
+  ["2026-11-26","kurzarbeit","SWR","Sozialwirtschaft und Recht","Dümpelmann"],
+  ["2026-12-07","schulaufgabe","D","Deutsch","Helmes"],
+  ["2026-12-09","schulaufgabe","E","Englisch","Graf"],
+  ["2027-01-19","kurzarbeit","Ch","Chemie","Melzer"],
+  ["2027-01-21","schulaufgabe","P/P","Pädagogik/Psychologie","Reitz"],
+  ["2027-01-25","schulaufgabe","M","Mathematik","Yurchak"],
+  ["2027-01-27","kurzarbeit","G","Geschichte","Fürstner"],
+  ["2027-02-04","kurzarbeit","E","Englisch","Graf"],
+  ["2027-04-08","schulaufgabe","E","Englisch","Graf"],
+  ["2027-06-09","schulaufgabe","D","Deutsch","Helmes"],
+  ["2027-06-10","kurzarbeit","E","Englisch","Graf"]
  ];
  return L.map(([start,type,kurz,fach,lk])=>({
   start,type,kurz,fach,
