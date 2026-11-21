@@ -63,7 +63,7 @@ function show(){
  const R=document.getElementById("root");
  if(i>=Q.length){fin(R);return}
  const q=Q[i];first=true;
- R.innerHTML=head()+`<main><div class="box fall"><b>Fall:</b> ${FALL}</div><div class="box"><span class="tag">Schritt ${i+1} von ${Q.length+1} · ${q.t}</span><div class="bar"><i style="width:${i/(Q.length+1)*100}%"></i></div><p><b>${q.q}</b></p><div id="o">${q.o.map((o,k)=>`<button class="opt" data-k="${k}">${o[0]}</button>`).join("")}</div><div id="f"></div></div>${nav()}</main>`;
+ R.innerHTML=head()+`<main><div class="box fall"><b>Fall:</b> ${FALL}</div><div class="box"><span class="tag">Teil 1 · Entscheiden · ${q.t} (${i+1}/${Q.length})</span><div class="bar"><i style="width:${i/Q.length*40}%"></i></div><p><b>${q.q}</b></p><div id="o">${q.o.map((o,k)=>`<button class="opt" data-k="${k}">${o[0]}</button>`).join("")}</div><div id="f"></div></div>${nav()}</main>`;
  document.querySelectorAll(".opt").forEach(b=>b.onclick=()=>pick(+b.dataset.k,b));
 }
 function pick(k,b){
@@ -74,17 +74,57 @@ function pick(k,b){
  document.getElementById("f").innerHTML=`<div class="fb">${o[2]}</div><button class="btn" id="nx">Weiter</button>`;
  document.getElementById("nx").onclick=()=>{i++;show()};
 }
-function fin(R){
- R.innerHTML=head()+`<main><div class="box"><span class="tag">Schritt ${Q.length+1} von ${Q.length+1} · Selbst formulieren</span><div class="bar"><i style="width:86%"></i></div><p><b>Formuliere selbst:</b> Sprich in einer Ich-Botschaft ein beobachtetes Problem an. Beispiel: Ein Kind (4 Jahre) beteiligt sich seit Wochen nicht mehr an Bastelangeboten und schaut nur zu.</p><textarea id="ta" placeholder="Meine Formulierung …"></textarea><p><b>Prüfe deinen Text:</b></p><div class="chk"><label><input type="checkbox"> Ich beschreibe aus meiner Wahrnehmung („Ich beobachte …“).</label><label><input type="checkbox"> Ich nenne konkretes Verhalten in einer konkreten Situation.</label><label><input type="checkbox"> Ich verwende keine Urteile oder Etiketten über das Kind.</label><label><input type="checkbox"> Ich lade die Eltern ein, ihre Sicht zu schildern.</label></div><button class="btn" id="end">Abschließen</button></div>${nav()}</main>`;
- document.getElementById("end").onclick=()=>{
-  R.innerHTML=head()+`<main><div class="box done"><div class="big">${ok} / ${Q.length}</div><p>Entscheidungen im ersten Versuch richtig</p><button class="btn" onclick="again()">Nochmal</button></div>${nav()}</main>`;
-  doneBox(ok,Q.length);
+
+const TR=[
+["Erzieherin: „Schön, dass Sie da sind. Heute möchte ich mit Ihnen darüber sprechen, wie sich Lena entwickelt und wie wir sie gemeinsam gut begleiten können.“",0,""],
+["Erzieherin: „Bevor wir anfangen: Wie läuft’s eigentlich bei Ihnen in der Arbeit? Und ist die Wohnung schon fertig?“",1,"Andere Themen ruhen: Das Gespräch dreht sich um die Entwicklung des Kindes."],
+["Erzieherin: „Ich beobachte, dass Lena seit Wochen beim Anziehen im Flur sehr lange braucht und dann weint, wenn ich ihr helfen will.“",0,""],
+["Erzieherin: „Lena ist einfach schwierig und trotzig, das sieht jeder hier in der Gruppe.“",1,"Etikett und „jeder“ statt konkretem Verhalten aus der eigenen Wahrnehmung."],
+["Erzieherin: „Wie erleben Sie das zu Hause, wenn Lena sich anziehen soll?“",0,""],
+["Erzieherin: „Wir führen solche Gespräche übrigens nur, wenn es Ärger gibt. Bei den anderen Eltern war ich noch nicht dran.“",1,"Entwicklungsgespräche finden regelmäßig mit allen Eltern statt, nicht nur bei Problemen."]];
+let t1={},tdone=false,tok=0,tmax=3;
+function teil2(R){
+ R.innerHTML=head()+`<main><div class="box"><span class="tag">Teil 2 · Beurteilen · Gesprächsauszug</span><div class="bar"><i style="width:45%"></i></div><p><b>Lies den Auszug aus einem Entwicklungsgespräch. Markiere alle Aussagen, die nicht zu einem Entwicklungsgespräch passen (Tipp: es sind drei).</b></p><div id="tr">${TR.map((x,k)=>`<button class="opt" data-k="${k}">${x[0]}</button>`).join("")}</div><div id="f"></div><button class="btn" id="chk">Prüfen</button></div>${nav()}</main>`;
+ document.querySelectorAll("#tr .opt").forEach(b=>b.onclick=()=>{if(tdone)return;b.classList.toggle("sel");b.style.borderColor=b.classList.contains("sel")?"#e8a317":"";b.style.background=b.classList.contains("sel")?"#fff4d6":""});
+ document.getElementById("chk").onclick=()=>{
+  if(tdone){teil3(R);return}
+  tdone=true;let ex="";
+  document.querySelectorAll("#tr .opt").forEach((b,k)=>{const sel=b.classList.contains("sel"),f=TR[k][1];b.disabled=true;
+   if(f&&sel){tok++;b.className="opt ok";ex+=`<p>✔ <b>Zeile ${k+1}:</b> ${TR[k][2]}</p>`}
+   else if(f&&!sel){b.className="opt no";ex+=`<p>✘ <b>Zeile ${k+1} übersehen:</b> ${TR[k][2]}</p>`}
+   else if(!f&&sel){tok--;b.className="opt no";ex+=`<p>✘ <b>Zeile ${k+1}</b> passt eigentlich: ${k==0?"Ziele werden zu Beginn erläutert.":k==2?"Ich-Botschaft mit konkretem Verhalten.":"Frage nach der Sicht der Eltern."}</p>`}});
+  tok=Math.max(0,tok);document.getElementById("f").innerHTML=`<div class="fb"><b>${tok} von 3 richtig.</b>${ex}</div>`;document.getElementById("chk").textContent="Weiter zu Teil 3";
  };
 }
-function again(){i=0;ok=0;show()}
+const ETIK=["schwierig","trotzig","auffällig","gestört","faul","unmotiviert","aggressiv","verhaltensauffällig","unfähig","immer","nie","jeder","ständig","problem"];
+let ib=0;
+function bewerte(t){
+ const x=t.toLowerCase(),c=[];
+ c.push([/\bich (beobachte|sehe|bemerke|erlebe|merke|habe .*beobachtet)/.test(x),"Ich-Botschaft („Ich beobachte …“)","Beginne mit „Ich beobachte …“ oder „Ich sehe …“."]);
+ c.push([x.length>=70&&/(seit|wenn|beim|bei|in der|im |morgens|jeden|am )/.test(x),"Konkrete Situation und konkretes Verhalten","Beschreibe, was genau, wann und wo du siehst."]);
+ const f=ETIK.filter(w=>x.includes(w));
+ c.push([f.length===0,"Kein Etikett, keine Verallgemeinerung",`Vermeide Wörter wie „${f.join("“, „")}“.`]);
+ c.push([/\?/.test(x)||/(wie erleben|wie sehen sie|ihre sicht|was beobachten sie|wie ist das)/.test(x),"Einladung an die Eltern","Schließe mit einer Frage an die Eltern, etwa „Wie erleben Sie das zu Hause?“"]);
+ return c;
+}
+function teil3(R){
+ R.innerHTML=head()+`<main><div class="box"><span class="tag">Teil 3 · Gestalten · Ich-Botschaft-Werkstatt</span><div class="bar"><i style="width:75%"></i></div><p><b>Formuliere selbst, was du den Eltern sagst.</b> Ein Kind (4 Jahre) beteiligt sich seit drei Wochen nicht mehr an Bastelangeboten, schaut nur zu und wendet sich ab, wenn du ihm Material anbietest. Schreibe 2–4 Sätze, die du im Entwicklungsgespräch sagen würdest.</p><textarea id="ta" placeholder="Meine Formulierung …"></textarea><button class="btn" id="pr">Prüfen</button><div id="f"></div></div>${nav()}</main>`;
+ document.getElementById("pr").onclick=()=>{
+  const c=bewerte(document.getElementById("ta").value);ib=c.filter(z=>z[0]).length;
+  document.getElementById("f").innerHTML=`<div class="fb">${c.map(z=>`<p>${z[0]?"✔":"✘"} <b>${z[1]}</b>${z[0]?"":"<br><span style='color:#5d6b77'>"+z[2]+"</span>"}</p>`).join("")}<p><b>${ib} von 4 Kriterien erfüllt.</b></p><button class="btn" id="fin2">${ib==4?"Abschließen":"Abschließen (oder oben verbessern und erneut prüfen)"}</button></div>`;
+  document.getElementById("fin2").onclick=()=>schluss(R);
+ };
+}
+function schluss(R){
+ const tot=Q.length+tmax+4,sc=ok+tok+ib;
+ R.innerHTML=head()+`<main><div class="box done"><div class="big">${sc} / ${tot}</div><p>Punkte: Entscheidungen (${ok}/${Q.length}), Gesprächsauszug (${tok}/${tmax}), Ich-Botschaft (${ib}/4)</p><button class="btn" onclick="again()">Nochmal</button></div>${nav()}</main>`;
+ doneBox(sc,tot);
+}
+function fin(R){teil2(R)}
+function again(){i=0;ok=0;tdone=false;tok=0;ib=0;show()}
 function doneBox(s,t){}
 show();
 </script>
-<script>window.LB3_LOES="<h2>A6 Entwicklungsgespräch führen<\/h2><p>Fallbasierte Entscheidungsübung zu Text 09 (Leitfaden, Mienert/Vorholz 2009).<\/p><table><tr><th>Schritt<\/th><th>Richtige Entscheidung<\/th><\/tr><tr><td>Einladung<\/td><td>Alle Eltern, Einzelgespräch, geschützter Rahmen, von der Erzieherin initiiert, in der Konzeption verankert<\/td><\/tr><tr><td>Vorbereitung<\/td><td>Beobachtungen der Erzieherin und der Eltern<\/td><\/tr><tr><td>Beginn<\/td><td>Ziele des Gesprächs kurz erläutern<\/td><\/tr><tr><td>Problem<\/td><td>Ich-Botschaft mit konkretem Verhalten in konkreter Situation, ohne Etikett<\/td><\/tr><tr><td>Reaktion<\/td><td>Sicht der Eltern aufnehmen und nachfragen; Beobachtungen sind gleichwertig<\/td><\/tr><tr><td>Beurteilen<\/td><td>Problemgespräch im Flur ist kein Entwicklungsgespräch: nicht regelmäßig mit allen, kein geschützter Rahmen<\/td><\/tr><\/table><h3>Erwartungshorizont Selbstformulierung<\/h3><ul><li>Ich-Botschaft: „Ich beobachte, dass …“<\/li><li>Konkret: z. B. „seit drei Wochen schaut es beim Basteln nur zu und wendet sich ab, wenn ich ihm Material anbiete“<\/li><li>Kein Etikett wie „unmotiviert“ oder „gestört“<\/li><li>Einladung an die Eltern: „Wie erleben Sie das zu Hause?“<\/li><\/ul>";</script>
+<script>window.LB3_LOES="<h2>A6 Entwicklungsgespräch führen<\/h2><p>Drei Teile: Entscheiden (6 Punkte), Gesprächsauszug beurteilen (3 Punkte), eigene Ich-Botschaft formulieren (4 Kriterien, automatische Prüfung). Gesamt 13 Punkte.<\/p><table><tr><th>Schritt<\/th><th>Richtige Entscheidung<\/th><\/tr><tr><td>Einladung<\/td><td>Alle Eltern, Einzelgespräch, geschützter Rahmen, von der Erzieherin initiiert, in der Konzeption verankert<\/td><\/tr><tr><td>Vorbereitung<\/td><td>Beobachtungen der Erzieherin und der Eltern<\/td><\/tr><tr><td>Beginn<\/td><td>Ziele des Gesprächs kurz erläutern<\/td><\/tr><tr><td>Problem<\/td><td>Ich-Botschaft mit konkretem Verhalten in konkreter Situation, ohne Etikett<\/td><\/tr><tr><td>Reaktion<\/td><td>Sicht der Eltern aufnehmen und nachfragen; Beobachtungen sind gleichwertig<\/td><\/tr><tr><td>Beurteilen<\/td><td>Problemgespräch im Flur ist kein Entwicklungsgespräch: nicht regelmäßig mit allen, kein geschützter Rahmen<\/td><\/tr><\/table><h3>Teil 2: Auszug<\/h3><p>Zeile 2 (Smalltalk zu Privatem), Zeile 4 (Etikett und „jeder“), Zeile 6 (nur bei Ärger, nicht regelmäßig mit allen).<\/p><h3>Erwartungshorizont Teil 3<\/h3><ul><li>Ich-Botschaft: „Ich beobachte, dass …“<\/li><li>Konkret: z. B. „seit drei Wochen schaut es beim Basteln nur zu und wendet sich ab, wenn ich ihm Material anbiete“<\/li><li>Kein Etikett wie „unmotiviert“ oder „gestört“<\/li><li>Einladung an die Eltern: „Wie erleben Sie das zu Hause?“<\/li><\/ul>";</script>
 <script src="../versuch.js"></script>
 </body></html>
