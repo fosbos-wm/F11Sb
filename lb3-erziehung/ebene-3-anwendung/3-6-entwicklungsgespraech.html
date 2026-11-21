@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ebene 3 (Anwendung) · Entwicklungsgespräch führen – LB3 Erziehung</title>
+<style>
+:root{--gruen:#2c8a52;--gruen-d:#1d6a3c;--gruen-l:#dcf1e3;--ok:#2c8a52;--ok-l:#dcf1e3;--no:#c4362c;--no-l:#fbe2df;--ink:#1f2a33;--mut:#5d6b77;--bg:#f5f6f8;--line:#e0e4e9}
+*{box-sizing:border-box}body{margin:0;font-family:"Segoe UI",system-ui,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45}
+header{background:var(--gruen);color:#fff;padding:16px 18px}header .kick{font-size:.76rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase}header h1{margin:2px 0 0;font-size:1.45rem}header p{margin:4px 0 0}
+main{max-width:800px;margin:0 auto;padding:16px 14px 70px}
+.box{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.fall{background:#fff8e6;border-left:5px solid #e8a317}
+.bar{height:8px;background:var(--line);border-radius:6px;overflow:hidden;margin:6px 0 12px}.bar>i{display:block;height:100%;background:var(--gruen);transition:width .3s}
+.opt{display:block;width:100%;text-align:left;background:#fff;border:2px solid var(--line);border-radius:12px;padding:11px 13px;margin:8px 0;font:inherit;cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--gruen)}.opt.ok{background:var(--ok-l);border-color:var(--ok)}.opt.no{background:var(--no-l);border-color:var(--no)}
+.fb{margin-top:10px;border-radius:12px;padding:11px 14px;background:var(--gruen-l);border-left:5px solid var(--gruen)}
+.btn{border:0;border-radius:10px;padding:11px 16px;font-size:1rem;font-weight:600;cursor:pointer;background:var(--gruen);color:#fff;margin-top:10px}
+.tag{display:inline-block;font-size:.72rem;font-weight:700;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:var(--gruen-l);color:var(--gruen-d)}
+textarea{width:100%;min-height:90px;font:inherit;border:2px solid var(--line);border-radius:10px;padding:9px}
+.chk label{display:flex;gap:8px;margin:6px 0;cursor:pointer}.chk input{accent-color:var(--gruen);margin-top:4px}
+.done{text-align:center}.done .big{font-size:2.4rem;font-weight:800;color:var(--gruen-d)}
+.pnav{margin-top:26px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px}.pnav h3{margin:0 0 8px;font-size:.95rem;color:var(--gruen-d)}
+.pnav a{display:inline-block;margin:0 6px 6px 0;padding:6px 12px;border-radius:999px;border:2px solid var(--gruen);color:var(--gruen-d);text-decoration:none;font-weight:600;font-size:.9rem}.pnav a.on{background:var(--gruen);color:#fff}
+.pnav .home{display:block;margin-top:8px;border:0;padding:0;color:var(--mut)}body.embed .pnav{display:none}
+</style></head><body><div id="root"></div>
+<script>
+const PAGE={"lv":"anwendung","file":"3-6-entwicklungsgespraech.html","title":"Entwicklungsgespräch führen","siblings":[["3-1-rollenspiel-stil-raten.html","Rollenspiel: Stil-Raten"],["3-2-rollenspiel-elternabend.html","Rollenspiel: Elternabend"],["3-3-baybep-rallye.html","BayBEP-Rallye"],["3-4-projekt-gemuesegarten.html","Kurzprojekt: Gemüsegarten"],["3-5-praxis-check.html","Praxis-Check"],["3-6-entwicklungsgespraech.html","Entwicklungsgespräch führen"]],"home":"../index.html"};
+const FALL="Du bist Erzieherin in einer Kita-Gruppe. Max (4 Jahre) spielt seit einigen Wochen fast nur allein im Bauteppich. Beim Freispiel ziehen sich die anderen Kinder zurück, wenn er kommt, und er hat zweimal beim Morgenkreis geweint. Du willst mit seinen Eltern sprechen.";
+const Q=[
+{t:"Einladung und Rahmen",q:"Wie gehst du vor, damit ein echtes Entwicklungsgespräch zustande kommt?",o:[
+ ["Ich spreche Max' Mutter beim Abholen kurz an der Garderobe an.",0,"Zwischen Tür und Angel ist kein geschützter Rahmen. Ein Entwicklungsgespräch ist ein individuelles Gespräch in abgeschlossenem Rahmen."],
+ ["Ich lade alle Eltern der Gruppe zu einem Einzelgespräch ein. Der Ablauf ist in unserer Konzeption verankert.",1,"Richtig: regelmäßig mit allen Eltern, von der Erzieherin initiiert und in der Konzeption verankert. So wird Max' Familie nicht als „Problemfall“ markiert."],
+ ["Ich bitte nur Max' Eltern zu einem Gespräch, weil bei ihm etwas auffällt.",0,"Ein Entwicklungsgespräch findet mit allen Eltern statt, nicht nur bei Problemen. Sonst ist es ein Problemgespräch."],
+ ["Ich warte, bis Max' Eltern von sich aus um ein Gespräch bitten.",0,"Die Initiative geht von der Erzieherin aus."]]},
+{t:"Vorbereitung",q:"Worauf stützt du das Gespräch?",o:[
+ ["Auf mein Bauchgefühl und die Meinung der Kolleginnen.",0,"Die Grundlage sind Beobachtungen, nicht Eindrücke vom Hörensagen."],
+ ["Auf meine Beobachtungen und bitte die Eltern, Beobachtungen aus der Familie mitzubringen.",1,"Richtig: Beobachtungen von Erzieherin und Eltern bilden die gemeinsame Grundlage."],
+ ["Auf ein Testergebnis, das Max' Entwicklungsstand in Zahlen zeigt.",0,"Ein Test ist nicht die vorgesehene Grundlage. Gefragt sind Beobachtungen beider Seiten."],
+ ["Auf eine Liste mit Max' Fehlern der letzten Monate.",0,"Das wäre einseitig und defizitorientiert. Beobachtungen sollen beide Seiten für das Kind sensibilisieren."]]},
+{t:"Gesprächsbeginn",q:"Wie beginnst du das Gespräch?",o:[
+ ["Ich komme direkt zum Problem: Max hat keine Freunde.",0,"Zu Beginn erläuterst du zuerst kurz die Ziele des Gesprächs."],
+ ["Ich erkläre kurz, worum es heute geht: Austausch über Max' Entwicklung und gemeinsame Abstimmung, wie wir ihn begleiten.",1,"Richtig: Zu Beginn werden die Ziele des Entwicklungsgesprächs noch einmal erläutert."],
+ ["Ich beginne mit privaten Themen, damit die Stimmung locker wird: Urlaub, Wohnung, Job.",0,"Andere Themen ruhen. Das Gespräch dreht sich um die Entwicklung des Kindes."],
+ ["Ich frage, ob die Eltern mit der Kita insgesamt zufrieden sind.",0,"Das ist ein anderes Thema. Im Entwicklungsgespräch geht es um das Kind."]]},
+{t:"Problem ansprechen",q:"Du musst Max' Rückzug ansprechen. Welche Formulierung passt zum Leitfaden?",o:[
+ ["„Max ist sozial auffällig und hat Bindungsprobleme.“",0,"Das ist ein Urteil und keine konkrete Beschreibung von Verhalten."],
+ ["„Bei Ihrem Sohn läuft vieles schief, die anderen Kinder wollen nicht mit ihm spielen.“",0,"Das klingt wie ein Vorwurf und bleibt unkonkret. Es fehlt die Ich-Botschaft."],
+ ["„Ich beobachte, dass Max in den letzten Wochen im Freispiel meist allein baut. Wenn er sich zu anderen Kindern setzt, gehen sie weg. Ich mache mir Sorgen, dass er den Anschluss verliert.“",1,"Richtig: aus der eigenen Wahrnehmung (Ich-Botschaft) mit konkretem Verhalten in einer konkreten Situation."],
+ ["„Man hört immer wieder, dass Max Probleme in der Gruppe hat.“",0,"Hörensagen und „man“ statt eigener Beobachtung."]]},
+{t:"Reaktion der Eltern",q:"Der Vater sagt: „Zuhause ist das nie so.“ Was ist die beste Reaktion im Sinne eines Entwicklungsgesprächs?",o:[
+ ["Ich widerspreche: „Ich erlebe Max jeden Tag, ich weiß es besser.“",0,"Das schließt das Gespräch. Es geht um den Austausch zweier Sichtweisen."],
+ ["Ich nehme die Aussage auf und frage: „Wie erleben Sie Max mit anderen Kindern, etwa mit Cousins oder auf dem Spielplatz?“",1,"Richtig: Die Beobachtungen der Eltern sind gleichwertig. Der Vergleich zeigt, in welchen Situationen sich Max wie verhält."],
+ ["Ich beende das Thema und sage, dass es sich schon geben wird.",0,"Damit wird die Sorge übergangen und es wird nichts gemeinsam abgestimmt."],
+ ["Ich empfehle sofort eine Therapie.",0,"Das ist voreilig und gehört nicht in ein Entwicklungsgespräch ohne gemeinsame Beobachtungsgrundlage."]]},
+{t:"Beurteilen (Transfer)",q:"In einer anderen Kita heißt es: „Entwicklungsgespräche führen wir nur mit Eltern von Kindern, die Probleme machen. Dann ruft die Leiterin an, und die Eltern kommen nach Dienstschluss kurz in den Flur.“ Welche Merkmale eines Entwicklungsgesprächs fehlen?",o:[
+ ["Nur das Merkmal „individuell“.",0,"Es fehlen mehr: regelmäßig mit allen Eltern und der geschützte Rahmen."],
+ ["„Regelmäßig mit allen Eltern“ und der geschützte Rahmen. Es ist ein Problemgespräch im Flur.",1,"Richtig: Nur bei Problemen und zwischen Tür und Angel. Das ist kein Entwicklungsgespräch. Vermutlich fehlt auch die Verankerung in der Konzeption."],
+ ["Gar keins, denn die Leiterin initiiert das Gespräch.",0,"Die Initiative allein reicht nicht. Entwicklungsgespräche finden regelmäßig mit allen Eltern in einem geschützten Rahmen statt."],
+ ["Nur „beobachtungsbasiert“.",0,"Ob beobachtet wird, steht nicht im Text. Klar verletzt sind Regelmäßigkeit und Rahmen."]]}
+];
+let i=0,ok=0,first=true,done=[];
+function nav(){return `<div class="pnav"><h3>Weitere Aufgaben in Ebene 3</h3>${PAGE.siblings.map(s=>`<a href="${s[0]}"${s[0]===PAGE.file?' class="on"':''}>${s[1]}</a>`).join("")}<a class="home" href="${PAGE.home}">← zurück zur Übersicht</a></div>`}
+function head(){return `<header><div class="kick">🟢 Ebene 3 · Anwenden · AFB III</div><h1>${PAGE.title}</h1><p>Text 09: Entwicklungsgespräche mit Eltern</p></header>`}
+function show(){
+ const R=document.getElementById("root");
+ if(i>=Q.length){fin(R);return}
+ const q=Q[i];first=true;
+ R.innerHTML=head()+`<main><div class="box fall"><b>Fall:</b> ${FALL}</div><div class="box"><span class="tag">Schritt ${i+1} von ${Q.length+1} · ${q.t}</span><div class="bar"><i style="width:${i/(Q.length+1)*100}%"></i></div><p><b>${q.q}</b></p><div id="o">${q.o.map((o,k)=>`<button class="opt" data-k="${k}">${o[0]}</button>`).join("")}</div><div id="f"></div></div>${nav()}</main>`;
+ document.querySelectorAll(".opt").forEach(b=>b.onclick=()=>pick(+b.dataset.k,b));
+}
+function pick(k,b){
+ const o=Q[i].o[k];
+ if(!o[1]){b.classList.add("no");b.disabled=true;first=false;document.getElementById("f").innerHTML=`<div class="fb" style="background:var(--no-l);border-color:var(--no)">${o[2]} Versuche es noch einmal.</div>`;return}
+ if(first)ok++;
+ document.querySelectorAll(".opt").forEach(x=>x.disabled=true);b.classList.add("ok");
+ document.getElementById("f").innerHTML=`<div class="fb">${o[2]}</div><button class="btn" id="nx">Weiter</button>`;
+ document.getElementById("nx").onclick=()=>{i++;show()};
+}
+function fin(R){
+ R.innerHTML=head()+`<main><div class="box"><span class="tag">Schritt ${Q.length+1} von ${Q.length+1} · Selbst formulieren</span><div class="bar"><i style="width:86%"></i></div><p><b>Formuliere selbst:</b> Sprich in einer Ich-Botschaft ein beobachtetes Problem an. Beispiel: Ein Kind (4 Jahre) beteiligt sich seit Wochen nicht mehr an Bastelangeboten und schaut nur zu.</p><textarea id="ta" placeholder="Meine Formulierung …"></textarea><p><b>Prüfe deinen Text:</b></p><div class="chk"><label><input type="checkbox"> Ich beschreibe aus meiner Wahrnehmung („Ich beobachte …“).</label><label><input type="checkbox"> Ich nenne konkretes Verhalten in einer konkreten Situation.</label><label><input type="checkbox"> Ich verwende keine Urteile oder Etiketten über das Kind.</label><label><input type="checkbox"> Ich lade die Eltern ein, ihre Sicht zu schildern.</label></div><button class="btn" id="end">Abschließen</button></div>${nav()}</main>`;
+ document.getElementById("end").onclick=()=>{
+  R.innerHTML=head()+`<main><div class="box done"><div class="big">${ok} / ${Q.length}</div><p>Entscheidungen im ersten Versuch richtig</p><button class="btn" onclick="again()">Nochmal</button></div>${nav()}</main>`;
+  doneBox(ok,Q.length);
+ };
+}
+function again(){i=0;ok=0;show()}
+function doneBox(s,t){}
+show();
+</script>
+<script>window.LB3_LOES="<h2>A6 Entwicklungsgespräch führen<\/h2><p>Fallbasierte Entscheidungsübung zu Text 09 (Leitfaden, Mienert/Vorholz 2009).<\/p><table><tr><th>Schritt<\/th><th>Richtige Entscheidung<\/th><\/tr><tr><td>Einladung<\/td><td>Alle Eltern, Einzelgespräch, geschützter Rahmen, von der Erzieherin initiiert, in der Konzeption verankert<\/td><\/tr><tr><td>Vorbereitung<\/td><td>Beobachtungen der Erzieherin und der Eltern<\/td><\/tr><tr><td>Beginn<\/td><td>Ziele des Gesprächs kurz erläutern<\/td><\/tr><tr><td>Problem<\/td><td>Ich-Botschaft mit konkretem Verhalten in konkreter Situation, ohne Etikett<\/td><\/tr><tr><td>Reaktion<\/td><td>Sicht der Eltern aufnehmen und nachfragen; Beobachtungen sind gleichwertig<\/td><\/tr><tr><td>Beurteilen<\/td><td>Problemgespräch im Flur ist kein Entwicklungsgespräch: nicht regelmäßig mit allen, kein geschützter Rahmen<\/td><\/tr><\/table><h3>Erwartungshorizont Selbstformulierung<\/h3><ul><li>Ich-Botschaft: „Ich beobachte, dass …“<\/li><li>Konkret: z. B. „seit drei Wochen schaut es beim Basteln nur zu und wendet sich ab, wenn ich ihm Material anbiete“<\/li><li>Kein Etikett wie „unmotiviert“ oder „gestört“<\/li><li>Einladung an die Eltern: „Wie erleben Sie das zu Hause?“<\/li><\/ul>";</script>
+<script src="../versuch.js"></script>
+</body></html>
