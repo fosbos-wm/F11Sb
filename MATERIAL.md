@@ -12,7 +12,8 @@ Eintrag je Datei, Dateien liegen im Repo (z. B. in `infotexte/` und `aufgaben/`)
     ]}
 
 - `wocheId` = Kennung des Themas (Liste unten)
-- `kategorie`: `lehrtext` (Infotext), `uebung` (AFB I), `vertiefung2` (AFB II), `vertiefung3` (AFB III)
+- `kategorie`: `lehrtext` (Infotext), `uebung` (AFB I), `vertiefung2` (AFB II), `vertiefung3` (AFB III), `praxis` (Praxisauftrag in AFB III, mit `hinweis`)
+- `"bib":true` = nur in der Unterrichtsbibliothek: Schüler:innen sehen den Eintrag erst, wenn die Lehrkraft ihn im Thema ankreuzt
 - Dateinamen bitte ohne Umlaute und Leerzeichen
 - Interaktive Übungen: `"url":"uebungsbausteine/station.html?s=<Stations-ID>"`
 

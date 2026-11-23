@@ -319,6 +319,55 @@
    "titel": "Erziehungsstile nach Baumrind",
    "url": "infotexte/LB3-06_Erziehungsstile-nach-Baumrind.pdf",
    "ord": 10
+  },
+  {
+   "id": "px-gemuesegarten",
+   "wocheId": "pp07",
+   "kategorie": "praxis",
+   "titel": "Kurzprojekt: Unser Gemüsegarten",
+   "hinweis": "Gruppen à 3–4 · 2 × 45 Min. · Plakat, Pitch und Reflexion. Druckvorlage im Auftrag.",
+   "url": "lb3-erziehung/ebene-3-anwendung/3-4-projekt-gemuesegarten.html",
+   "ord": 10
+  },
+  {
+   "id": "px-elternabend",
+   "wocheId": "pp07",
+   "kategorie": "praxis",
+   "titel": "Rollenspiel: Elternabend – Tablets im Kindergarten?",
+   "hinweis": "ganze Klasse · ca. 45 Min. · Rollenkarten, schriftliche Stellungnahme.",
+   "url": "lb3-erziehung/ebene-3-anwendung/3-2-rollenspiel-elternabend.html",
+   "ord": 20,
+   "bib": true
+  },
+  {
+   "id": "px-baybep-rallye",
+   "wocheId": "pp07",
+   "kategorie": "praxis",
+   "titel": "BayBEP-Rallye",
+   "hinweis": "3er-Teams · ca. 45 Min. · Laufzettel mit 8 Stationen und Lösungswort.",
+   "url": "lb3-erziehung/ebene-3-anwendung/3-3-baybep-rallye.html",
+   "ord": 30,
+   "bib": true
+  },
+  {
+   "id": "px-stil-raten",
+   "wocheId": "pp05",
+   "kategorie": "praxis",
+   "titel": "Rollenspiel: Stil-Raten in der Kita",
+   "hinweis": "Gruppen à 4–5 · ca. 35 Min. · Stilkarte und Situationskarte, Beobachtungsnotizen.",
+   "url": "lb3-erziehung/ebene-3-anwendung/3-1-rollenspiel-stil-raten.html",
+   "ord": 10,
+   "bib": true
+  },
+  {
+   "id": "px-praxis-check",
+   "wocheId": "pp1a4",
+   "kategorie": "praxis",
+   "titel": "Praxis-Check: Meine Praktikumsstelle unter der Lupe",
+   "hinweis": "Einzelarbeit im Praktikum + 45 Min. Galeriegang · Steckbrief (keine Namen, keine Fotos von Kindern).",
+   "url": "lb3-erziehung/ebene-3-anwendung/3-5-praxis-check.html",
+   "ord": 10,
+   "bib": true
   }
  ]
 }

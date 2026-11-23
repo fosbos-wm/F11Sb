@@ -11,6 +11,7 @@
   t0=Date.now();bar();
  }
  function bar(){
+  if(P.lv==="anwendung"&&!teacher)return;/* Praxisaufträge: keine Versuchsleiste, Lösung nur für Lehrkräfte */
   var el=document.getElementById("lb3vb");
   if(!el){el=document.createElement("div");el.id="lb3vb";el.style.cssText="position:fixed;left:0;right:0;bottom:0;z-index:50;background:#fff;border-top:1px solid #cfd8e3;padding:8px 14px;font:600 14px system-ui,sans-serif;display:flex;gap:12px;align-items:center;justify-content:space-between";document.body.appendChild(el);document.body.style.paddingBottom="56px"}
   var v=ver(),L=window.LB3_LOES,can=L&&(teacher||v>=3);
