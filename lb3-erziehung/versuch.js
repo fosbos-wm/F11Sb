@@ -1,6 +1,6 @@
 /* LB3-Versuchsschicht: zählt Versuche, meldet sie an die App, zeigt die Lösung ab Versuch 3 */
 (function(){
- var P=(typeof PAGE!=="undefined"?PAGE:{}),EN=(typeof ENGINES!=="undefined"?ENGINES:null),H=location.hash||"",ST=P.file||"x";
+ var P=(typeof PAGE!=="undefined"?PAGE:{}),EN=(typeof ENGINES!=="undefined"?ENGINES:null),H=location.hash||"",ST=((location.pathname.match(/\/lb3-([a-z0-9-]+)\//)||[])[1]||"lb3")+"-"+(P.file||"x");/* Ordner im Schlüssel: gleiche Dateinamen in Erziehung und Mündigkeit bleiben getrennt */
  var KEY="lb3v-"+ST,teacher=/[#&]l(&|$)/.test(H);
  var m=H.match(/[#&]v=(\d+)/),base=m?+m[1]:(+localStorage.getItem(KEY)||0),sess=0,t0=Date.now();
  function ver(){return base+sess}

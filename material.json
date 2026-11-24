@@ -321,12 +321,111 @@
    "ord": 10
   },
   {
+   "id": "lb3e-e1-beispiel-detektiv",
+   "wocheId": "pp04",
+   "kategorie": "uebung",
+   "titel": "Beispiel-Detektiv",
+   "url": "lb3-erziehung/ebene-1-rot-begriffe/e1-rot_beispiel-detektiv.html",
+   "ord": 130,
+   "auto": true
+  },
+  {
+   "id": "lb3e-e1-karteikarten",
+   "wocheId": "pp04",
+   "kategorie": "uebung",
+   "titel": "Karteikarten",
+   "url": "lb3-erziehung/ebene-1-rot-begriffe/e1-rot_karteikarten.html",
+   "ord": 100,
+   "auto": true
+  },
+  {
+   "id": "lb3e-e1-lueckentext",
+   "wocheId": "pp04",
+   "kategorie": "uebung",
+   "titel": "Lückentext",
+   "url": "lb3-erziehung/ebene-1-rot-begriffe/e1-rot_lueckentext.html",
+   "ord": 120,
+   "auto": true
+  },
+  {
+   "id": "lb3e-e1-zuordnen",
+   "wocheId": "pp04",
+   "kategorie": "uebung",
+   "titel": "Zuordnen",
+   "url": "lb3-erziehung/ebene-1-rot-begriffe/e1-rot_zuordnen.html",
+   "ord": 110,
+   "auto": true
+  },
+  {
+   "id": "lb3e-e2-einordnen",
+   "wocheId": "pp05",
+   "kategorie": "vertiefung2",
+   "titel": "Einordnen mit Reglern",
+   "url": "lb3-erziehung/ebene-2-blau-theorie/e2-blau_einordnen.html",
+   "ord": 120,
+   "auto": true
+  },
+  {
+   "id": "lb3e-e2-fall-diagnose",
+   "wocheId": "pp05",
+   "kategorie": "vertiefung2",
+   "titel": "Fall-Diagnose",
+   "url": "lb3-erziehung/ebene-2-blau-theorie/e2-blau_fall-diagnose.html",
+   "ord": 110,
+   "auto": true
+  },
+  {
+   "id": "lb3e-e2-fehler-detektiv",
+   "wocheId": "pp05",
+   "kategorie": "vertiefung2",
+   "titel": "Fehler-Detektiv",
+   "url": "lb3-erziehung/ebene-2-blau-theorie/e2-blau_fehler-detektiv.html",
+   "ord": 140,
+   "auto": true
+  },
+  {
+   "id": "lb3e-e2-folgen-zuordnen",
+   "wocheId": "pp05",
+   "kategorie": "vertiefung2",
+   "titel": "Folgen zuordnen",
+   "url": "lb3-erziehung/ebene-2-blau-theorie/e2-blau_folgen-zuordnen.html",
+   "ord": 130,
+   "auto": true
+  },
+  {
+   "id": "lb3e-e2-struktur-legen",
+   "wocheId": "pp05",
+   "kategorie": "vertiefung2",
+   "titel": "Struktur legen",
+   "url": "lb3-erziehung/ebene-2-blau-theorie/e2-blau_struktur-legen.html",
+   "ord": 100,
+   "auto": true
+  },
+  {
+   "id": "px-baybep-rallye",
+   "wocheId": "pp07",
+   "kategorie": "praxis",
+   "titel": "BayBEP-Rallye",
+   "hinweis": "3er-Teams · ca. 45 Min.",
+   "url": "lb3-erziehung/ebene-3-gruen-anwendung/e3-gruen_baybep-rallye.html",
+   "ord": 30
+  },
+  {
    "id": "px-gemuesegarten",
    "wocheId": "pp07",
    "kategorie": "praxis",
    "titel": "Kurzprojekt: Unser Gemüsegarten",
-   "hinweis": "Gruppen à 3–4 · 2 × 45 Min. · Plakat und Pitch",
-   "url": "lb3-erziehung/ebene-3-anwendung/3-4-projekt-gemuesegarten.html",
+   "hinweis": "Gruppen à 3–4 · 2 × 45 Min.",
+   "url": "lb3-erziehung/ebene-3-gruen-anwendung/e3-gruen_kurzprojekt-gemuesegarten.html",
+   "ord": 10
+  },
+  {
+   "id": "px-praxis-check",
+   "wocheId": "pp1a4",
+   "kategorie": "praxis",
+   "titel": "Praxis-Check: Meine Praktikumsstelle unter der Lupe",
+   "hinweis": "Einzelarbeit im Praktikum · 45 Min. Galeriegang",
+   "url": "lb3-erziehung/ebene-3-gruen-anwendung/e3-gruen_praxis-check.html",
    "ord": 10
   },
   {
@@ -334,40 +433,126 @@
    "wocheId": "pp07",
    "kategorie": "praxis",
    "titel": "Rollenspiel: Elternabend – Tablets im Kindergarten?",
-   "hinweis": "ganze Klasse · ca. 45 Min. · Rollenkarten und Stellungnahme",
-   "url": "lb3-erziehung/ebene-3-anwendung/3-2-rollenspiel-elternabend.html",
-   "ord": 20,
-   "bib": true
-  },
-  {
-   "id": "px-baybep-rallye",
-   "wocheId": "pp07",
-   "kategorie": "praxis",
-   "titel": "BayBEP-Rallye",
-   "hinweis": "3er-Teams · ca. 45 Min. · Laufzettel mit Lösungswort",
-   "url": "lb3-erziehung/ebene-3-anwendung/3-3-baybep-rallye.html",
-   "ord": 30,
-   "bib": true
+   "hinweis": "ganze Klasse · ca. 45 Min.",
+   "url": "lb3-erziehung/ebene-3-gruen-anwendung/e3-gruen_rollenspiel-elternabend.html",
+   "ord": 20
   },
   {
    "id": "px-stil-raten",
    "wocheId": "pp05",
    "kategorie": "praxis",
    "titel": "Rollenspiel: Stil-Raten in der Kita",
-   "hinweis": "Gruppen à 4–5 · ca. 35 Min. · Stilkarte und Beobachtungsnotizen",
-   "url": "lb3-erziehung/ebene-3-anwendung/3-1-rollenspiel-stil-raten.html",
-   "ord": 10,
-   "bib": true
+   "hinweis": "Gruppen à 4–5 · ca. 35 Min.",
+   "url": "lb3-erziehung/ebene-3-gruen-anwendung/e3-gruen_rollenspiel-stil-raten.html",
+   "ord": 10
   },
   {
-   "id": "px-praxis-check",
-   "wocheId": "pp1a4",
+   "id": "lb3m-e1-beispiel-detektiv",
+   "wocheId": "pp06",
+   "kategorie": "uebung",
+   "titel": "Beispiel-Detektiv",
+   "url": "lb3-muendigkeit/ebene-1-rot-begriffe/e1-rot_beispiel-detektiv.html",
+   "ord": 110,
+   "auto": true
+  },
+  {
+   "id": "lb3m-e1-karteikarten",
+   "wocheId": "pp06",
+   "kategorie": "uebung",
+   "titel": "Karteikarten",
+   "url": "lb3-muendigkeit/ebene-1-rot-begriffe/e1-rot_karteikarten.html",
+   "ord": 100,
+   "auto": true
+  },
+  {
+   "id": "lb3m-e2-fall-diagnose",
+   "wocheId": "pp06",
+   "kategorie": "vertiefung2",
+   "titel": "Fall-Diagnose",
+   "url": "lb3-muendigkeit/ebene-2-blau-theorie/e2-blau_fall-diagnose.html",
+   "ord": 110,
+   "auto": true
+  },
+  {
+   "id": "lb3m-e2-fehler-detektiv",
+   "wocheId": "pp06",
+   "kategorie": "vertiefung2",
+   "titel": "Fehler-Detektiv",
+   "url": "lb3-muendigkeit/ebene-2-blau-theorie/e2-blau_fehler-detektiv.html",
+   "ord": 140,
+   "auto": true
+  },
+  {
+   "id": "lb3m-e2-foerdert-oder-verhindert",
+   "wocheId": "pp06",
+   "kategorie": "vertiefung2",
+   "titel": "Fördert oder verhindert?",
+   "url": "lb3-muendigkeit/ebene-2-blau-theorie/e2-blau_foerdert-oder-verhindert.html",
+   "ord": 120,
+   "auto": true
+  },
+  {
+   "id": "lb3m-e2-massnahmen-zuordnen",
+   "wocheId": "pp06",
+   "kategorie": "vertiefung2",
+   "titel": "Maßnahmen zuordnen",
+   "url": "lb3-muendigkeit/ebene-2-blau-theorie/e2-blau_massnahmen-zuordnen.html",
+   "ord": 130,
+   "auto": true
+  },
+  {
+   "id": "lb3m-e2-struktur-legen",
+   "wocheId": "pp06",
+   "kategorie": "vertiefung2",
+   "titel": "Struktur legen",
+   "url": "lb3-muendigkeit/ebene-2-blau-theorie/e2-blau_struktur-legen.html",
+   "ord": 100,
+   "auto": true
+  },
+  {
+   "id": "lb3m-e3-debatte-mit-18-muendig",
+   "wocheId": "pp06",
    "kategorie": "praxis",
-   "titel": "Praxis-Check: Meine Praktikumsstelle unter der Lupe",
-   "hinweis": "Einzelarbeit im Praktikum · 45 Min. Galeriegang · Steckbrief",
-   "url": "lb3-erziehung/ebene-3-anwendung/3-5-praxis-check.html",
-   "ord": 10,
-   "bib": true
+   "titel": "Debatte: Mit 18 mündig?",
+   "hinweis": "ganze Klasse · ca. 45 Min.",
+   "url": "lb3-muendigkeit/ebene-3-gruen-anwendung/e3-gruen_debatte-mit-18-muendig.html",
+   "ord": 50
+  },
+  {
+   "id": "lb3m-e3-gruppenarbeit-kinderrat",
+   "wocheId": "pp06",
+   "kategorie": "praxis",
+   "titel": "Gruppenarbeit: Wir planen einen Kinderrat",
+   "hinweis": "Gruppen à 4 · ca. 60 Min.",
+   "url": "lb3-muendigkeit/ebene-3-gruen-anwendung/e3-gruen_gruppenarbeit-kinderrat.html",
+   "ord": 40
+  },
+  {
+   "id": "lb3m-e3-kurzprojekt-stellenanzeigen",
+   "wocheId": "pp06",
+   "kategorie": "praxis",
+   "titel": "Kurzprojekt: Schlüsselqualifikationen gesucht!",
+   "hinweis": "Gruppen à 3–4 · 2 × 45 Min.",
+   "url": "lb3-muendigkeit/ebene-3-gruen-anwendung/e3-gruen_kurzprojekt-stellenanzeigen.html",
+   "ord": 30
+  },
+  {
+   "id": "lb3m-e3-praxis-check",
+   "wocheId": "pp06",
+   "kategorie": "praxis",
+   "titel": "Praxis-Check: Mündigkeit im Praktikumsalltag",
+   "hinweis": "Einzelarbeit im Praktikum · 45 Min. Austausch",
+   "url": "lb3-muendigkeit/ebene-3-gruen-anwendung/e3-gruen_praxis-check.html",
+   "ord": 20
+  },
+  {
+   "id": "lb3m-e3-rollenspiel-zutrauen",
+   "wocheId": "pp06",
+   "kategorie": "praxis",
+   "titel": "Rollenspiel: Abnehmen, vorschreiben oder zutrauen?",
+   "hinweis": "Gruppen à 3–4 · ca. 40 Min.",
+   "url": "lb3-muendigkeit/ebene-3-gruen-anwendung/e3-gruen_rollenspiel-zutrauen.html",
+   "ord": 10
   }
  ]
 }

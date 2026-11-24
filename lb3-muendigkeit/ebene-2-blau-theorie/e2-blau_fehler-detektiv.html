@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🔵 Ebene 2 – BLAU – Theorie · Fehler-Detektiv – Pädagogische Mündigkeit</title>
+<style>
+:root{
+  --rot:#d23c3c; --rot-d:#a82626; --rot-l:#fbe4e2;
+  --blau:#1f6fb8; --blau-d:#14508a; --blau-l:#dcebf8;
+  --gruen:#2c8a52; --gruen-d:#1d6a3c; --gruen-l:#dcf1e3;
+  --ok:#2c8a52; --ok-l:#dcf1e3; --no:#c4362c; --no-l:#fbe2df;
+  --ink:#1f2a33; --mut:#5d6b77; --bg:#f5f6f8; --line:#e0e4e9;
+  --lv:#33414d; --lv-d:#1f2a33; --lv-l:#eef1f4;
+}
+body.rot{--lv:var(--rot);--lv-d:var(--rot-d);--lv-l:var(--rot-l)}
+body.blau{--lv:var(--blau);--lv-d:var(--blau-d);--lv-l:var(--blau-l)}
+body.gruen{--lv:var(--gruen);--lv-d:var(--gruen-d);--lv-l:var(--gruen-l)}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45}
+header{background:var(--lv);color:#fff;padding:16px 18px 14px}
+header .top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+header h1{margin:0;font-size:1.25rem}
+header p{margin:4px 0 0;opacity:.95;font-size:.95rem}
+.home-btn{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:999px;padding:5px 12px;font-size:.85rem;cursor:pointer}
+.lvnav{display:flex;gap:6px;padding:10px 14px 0;background:#fff;flex-wrap:wrap}
+.lvnav button{flex:1;min-width:110px;border:0;border-radius:10px 10px 0 0;padding:9px 8px;font-weight:700;font-size:.9rem;cursor:pointer;color:#fff;opacity:.55}
+.lvnav button.on{opacity:1}
+.lvnav .r{background:var(--rot)}.lvnav .b{background:var(--blau)}.lvnav .g{background:var(--gruen)}
+.sub{display:flex;gap:6px;flex-wrap:wrap;padding:10px 14px;background:#fff;border-bottom:3px solid var(--lv);position:sticky;top:0;z-index:5}
+.sub button{border:2px solid var(--lv);background:#fff;color:var(--lv-d);border-radius:999px;padding:7px 12px;font-size:.9rem;font-weight:600;cursor:pointer}
+.sub button.on{background:var(--lv);color:#fff}
+main{max-width:800px;margin:0 auto;padding:16px 14px 70px}
+.intro{color:var(--mut);margin:0 0 12px}
+.box{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:5px 11px;font-size:.84rem;cursor:pointer;color:var(--ink)}
+.chip.on{border-color:var(--lv);background:var(--lv);color:#fff}
+.btn{border:0;border-radius:10px;padding:11px 16px;font-size:1rem;font-weight:600;cursor:pointer;background:var(--lv);color:#fff}
+.btn.ok{background:var(--ok)}.btn.no{background:var(--no)}
+.btn.ghost{background:#fff;border:1.5px solid var(--line);color:var(--ink)}
+.btn.out{background:#fff;border:2px solid var(--lv);color:var(--lv-d)}
+.btn:disabled{opacity:.45;cursor:default}
+.bar{height:8px;background:var(--line);border-radius:6px;overflow:hidden;margin:10px 0 4px}
+.bar>i{display:block;height:100%;background:var(--lv);transition:width .3s}
+.small{font-size:.84rem;color:var(--mut)}
+.tag{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:var(--lv-l);color:var(--lv-d)}
+.fb{margin-top:12px;border-radius:12px;padding:12px 14px;display:none}
+.fb.ok{display:block;background:var(--ok-l);border-left:5px solid var(--ok)}
+.fb.no{display:block;background:var(--no-l);border-left:5px solid var(--no)}
+.done{text-align:center;padding:24px 10px}
+.done .big{font-size:2.3rem;font-weight:800;color:var(--lv)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid2 .btn{padding:14px 8px;font-size:.95rem}
+
+/* Startseite */
+.stairs{display:grid;gap:12px;margin-top:6px}
+.tile{display:flex;gap:14px;align-items:stretch;background:#fff;border-radius:16px;border:1px solid var(--line);overflow:hidden;cursor:pointer;text-align:left;padding:0;font:inherit;color:inherit;width:100%}
+.tile .num{width:74px;flex:none;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:1.8rem}
+.tile .num small{font-size:.68rem;font-weight:700;opacity:.9}
+.tile .txt{padding:14px 14px 14px 0}
+.tile h3{margin:0 0 3px;font-size:1.1rem}
+.tile p{margin:0;font-size:.9rem;color:var(--mut)}
+.tile.r .num{background:var(--rot)}.tile.b .num{background:var(--blau)}.tile.g .num{background:var(--gruen)}
+.tile.r h3{color:var(--rot-d)}.tile.b h3{color:var(--blau-d)}.tile.g h3{color:var(--gruen-d)}
+.tile.b{margin-left:18px}.tile.g{margin-left:36px}
+.legend{margin-top:18px;font-size:.9rem;color:var(--mut)}
+
+/* Karteikarten */
+.flip{perspective:1200px;margin:12px 0;cursor:pointer;user-select:none}
+.flip-in{position:relative;min-height:230px;transition:transform .5s;transform-style:preserve-3d}
+.flip.turned .flip-in{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:16px;padding:20px;display:flex;flex-direction:column;justify-content:center;gap:10px}
+.front{background:#fff;border:3px solid var(--lv)}
+.front .q{font-size:1.22rem;font-weight:700;text-align:center}
+.back{background:var(--lv-l);border:3px solid var(--lv);transform:rotateY(180deg);font-size:1.03rem}
+.face .tag{align-self:center}
+.hint{text-align:center;font-size:.84rem;color:var(--mut)}
+
+.stmt{font-size:1.15rem;font-weight:600;text-align:center;padding:22px 14px;border:2px dashed var(--line);border-radius:14px;margin:10px 0;background:#fff}
+.case{background:#fff;border-left:6px solid var(--lv);border-radius:10px;padding:14px 16px;margin:10px 0;font-size:1.05rem}
+.opts{display:grid;gap:8px}
+.opt{text-align:left;border:2px solid var(--line);background:#fff;border-radius:10px;padding:11px 14px;font-size:.98rem;cursor:pointer;color:var(--ink)}
+.opt:hover:not(:disabled){border-color:var(--lv)}
+.opt.ok{border-color:var(--ok);background:var(--ok-l)}.opt.no{border-color:var(--no);background:var(--no-l)}
+.opt:disabled{cursor:default}
+.step{font-weight:700;color:var(--lv-d);margin:14px 0 6px}
+
+.gap-s{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:0 0 10px;font-size:1.03rem;line-height:2.1}
+.gap-s select{font:inherit;font-size:.95rem;padding:2px 6px;border-radius:8px;border:2px solid var(--lv);background:#fff;max-width:100%}
+.gap-s select.ok{border-color:var(--ok);background:var(--ok-l)}.gap-s select.no{border-color:var(--no);background:var(--no-l)}
+.gap-s .src{display:block;font-size:.78rem;color:var(--mut);line-height:1.3;margin-top:3px}
+
+/* Matrix */
+.mx{display:grid;grid-template-columns:auto 1fr 1fr;gap:6px;margin:12px 0}
+.mx .ax{font-size:.8rem;font-weight:700;color:var(--lv-d);display:flex;align-items:center;justify-content:center;text-align:center;padding:4px}
+.mx .cell{min-height:120px;border:2px dashed var(--lv);border-radius:12px;background:#fff;padding:8px;display:flex;flex-direction:column;gap:5px;cursor:pointer}
+.mx .cell.flash{background:var(--no-l);border-color:var(--no)}
+.mx .cell .in{background:var(--lv-l);border-radius:8px;padding:4px 8px;font-size:.85rem}
+.mx .cell .in.st{background:var(--lv);color:#fff;font-weight:700;text-align:center}
+.pool{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.pool button{border:2px solid var(--lv);background:#fff;border-radius:10px;padding:7px 10px;font-size:.9rem;cursor:pointer;color:var(--ink)}
+.pool button.sel{background:var(--lv);color:#fff}
+.pool button.st{font-weight:800}
+
+/* Regler */
+.sl{margin:12px 0}
+.sl label{display:flex;justify-content:space-between;font-weight:600}
+.sl input{width:100%;accent-color:var(--lv)}
+
+/* Fehlerdetektiv */
+.eh p{margin:0 0 8px;padding:8px 10px;border-radius:8px;border:2px solid transparent;cursor:pointer;background:#fff}
+.eh p.mark{border-color:var(--lv);background:var(--lv-l)}
+.eh p.hit{border-color:var(--ok);background:var(--ok-l)}
+.eh p.miss{border-color:var(--no);background:var(--no-l)}
+.eh p.wrong{border-color:#e0a800;background:#fff6d6}
+.eh .corr{display:block;font-size:.88rem;margin-top:4px;color:var(--ink)}
+
+/* Auftragskarten */
+.task{background:#fff;border:1px solid var(--line);border-top:6px solid var(--lv);border-radius:14px;padding:16px;margin-bottom:14px}
+.task h3{margin:0 0 6px;color:var(--lv-d)}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.meta span{background:var(--lv-l);color:var(--lv-d);border-radius:999px;padding:3px 10px;font-size:.8rem;font-weight:600}
+.task ol{margin:6px 0 10px;padding-left:22px}.task li{margin-bottom:4px}
+.task .goal{background:var(--lv-l);border-radius:10px;padding:8px 12px;font-size:.95rem}
+.task .prod{font-size:.93rem;margin-top:8px}
+
+/* Check-out */
+.checkout{margin-top:28px;background:#fff;border:2px solid var(--lv);border-radius:14px;padding:14px 16px}
+.checkout h3{margin:0 0 8px;color:var(--lv-d);font-size:1rem}
+.checkout label{display:flex;gap:8px;align-items:flex-start;margin-bottom:6px;cursor:pointer}
+.checkout input{accent-color:var(--lv);margin-top:4px}
+@media (max-width:540px){.grid2{grid-template-columns:1fr}.tile.b{margin-left:9px}.tile.g{margin-left:18px}.mx .cell{min-height:100px}}
+
+header{padding-top:12px}
+.lvbadge{display:inline-flex;align-items:center;gap:6px;background:#fff;color:var(--lv-d);font-weight:800;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;padding:5px 12px}
+.lvbadge .dot{width:10px;height:10px;border-radius:50%;background:var(--lv)}
+.niv{display:inline-block;margin-left:6px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.6);color:#fff;font-weight:700;font-size:.74rem;border-radius:999px;padding:4px 10px}
+header h1{font-size:1.45rem;margin:8px 0 2px}
+body{border-left:8px solid var(--lv)}
+.pnav{margin-top:26px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.pnav h3{margin:0 0 8px;font-size:.95rem;color:var(--lv-d)}
+.pnav a{display:inline-block;margin:0 6px 6px 0;padding:6px 12px;border-radius:999px;border:2px solid var(--lv);color:var(--lv-d);text-decoration:none;font-weight:600;font-size:.9rem}
+.pnav a.on{background:var(--lv);color:#fff}
+.pnav .home{display:block;margin-top:8px;border:0;padding:0;color:var(--mut);font-weight:500}
+body.embed .pnav{display:none}
+.cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:12px 0}
+.cols .ch{font-size:.82rem;font-weight:800;color:#fff;background:var(--lv);border-radius:10px;padding:6px;text-align:center}
+.cols .ch small{display:block;font-weight:500;opacity:.9}
+.cols .cell{min-height:150px;border:2px dashed var(--lv);border-radius:12px;background:#fff;padding:6px;display:flex;flex-direction:column;gap:5px;cursor:pointer}
+.cols .cell.flash{background:var(--no-l);border-color:var(--no)}
+.cols .cell .in{background:var(--lv-l);border-radius:8px;padding:4px 7px;font-size:.82rem;overflow-wrap:anywhere;hyphens:auto}
+.cols .cell .in.st{background:var(--lv);color:#fff;font-weight:700;text-align:center}
+.mat{margin-top:12px;background:var(--lv-l);border-radius:12px;padding:12px 14px}
+.mat h4{margin:0 0 6px;color:var(--lv-d)}
+.mat ul{margin:0;padding-left:20px}.mat li{margin-bottom:4px}
+.mat table{width:100%;border-collapse:collapse;background:#fff;font-size:.82rem;table-layout:fixed}
+.mat td,.mat th{border:1px solid var(--line);padding:5px;text-align:left;vertical-align:top;height:40px;overflow-wrap:anywhere;hyphens:auto}
+.mat th{background:var(--lv);color:#fff}
+.dl{display:inline-flex;gap:8px;align-items:center;margin-top:12px;background:var(--lv);color:#fff;text-decoration:none;font-weight:700;border-radius:10px;padding:11px 15px}
+.scale{display:flex;justify-content:space-between;font-size:.8rem;color:var(--mut);font-weight:700}
+@media (max-width:540px){.cols .cell .in{font-size:.76rem}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+const PAGE = {"lv": "theorie", "file": "e2-blau_fehler-detektiv.html", "title": "Fehler-Detektiv", "siblings": [["e2-blau_struktur-legen.html", "Struktur legen"], ["e2-blau_fall-diagnose.html", "Fall-Diagnose"], ["e2-blau_foerdert-oder-verhindert.html", "Fördert oder verhindert?"], ["e2-blau_massnahmen-zuordnen.html", "Maßnahmen zuordnen"], ["e2-blau_fehler-detektiv.html", "Fehler-Detektiv"]], "home": "../index.html", "niveau": "schwer", "fmt": "fehler"};
+
+/* =====================================================================
+   DATEN – Lernbereich 3 (für LB 2 und LB 4 nur diesen Block austauschen)
+   ===================================================================== */
+const LB = {"title": "Pädagogische Mündigkeit", "levels": {"begriffe": {"color": "rot", "nr": 1, "name": "Begriffe klären", "afb": "AFB I · Wissen", "texts": "Text 06: Pädagogische Mündigkeit – zentrale Begriffe", "teaser": "Mündigkeit, Kompetenz, Selbst-, Sozial- und Sachkompetenz, Qualifikation – nicht nur kennen, sondern erklären und abgrenzen.", "cats": {"MU": "Pädagogische Mündigkeit", "KO": "Kompetenz", "SE": "Selbstkompetenz", "SO": "Sozialkompetenz", "SA": "Sachkompetenz", "QU": "Qualifikation / Schlüsselqualifikation"}, "sortCats": ["MU", "KO", "SE", "SO", "SA", "QU"], "cards": [{"c": "MU", "q": "Warum kann die Pädagogik nicht festlegen, wie ein Mensch werden soll – und was tut sie stattdessen?", "a": "Es gibt kein <b>allgemeingültiges</b> Bild davon, wie ein Mensch sein soll. Die Pädagogik formuliert deshalb <b>übergreifende Erziehungsziele (Leitziele)</b>, die im Alltag mit <b>konkreten Inhalten</b> gefüllt werden. Ein solches Leitziel ist die pädagogische Mündigkeit."}, {"c": "MU", "q": "Erkläre Roths Formel „Kompetenz in einem dreifachen Sinn“. Achte auf die beiden Wörter „bereit“ und „fähig“.", "a": "Mündigkeit umfasst <b>Selbst-, Sozial- und Sachkompetenz</b>. Ein mündiger Mensch ist <b>bereit und fähig</b>, sein eigenes Leben, das Leben mit anderen und die Sachwelt zu bewältigen – er muss es also <b>wollen</b> (Bereitschaft) und <b>können</b> (Fähigkeit)."}, {"c": "MU", "q": "Vergleiche den rechtlichen und den pädagogischen Mündigkeitsbegriff.", "a": "<b>Rechtlich:</b> Berechtigung, eigene Interessen selbst wahrzunehmen, verbindliche Rechtsgeschäfte abzuschließen und politische Bürgerrechte auszuüben.<br><b>Pädagogisch:</b> Der Begriff wird <b>erweitert</b> und über <b>Kompetenzen</b> konkretisiert – und er ist ein <b>Prozess</b>, kein einmal erreichter Status."}, {"c": "MU", "q": "Begründe, warum Mündigkeit ein Prozess und kein Zustand ist.", "a": "Mündigkeit ist aus pädagogischer Sicht <b>nie abgeschlossen</b>. Wer mündig <b>bleiben</b> will, muss ein Leben lang <b>weiter- und umlernen</b> – denn Anforderungen in Beruf, Gesellschaft und Umwelt ändern sich."}, {"c": "KO", "q": "Definiere „Kompetenz“ und erkläre, warum Kompetenz mehr ist als Wissen.", "a": "Kompetenz ist die <b>Fähigkeit, das Vermögen und die Fertigkeit</b>, Aufgaben und Probleme in einem bestimmten Bereich <b>fachkundig zu bewältigen</b>. Entscheidend ist das <b>Bewältigen</b> – also Können im Handeln, nicht nur Kenntnisse."}, {"c": "SE", "q": "Welche vier Bestandteile gehören laut Text zur Selbstkompetenz?", "a": "1. das eigene Leben <b>gestalten</b> · 2. mit sich selbst <b>zurechtkommen</b> · 3. sich selbst <b>bestimmen</b> · 4. für das eigene Handeln <b>Verantwortung übernehmen</b>."}, {"c": "SO", "q": "Sozialkompetenz bezieht sich auf zwei Arten sozialer Zusammenhänge und eine Bereitschaft. Nenne sie.", "a": "<b>Organisationen</b> wie Familie, Schule oder Betrieb und <b>Beziehungen</b> wie der Freundeskreis. Dazu zählen Kooperation, Kommunikation und Konfliktlösung sowie die <b>Bereitschaft</b>, sich aktiv mit <b>gesellschaftlichen Entwicklungen</b> und ihren Hintergründen auseinanderzusetzen."}, {"c": "SA", "q": "Was ergänzt Paul Hastenteufel zur Sachkompetenz – und warum ist das mehr als „Fachwissen“?", "a": "Mündigkeit verlangt auch, die dingliche Welt <b>verantwortlich und gemeinsam</b> so zu nutzen, dass sie <b>der Menschheit dient</b>, ohne ihre <b>eigenen Gesetzmäßigkeiten zu zerstören</b>. Sachkompetenz hat also auch eine <b>ethische</b> Seite."}, {"c": "QU", "q": "Grenze Qualifikation und Schlüsselqualifikation voneinander ab.", "a": "<b>Qualifikation:</b> erworbene Befähigung zu einer <b>bestimmten</b>, meist beruflichen Tätigkeit; Voraussetzung dafür; oft durch <b>Zeugnisse</b> belegt.<br><b>Schlüsselqualifikation:</b> Kenntnisse, Fähigkeiten und Fertigkeiten, die in <b>vielen Situationen</b> gebraucht werden; den drei Kompetenzbereichen zuordenbar."}, {"c": "QU", "q": "Warum muss das Leitziel Mündigkeit über Qualifikationen konkretisiert werden?", "a": "„Mündigkeit“ ist ein <b>allgemeines und abstraktes</b> Leitziel. Erst die Frage, welche <b>Qualifikationen</b> ein mündiger Mensch braucht, macht es für Erziehung und Ausbildung <b>umsetzbar</b>."}, {"c": "SO", "q": "„Durchsetzungsvermögen“ – Selbst- oder Sozialkompetenz? Begründe.", "a": "<b>Sozialkompetenz.</b> Durchsetzungsvermögen zeigt sich im <b>Umgang mit anderen</b>: Man vertritt die eigene Position gegenüber anderen. Im Überblick des Textes steht es deshalb bei der Sozialkompetenz."}, {"c": "MU", "q": "Unter welcher Bedingung fördern Erziehungsmaßnahmen Mündigkeit – und welcher Erziehungsstil passt dazu?", "a": "Wenn sie <b>Selbstständigkeit zulassen</b> und dem Kind Schritt für Schritt mehr Verantwortung zutrauen. Wer <b>alles abnimmt</b> oder <b>streng vorschreibt</b>, verhindert Mündigkeit. Am besten gelingt das im <b>autoritativen</b> Stil: Wärme und Anerkennung plus klare, begründete Regeln."}], "detect": [{"t": "Lea (17) reagiert auf Kritik ihrer Anleiterin oft gereizt. Sie nimmt sich vor, erst tief durchzuatmen und dann sachlich nachzufragen.", "k": "SE", "e": "Auch wenn die Situation sozial ist: Lea arbeitet an ihrer <b>Selbstbeherrschung</b> – also am Umgang mit sich selbst."}, {"t": "Mit 18 darf Jonas ohne Unterschrift seiner Eltern einen Handyvertrag abschließen und an der Bundestagswahl teilnehmen.", "k": "MU", "e": "Hier geht es um <b>Mündigkeit im rechtlichen Sinn</b>: Rechtsgeschäfte abschließen, politische Bürgerrechte ausüben."}, {"t": "Eine Erzieherin kurz vor der Rente besucht eine Fortbildung zu digitalen Medien, weil sie ihre Arbeit weiterentwickeln will.", "k": "MU", "e": "Mündigkeit als <b>Prozess</b>: Wer mündig bleiben will, muss ein Leben lang weiter- und umlernen."}, {"t": "Eine Kita sucht eine Fachkraft, die „teamfähig, zuverlässig und kreativ“ ist.", "k": "QU", "e": "Gefragt sind <b>Schlüsselqualifikationen</b> – Fähigkeiten, die in vielen Situationen gebraucht werden (hier aus Sozial- und Selbstkompetenz)."}, {"t": "Für ihre Bewerbung legt Sara das Abschlusszeugnis ihrer Ausbildung zur Kinderpflegerin bei.", "k": "QU", "e": "Eine <b>Qualifikation</b>: erworbene Befähigung zu einer bestimmten beruflichen Tätigkeit, belegt durch ein Zeugnis."}, {"t": "Tim vertritt als Klassensprecher die Meinung seiner Klasse gegenüber der Schulleitung – auch als es unbequem wird.", "k": "SO", "e": "<b>Durchsetzungsvermögen</b> gehört zur Sozialkompetenz: Tim vertritt eine Position im Umgang mit anderen."}, {"t": "Ein Auszubildender kennt die Arbeitsabläufe in seinem Betrieb und hält die Vorschriften zur Arbeitssicherheit ein.", "k": "SA", "e": "Umgang mit der <b>Sachwelt im Beruf</b>: Kenntnisse von Arbeitsabläufen."}, {"t": "In der Kita trennen die Kinder den Müll und achten beim Händewaschen darauf, kein Wasser zu verschwenden.", "k": "SA", "e": "Sachkompetenz im Sinne Hastenteufels: die dingliche Welt <b>verantwortlich nutzen</b>, ohne ihre Gesetzmäßigkeiten zu zerstören."}, {"t": "Nach einem missglückten Bastelangebot überlegt eine Praktikantin selbstkritisch, warum es nicht geklappt hat, und plant es neu.", "k": "SE", "e": "<b>Kritik- und Urteilsfähigkeit</b> sowie Verantwortung für das eigene Handeln – Selbstkompetenz."}, {"t": "Eine Sozialpädagogin kann schwierige Hilfeplangespräche fachkundig vorbereiten, leiten und dokumentieren.", "k": "KO", "e": "Beschrieben wird <b>Kompetenz</b> allgemein: Fähigkeit, Vermögen und Fertigkeit, Aufgaben in einem bestimmten Bereich fachkundig zu bewältigen."}], "checkout": ["den Begriff pädagogische Mündigkeit nach Roth erklären", "rechtliche und pädagogische Mündigkeit vergleichen", "Kompetenz definieren und die drei Kompetenzbereiche abgrenzen", "Qualifikation und Schlüsselqualifikation unterscheiden", "Grenzfälle begründet einem Begriff zuordnen"]}, "theorie": {"color": "blau", "nr": 2, "name": "Theorie verstehen", "afb": "AFB II · Verstehen & Anwenden", "texts": "Text 06: Roths Modell der dreifachen Kompetenz und seine Umsetzung", "teaser": "Kompetenzbereiche sicher zuordnen, Fälle analysieren und beurteilen, ob Erziehung Mündigkeit fördert oder verhindert.", "styles": {"SE": "Selbstkompetenz", "SO": "Sozialkompetenz", "SA": "Sachkompetenz"}, "cells": {"SE": "Ich-Fähigkeit · Umgang mit sich selbst", "SO": "Du-Fähigkeit · Umgang mit anderen Menschen", "SA": "Welt-Fähigkeit · Umgang mit der Sachwelt"}, "matrix": [{"t": "Ich-Fähigkeit", "k": "SE", "st": 1}, {"t": "Du-Fähigkeit", "k": "SO", "st": 1}, {"t": "Welt-Fähigkeit", "k": "SA", "st": 1}, {"t": "Konzentration", "k": "SE"}, {"t": "Besonnenheit", "k": "SE"}, {"t": "Aufgeschlossenheit", "k": "SE"}, {"t": "Kritik- und Urteilsfähigkeit", "k": "SE"}, {"t": "Entscheidungsfähigkeit", "k": "SE"}, {"t": "Verantwortlichkeit", "k": "SE"}, {"t": "Offenheit", "k": "SO"}, {"t": "Durchsetzungsvermögen", "k": "SO"}, {"t": "Geduld", "k": "SO"}, {"t": "Solidarität", "k": "SO"}, {"t": "Kontaktbereitschaft", "k": "SO"}, {"t": "Einfühlungsvermögen", "k": "SO"}, {"t": "Beherrschung von Lerntechniken", "k": "SA"}, {"t": "Kenntnisse von Arbeitsabläufen", "k": "SA"}, {"t": "Datenverarbeitungskenntnisse", "k": "SA"}, {"t": "Fremdsprachenkenntnisse", "k": "SA"}], "diagnose": [{"t": "Im Freispiel wählen die Kinder selbst, ob sie in die Bau-, Mal- oder Puppenecke gehen. Danach räumen sie ihr Spielangebot eigenständig auf.", "k": "SE", "r": ["Die Kinder erhalten Entscheidungsspielräume und übernehmen Verantwortung für das eigene Handeln.", "Die Kinder lernen vor allem, sich mit anderen über die Spielecken abzusprechen.", "Die Kinder lernen den sachgerechten Umgang mit dem Spielmaterial."], "rk": 0}, {"t": "Im Kinderrat stimmen die Kinder über die Gruppenregeln ab. Wer dagegen ist, darf das begründen; danach gilt die Mehrheitsentscheidung für alle.", "k": "SO", "r": ["Die Kinder lernen vor allem, sich selbst zu bestimmen.", "Die Kinder üben Kooperation, Kommunikation und das Aushandeln gemeinsamer Regeln.", "Die Kinder lernen politische Abläufe als Sachwissen kennen."], "rk": 1}, {"t": "Die Vorschulkinder pflegen ein Gemüsebeet: Sie säen, gießen, messen jede Woche die Pflanzen und tragen die Werte in eine Tabelle ein.", "k": "SA", "r": ["Die Kinder lernen vor allem Ausdauer und damit Selbstkompetenz.", "Die Kinder lernen, gemeinsam Verantwortung in der Gruppe zu tragen.", "Die Kinder erforschen die Natur und erwerben Wissen und Können im Umgang mit der Sachwelt."], "rk": 2}, {"t": "Ein Lehrer lässt die Klasse ihre Wochenarbeit selbst planen. Am Freitag bespricht er mit jedem, was gut lief und was er nächste Woche anders machen will.", "k": "SE", "r": ["Planung und Selbsteinschätzung fördern Selbstbestimmung, Verantwortlichkeit und Reflexion.", "Die Schüler lernen vor allem Lerntechniken – das ist Sachkompetenz.", "Das Gespräch mit dem Lehrer fördert vor allem die Kommunikationsfähigkeit."], "rk": 0}, {"t": "Zwei Kinder streiten um ein Bilderbuch. Die Erzieherin entscheidet nicht selbst, sondern fragt: „Was könntet ihr tun, damit ihr beide zufrieden seid?“", "k": "SO", "r": ["Die Erzieherin traut den Kindern zu, selbst zu entscheiden – das ist vor allem Selbstkompetenz.", "Die Kinder sollen den Konflikt selbst lösen und dabei die Sicht des anderen hören.", "Die Erzieherin vermeidet den Konflikt, indem sie sich heraushält."], "rk": 1}, {"t": "Eine Praktikantin richtet im Hort ein Tablet für ein Hörspielprojekt ein und zeigt den Kindern, wie die Aufnahme-App funktioniert und wie man Dateien speichert.", "k": "SA", "r": ["Sie fördert vor allem die Teamfähigkeit der Kinder.", "Sie fördert vor allem die Kreativität der Kinder – das ist Selbstkompetenz.", "Im Mittelpunkt stehen Medien- und Datenverarbeitungskenntnisse, also der Umgang mit der Sachwelt."], "rk": 2}, {"t": "Ein Vater lässt seinen Sohn (14) selbst entscheiden, ob er sein Taschengeld spart oder ausgibt. Als das Geld vor Monatsende weg ist, hilft er nicht aus, sondern bespricht mit ihm die Folgen.", "k": "SE", "r": ["Der Sohn erhält einen Entscheidungsspielraum und lernt, die Folgen seines Handelns zu tragen.", "Der Vater verhält sich vernachlässigend, weil er nicht aushilft.", "Der Sohn lernt vor allem den Umgang mit Geld als Sachwissen."], "rk": 0}], "slider": [{"t": "„Du darfst das Messer benutzen. Ich zeige dir zuerst, wie man es sicher hält, und bleibe daneben.“", "f": true, "e": "Zutrauen mit Begleitung: Das Kind bekommt Verantwortung, die Erzieherin sorgt für Sicherheit – typisch autoritativ."}, {"t": "„Ich habe dir einen genauen Lernplan geschrieben, Stunde für Stunde. Halt dich einfach daran.“", "f": false, "e": "Klingt hilfsbereit, schreibt aber streng vor. Der Jugendliche plant nicht selbst und lernt keine Selbststeuerung."}, {"t": "„Mach doch, was du willst – ist deine Sache.“", "f": false, "e": "Das ist keine Förderung von Selbstständigkeit, sondern fehlende Begleitung. Mündigkeit braucht Wärme, Anerkennung und klare Regeln."}, {"t": "„Ihr habt einen Streit? Überlegt zusammen, wie ihr ihn lösen könnt. Wenn ihr nicht weiterkommt, helfe ich euch.“", "f": true, "e": "Konflikte selbst lösen lassen, mit Unterstützung im Hintergrund – fördert Sozialkompetenz."}, {"t": "„Das Experiment ist schiefgegangen? Super – was können wir daraus lernen?“", "f": true, "e": "Fehler zulassen und reflektieren fördert Selbst- und Sachkompetenz."}, {"t": "„Ich packe dir lieber jeden Morgen die Schultasche – sonst vergisst du wieder was.“", "f": false, "e": "Wer alles abnimmt, verhindert, dass das Kind Verantwortung übernimmt."}, {"t": "„Wie schätzt du deine Präsentation selbst ein? Was würdest du nächstes Mal anders machen?“", "f": true, "e": "Anregung zur Selbsteinschätzung und Reflexion – fördert Selbstkompetenz."}, {"t": "„Die Gruppenregeln habe ich schon festgelegt. Ihr müsst sie nur noch unterschreiben.“", "f": false, "e": "Die Kinder dürfen nur zustimmen, nicht mitgestalten. Gemeinsam Regeln aufstellen würde Sozialkompetenz fördern."}], "folgen": [{"t": "Die Kinder schöpfen ihr Mittagessen selbst und entscheiden, wie viel sie nehmen.", "c": "SE", "e": "Entscheidungsspielraum geben → Selbstkompetenz."}, {"t": "Ein Kind übernimmt eine Woche lang den Blumendienst der Gruppe.", "c": "SE", "e": "Aufgaben übertragen → Selbstkompetenz (Verantwortlichkeit, Zuverlässigkeit)."}, {"t": "Nach dem Ausflug überlegt jedes Kind, was ihm gut gelungen ist und worauf es stolz ist.", "c": "SE", "e": "Selbsteinschätzung anregen und Erfolge anerkennen → Selbstkompetenz."}, {"t": "Im Morgenkreis vereinbaren die Kinder gemeinsam, wie sie mit dem neuen Bobbycar umgehen.", "c": "SO", "e": "Gemeinsam Regeln aufstellen → Sozialkompetenz."}, {"t": "Ein Streit im Hort wird im Stuhlkreis besprochen; die Kinder suchen selbst nach einer Lösung.", "c": "SO", "e": "Konflikte besprechen und lösen lassen → Sozialkompetenz."}, {"t": "Die Klasse spielt ein Bewerbungsgespräch nach und tauscht dabei die Rollen.", "c": "SO", "e": "Rollenspiele → Sozialkompetenz (Perspektivenübernahme, Kommunikation)."}, {"t": "Der Erzieher bleibt bei Ärger ruhig und freundlich; die Kinder schauen sich das ab.", "c": "SO", "e": "Vorbild sein → Sozialkompetenz."}, {"t": "Die Kinder testen, welche Gegenstände im Wasser schwimmen, und halten die Ergebnisse fest.", "c": "SA", "e": "Selbstständiges Erforschen und Experimentieren → Sachkompetenz."}, {"t": "Die Schüler lernen die Mindmap-Methode, um ihre Notizen zu strukturieren.", "c": "SA", "e": "Lerntechniken vermitteln → Sachkompetenz."}, {"t": "Mit dem Tablet erstellen die Kinder einen Trickfilm und lernen, wie aus Einzelfotos eine Animation wird.", "c": "SA", "e": "Umgang mit Medien und Material üben → Sachkompetenz."}, {"t": "Mit Lupen untersuchen die Kinder, welche Tiere im Komposthaufen leben.", "c": "SA", "e": "Erfahrungen mit Natur und Umwelt ermöglichen → Sachkompetenz."}], "errors": [{"title": "Lenas Zusammenfassung", "s": [{"t": "Pädagogische Mündigkeit ist ein übergreifendes Erziehungsziel, also ein Leitziel."}, {"t": "Nach Paul Hastenteufel bedeutet Mündigkeit „Kompetenz in einem dreifachen Sinn“.", "c": "Die Formel stammt von Heinrich Roth. Hastenteufel ergänzt einen Aspekt der Sachkompetenz (verantwortliche Nutzung der dinglichen Welt)."}, {"t": "Nach Roth ist ein mündiger Mensch fähig, sein Leben zu bewältigen – ob er dazu auch bereit ist, spielt keine Rolle.", "c": "Ein mündiger Mensch ist bereit UND fähig. Bereitschaft (Wollen) und Fähigkeit (Können) gehören zusammen."}, {"t": "Selbstkompetenz wird auch als Du-Fähigkeit bezeichnet.", "c": "Selbstkompetenz ist die Ich-Fähigkeit; die Du-Fähigkeit ist die Sozialkompetenz."}, {"t": "Mündigkeit war ursprünglich ein Rechtsbegriff."}, {"t": "Wer mit 18 volljährig wird, hat die pädagogische Mündigkeit endgültig erreicht.", "c": "Volljährigkeit betrifft die rechtliche Mündigkeit. Pädagogische Mündigkeit ist ein lebenslanger Prozess und nie abgeschlossen."}, {"t": "Sachkompetenz umfasst die Fähigkeiten, die für die Bewältigung der Sachwelt in Beruf, Politik und Umwelt nötig sind."}, {"t": "Offenheit und Aufgeschlossenheit gehören beide zur Sozialkompetenz.", "c": "Offenheit gehört laut Überblick zur Sozialkompetenz, Aufgeschlossenheit aber zur Selbstkompetenz."}]}, {"title": "Jonas’ Antwort zu Erziehungsmaßnahmen", "s": [{"t": "Mündigkeit entsteht nicht von allein, sondern wird durch Erziehungsmaßnahmen gefördert."}, {"t": "Am besten gelingt das in einem autoritären Erziehungsstil, weil Kinder dort klare Regeln bekommen.", "c": "Gemeint ist der autoritative Stil: Wärme und Anerkennung verbunden mit klaren, begründeten Regeln. Autoritäre Erziehung schreibt streng vor und verhindert Mündigkeit."}, {"t": "Eltern, die ihrem Kind alles abnehmen, fördern seine Selbstkompetenz, weil es so keine Fehler macht.", "c": "Wer alles abnimmt, verhindert Mündigkeit. Gerade Fehler zuzulassen fördert die Selbstkompetenz."}, {"t": "Ein Kinderrat, in dem die Kinder über Gruppenregeln abstimmen, fördert vor allem die Sozialkompetenz."}, {"t": "Eine Qualifikation ist eine erworbene Befähigung zu einer meist beruflichen Tätigkeit, die oft durch Zeugnisse belegt wird."}, {"t": "Schlüsselqualifikationen sind Fähigkeiten, die nur für einen ganz bestimmten Beruf gebraucht werden.", "c": "Schlüsselqualifikationen werden gerade in vielen Situationen gebraucht – nicht nur in einem bestimmten Beruf."}, {"t": "Ein Gemüsebeet zu pflegen, fördert die Sachkompetenz, weil die Kinder Erfahrungen mit Natur und Umwelt sammeln."}]}], "checkout": ["Schlüsselqualifikationen sicher den drei Kompetenzbereichen zuordnen", "in Fällen erkennen und begründen, welche Kompetenz vor allem gefördert wird", "beurteilen, ob ein Erziehungsverhalten Mündigkeit fördert oder verhindert", "konkrete Erziehungsmaßnahmen einem Kompetenzbereich zuordnen", "Fehler in Aussagen zur Mündigkeit erkennen und korrigieren"]}, "anwendung": {"color": "gruen", "nr": 3, "name": "Anwenden in der Praxis", "afb": "AFB III · Übertragen & Beurteilen", "texts": "Text 06: Mündigkeit fördern – im Unterricht und im Praktikum", "teaser": "Mündigkeit im echten Alltag erkennen, fördern und beurteilen: spielen, beobachten, recherchieren, planen, debattieren.", "tasks": [{"icon": "🎭", "title": "Rollenspiel: Abnehmen, vorschreiben oder zutrauen?", "meta": ["Gruppen à 3–4", "ca. 40 Min.", "Text 06"], "goal": "Ihr erlebt, wie Erziehungsverhalten Mündigkeit fördert oder verhindert, und entwickelt fördernde Alternativen.", "steps": ["Eure Gruppe zieht eine <b>Situationskarte</b> (siehe Material).", "Bereitet die Szene in <b>drei Varianten</b> vor (je max. 1 Minute): <b>A</b> – die erziehende Person nimmt alles ab · <b>B</b> – sie schreibt streng vor · <b>C</b> – sie traut zu und begleitet (autoritativ).", "Spielt die drei Varianten vor. Das Publikum notiert zu Variante C: Welche <b>Erziehungsmaßnahme</b> wird eingesetzt? Welche <b>Kompetenz</b> und welche <b>Schlüsselqualifikation</b> werden gefördert?", "Gemeinsame Auswertung: Begründet, warum A und B Mündigkeit verhindern – obwohl sie gut gemeint sein können."], "prod": "<b>Ergebnis:</b> Beobachtungsnotizen und eine Klassenliste „Sätze, die Mündigkeit fördern“.", "material": [{"h": "Situationskarten", "list": ["Ein Kind (4) will sich vor dem Gartengang allein anziehen und braucht sehr lange.", "Ein Jugendlicher (15) möchte am Wochenende allein mit Freunden mit dem Zug in die Stadt fahren.", "Zwei Kinder (5) streiten um die einzige Schaukel.", "Ein Kind (6) will beim Kochen mit einem echten Messer Gemüse schneiden.", "Eine Schülerin (16) hat eine schlechte Note und will ihren Lernplan selbst erstellen.", "Die Hortgruppe soll ein Ziel für den Sommerausflug festlegen."]}]}, {"icon": "🔎", "title": "Praxis-Check: Mündigkeit im Praktikumsalltag", "meta": ["Einzelarbeit im Praktikum", "+ 45 Min. Austausch", "Text 06"], "goal": "Ihr erkennt in eurer Einrichtung Erziehungsmaßnahmen, die Selbst-, Sozial- und Sachkompetenz fördern – oder verhindern.", "steps": ["Beobachtet eine Woche lang den Alltag. Findet zu <b>jedem Kompetenzbereich</b> mindestens eine Situation, in der eine Fachkraft Mündigkeit fördert.", "Haltet sie im <b>Beobachtungsraster</b> fest (siehe Material).", "Sucht außerdem <b>eine Situation</b>, in der Mündigkeit eher verhindert wurde (alles abnehmen oder streng vorschreiben), und formuliert eine fördernde Alternative.", "Keine Namen von Kindern notieren!", "In der Schule: Austausch im <b>Kugellager</b>. Welche Maßnahmen tauchen bei vielen auf, welche sind überraschend?"], "prod": "<b>Ergebnis:</b> ausgefülltes Beobachtungsraster mit Alternative.", "material": [{"h": "Beobachtungsraster", "table": [["Kompetenz", "Situation (Wer? Was?)", "Erziehungsmaßnahme", "Geförderte Schlüsselqualifikation"], ["Selbstkompetenz", "", "", ""], ["Sozialkompetenz", "", "", ""], ["Sachkompetenz", "", "", ""], ["Mündigkeit verhindert", "", "Meine Alternative:", ""]]}]}, {"icon": "📰", "title": "Kurzprojekt: Schlüsselqualifikationen gesucht!", "meta": ["Gruppen à 3–4", "2 × 45 Min.", "Text 06"], "goal": "Ihr analysiert echte Stellenanzeigen und prüft, welche Qualifikationen und Schlüsselqualifikationen pädagogische Arbeitgeber erwarten.", "steps": ["Sucht drei aktuelle Stellenanzeigen für pädagogische Berufe (z. B. Erzieher/-in, Kinderpfleger/-in, Sozialpädagoge/-in) in Jobportalen oder auf den Seiten von Kita-Trägern aus eurer Region.", "Unterscheidet: Welche <b>Qualifikationen</b> (Abschlüsse, Nachweise) werden verlangt? Welche <b>Schlüsselqualifikationen</b>?", "Ordnet alle Schlüsselqualifikationen den drei <b>Kompetenzbereichen</b> zu. Was lässt sich nicht eindeutig zuordnen – und warum?", "Gestaltet ein Plakat: die häufigsten Schlüsselqualifikationen je Bereich.", "Persönlicher Check: Welche davon bringe ich schon mit, welche will ich im Praktikum ausbauen? Erklärt, was das mit „Mündigkeit als Prozess“ zu tun hat."], "prod": "<b>Ergebnis:</b> Plakat und persönlicher Entwicklungsplan (3 Ziele)."}, {"icon": "🏛️", "title": "Gruppenarbeit: Wir planen einen Kinderrat", "meta": ["Gruppen à 4", "ca. 60 Min.", "Text 06"], "goal": "Ihr plant eine Erziehungsmaßnahme, die Mündigkeit fördert, und begründet sie mit allen drei Kompetenzbereichen.", "steps": ["Legt fest, für welche Gruppe ihr plant (Alter, Einrichtung – gern eure Praktikumsstelle).", "Plant den Kinderrat: Wer nimmt teil? Wie oft? Welche Themen dürfen die Kinder entscheiden, welche nicht? Wie stimmen Kinder ab, die noch nicht lesen können (z. B. Muggelsteine, Bildkarten)?", "Formuliert drei Gesprächsregeln, die die Kinder im ersten Kinderrat selbst beschließen könnten.", "Begründet: Welche Selbst-, Sozial- und Sachkompetenzen werden gefördert? Nennt je zwei Schlüsselqualifikationen.", "Beurteilt: Wo stößt die Mitbestimmung der Kinder an Grenzen (Sicherheit, Alter, Verantwortung der Fachkräfte)?"], "prod": "<b>Ergebnis:</b> Plakat mit Ablaufplan und Begründung. <b>Bonus:</b> Stellt die Idee in eurer Praktikumsstelle vor."}, {"icon": "🗣️", "title": "Debatte: Mit 18 mündig?", "meta": ["ganze Klasse", "ca. 45 Min.", "Text 06"], "goal": "Ihr nehmt begründet Stellung zum Unterschied zwischen rechtlicher und pädagogischer Mündigkeit.", "steps": ["These an der Tafel: <b>„Mit 18 ist man mündig.“</b>", "Die Klasse teilt sich in eine <b>Pro-Gruppe</b>, eine <b>Contra-Gruppe</b> und <b>Beobachter</b>.", "10 Minuten Vorbereitung mit Text 06 (Argumentationshilfe siehe Material).", "15 Minuten <b>Fishbowl</b>: Innen diskutieren je drei Personen, ein freier Stuhl lädt zum Einsteigen ein.", "Die Beobachter fassen die stärksten Argumente zusammen.", "Zum Abschluss schreibt jede/r eine begründete Stellungnahme (ca. ½ Seite)."], "prod": "<b>Ergebnis:</b> schriftliche Stellungnahme.", "material": [{"h": "Argumentationshilfe", "list": ["<b>Pro:</b> Mündigkeit ist ursprünglich ein Rechtsbegriff – mit 18 darf man Rechtsgeschäfte abschließen und wählen.", "<b>Contra:</b> Pädagogisch wird Mündigkeit über Selbst-, Sozial- und Sachkompetenz bestimmt – sie hängt nicht am Alter.", "<b>Contra:</b> Mündigkeit ist ein Prozess und nie abgeschlossen; wer mündig bleiben will, muss weiter- und umlernen.", "<b>Prüffrage:</b> Kennt ihr Jugendliche unter 18, die in Teilbereichen schon sehr mündig handeln – oder Erwachsene, bei denen das nicht so ist?"]}]}], "checkout": ["Erziehungsverhalten in Alltagssituationen so verändern, dass es Mündigkeit fördert", "in meinem Praktikum Maßnahmen zur Förderung von Mündigkeit erkennen", "Qualifikationen und Schlüsselqualifikationen in echten Stellenanzeigen unterscheiden", "eine Maßnahme wie den Kinderrat planen und mit den drei Kompetenzbereichen begründen", "begründet Stellung nehmen, ab wann ein Mensch mündig ist"]}}};
+/* =====================================================================
+   SYSTEM – gleiche Formate in jedem Lernbereich
+   ===================================================================== */
+const FORMATS = {
+ begriffe:[["karten","🃏 Karteikarten"],["sort","↔️ Zuordnen"],["luecke","✏️ Lückentext"],["detektiv","🔍 Beispiel-Detektiv"]],
+ theorie:[["matrix","🧩 Struktur legen"],["diagnose","🩺 Fall-Diagnose"],["regler","🎚️ Einordnen"],["folgen","🔗 Folgen zuordnen"],["fehler","🕵️ Fehler-Detektiv"]],
+ anwendung:[["auftraege","📋 Aufträge"]]
+};
+const HELP = {
+ karten:"Lies die Frage, überlege dir die Antwort und tippe auf die Karte. Karten, die du noch nicht kannst, kommen später wieder.",
+ sort:"Zu welchem Merkmal gehört die Aussage?",
+ luecke:"Wähle in jeder Lücke das passende Wort. Achtung: Es sind auch falsche Wörter dabei.",
+ detektiv:"Lies das Beispiel. Welches Merkmal wird hier besonders deutlich?",
+ matrix:"Tippe ein Kärtchen an und dann das passende Feld. Zuerst die vier Stile, dann die Merkmale.",
+ diagnose:"Schritt 1: Welcher Stil liegt vor? Schritt 2: Woran erkennst du das?",
+ regler:"Stelle ein, wie viel Wärme und wie viel Anforderung in der Aussage stecken. Dann prüfen.",
+ folgen:"Welche Folge oder welche Aussage gehört zu welchem Erziehungsstil?",
+ fehler:"Diese Schülerantwort enthält Fehler. Tippe alle Sätze an, die du für falsch hältst, und prüfe dann.",
+ auftraege:"Diese Aufträge setzt ihr im Unterricht oder im Praktikum praktisch um. Eure Lehrkraft gibt euch das Material dazu."
+};
+
+/* ---------- Hilfsfunktionen ---------- */
+const $=s=>document.querySelector(s);
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const bar=(n,t)=>`<div class="bar"><i style="width:${t?Math.round(n/t*100):0}%"></i></div>`;
+const store={get(k){try{return JSON.parse(localStorage.getItem(k)||"null")}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let VIEW={lv:null,fmt:null};
+let area;
+
+/* ---------- Rahmen ---------- */
+function render(){
+ const root=$("#root");
+ if(!VIEW.lv){
+  document.body.className="";
+  root.innerHTML=`<header><div class="top"><h1>${LB.title}</h1></div><p>Drei Ebenen – der Anspruch steigt von Stufe zu Stufe.</p></header>
+  <main><p class="intro">Arbeite dich von unten nach oben: Erst die Begriffe sicher klären, dann die Theorie verstehen, dann das Wissen in der Praxis anwenden.</p>
+  <div class="stairs">${["begriffe","theorie","anwendung"].map(id=>{const L=LB.levels[id];const cl={rot:"r",blau:"b",gruen:"g"}[L.color];
+   return `<button class="tile ${cl}" onclick="go('${id}')"><div class="num">${L.nr}<small>${L.afb.split(" · ")[0]}</small></div><div class="txt"><h3>${L.name}</h3><p>${L.teaser}</p><p class="small" style="margin-top:4px">${L.texts} · ${FORMATS[id].length>1?FORMATS[id].length+" Übungsformate":"praktische Aufträge"}</p></div></button>`}).join("")}</div>
+  <p class="legend">🔴 Rot = Begriffe (Wissen) · 🔵 Blau = Theorie (Verstehen) · 🟢 Grün = Anwendung (Übertragen)</p></main>`;
+  return;
+ }
+ const L=LB.levels[VIEW.lv];
+ document.body.className=L.color;
+ const fm=FORMATS[VIEW.lv];
+ if(!VIEW.fmt) VIEW.fmt=fm[0][0];
+ root.innerHTML=`<header><div class="top"><button class="home-btn" onclick="go('')">← Übersicht</button><h1>Ebene ${L.nr} · ${L.name}</h1></div><p>${L.afb} — ${L.texts}</p></header>
+ <div class="lvnav">${["begriffe","theorie","anwendung"].map(id=>{const X=LB.levels[id];return `<button class="${{rot:"r",blau:"b",gruen:"g"}[X.color]} ${id===VIEW.lv?"on":""}" onclick="go('${id}')">${X.nr} · ${X.name.split(" ")[0]}</button>`}).join("")}</div>
+ ${fm.length>1?`<div class="sub">${fm.map(([k,l])=>`<button class="${k===VIEW.fmt?"on":""}" onclick="setFmt('${k}')">${l}</button>`).join("")}</div>`:`<div class="sub" style="padding:4px"></div>`}
+ <main><div id="area"></div>${checkoutHTML(VIEW.lv)}</main>`;
+ area=$("#area");
+ ENGINES[VIEW.fmt]();
+ window.scrollTo(0,0);
+}
+function go(id){VIEW={lv:id||null,fmt:null};try{history.replaceState(null,"",id?"#"+id:location.pathname)}catch(e){}render();}
+function setFmt(k){VIEW.fmt=k;render();}
+function intro(k){return `<p class="intro">${HELP[k]}</p>`;}
+function checkoutHTML(id){
+ const L=LB.levels[id],saved=store.get("mue-co-"+id)||[];
+ return `<div class="checkout"><h3>✅ Check-out: Ich kann …</h3>${L.checkout.map((t,i)=>`<label><input type="checkbox" ${saved[i]?"checked":""} onchange="saveCO('${id}',${i},this.checked)"> ${t}</label>`).join("")}</div>`;
+}
+function saveCO(id,i,v){const s=store.get("mue-co-"+id)||[];s[i]=v;store.set("mue-co-"+id,s);}
+function doneBox(score,total,label,again){area.innerHTML=`<div class="box done"><div class="big">${score} / ${total}</div><p>${label}</p><button class="btn" onclick="${again}">Nochmal</button></div>`;}
+
+/* ---------- Formate ---------- */
+const ENGINES={};
+
+/* Karteikarten */
+let K={};
+ENGINES.karten=(f)=>{const L=LB.levels.begriffe;K.filter=f||K.filter||"all";K.stack=shuffle(L.cards.filter(c=>K.filter==="all"||c.c===K.filter));K.total=K.stack.length;K.known=0;kRender();};
+function kRender(){
+ const L=LB.levels.begriffe;
+ const filt=`<div class="row">${[["all","Alle"],...Object.entries(L.cats)].map(([k,l])=>`<button class="chip ${K.filter===k?"on":""}" onclick="ENGINES.karten('${k}')">${l}</button>`).join("")}</div>`;
+ if(!K.stack.length){area.innerHTML=intro("karten")+filt+`<div class="box done" style="margin-top:12px"><div class="big">🎉</div><p><b>Alle ${K.total} Karten gewusst!</b></p><button class="btn" onclick="ENGINES.karten()">Nochmal</button></div>`;return;}
+ const c=K.stack[0];
+ area.innerHTML=intro("karten")+filt+`${bar(K.known,K.total)}<div class="small">${K.known} von ${K.total} gewusst · noch ${K.stack.length} im Stapel</div>
+ <div class="flip" id="flip" onclick="this.classList.toggle('turned')"><div class="flip-in">
+  <div class="face front"><span class="tag">${L.cats[c.c]}</span><div class="q">${c.q}</div><div class="hint">Tippen zum Umdrehen</div></div>
+  <div class="face back"><div>${c.a}</div></div></div></div>
+ <div class="grid2"><button class="btn no" onclick="kNext(false)">🔁 Noch nicht sicher</button><button class="btn ok" onclick="kNext(true)">✅ Wusste ich</button></div>`;
+ fitCard();
+}
+function fitCard(){const f=$("#flip");if(!f)return;let h=230;f.querySelectorAll(".face").forEach(el=>{el.style.position="relative";h=Math.max(h,el.offsetHeight);el.style.position="";});f.querySelector(".flip-in").style.minHeight=h+"px";}
+function kNext(ok){const c=K.stack.shift();if(ok)K.known++;else K.stack.splice(Math.min(K.stack.length,2+Math.floor(Math.random()*3)),0,c);kRender();}
+window.addEventListener("resize",fitCard);
+
+/* Zuordnen (generisch: items, Kategorien) */
+let S={};
+function sorter(items,cats,keys,help,againFn){
+ S={list:shuffle(items),i:0,ok:0,cats,keys,help,againFn,lock:false};sRender();
+}
+function sRender(){
+ if(S.i>=S.list.length){doneBox(S.ok,S.list.length,"richtig zugeordnet",S.againFn);return;}
+ const it=S.list[S.i];
+ area.innerHTML=intro(S.help)+`${bar(S.i,S.list.length)}<div class="small">Aussage ${S.i+1} von ${S.list.length} · ${S.ok} richtig</div>
+ <div class="stmt">${it.t}</div><div class="grid2">${S.keys.map(k=>`<button class="btn out" data-k="${k}" onclick="sAns('${k}')">${S.cats[k]}</button>`).join("")}</div><div class="fb" id="fb"></div>`;
+ S.lock=false;
+}
+function sAns(k){
+ if(S.lock)return;S.lock=true;const it=S.list[S.i],ok=k===it.c;if(ok)S.ok++;
+ document.querySelectorAll(".grid2 .btn").forEach(b=>{b.disabled=true;if(b.dataset.k===it.c){b.className="btn ok";b.disabled=false;b.style.opacity=1}});
+ const fb=$("#fb");fb.className="fb "+(ok?"ok":"no");
+ fb.innerHTML=`<b>${ok?"Richtig!":"Leider falsch."}</b> Gehört zu: <b>${S.cats[it.c]}</b>. ${it.e}<div style="margin-top:10px"><button class="btn ghost" onclick="S.i++;sRender()">Weiter →</button></div>`;
+}
+ENGINES.sort=()=>{const L=LB.levels.begriffe;sorter(L.sort,L.cats,L.sortCats,"sort","ENGINES.sort()");};
+ENGINES.folgen=()=>{const L=LB.levels.theorie;sorter(L.folgen,L.styles,Object.keys(L.styles),"folgen","ENGINES.folgen()");};
+
+/* Lückentext */
+ENGINES.luecke=()=>{
+ const L=LB.levels.begriffe;let h=intro("luecke");
+ L.gaps.forEach((g,gi)=>{const ans=[...g.s.matchAll(/\[(.+?)\]/g)].map(m=>m[1]);const pool=shuffle([...ans,...g.x]);
+  h+=`<div class="gap-s"><b>${gi+1}.</b> ${g.s.replace(/\[(.+?)\]/g,(_,w)=>`<select data-a="${w}" onchange="this.className=''"><option value="">…</option>${pool.map(p=>`<option>${p}</option>`).join("")}</select>`)}<span class="src">${g.src}</span></div>`;});
+ h+=`<div class="row"><button class="btn" onclick="lCheck()">Prüfen</button><button class="btn ghost" onclick="ENGINES.luecke()">Neu mischen</button><span id="lres" class="small"></span></div>`;
+ area.innerHTML=h;
+};
+function lCheck(){const s=[...document.querySelectorAll(".gap-s select")];let ok=0;s.forEach(x=>{const r=x.value===x.dataset.a;x.className=r?"ok":"no";if(r)ok++;});$("#lres").innerHTML=` <b>${ok} von ${s.length}</b> richtig${ok===s.length?" 🎉":" – korrigiere die roten Felder."}`;}
+
+/* Beispiel-Detektiv */
+let D={};
+ENGINES.detektiv=()=>{D={list:shuffle(LB.levels.begriffe.detect),i:0,ok:0};dRender();};
+function dRender(){
+ const L=LB.levels.begriffe;
+ if(D.i>=D.list.length){doneBox(D.ok,D.list.length,"Fälle gelöst","ENGINES.detektiv()");return;}
+ const c=D.list[D.i];
+ area.innerHTML=intro("detektiv")+`${bar(D.i,D.list.length)}<div class="small">Fall ${D.i+1} von ${D.list.length} · ${D.ok} gelöst</div>
+ <div class="case">${c.t}</div><div class="opts">${L.sortCats.map(k=>`<button class="opt" data-k="${k}" onclick="dAns('${k}')">${L.cats[k]}</button>`).join("")}</div><div class="fb" id="fb"></div>`;
+}
+function dAns(k){const c=D.list[D.i],ok=k===c.k;if(ok)D.ok++;
+ document.querySelectorAll(".opt").forEach(b=>{b.disabled=true;if(b.dataset.k===c.k)b.classList.add("ok");else if(b.dataset.k===k)b.classList.add("no");});
+ const fb=$("#fb");fb.className="fb "+(ok?"ok":"no");fb.innerHTML=`<b>${ok?"Gut erkannt!":"Nicht ganz."}</b> ${c.e}<div style="margin-top:10px"><button class="btn ghost" onclick="D.i++;dRender()">Weiter →</button></div>`;}
+
+/* Struktur legen (Matrix) */
+let M={};
+ENGINES.matrix=()=>{const L=LB.levels.theorie;M={items:[...L.matrix.filter(x=>x.st),...shuffle(L.matrix.filter(x=>!x.st))].map((x,i)=>({...x,id:i})),placed:{},sel:null,err:0};mRender();};
+function mRender(){
+ const L=LB.levels.theorie;
+ const left=M.items.filter(x=>!M.placed[x.id]);
+ const stylesLeft=left.some(x=>x.st);
+ const pool=left.filter(x=>stylesLeft?x.st:true);
+ const cell=k=>`<div class="cell" id="c-${k}" onclick="mDrop('${k}')">${M.items.filter(x=>M.placed[x.id]===k).sort((a,b)=>(b.st||0)-(a.st||0)).map(x=>`<div class="in ${x.st?"st":""}">${x.t}</div>`).join("")}</div>`;
+ area.innerHTML=intro("matrix")+`
+ <div class="pool">${pool.map(x=>`<button class="${x.st?"st":""} ${M.sel===x.id?"sel":""}" onclick="M.sel=${x.id};mRender()">${x.t}</button>`).join("")||"<b>Fertig! 🎉</b>"}</div>
+ <div class="small">${stylesLeft?"Runde 1: Ordne zuerst die vier Stile ein.":"Runde 2: Ordne jetzt die Merkmale den Stilen zu."} · Fehlversuche: ${M.err}</div>
+ <div class="mx">
+  <div></div><div class="ax">Wärme hoch</div><div class="ax">Wärme niedrig</div>
+  <div class="ax" style="writing-mode:vertical-rl;transform:rotate(180deg)">Anforderung hoch</div>${cell("AV")}${cell("AR")}
+  <div class="ax" style="writing-mode:vertical-rl;transform:rotate(180deg)">Anforderung niedrig</div>${cell("PE")}${cell("VE")}
+ </div>
+ ${!left.length?`<div class="fb ok">Alles richtig eingeordnet – mit ${M.err} Fehlversuch(en). Merke: <b>Wärme</b> = Zuwendung, Unterstützung · <b>Anforderung</b> = Regeln, Kontrolle, Konsequenz.</div><button class="btn" style="margin-top:10px" onclick="ENGINES.matrix()">Nochmal</button>`:""}`;
+}
+function mDrop(k){
+ if(M.sel===null)return;const it=M.items[M.sel];
+ if(it.k===k){M.placed[it.id]=k;M.sel=null;mRender();}
+ else{M.err++;const c=$("#c-"+k);c.classList.add("flash");setTimeout(()=>{M.sel=null;mRender();},450);}
+}
+
+/* Fall-Diagnose (zweistufig) */
+let G={};
+ENGINES.diagnose=()=>{G={list:shuffle(LB.levels.theorie.diagnose),i:0,ok:0,s1:null};gRender();};
+function gRender(){
+ const L=LB.levels.theorie;
+ if(G.i>=G.list.length){doneBox(G.ok,G.list.length*2,"Punkte (Stil + Begründung)","ENGINES.diagnose()");return;}
+ const c=G.list[G.i];
+ area.innerHTML=intro("diagnose")+`${bar(G.i,G.list.length)}<div class="small">Fall ${G.i+1} von ${G.list.length} · ${G.ok} Punkte</div>
+ <div class="case">${c.t}</div>
+ <div class="step">Schritt 1: Welcher Erziehungsstil?</div>
+ <div class="opts" id="s1">${Object.entries(L.styles).map(([k,l])=>`<button class="opt" data-k="${k}" onclick="g1('${k}')">${l}</button>`).join("")}</div>
+ <div id="s2"></div><div class="fb" id="fb"></div>`;
+}
+function g1(k){
+ const c=G.list[G.i],ok=k===c.k;if(ok)G.ok++;
+ document.querySelectorAll("#s1 .opt").forEach(b=>{b.disabled=true;if(b.dataset.k===c.k)b.classList.add("ok");else if(b.dataset.k===k)b.classList.add("no");});
+ $("#s2").innerHTML=`<div class="step">Schritt 2: Woran erkennst du das?</div><div class="opts">${c.r.map((r,i)=>`<button class="opt" data-i="${i}" onclick="g2(${i})">${r}</button>`).join("")}</div>`;
+}
+function g2(i){
+ const c=G.list[G.i],ok=i===c.rk;if(ok)G.ok++;
+ document.querySelectorAll("#s2 .opt").forEach(b=>{b.disabled=true;const j=+b.dataset.i;if(j===c.rk)b.classList.add("ok");else if(j===i)b.classList.add("no");});
+ const L=LB.levels.theorie,fb=$("#fb");fb.className="fb "+(ok?"ok":"no");
+ fb.innerHTML=`<b>Lösung:</b> ${L.styles[c.k]} – ${L.cells[c.k]}.<div style="margin-top:10px"><button class="btn ghost" onclick="G.i++;gRender()">Weiter →</button></div>`;
+}
+
+/* Einordnen mit Reglern */
+let R={};
+ENGINES.regler=()=>{R={list:shuffle(LB.levels.theorie.slider),i:0,ok:0};rRender();};
+function rRender(){
+ if(R.i>=R.list.length){doneBox(R.ok,R.list.length,"Aussagen richtig eingeordnet","ENGINES.regler()");return;}
+ const c=R.list[R.i];
+ area.innerHTML=intro("regler")+`${bar(R.i,R.list.length)}<div class="small">Aussage ${R.i+1} von ${R.list.length} · ${R.ok} richtig</div>
+ <div class="case" style="font-size:1.15rem">${c.t}</div>
+ <div class="box">
+  <div class="sl"><label>❤️ Wärme / Responsivität <span id="wv">5</span></label><input type="range" min="0" max="10" value="5" id="w" oninput="$('#wv').textContent=this.value"><div class="row small" style="justify-content:space-between"><span>niedrig</span><span>hoch</span></div></div>
+  <div class="sl"><label>📏 Anforderung / Kontrolle <span id="av">5</span></label><input type="range" min="0" max="10" value="5" id="a" oninput="$('#av').textContent=this.value"><div class="row small" style="justify-content:space-between"><span>niedrig</span><span>hoch</span></div></div>
+  <button class="btn" id="rb" onclick="rCheck()">Prüfen</button>
+ </div><div class="fb" id="fb"></div>`;
+}
+function rCheck(){
+ const w=+$("#w").value,a=+$("#a").value,fb=$("#fb");
+ if(w===5||a===5){fb.className="fb no";fb.innerHTML="Entscheide dich bei beiden Reglern: eher hoch (über 5) oder eher niedrig (unter 5).";return;}
+ const c=R.list[R.i],L=LB.levels.theorie,key=c.w?(c.a?"AV":"PE"):(c.a?"AR":"VE");
+ const okW=(w>5)===!!c.w,okA=(a>5)===!!c.a,ok=okW&&okA;if(ok)R.ok++;
+ $("#rb").disabled=true;$("#w").disabled=$("#a").disabled=true;
+ fb.className="fb "+(ok?"ok":"no");
+ fb.innerHTML=`<b>${ok?"Richtig eingeordnet!":"Nicht ganz."}</b> Wärme: <b>${c.w?"hoch":"niedrig"}</b>${okW?"":" (falsch)"} · Anforderung: <b>${c.a?"hoch":"niedrig"}</b>${okA?"":" (falsch)"} → <b>${L.styles[key]}</b>.<div style="margin-top:10px"><button class="btn ghost" onclick="R.i++;rRender()">Weiter →</button></div>`;
+}
+
+/* Fehler-Detektiv */
+let E={};
+ENGINES.fehler=(n)=>{E={n:n||0,mark:{},checked:false};eRender();};
+function eRender(){
+ const L=LB.levels.theorie,T=L.errors[E.n];
+ area.innerHTML=intro("fehler")+`<div class="row" style="margin-bottom:10px">${L.errors.map((x,i)=>`<button class="chip ${i===E.n?"on":""}" onclick="ENGINES.fehler(${i})">${x.title}</button>`).join("")}</div>
+ <div class="box eh"><div class="small" style="margin-bottom:8px">${T.title}</div>${T.s.map((s,i)=>{let cl="";if(E.checked){cl=s.c?(E.mark[i]?"hit":"miss"):(E.mark[i]?"wrong":"");}else if(E.mark[i])cl="mark";
+  return `<p class="${cl}" onclick="eTog(${i})">${s.t}${E.checked&&s.c?`<span class="corr">✏️ ${s.c}</span>`:""}${E.checked&&!s.c&&E.mark[i]?`<span class="corr">Dieser Satz ist richtig.</span>`:""}</p>`}).join("")}</div>
+ <div class="row" style="margin-top:10px"><button class="btn" onclick="eCheck()" ${E.checked?"disabled":""}>Prüfen</button><button class="btn ghost" onclick="ENGINES.fehler(${E.n})">Zurücksetzen</button></div><div class="fb" id="fb"></div>`;
+ if(E.checked){const errs=T.s.filter(s=>s.c).length,hits=T.s.filter((s,i)=>s.c&&E.mark[i]).length,wrong=T.s.filter((s,i)=>!s.c&&E.mark[i]).length;
+  const fb=$("#fb");fb.className="fb "+(hits===errs&&!wrong?"ok":"no");
+  fb.innerHTML=`Du hast <b>${hits} von ${errs}</b> Fehlern gefunden${wrong?` und <b>${wrong}</b> richtige(n) Satz/Sätze fälschlich markiert`:""}. 🟩 gefunden · 🟥 übersehen · 🟨 war eigentlich richtig. Lies die Korrekturen ✏️ genau.`;}
+}
+function eTog(i){if(E.checked)return;E.mark[i]=!E.mark[i];eRender();}
+function eCheck(){E.checked=true;eRender();}
+
+/* Aufträge (Anwendung) */
+ENGINES.auftraege=()=>{
+ const L=LB.levels.anwendung;
+ area.innerHTML=intro("auftraege")+L.tasks.map(t=>`<div class="task"><h3>${t.icon} ${t.title}</h3><div class="meta">${t.meta.map(m=>`<span>${m}</span>`).join("")}</div>
+ <div class="goal">🎯 ${t.goal}</div><ol>${t.steps.map(s=>`<li>${s}</li>`).join("")}</ol><div class="prod">${t.prod}</div></div>`).join("");
+};
+
+
+
+/* ---- Anpassungen für Text 06 ---- */
+HELP.sort="Zu welchem Begriff gehört die Aussage?";
+HELP.detektiv="Lies das Beispiel genau. Welcher Begriff wird hier am deutlichsten? Achtung: Einige Fälle sind Grenzfälle.";
+HELP.matrix="Tippe ein Kärtchen an und dann die passende Spalte. Zuerst die Kurzbezeichnungen, dann die Schlüsselqualifikationen. Vorsicht bei ähnlich klingenden Begriffen!";
+HELP.diagnose="Schritt 1: Welche Kompetenz wird hier vor allem gefördert? Schritt 2: Welche Begründung trifft am besten zu?";
+HELP.regler="Fördert diese Aussage Mündigkeit – oder verhindert sie sie? Stelle den Regler ein und prüfe. Achtung: Nicht alles, was freundlich klingt, fördert Mündigkeit.";
+HELP.folgen="Welche Kompetenz wird durch diese Erziehungsmaßnahme vor allem gefördert?";
+HELP.auftraege="Diesen Auftrag setzt ihr im Unterricht oder im Praktikum praktisch um. Das Material findet ihr unten.";
+
+/* Struktur legen: drei Spalten statt Matrix */
+function mRender(){
+ const L=LB.levels.theorie, keys=Object.keys(L.styles);
+ const left=M.items.filter(x=>!M.placed[x.id]); const stLeft=left.some(x=>x.st); const pool=left.filter(x=>stLeft?x.st:true);
+ const col=k=>`<div class="cell" id="c-${k}" onclick="mDrop('${k}')">${M.items.filter(x=>M.placed[x.id]===k).sort((a,b)=>(b.st||0)-(a.st||0)).map(x=>`<div class="in ${x.st?"st":""}">${x.t}</div>`).join("")}</div>`;
+ area.innerHTML=intro("matrix")+`<div class="pool">${pool.map(x=>`<button class="${x.st?"st":""} ${M.sel===x.id?"sel":""}" onclick="M.sel=${x.id};mRender()">${x.t}</button>`).join("")||"<b>Fertig! 🎉</b>"}</div>
+ <div class="small">${stLeft?"Runde 1: Ordne zuerst die Kurzbezeichnungen zu.":"Runde 2: Ordne jetzt die Schlüsselqualifikationen zu."} · Fehlversuche: ${M.err}</div>
+ <div class="cols">${keys.map(k=>`<div class="ch">${L.styles[k]}</div>`).join("")}${keys.map(col).join("")}</div>
+ ${!left.length?`<div class="fb ok">Alles eingeordnet – mit ${M.err} Fehlversuch(en). Tipp: Aufgeschlossenheit (Selbst) und Offenheit (Sozial) werden oft verwechselt.</div><button class="btn" style="margin-top:10px" onclick="ENGINES.matrix()">Nochmal</button>`:""}`;
+}
+/* Regler: fördert oder verhindert Mündigkeit */
+function rRender(){
+ if(R.i>=R.list.length){doneBox(R.ok,R.list.length,"Aussagen richtig eingeordnet","ENGINES.regler()");return;}
+ const c=R.list[R.i];
+ area.innerHTML=intro("regler")+`${bar(R.i,R.list.length)}<div class="small">Aussage ${R.i+1} von ${R.list.length} · ${R.ok} richtig</div>
+ <div class="case" style="font-size:1.12rem">${c.t}</div>
+ <div class="box"><div class="sl"><label>Wirkung auf die Mündigkeit</label><input type="range" min="0" max="10" value="5" id="w">
+ <div class="scale"><span>⛔ verhindert</span><span>fördert ✅</span></div></div><button class="btn" id="rb" onclick="rCheck()">Prüfen</button></div><div class="fb" id="fb"></div>`;
+}
+function rCheck(){
+ const v=+$("#w").value,fb=$("#fb"),c=R.list[R.i];
+ if(v===5){fb.className="fb no";fb.innerHTML="Entscheide dich: Schiebe den Regler deutlich nach links oder rechts.";return;}
+ const ok=(v>5)===!!c.f; if(ok)R.ok++; $("#rb").disabled=true; $("#w").disabled=true;
+ fb.className="fb "+(ok?"ok":"no");
+ fb.innerHTML=`<b>${ok?"Richtig eingeschätzt!":"Nicht ganz."}</b> Die Aussage <b>${c.f?"fördert":"verhindert"}</b> Mündigkeit. ${c.e}<div style="margin-top:10px"><button class="btn ghost" onclick="R.i++;rRender()">Weiter →</button></div>`;
+}
+
+
+const DOT={rot:"🔴",blau:"🔵",gruen:"🟢"}, LVW={rot:"Rot",blau:"Blau",gruen:"Grün"};
+function navHTML(){
+ const L=LB.levels[PAGE.lv];
+ return `<nav class="pnav"><h3>${DOT[L.color]} Weitere Übungen auf Ebene ${L.nr} · ${L.name}</h3>${PAGE.siblings.map(([f,l])=>`<a href="${f}" class="${f===PAGE.file?"on":""}">${l}</a>`).join("")}<a class="home" href="${PAGE.home}">← Übersicht aller Ebenen</a></nav>`;
+}
+function matHTML(m){
+ if(m.list) return `<div class="mat"><h4>📎 ${m.h}</h4><ul>${m.list.map(x=>`<li>${x}</li>`).join("")}</ul></div>`;
+ if(m.table) return `<div class="mat"><h4>📎 ${m.h}</h4><table><tr>${m.table[0].map(h=>`<th>${h}</th>`).join("")}</tr>${m.table.slice(1).map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}</table></div>`;
+ return "";
+}
+function taskSingle(i){
+ const t=LB.levels.anwendung.tasks[i];
+ area.innerHTML=intro("auftraege")+`<div class="task"><h3>${t.icon} ${t.title}</h3><div class="meta">${t.meta.map(m=>`<span>${m}</span>`).join("")}</div>
+ <div class="goal">🎯 ${t.goal}</div><ol>${t.steps.map(s=>`<li>${s}</li>`).join("")}</ol><div class="prod">${t.prod}</div>${(t.material||[]).map(matHTML).join("")}${PAGE.pdf?`<a class="dl" href="${PAGE.pdf}" download>🖨️ Druckvorlage (PDF) herunterladen</a>`:""}</div>`;
+}
+function render(){
+ const L=LB.levels[PAGE.lv];
+ document.body.className=L.color+(location.hash==="#embed"?" embed":"");
+ document.getElementById("root").innerHTML=`<header><span class="lvbadge">${DOT[L.color]} Ebene ${L.nr} · ${L.name.split(" ")[0]} · ${LVW[L.color]}</span><span class="niv">Niveau: ${PAGE.niveau}</span>
+ <h1>${PAGE.title}</h1><p>${L.afb} — ${L.texts}</p></header>
+ <main><div id="area"></div>${checkoutHTML(PAGE.lv)}${navHTML()}</main>`;
+ area=$("#area");
+ if(PAGE.task!=null) taskSingle(PAGE.task); else ENGINES[PAGE.fmt]();
+}
+render();
+(function(){ if(location.protocol.indexOf("http")!==0) return;
+ document.querySelectorAll(".pnav a:not(.home), a.dl").forEach(a=>{ fetch(a.href,{method:"HEAD"}).then(r=>{ if(!r.ok) a.style.display="none"; }).catch(()=>{}); });
+})();
+
+</script>
+<script>window.LB3_LOES="<h2>Fehler-Detektiv<\/h2><h3>Lenas Zusammenfassung – 5 Fehler<\/h3><div class='card'><p><span class='ok'>✓ 1.<\/span> Pädagogische Mündigkeit ist ein übergreifendes Erziehungsziel, also ein Leitziel.<\/p><p><span class='x'>✗ 2.<\/span> Nach Paul Hastenteufel bedeutet Mündigkeit „Kompetenz in einem dreifachen Sinn“.<span class='corr'>✏️ Die Formel stammt von Heinrich Roth. Hastenteufel ergänzt einen Aspekt der Sachkompetenz (verantwortliche Nutzung der dinglichen Welt).<\/span><\/p><p><span class='x'>✗ 3.<\/span> Nach Roth ist ein mündiger Mensch fähig, sein Leben zu bewältigen – ob er dazu auch bereit ist, spielt keine Rolle.<span class='corr'>✏️ Ein mündiger Mensch ist bereit UND fähig. Bereitschaft (Wollen) und Fähigkeit (Können) gehören zusammen.<\/span><\/p><p><span class='x'>✗ 4.<\/span> Selbstkompetenz wird auch als Du-Fähigkeit bezeichnet.<span class='corr'>✏️ Selbstkompetenz ist die Ich-Fähigkeit; die Du-Fähigkeit ist die Sozialkompetenz.<\/span><\/p><p><span class='ok'>✓ 5.<\/span> Mündigkeit war ursprünglich ein Rechtsbegriff.<\/p><p><span class='x'>✗ 6.<\/span> Wer mit 18 volljährig wird, hat die pädagogische Mündigkeit endgültig erreicht.<span class='corr'>✏️ Volljährigkeit betrifft die rechtliche Mündigkeit. Pädagogische Mündigkeit ist ein lebenslanger Prozess und nie abgeschlossen.<\/span><\/p><p><span class='ok'>✓ 7.<\/span> Sachkompetenz umfasst die Fähigkeiten, die für die Bewältigung der Sachwelt in Beruf, Politik und Umwelt nötig sind.<\/p><p><span class='x'>✗ 8.<\/span> Offenheit und Aufgeschlossenheit gehören beide zur Sozialkompetenz.<span class='corr'>✏️ Offenheit gehört laut Überblick zur Sozialkompetenz, Aufgeschlossenheit aber zur Selbstkompetenz.<\/span><\/p><\/div><h3>Jonas’ Antwort zu Erziehungsmaßnahmen – 3 Fehler<\/h3><div class='card'><p><span class='ok'>✓ 1.<\/span> Mündigkeit entsteht nicht von allein, sondern wird durch Erziehungsmaßnahmen gefördert.<\/p><p><span class='x'>✗ 2.<\/span> Am besten gelingt das in einem autoritären Erziehungsstil, weil Kinder dort klare Regeln bekommen.<span class='corr'>✏️ Gemeint ist der autoritative Stil: Wärme und Anerkennung verbunden mit klaren, begründeten Regeln. Autoritäre Erziehung schreibt streng vor und verhindert Mündigkeit.<\/span><\/p><p><span class='x'>✗ 3.<\/span> Eltern, die ihrem Kind alles abnehmen, fördern seine Selbstkompetenz, weil es so keine Fehler macht.<span class='corr'>✏️ Wer alles abnimmt, verhindert Mündigkeit. Gerade Fehler zuzulassen fördert die Selbstkompetenz.<\/span><\/p><p><span class='ok'>✓ 4.<\/span> Ein Kinderrat, in dem die Kinder über Gruppenregeln abstimmen, fördert vor allem die Sozialkompetenz.<\/p><p><span class='ok'>✓ 5.<\/span> Eine Qualifikation ist eine erworbene Befähigung zu einer meist beruflichen Tätigkeit, die oft durch Zeugnisse belegt wird.<\/p><p><span class='x'>✗ 6.<\/span> Schlüsselqualifikationen sind Fähigkeiten, die nur für einen ganz bestimmten Beruf gebraucht werden.<span class='corr'>✏️ Schlüsselqualifikationen werden gerade in vielen Situationen gebraucht – nicht nur in einem bestimmten Beruf.<\/span><\/p><p><span class='ok'>✓ 7.<\/span> Ein Gemüsebeet zu pflegen, fördert die Sachkompetenz, weil die Kinder Erfahrungen mit Natur und Umwelt sammeln.<\/p><\/div>";</script>
+<script src="../../lb3-erziehung/versuch.js"></script>
+</body>
+</html>
