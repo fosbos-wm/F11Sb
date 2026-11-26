@@ -73,7 +73,7 @@ function pick(j,b){
 }
 function fin(){
   const pts=sc.s+sc.a+sc.w,tot=total(),secs=Math.round((Date.now()-t0)/1000);
-  $("app").innerHTML=`<div class="box done"><div class="big">${pts} von ${tot}</div><p>Entscheiden ${sc.s}/${maxS()}${D.auszug?" · Beurteilen "+sc.a+"/"+maxA():""}${D.werkstatt?" · Selbst formuliert "+sc.w+"/"+maxW():""}</p>${TS?"<p>Zeige deiner Lehrkraft den Ergebniscode (oben).</p>":""}<button class="b alt" id="again" type="button">Noch einmal</button></div>`;
+  $("app").innerHTML=`<div class="box done"><div class="big">${pts} von ${tot}</div><p>Entscheiden ${sc.s}/${maxS()}${D.auszug?" · Beurteilen "+sc.a+"/"+maxA():""}${D.werkstatt?" · Selbst formuliert "+sc.w+"/"+maxW():""}</p><button class="b alt" id="again" type="button">Noch einmal</button></div>`;
   $("again").onclick=()=>{part=0;i=0;sc={s:0,a:0,w:0};wrong=0;t0=Date.now();view()};
   if(TS)try{parent.postMessage({tsResult:{punkte:pts,max:tot,zuege:wrong,sekunden:secs}},"*")}catch(e){}
 }
