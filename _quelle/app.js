@@ -2935,9 +2935,9 @@ async function submitBasischeck(fach,wocheId){
  });
  delete CI_NEU[wocheId];
  toast(`${richtig} von ${gesamt} richtig.`);
- if($("ciAnsicht")){(/@ende$/.test(wocheId)||await setDoc(doc(db,"lehrplanFortschritt",`${currentUser.uid}_${wocheId}`),{uid:currentUser.uid,wocheId,fach,basischeckErledigt:true,updatedAt:serverTimestamp()},{merge:true}).catch(e=>console.error(e)));ppDirty=true;await openCheckIn(wocheId);if(ampel==="gruen")showMotivationsBild(false,"lernen","bc:"+wocheId);return}
+ if($("ciAnsicht")){(/@ende$/.test(wocheId)?await lxThemaAbschliessen(wocheId.replace(/@ende$/,"")):await setDoc(doc(db,"lehrplanFortschritt",`${currentUser.uid}_${wocheId}`),{uid:currentUser.uid,wocheId,fach,basischeckErledigt:true,updatedAt:serverTimestamp()},{merge:true}).catch(e=>console.error(e)));ppDirty=true;await openCheckIn(wocheId);if(ampel==="gruen")showMotivationsBild(false,"lernen","bc:"+wocheId);return}
  if(lehrplanWocheById(fach,wocheId)?.typ==="apt"){await aptSetzen(wocheId,{basischeckErledigt:true},{tab:"basischeck"});return}
- (/@ende$/.test(wocheId)||await setDoc(doc(db,"lehrplanFortschritt",`${currentUser.uid}_${wocheId}`),{uid:currentUser.uid,wocheId,fach,basischeckErledigt:true,updatedAt:serverTimestamp()},{merge:true}).catch(e=>console.error(e)));
+ (/@ende$/.test(wocheId)?await lxThemaAbschliessen(wocheId.replace(/@ende$/,"")):await setDoc(doc(db,"lehrplanFortschritt",`${currentUser.uid}_${wocheId}`),{uid:currentUser.uid,wocheId,fach,basischeckErledigt:true,updatedAt:serverTimestamp()},{merge:true}).catch(e=>console.error(e)));
  await reopenDetail(fach,wocheId);
  if(ampel==="gruen")showMotivationsBild(false,"lernen","bc:"+wocheId);
  }catch(e){console.error("Check-in abgeben:",e);toast(e?.code==="permission-denied"?"Firebase verweigert das Speichern. Bitte die Firestore-Regeln prüfen.":"Konnte nicht gespeichert werden.");}
@@ -22898,7 +22898,8 @@ function kwKachelHTML(ph,lehrer){
  const nCo=KW.co&&KW.co.checkouts?KW.co.checkouts.filter(c=>Number(c.lbNum)===ph.lbNum).length:0;
  if(nCo&&!z.kprim)z.kprim=nCo;
  const chips=Object.entries(z).map(([k,v])=>{const b=KW_BAUSTEINE[k];return b?`<span class="chip ${b[1]}">${v} ${esc(b[0])}</span>`:""}).join("")||`<span class="kw-leer">Noch keine Bausteine vorbereitet</span>`;
- const rows=themen.map(e=>{
+ const themenOffen=lehrer?themen:themen.filter(e=>!kwErledigt(e.id)),nFertigK=themen.length-themenOffen.length;
+ const rows=themenOffen.map(e=>{
   if(!lehrer&&!lxThemaSichtbar(e))return lxGesperrtRow(e);
   const ok=!lehrer&&kwErledigt(e.id),nm=(KW.mat[e.id]||[]).length+kwModuleThema(e.id).length;
   const ab=lehrer?lxThemaPunkte(e,ph):"";
@@ -22913,7 +22914,7 @@ function kwKachelHTML(ph,lehrer){
   <header class="kw-th"><div><small>LB ${ph.lbNum} · ${esc(kwBlockText(ph.start,ph.end)||fmtKurz(ph.start))}</small><b>${esc(ph.lbTitel)}</b></div>${lxLbProjekte(ph.lbNum)}${status?`<span class="kw-st">${naechst?"als Nächstes":status}</span>`:""}</header>
   ${projKnopf}
   <div class="kw-lab">${n} THEMEN · ${lehrer?fertig+" MIT MATERIAL":fertig+" ERLEDIGT"}</div>
-  <div class="kw-rows">${rows||(lehrer?"":`<div class="kw-leer">Hier ist noch nichts eingestellt.</div>`)}${kwLeistungRow(ph)}</div>
+  <div class="kw-rows">${rows||(lehrer?"":(nFertigK?`<div class="kw-leer">Alle Themen bearbeitet ✓</div>`:`<div class="kw-leer">Hier ist noch nichts eingestellt.</div>`))}${!lehrer&&nFertigK&&rows?`<small class="kw-leer">${nFertigK} bearbeitet ✓</small>`:""}${!lehrer&&nFertigK?`<button type="button" class="text-button" onclick="lxZuBearbeitet()">Bearbeitete Themen ansehen</button>`:""}${kwLeistungRow(ph)}</div>
   <div class="kw-lab">BAUSTEINE DER LEHRKRÄFTE</div>
   <div class="kw-chips">${chips}</div>
   <footer class="kw-fuss"><div class="kw-bar" role="progressbar" aria-valuenow="${proz}" aria-valuemin="0" aria-valuemax="100" aria-label="${lehrer?"Vorbereitung":"Fortschritt"} Lernbereich ${ph.lbNum}"><i style="width:${proz}%"></i></div><span>${lehrer?"Vorbereitet":"Fortschritt"} ${proz} %</span></footer>
@@ -22927,8 +22928,9 @@ function lxLandkarteNeu(){
  const akt=phasen.find(p=>p.start<=heute&&heute<=p.end)||phasen.find(p=>p.start>heute)||phasen[phasen.length-1];
  const spalte=ph=>{
   const th=kwThemenSicht(ph).filter(e=>e.typ!=="projekt"),pr=PP_EINHEITEN_PROJEKT(ph),cur=ph===akt;
-  const rows=th.map(e=>{const f=KW.fort[e.id]||{},z=f.abgeschlossen?"f":(f.info?"h":"");return`<button type="button" class="lxl-th" data-kw="thema" data-id="${esc(e.id)}" title="${z==="f"?"geschafft":(z==="h"?"begonnen":"noch offen")}"><em>${esc(e.nr)}</em><span>${esc(kwKurz(e))}${(LXWA.d||[]).some(w=>(w.themen||[]).includes(e.id)&&(w.bis||"")>=heute)?`<b class="lxl-wa">Diese Woche</b>`:""}</span><span class="lxl-pk"><i class="${z} t"></i></span></button>`}).join("");
-  return`<section class="lxl-lb"><header class="lxl-kopf"><small>LB ${ph.lbNum}</small>${cur?`<span class="lxl-akt">AKTUELL</span>`:""}<h3>${esc(ph.lbTitel||"")}</h3><span class="lxl-n">${th.length} Themen</span>${pr}</header><div class="lxl-liste">${rows||`<div class="kw-leer">Noch keine Themen freigeschaltet.</div>`}</div></section>`;
+  const thOffen=kwLehrer()?th:th.filter(e=>!kwErledigt(e.id)),nFertig=th.length-thOffen.length;
+  const rows=thOffen.map(e=>{const f=KW.fort[e.id]||{},z=f.abgeschlossen?"f":(f.info?"h":"");return`<button type="button" class="lxl-th" data-kw="thema" data-id="${esc(e.id)}" title="${z==="f"?"geschafft":(z==="h"?"begonnen":"noch offen")}"><em>${esc(e.nr)}</em><span>${esc(kwKurz(e))}${(LXWA.d||[]).some(w=>(w.themen||[]).includes(e.id)&&(w.bis||"")>=heute)?`<b class="lxl-wa">Diese Woche</b>`:""}</span><span class="lxl-pk"><i class="${z} t"></i></span></button>`}).join("");
+  return`<section class="lxl-lb"><header class="lxl-kopf"><small>LB ${ph.lbNum}</small>${cur?`<span class="lxl-akt">AKTUELL</span>`:""}<h3>${esc(ph.lbTitel||"")}</h3><span class="lxl-n">${th.length} Themen</span>${pr}</header><div class="lxl-liste">${rows||(nFertig?`<div class="kw-leer">Alle ${nFertig} Themen bearbeitet ✓</div>`:`<div class="kw-leer">Noch keine Themen freigeschaltet.</div>`)}</div>${nFertig&&rows?`<small class="kw-leer">${nFertig} bearbeitet ✓</small>`:""}${nFertig?`<button type="button" class="text-button" onclick="lxZuBearbeitet()">Bearbeitete Themen ansehen</button>`:""}</section>`;
  };
  const first=kwThemenSicht(akt).find(e=>e.typ!=="projekt");
  return`${kwSchuelerBanner()}<div class="lxl"><div class="lxl-tabs">${FACH.map((f,i)=>`<button type="button" class="lxl-tab${i?"":" an"}" data-lxf="${i}">${esc(f)}</button>`).join("")}</div><h1>Meine Lernpfade</h1><p class="lxl-h">Deine Bibliothek: Alle Themen mit Infotext, Übungen und Check-out. Du entscheidest, womit du anfängst. Der Punkt zeigt: offen, begonnen oder geschafft.</p>
@@ -23156,7 +23158,7 @@ async function lxThemaPfadSeite(e,ph,F){
  const matsV=mats.filter(m=>sicht("m:"+m.id));
  const hatCo=checkinAusBank(e.id+"@ende").length>0;
  const selbst=Number(fort.selbst)||0;
- if(co&&!fort.abgeschlossen&&!isTeacher()){fort.abgeschlossen=true;KW.fort[e.id]={...fort,abgeschlossen:true};setDoc(doc(db,"lehrplanFortschritt",`${uid}_${e.id}`),{uid,wocheId:e.id,fach:"paedagogik",abgeschlossen:true,abgeschlossenAt:serverTimestamp()},{merge:true}).catch(()=>{});LXM.t=0}
+ if(co&&!fort.abgeschlossen&&!isTeacher()){fort.abgeschlossen=true;KW.fort[e.id]={...fort,abgeschlossen:true};setDoc(doc(db,"lehrplanFortschritt",`${uid}_${e.id}`),{uid,wocheId:e.id,fach:"paedagogik",abgeschlossen:true,checkoutErledigt:true,abgeschlossenAt:serverTimestamp()},{merge:true}).catch(x=>console.error("Abschluss speichern:",x));LXM.t=0}
  /* Infotext */
  const lesen=["lernsituation","lehrtext","arbeitsblatt"].flatMap(k=>matsV.filter(m=>m.kategorie===k));
  const hoeren=matsV.filter(m=>m.kategorie==="audio");
@@ -23634,10 +23636,26 @@ async function lxKlasseLaden(){
  await lxTitelLaden().catch(()=>{});
  return LXK.d;
 }
+window.lxZuBearbeitet=function(){go("lernstaende");setTimeout(()=>{window.__lsFach="fertig";render()},80)};
+// Check-out abgegeben = Thema abgeschlossen. Wird sofort beim Abgeben gespeichert (nicht erst beim Wiederöffnen der Themenseite).
+async function lxThemaAbschliessen(themaId){
+ if(!currentUser||isTeacher()||!themaId)return;
+ try{
+  await setDoc(doc(db,"lehrplanFortschritt",`${currentUser.uid}_${themaId}`),{uid:currentUser.uid,wocheId:themaId,fach:"paedagogik",abgeschlossen:true,checkoutErledigt:true,abgeschlossenAt:serverTimestamp(),updatedAt:serverTimestamp()},{merge:true});
+  const neu={...(KW.fort[themaId]||{}),abgeschlossen:true,checkoutErledigt:true};
+  KW.fort[themaId]=neu;
+  try{if(PPM.meine&&PPM.meine.fortAlle)PPM.meine.fortAlle[themaId]=neu}catch(x){}
+  KW.geladen=0;LXM.t=0;try{LXK.t=0}catch(x){}window.__fsDirty=Date.now();
+ }catch(err){
+  console.error("Thema abschließen:",err);
+  toast(err&&err.code==="permission-denied"?"Dein Check-out ist gespeichert, das Thema konnte aber nicht als abgeschlossen markiert werden (Firestore-Regeln prüfen).":"Dein Check-out ist gespeichert. Das Thema konnte noch nicht als abgeschlossen markiert werden. Bitte öffne es noch einmal.");
+ }
+}
 async function lxSelbstSetzen(themaId,w){
  try{
-  await setDoc(doc(db,"lehrplanFortschritt",`${currentUser.uid}_${themaId}`),{uid:currentUser.uid,wocheId:themaId,fach:"paedagogik",selbst:w,abgeschlossen:w>=3,selbstAt:serverTimestamp()},{merge:true});
-  KW.fort[themaId]={...(KW.fort[themaId]||{}),selbst:w,abgeschlossen:w>=3};KW.geladen=0;LXM.t=0;
+  const schonFertig=!!((KW.fort[themaId]||{}).abgeschlossen||(LXM.ci&&LXM.ci[themaId+"@ende"])),abg=w>=3||schonFertig;
+  await setDoc(doc(db,"lehrplanFortschritt",`${currentUser.uid}_${themaId}`),{uid:currentUser.uid,wocheId:themaId,fach:"paedagogik",selbst:w,abgeschlossen:abg,selbstAt:serverTimestamp()},{merge:true});
+  KW.fort[themaId]={...(KW.fort[themaId]||{}),selbst:w,abgeschlossen:abg};KW.geladen=0;LXM.t=0;
   showMotivationsBild(false,"reflexion","selbst");
   render();
  }catch(err){console.error(err);toast("Das konnte nicht gespeichert werden.")}
@@ -23847,16 +23865,37 @@ function lsFaecherListe(){
   ?["Deutsch","Englisch","Mathematik","Geschichte","Sozialwirtschaft und Recht","Chemie","fpA (Fachpraktische Ausbildung)","Wahlpflichtbereich (Förderunterricht)"]
   :["Deutsch","Englisch","Mathematik","Religion / Ethik","Politik und Gesellschaft","SWR","Biologie","Soziologie","Wahlpflicht 1","Wahlpflicht 2"];
 }
+// Sammlung der abgeschlossenen Themen mit den Ergebnissen (nur Schüler:innen)
+async function renderBearbeiteteThemen(){
+ await kwLaden();
+ const L=await lxMeinLaden(true),T=lxMeineThemen(L).filter(x=>kwErledigt(x.e.id));
+ const datum=f=>{try{const t=f&&f.abgeschlossenAt;return t&&t.toMillis?new Date(t.toMillis()).toLocaleDateString("de-DE"):""}catch(x){return""}};
+ const zurueck=`<div class="kw-links" style="margin:0 0 10px"><button type="button" class="secondary" data-lsfach="">\u2190 Alle F\xE4cher</button></div>`;
+ const kopf=pageHead("MEINE LERNST\xC4NDE","Bearbeitete Themen",T.length?`${T.length} abgeschlossen. Hier siehst du deine Ergebnisse. Du kannst jedes Thema wieder \xF6ffnen und \xFCben.`:"Sobald du den Check-out eines Themas abgegeben hast, steht das Thema hier.");
+ const gruppen={};T.forEach(x=>{(gruppen[x.ph.lbNum]=gruppen[x.ph.lbNum]||{ph:x.ph,l:[]}).l.push(x)});
+ const bl=Object.values(gruppen).sort((a,b)=>a.ph.lbNum-b.ph.lbNum).map(g=>{
+  const F=kwFarbe(g.ph.lbNum);
+  const zeilen=g.l.map(x=>{
+   const m=x.m,f=KW.fort[x.e.id]||{},d=datum(f);
+   const erg=[m.c?`Check-in ${lxProz(m.wcErst)}`:"",m.ende?`Check-out ${lxProz(m.wcLetzt)}`:"",m.ubN?`${m.ubN} \xDCbungen`:"",m.selbst?`Selbsteinsch\u00E4tzung ${m.selbst} von 4`:""].filter(Boolean).join(" \u00B7 ");
+   return`<button type="button" class="kw-row" data-kw="thema" data-id="${esc(x.e.id)}"><i class="kw-bx d"></i><em>${esc(x.e.nr)}</em><span>${esc(kwKurz(x.e))}</span><small>${esc([erg,d?"abgeschlossen am "+d:""].filter(Boolean).join(" \u00B7 "))}</small></button>`;
+  }).join("");
+  return`<article class="kw-tile" style="--c:${F.c};--bg:${F.bg};--t:${F.t}"><header class="kw-th"><div><small>LB ${g.ph.lbNum}</small><b>${esc(g.ph.lbTitel)}</b></div></header><div class="kw-rows">${zeilen}</div></article>`;
+ }).join("");
+ return zurueck+kopf+(bl?`<div class="kw-wand">${bl}</div>`:`<div class="kw-leer">Noch kein Thema abgeschlossen.</div>`)+footer();
+}
 async function renderLernstaendeLx(){
  const LV=isTeacher()?`<section class="lxw-live"><h3>Live-Ansicht: Was machen die Sch\xFCler:innen gerade?</h3><div id="lxLiveBox"><div class="kw-leer">Wird geladen \u2026</div></div></section>`:"";
  if(isTeacher())setTimeout(lxLiveStart,0);
+ if(window.__lsFach==="fertig"&&!isTeacher())return await renderBearbeiteteThemen();
  if(window.__lsFach==="pp"){
   const h=await renderLernstaendePP();
   return LV+`<div class="kw-links" style="margin:0 0 10px"><button type="button" class="secondary" data-lsfach="">\u2190 Alle F\xE4cher</button></div>`+h;
  }
+ const fertigK=isTeacher()?"":`<button type="button" class="lxf-k an" data-lsfach="fertig"><h3>Bearbeitete Themen</h3><span class="lxf-b muster">${Object.values(KW.fort||{}).filter(f=>f&&f.abgeschlossen).length} abgeschlossen</span><p>Alle Themen, die du abgeschlossen hast, mit deinen Ergebnissen. Du kannst sie jederzeit wieder öffnen.</p></button>`;
  const an=`<button type="button" class="lxf-k an" data-lsfach="pp"><h3>P\xE4dagogik / Psychologie</h3><span class="lxf-b muster">Check-ins, Check-outs, \xDCbungen</span><p>Dein Stand je Lernbereich und Thema, dazu ein Lerntipp.</p></button>`;
  const aus=lsFaecherListe().map(n=>`<div class="lxf-k"><h3>${esc(n)}</h3><span class="lxf-b">Folgt</span><p>Hier erscheinen deine Lernst\xE4nde, sobald das Fach ausgearbeitet ist.</p></div>`).join("");
- return LV+`${kwSchuelerBanner()}<div class="lxf"><small class="lxf-kick">MEINE LERNST\xC4NDE</small><h1>Meine Lernst\xE4nde</h1><p class="lxf-sub">W\xE4hle ein Fach. Dort siehst du, was gemessen wurde, und bekommst einen Lerntipp.</p><div class="lxf-grid">${an}${aus}</div></div>${footer()}`;
+ return LV+`${kwSchuelerBanner()}<div class="lxf"><small class="lxf-kick">MEINE LERNST\xC4NDE</small><h1>Meine Lernst\xE4nde</h1><p class="lxf-sub">W\xE4hle ein Fach. Dort siehst du, was gemessen wurde, und bekommst einen Lerntipp.</p><div class="lxf-grid">${an}${fertigK}${aus}</div></div>${footer()}`;
 }
 async function renderLernstaendePP(){
  let h=await renderKwCheckouts();
@@ -23885,7 +23924,7 @@ async function lxOffenKachel(){
   const mo=lxIso(new Date(jetzt.getTime()-wt*864e5)),so=lxIso(new Date(jetzt.getTime()+(6-wt)*864e5));
   await lxWaLaden().catch(()=>{});
   const wids=[];(LXWA.d||[]).filter(w=>(w.bis||"")>=heute).forEach(w=>(w.themen||[]).forEach(t=>{if(!wids.includes(t))wids.push(t)}));
-  const woche=T.filter(x=>wids.includes(x.e.id)).slice(0,4);
+  const woche=T.filter(x=>wids.includes(x.e.id)&&!kwErledigt(x.e.id)).slice(0,4);
   let total=0,done=0;const offen=[];
   woche.forEach(x=>{
    const n=kwKurz(x.e);
